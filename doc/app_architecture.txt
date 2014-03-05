@@ -1,0 +1,22 @@
+Actions
+  - Self video
+    - Record
+    - Stop
+    - Replay
+    - Send
+  - Other video
+    - Play
+    
+
+HomeController
+  setup_listeners
+  record_click
+  send_click
+  replay_click
+
+VideoHandler
+  start_recording
+  stop_recording
+  play
+
+HomeView
