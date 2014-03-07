@@ -17,109 +17,110 @@ import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.Size;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.widget.FrameLayout;
 
-public class VideoHandler{
+public class VideoHandler {
 
+	private String TAG = this.getClass().getSimpleName();
 	private Context context;
 	private Activity activity;
 	private Camera camera;
-	private CameraPreview cameraPreview;
-	private MediaRecorder mediaRecorder;
-	private FrameLayout preview_frame;
+	private CameraPreview cameraPreview;  //  The SurfaceView for the preview from the camera.
+	private SurfaceHolder surfaceHolder;  //  The surface holder holding the above SurfaceView
+	private MediaRecorder mediaRecorder;  //  The video recorder that attaches to the above SurfaceView
+	private FrameLayout preview_frame;    //  The view element that we add the SurfaceView to.
 
-
-	public VideoHandler (Activity a){
+	public VideoHandler(Activity a) {
 		activity = a;
 		context = activity.getApplicationContext();
-		camera = getCameraInstance(1);
-		printCameraParams(camera);
+		getCameraInstance(1);
+//		printCameraParams(camera);
 		setCameraParams();
-		
-		cameraPreview = new CameraPreview(context, this);
+
+		cameraPreview = new CameraPreview(context);
 		preview_frame = (FrameLayout) activity.findViewById(R.id.camera_preview);
 		preview_frame.addView(cameraPreview);
 	}
-    
+
 	public void takePicture() {
 		camera.takePicture(null, null, getPictureCallback());
 	}
 
-	public void stopRecording(){
-		mediaRecorder.stop(); 							// stop the recording
-		releaseMediaRecorder(mediaRecorder, camera); 	// release the MediaRecorder object
-		camera.lock(); 									// take camera access back from MediaRecorder
+	public void stopRecording() {
+		mediaRecorder.stop(); // stop the recording
+		prepareMediaRecorder();
 	}
 
-	public boolean startRecording(){
+	public boolean startRecording() {
 		if (mediaRecorder != null) {
 			mediaRecorder.start();
 			return true;
 		} else {
-			releaseMediaRecorder(mediaRecorder, camera);
+			releaseMediaRecorder();
 			return false;
 		}
 	}
 
-	public void pause() {
-		releaseMediaRecorder(mediaRecorder, camera);       
-		releaseCamera(camera);  		
+	public void dispose() {
+		releaseMediaRecorder();
+		releaseCamera();
 	}
 
-    
-	public void cameraPreviewSurfaceCreated(SurfaceHolder holder){
-		String TAG = "cameraPreviewSurfaceCreated";
-    	Log.i(TAG, "called.");
-        // The Surface has been created, now tell the camera where to draw the preview.
-        try {
-            camera.setPreviewDisplay(holder);
-            camera.startPreview();
-            prepareMediaRecorder(camera, holder);
-        } catch (IOException e) {
-            Log.d(TAG, "Error setting camera preview: " + e.getMessage());
-        }
+	public void cameraPreviewSurfaceCreated(SurfaceHolder holder) {
+		Log.i(TAG, "cameraPreviewSurfaceCreated");
+		// The Surface has been created, now tell the camera where to draw the
+		// preview.
+		try {
+			camera.setPreviewDisplay(holder);
+			camera.startPreview();
+			prepareMediaRecorder();
+		} catch (IOException e) {
+			Log.d(TAG, "Error setting camera preview: " + e.getMessage());
+		}
 	}
-    
-	public void cameraPreviewSurfaceDestroyed(SurfaceHolder holder){
-        // Take care of releasing the Camera preview.
+
+	public void cameraPreviewSurfaceDestroyed(SurfaceHolder holder) {
+		Log.i(TAG, "cameraPreviewSurfaceDestroyed");
+		// Take care of releasing the Camera preview.
 	}
-	
-	public void cameraPreviewSurfaceChanged(SurfaceHolder holder, int format, int w, int h){
-		String TAG = "cameraPreviewSurfaceCreated";
-		Log.i(TAG, "called");
-        // If your preview can change or rotate, take care of those events here.
-        // Make sure to stop the preview before resizing or reformatting it.
 
-        if (holder.getSurface() == null){
-          // preview surface does not exist
-          return;
-        }
+	public void cameraPreviewSurfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+		Log.i(TAG, "cameraPreviewSurfaceChanged");
+		// If your preview can change or rotate, take care of those events here.
+		// Make sure to stop the preview before resizing or reformatting it.
 
-        // stop preview before making changes
-        try {
-            camera.stopPreview();
-        } catch (Exception e){
-          // ignore: tried to stop a non-existent preview
-        }
+		if (holder.getSurface() == null) {
+			// preview surface does not exist
+			return;
+		}
 
-        // set preview size and make any resize, rotate or
-        // reformatting changes here
+		// stop preview before making changes
+		try {
+			//			camera.stopPreview();
+		} catch (Exception e) {
+			Log.d(TAG, "cameraPreviewSurfaceChanged: Error camera.stopPreview(): " + e.getMessage());
+		}
 
-        // start preview with new settings
-        try {
-            camera.setPreviewDisplay(holder);
-            camera.startPreview();
+		// set preview size and make any resize, rotate or
+		// reformatting changes here
 
-        } catch (Exception e){
-            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
-        }
+		// start preview with new settings
+		try {
+			//			camera.setPreviewDisplay(holder);
+			//			camera.startPreview();
+
+		} catch (Exception e) {
+			Log.d(TAG, "cameraPreviewSurfaceChanged: Error camera.startPreview(): " + e.getMessage());
+		}
 	}
-	
-	private void setCameraParams () {
+
+	private void setCameraParams() {
 		camera.setDisplayOrientation(90);
 		Parameters cparams = camera.getParameters();
 		cparams.setZoom(20);
@@ -129,38 +130,45 @@ public class VideoHandler{
 	}
 
 	public boolean hasCameraHardware() {
-		if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+		if (context.getPackageManager().hasSystemFeature(
+				PackageManager.FEATURE_CAMERA)) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	private Camera getCameraInstance(int camera_id){
-		Camera c = null;
+	private void getCameraInstance(int camera_id) {
+		Log.i(TAG, "getCameraInstance");
 		try {
-			c = Camera.open(camera_id); 
-		}
-		catch (Exception e){
+			camera = Camera.open(camera_id);
+		} catch (Exception e) {
 			System.err.print("getCameraInstance: camera not available");
 		}
-		return c;
+		if (camera == null)
+			Log.e(TAG, "getCameraInstance: got null for camera" + camera_id);
 	}
 
 	private File getOutputMediaFile(int type) {
 		String TAG = "getOutputMediaFile";
-		File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "tbm");
+		File dir = new File(
+				Environment
+				.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+				"tbm");
 		if (!dir.exists()) {
 			if (!dir.mkdirs()) {
 				Log.e(TAG, "Failed to create storage directory.");
 				return null;
 			}
 		}
-		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+		.format(new Date());
 		if (type == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) {
-			return new File(dir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+			return new File(dir.getPath() + File.separator + "IMG_" + timeStamp
+					+ ".jpg");
 		} else if (type == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
-			return new File(dir.getPath() + File.separator + "VID_" + timeStamp + "VIDEO.mp4");
+			return new File(dir.getPath() + File.separator + "VID_" + timeStamp
+					+ "VIDEO.mp4");
 		} else {
 			return null;
 		}
@@ -174,7 +182,8 @@ public class VideoHandler{
 			public void onPictureTaken(byte[] data, Camera cam) {
 				File picFile = getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE);
 				if (picFile == null) {
-					Log.e(TAG, "Couldn't create media file; check storage permissions?");
+					Log.e(TAG,
+							"Couldn't create media file; check storage permissions?");
 					return;
 				}
 
@@ -195,10 +204,9 @@ public class VideoHandler{
 		return pictureCB;
 	}
 
-	private void prepareMediaRecorder(Camera camera, SurfaceHolder surfaceHolder){
-		String TAG = "prepareVideoRecorder";
-
-		mediaRecorder = new MediaRecorder();
+	private void prepareMediaRecorder() {
+		if (mediaRecorder == null)
+			mediaRecorder = new MediaRecorder();
 
 		// Step 1: Unlock and set camera to MediaRecorder
 		camera.unlock();
@@ -213,56 +221,65 @@ public class VideoHandler{
 
 		// Step 4: Set output file
 		String ofile = getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO).toString();
-		Log.i(TAG, "setting mediaRecorder outfile to: " + ofile);
+		Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
 		mediaRecorder.setOutputFile(ofile);
 
 		// Step 5: Set the preview output
+		Log.i(TAG, "prepareMediaRecorder: mediaRecorder.setPreviewDisplay");
 		mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
+
 
 		// Step 6: Prepare configured MediaRecorder
 		try {
+			Log.i(TAG, "prepareMediaRecorder: mediaRecorder.prepare");
 			mediaRecorder.prepare();
 		} catch (IllegalStateException e) {
-			Log.d(TAG, "IllegalStateException preparing MediaRecorder: " + e.getMessage());
-			releaseMediaRecorder(mediaRecorder, camera);
+			Log.d(TAG,"IllegalStateException preparing MediaRecorder: " + e.getMessage());
+			releaseMediaRecorder();
 		} catch (IOException e) {
 			Log.d(TAG, "IOException preparing MediaRecorder: " + e.getMessage());
-			releaseMediaRecorder(mediaRecorder, camera);
+			releaseMediaRecorder();
 		}
 	}
 
-	private void releaseMediaRecorder(MediaRecorder mediaRecorder, Camera camera){
+	private void releaseMediaRecorder() {
+		Log.i(TAG, "releaseMediaRecorder");
 		if (mediaRecorder != null) {
-			mediaRecorder.reset();   // clear recorder configuration
+			mediaRecorder.reset(); // clear recorder configuration
 			mediaRecorder.release(); // release the recorder object
 			mediaRecorder = null;
-			camera.lock();           // lock camera for later use
+			camera.lock(); // lock camera for later use
 		}
 	}
 
-	private void releaseCamera(Camera camera){
-		if (camera != null){
-			camera.release();        // release the camera for other applications
+	private void releaseCamera() {
+		Log.i(TAG, "releaseCamera");
+		if (preview_frame != null)
+			preview_frame.removeView(cameraPreview);
+		if (camera != null) {
+			camera.release(); // release the camera for other applications
 			camera = null;
 		}
+		cameraPreview = null;
 	}
 
-	public void printCameraParams(Camera camera){
+	public void printCameraParams(Camera camera) {
 		Parameters cparams = camera.getParameters();
 		List<Integer> pic_formats = cparams.getSupportedPictureFormats();
 		List<Integer> prev_formats = cparams.getSupportedPreviewFormats();
-		for (Camera.Size size : cparams.getSupportedPreviewSizes()){
+		for (Camera.Size size : cparams.getSupportedPreviewSizes()) {
 			printWH("Preview", size);
 		}
-		for (Camera.Size size : cparams.getSupportedPictureSizes()){
-			printWH("Picture", size);      
+		for (Camera.Size size : cparams.getSupportedPictureSizes()) {
+			printWH("Picture", size);
 		}
 		List<Size> video_sizes = cparams.getSupportedVideoSizes();
-		if (video_sizes == null){
-			System.out.print("Video sizes not supported separately from preview sizes or picture sizes.");
+		if (video_sizes == null) {
+			System.out
+			.print("Video sizes not supported separately from preview sizes or picture sizes.");
 		} else {
-			for (Camera.Size size : video_sizes){
-				printWH("Video", size); 
+			for (Camera.Size size : video_sizes) {
+				printWH("Video", size);
 			}
 		}
 		boolean zoom_supported = cparams.isZoomSupported();
@@ -274,7 +291,7 @@ public class VideoHandler{
 		System.out.print(max_zoom);
 	}
 
-	private void printWH (String type, Camera.Size size){
+	private void printWH(String type, Camera.Size size) {
 		System.out.print(type + ": ");
 		System.out.print(size.width);
 		System.out.print("x");
@@ -282,5 +299,45 @@ public class VideoHandler{
 		System.out.print("\n");
 	}
 
+	private class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+		private String TAG = this.getClass().getSimpleName();
 
+		public CameraPreview(Context context) {
+			super(context);
+			Log.i(TAG, "Instantiating CameraPreview");
+			if (camera == null){
+				Log.i(TAG, "CameraPreview constructor camera is null");
+			} else {
+				Log.i(TAG, "CameraPreview constructor camera good");
+			}
+			// Install a SurfaceHolder.Callback so we get notified when the
+			// underlying surface is created and destroyed.
+			surfaceHolder = getHolder();
+			surfaceHolder.addCallback(this);
+			// deprecated setting, but required on Android versions prior to 3.0
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
+				surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		}
+
+		@Override
+		public void surfaceCreated(SurfaceHolder holder) {
+			if (camera == null){
+				Log.i(TAG, "CameraPreview surfaceCreated camera is null");
+			} else {
+				Log.i(TAG, "CameraPreview surfaceCreated camera good");
+			}
+			cameraPreviewSurfaceCreated(holder);
+		}
+
+		@Override
+		public void surfaceDestroyed(SurfaceHolder holder) {
+			cameraPreviewSurfaceDestroyed(holder);
+		}
+
+		@Override
+		public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+			cameraPreviewSurfaceChanged(holder, format, w, h);
+		}
+
+	}
 }
