@@ -10,9 +10,10 @@ public class HomeActivity extends Activity {
 	final String TAG = this.getClass().getSimpleName();
 
 	private VideoHandler videoHandler;
+	private VideoPlayer videoPlayer;
 	private Boolean isRecording;
 	private Button recordButton;
-	private Button captureButton;
+	private Button playButton;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -35,11 +36,12 @@ public class HomeActivity extends Activity {
 		super.onResume();
 		Log.i(TAG, "onResume");
 		getVideoHandler();
+//		getVideoPlayer();
 	}
 
 	private void init_page() {
 		recordButton = (Button) findViewById(R.id.button_record);
-		captureButton = (Button) findViewById(R.id.button_capture);
+		playButton = (Button) findViewById(R.id.button_play);
 		isRecording = false;
 		addListeners();
 	}
@@ -49,10 +51,16 @@ public class HomeActivity extends Activity {
 			Log.i(TAG, "getVideoHandler: new VideoHandler");
 			videoHandler = new VideoHandler(this);
 	}
-
-	private void onCaptureClick() {
-		videoHandler.takePicture();
+	
+	private void getVideoPlayer() {
+		if (videoPlayer == null){
+			Log.i(TAG, "getVideoPlayer: new getVideoPlayer");
+			videoPlayer = new VideoPlayer(this);
+		} else {
+			Log.i(TAG, "getVideoPlayer: using existing videoPlayer");
+		}
 	}
+
 
 	private void onRecordClick() {
 		if (isRecording) {
@@ -68,19 +76,24 @@ public class HomeActivity extends Activity {
 			}
 		}
 	}
+	
+	private void onPlayClick() {
+//		videoPlayer.start();
+		new VideoPlayer2(this);
+	}
 
 	private void addListeners() {
-		captureButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onCaptureClick();
-			}
-		});
-
 		recordButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				onRecordClick();
+			}
+		});
+		
+		playButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onPlayClick();
 			}
 		});
 	}

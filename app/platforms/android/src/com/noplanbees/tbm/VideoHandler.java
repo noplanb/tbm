@@ -1,8 +1,6 @@
 package com.noplanbees.tbm;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -13,7 +11,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
-import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.Size;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
@@ -31,25 +28,25 @@ public class VideoHandler {
 	private Context context;
 	private Activity activity;
 	private Camera camera;
-	private CameraPreview cameraPreview;  //  The SurfaceView for the preview from the camera.
-	private SurfaceHolder surfaceHolder;  //  The surface holder holding the above SurfaceView
-	private MediaRecorder mediaRecorder;  //  The video recorder that attaches to the above SurfaceView
-	private FrameLayout preview_frame;    //  The view element that we add the SurfaceView to.
+	private CameraPreview cameraPreview; // The SurfaceView for the preview from
+											// the camera.
+	private SurfaceHolder surfaceHolder; // The surface holder holding the above
+											// SurfaceView
+	private MediaRecorder mediaRecorder; // The video recorder that attaches to
+											// the above SurfaceView
+	private FrameLayout preview_frame; // The view element that we add the
+										// SurfaceView to.
 
 	public VideoHandler(Activity a) {
 		activity = a;
 		context = activity.getApplicationContext();
 		getCameraInstance(1);
-//		printCameraParams(camera);
+		printCameraParams(camera);
 		setCameraParams();
 
 		cameraPreview = new CameraPreview(context);
-		preview_frame = (FrameLayout) activity.findViewById(R.id.camera_preview);
+		preview_frame = (FrameLayout) activity.findViewById(R.id.camera_preview_frame);
 		preview_frame.addView(cameraPreview);
-	}
-
-	public void takePicture() {
-		camera.takePicture(null, null, getPictureCallback());
 	}
 
 	public void stopRecording() {
@@ -90,7 +87,8 @@ public class VideoHandler {
 		// Take care of releasing the Camera preview.
 	}
 
-	public void cameraPreviewSurfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+	public void cameraPreviewSurfaceChanged(SurfaceHolder holder, int format,
+			int w, int h) {
 		Log.i(TAG, "cameraPreviewSurfaceChanged");
 		// If your preview can change or rotate, take care of those events here.
 		// Make sure to stop the preview before resizing or reformatting it.
@@ -102,9 +100,11 @@ public class VideoHandler {
 
 		// stop preview before making changes
 		try {
-			//			camera.stopPreview();
+			// camera.stopPreview();
 		} catch (Exception e) {
-			Log.d(TAG, "cameraPreviewSurfaceChanged: Error camera.stopPreview(): " + e.getMessage());
+			Log.d(TAG,
+					"cameraPreviewSurfaceChanged: Error camera.stopPreview(): "
+							+ e.getMessage());
 		}
 
 		// set preview size and make any resize, rotate or
@@ -112,11 +112,13 @@ public class VideoHandler {
 
 		// start preview with new settings
 		try {
-			//			camera.setPreviewDisplay(holder);
-			//			camera.startPreview();
+			// camera.setPreviewDisplay(holder);
+			// camera.startPreview();
 
 		} catch (Exception e) {
-			Log.d(TAG, "cameraPreviewSurfaceChanged: Error camera.startPreview(): " + e.getMessage());
+			Log.d(TAG,
+					"cameraPreviewSurfaceChanged: Error camera.startPreview(): "
+							+ e.getMessage());
 		}
 	}
 
@@ -153,7 +155,7 @@ public class VideoHandler {
 		String TAG = "getOutputMediaFile";
 		File dir = new File(
 				Environment
-				.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+						.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
 				"tbm");
 		if (!dir.exists()) {
 			if (!dir.mkdirs()) {
@@ -162,46 +164,16 @@ public class VideoHandler {
 			}
 		}
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
-		.format(new Date());
+				.format(new Date());
 		if (type == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) {
-			return new File(dir.getPath() + File.separator + "IMG_" + timeStamp
+			return new File(dir.getPath() + File.separator + "img" + timeStamp
 					+ ".jpg");
 		} else if (type == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
-			return new File(dir.getPath() + File.separator + "VID_" + timeStamp
-					+ "VIDEO.mp4");
+			return new File(dir.getPath() + File.separator + "vid_" + timeStamp
+					+ ".mp4");
 		} else {
 			return null;
 		}
-	}
-
-	private PictureCallback getPictureCallback() {
-		final String TAG = "takePhoto";
-		PictureCallback pictureCB = new PictureCallback() {
-
-			@Override
-			public void onPictureTaken(byte[] data, Camera cam) {
-				File picFile = getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE);
-				if (picFile == null) {
-					Log.e(TAG,
-							"Couldn't create media file; check storage permissions?");
-					return;
-				}
-
-				try {
-					FileOutputStream fos = new FileOutputStream(picFile);
-					fos.write(data);
-					fos.close();
-					Log.i(TAG, "Pic Saved at: " + picFile.getPath());
-				} catch (FileNotFoundException e) {
-					Log.e(TAG, "File not found: " + e.getMessage());
-					e.getStackTrace();
-				} catch (IOException e) {
-					Log.e(TAG, "I/O error writing file: " + e.getMessage());
-					e.getStackTrace();
-				}
-			}
-		};
-		return pictureCB;
 	}
 
 	private void prepareMediaRecorder() {
@@ -216,14 +188,20 @@ public class VideoHandler {
 		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
-		// Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
-		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
+		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+		
+//		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_CIF));
 
-		// Step 4: Set output file
+		mediaRecorder.setVideoSize(176, 144);
+		
 		String ofile = getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO).toString();
+		
+		
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
 		mediaRecorder.setOutputFile(ofile);
-
+		mediaRecorder.setOrientationHint(270);
 		// Step 5: Set the preview output
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder.setPreviewDisplay");
 		mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
@@ -276,7 +254,7 @@ public class VideoHandler {
 		List<Size> video_sizes = cparams.getSupportedVideoSizes();
 		if (video_sizes == null) {
 			System.out
-			.print("Video sizes not supported separately from preview sizes or picture sizes.");
+					.print("Video sizes not supported separately from preview sizes or picture sizes.");
 		} else {
 			for (Camera.Size size : video_sizes) {
 				printWH("Video", size);
@@ -299,13 +277,14 @@ public class VideoHandler {
 		System.out.print("\n");
 	}
 
-	private class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+	private class CameraPreview extends SurfaceView implements
+			SurfaceHolder.Callback {
 		private String TAG = this.getClass().getSimpleName();
 
 		public CameraPreview(Context context) {
 			super(context);
 			Log.i(TAG, "Instantiating CameraPreview");
-			if (camera == null){
+			if (camera == null) {
 				Log.i(TAG, "CameraPreview constructor camera is null");
 			} else {
 				Log.i(TAG, "CameraPreview constructor camera good");
@@ -321,7 +300,7 @@ public class VideoHandler {
 
 		@Override
 		public void surfaceCreated(SurfaceHolder holder) {
-			if (camera == null){
+			if (camera == null) {
 				Log.i(TAG, "CameraPreview surfaceCreated camera is null");
 			} else {
 				Log.i(TAG, "CameraPreview surfaceCreated camera good");
@@ -335,7 +314,8 @@ public class VideoHandler {
 		}
 
 		@Override
-		public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+		public void surfaceChanged(SurfaceHolder holder, int format, int w,
+				int h) {
 			cameraPreviewSurfaceChanged(holder, format, w, h);
 		}
 

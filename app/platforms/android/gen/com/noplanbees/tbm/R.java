@@ -25,9 +25,11 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int button_capture=0x7f070001;
-        public static final int button_record=0x7f070002;
-        public static final int camera_preview=0x7f070000;
+        public static final int button_play=0x7f070002;
+        public static final int button_record=0x7f070001;
+        public static final int camera_preview_frame=0x7f070000;
+        public static final int frame_video_play=0x7f070003;
+        public static final int play_video_view=0x7f070004;
     }
     public static final class layout {
         public static final int home=0x7f030000;

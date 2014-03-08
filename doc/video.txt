@@ -1,0 +1,38 @@
+Setting size of the video:
+  TRY: 
+      176x144
+	    mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+      mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+      mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);		
+      30 seconds = 121109
+      Video not great.
+      Audio ok.
+      
+      176x144
+      mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+      mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+      mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);		
+	    Video better than above.
+	    30 seconds = 139533
+      Audio ok.
+      
+      320x240
+      mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+      mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+      mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);		
+	    Video actually worse than above
+	    30 seconds = 163765
+      Audio ok.
+      
+      
+      mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
+  		30 seconds = 564337
+  		Video much better.
+  		Audio ok
+      
+      
+      mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_CIF));
+  		30 seconds = 2708912  TOO BIG!
+  		Video much better.
+  		Audio ok
+      

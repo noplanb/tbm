@@ -3,30 +3,46 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    >
-  <FrameLayout
-    android:id="@+id/camera_preview"
-    android:layout_width="96dp"
-    android:layout_height="118dp"
-    android:layout_centerInParent="true"
-    />
+    android:paddingRight="16dp" >
 
-    <Button
-        android:id="@+id/button_capture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/camera_preview"
-        android:layout_centerHorizontal="true"
-        android:text="Snap" />
-   
+    <FrameLayout
+        android:id="@+id/camera_preview_frame"
+        android:layout_width="96dp"
+        android:layout_height="118dp"
+        android:layout_centerInParent="true" >
+    </FrameLayout>
+
     <Button
         android:id="@+id/button_record"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/button_capture"
+        android:layout_below="@+id/camera_preview_frame"
         android:layout_centerHorizontal="true"
         android:text="Record" />
-    
+
+    <Button
+        android:id="@+id/button_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/frame_video_play"
+        android:layout_below="@+id/camera_preview_frame"
+        android:text="Play" />
+
+    <FrameLayout
+        android:id="@+id/frame_video_play"
+        android:layout_width="96dp"
+        android:layout_height="118dp"
+        android:layout_alignTop="@+id/camera_preview_frame"
+        android:layout_toLeftOf="@+id/camera_preview_frame" >
+    </FrameLayout>
+
+    <VideoView
+        android:id="@+id/play_video_view"
+        android:layout_width="96dp"
+        android:layout_height="118dp"
+        android:layout_above="@+id/button_record"
+        android:layout_alignTop="@+id/camera_preview_frame"
+        android:layout_toRightOf="@+id/camera_preview_frame"
+        />
 
 </RelativeLayout>
