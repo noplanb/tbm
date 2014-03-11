@@ -22,24 +22,29 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
 
-public class VideoHandler {
-
-	private String TAG = this.getClass().getSimpleName();
+public class VideoRecorder {
+    
+	private final String RECORDING_FILE_NAME = "new.mp4";
+	private final String RECORDED_FILE_NAME = "last.mp4";
+	
+	private final String TAG = this.getClass().getSimpleName();
+	
+	private final File video_dir;
+	
 	private Context context;
 	private Activity activity;
 	private Camera camera;
-	private CameraPreview cameraPreview; // The SurfaceView for the preview from
-											// the camera.
-	private SurfaceHolder surfaceHolder; // The surface holder holding the above
-											// SurfaceView
-	private MediaRecorder mediaRecorder; // The video recorder that attaches to
-											// the above SurfaceView
-	private FrameLayout preview_frame; // The view element that we add the
-										// SurfaceView to.
+	private CameraPreview cameraPreview; // The SurfaceView for the preview from the camera.
+	private SurfaceHolder surfaceHolder; // The surface holder holding the above SurfaceView
+	private MediaRecorder mediaRecorder; // The video recorder that attaches to the above SurfaceView
+	private FrameLayout preview_frame; // The view element that we add the SurfaceView to.
 
-	public VideoHandler(Activity a) {
+	public VideoRecorder(Activity a) {
 		activity = a;
 		context = activity.getApplicationContext();
+		
+		video_dir = getVideoDir();
+		
 		getCameraInstance(1);
 		printCameraParams(camera);
 		setCameraParams();
@@ -49,9 +54,25 @@ public class VideoHandler {
 		preview_frame.addView(cameraPreview);
 	}
 
-	public void stopRecording() {
-		mediaRecorder.stop(); // stop the recording
-		prepareMediaRecorder();
+	public boolean stopRecording() {
+		boolean rval = true;
+		if (mediaRecorder !=null){
+			try {
+				mediaRecorder.stop();
+				Log.i(TAG, String.format("Recorded file %s : %d",getRecordingFile().getPath(), getRecordingFile().length()));
+				moveRecordingToRecorded();
+			} catch (IllegalStateException e) {
+				Log.i(TAG, "stopRecording: called in illegal state.");
+				rval = false;
+				releaseMediaRecorder();
+			} catch (RuntimeException e) {
+				Log.e(TAG, "stopRecording: Recording to short. No output file");
+				rval = false;
+				releaseMediaRecorder();
+			}
+			prepareMediaRecorder();
+		}
+		return rval;
 	}
 
 	public boolean startRecording() {
@@ -78,7 +99,7 @@ public class VideoHandler {
 			camera.startPreview();
 			prepareMediaRecorder();
 		} catch (IOException e) {
-			Log.d(TAG, "Error setting camera preview: " + e.getMessage());
+			Log.e(TAG, "Error setting camera preview: " + e.getMessage());
 		}
 	}
 
@@ -151,31 +172,37 @@ public class VideoHandler {
 			Log.e(TAG, "getCameraInstance: got null for camera" + camera_id);
 	}
 
-	private File getOutputMediaFile(int type) {
-		String TAG = "getOutputMediaFile";
-		File dir = new File(
-				Environment
-						.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
-				"tbm");
+	private File getVideoDir() {
+		String TAG = "getOutputMediaDir";
+		File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),"tbm");
 		if (!dir.exists()) {
 			if (!dir.mkdirs()) {
 				Log.e(TAG, "Failed to create storage directory.");
 				return null;
 			}
 		}
-		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
-				.format(new Date());
-		if (type == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) {
-			return new File(dir.getPath() + File.separator + "img" + timeStamp
-					+ ".jpg");
-		} else if (type == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
-			return new File(dir.getPath() + File.separator + "vid_" + timeStamp
-					+ ".mp4");
-		} else {
-			return null;
-		}
+		return dir;
+		//		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 	}
 
+	private File getRecordingFile() {
+		return new File(video_dir, RECORDING_FILE_NAME);
+	}
+	
+	public String getRecordedFilePath() {
+		return getRecordedFile().getPath();
+	}
+	
+	private File getRecordedFile() {
+		return new File(video_dir, RECORDED_FILE_NAME);
+	}
+	
+	private void moveRecordingToRecorded(){
+		File ed = getRecordedFile();
+		File ing = getRecordingFile();
+		ing.renameTo(ed);
+	}
+	
 	private void prepareMediaRecorder() {
 		if (mediaRecorder == null)
 			mediaRecorder = new MediaRecorder();
@@ -192,12 +219,11 @@ public class VideoHandler {
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 		
-//		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_CIF));
+//		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
 
 		mediaRecorder.setVideoSize(176, 144);
 		
-		String ofile = getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO).toString();
-		
+		String ofile = getRecordingFile().toString();
 		
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
 		mediaRecorder.setOutputFile(ofile);

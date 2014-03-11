@@ -1,22 +1,52 @@
 Actions
   - Self video
-    - Record
-    - Stop
-    - Replay
-    - Send
+    - Actions
+      x Record
+      x Stop
+      - Send
+    x ARCH
+      x Recording file:new.mp4, recorded file:last.mp4
+      x Move new to last when stopped.
+    
+    
   - Other video
     - Play
     
+    
 
-HomeController
-  setup_listeners
-  record_click
-  send_click
-  replay_click
+Touch and hold to record.
+  x Create an activity called touch test.
+  x Print out the touch event info.
+  x RecordingTouchHandler(element)
+    x Callbacks
+      x Click
+      x StartLongpress
+      x EndLongpress
+      x BigMove
+      
+      
+Initial back end
+  User
+    - first_name
+    - last_name
+    - phone_number
+    
+  User Connections
+    - user
+    - list of user ids
+    
+  Phone initialization
+    - User
+    
 
-VideoHandler
-  start_recording
-  stop_recording
-  play
+File upload
+  - FileUpload service
+  - Create a service
+  - Implement IntentService
+  - Create intent with extras user id
+  - Have the intent print them.
+      
 
-HomeView
+  http://stackoverflow.com/questions/11766878/sending-files-using-post-with-httpurlconnection
+  
+    

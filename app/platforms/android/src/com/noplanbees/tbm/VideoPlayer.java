@@ -1,79 +1,61 @@
 package com.noplanbees.tbm;
-
 import java.io.File;
-import java.io.IOException;
 
 import android.app.Activity;
-import android.content.Context;
-import android.media.MediaPlayer;
-import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.widget.FrameLayout;
+import android.widget.MediaController;
+import android.widget.VideoView;
 
 public class VideoPlayer {
-	private Activity activity;
-	private Context context;
-	private String TAG = this.getClass().getSimpleName(); 
-	private MediaPlayer mediaPlayer;
-	private String dataSourceFileName = "vid.mp4";
-	private String dataSourcePath;
-	private PlaySurfaceView playSurfaceView;
-	private SurfaceHolder playSurfaceHolder;
-	private FrameLayout playerFrame;
-	
-	public VideoPlayer(Activity a) {
-		activity = a;
-		context = activity.getApplicationContext();
-		playSurfaceView = new PlaySurfaceView(context);
-		playerFrame = (FrameLayout) activity.findViewById(R.id.frame_video_play);
-		playerFrame.addView(playSurfaceView);
-		getMediaPlayer();
-        getDataSourcePath();
-        try {
-			mediaPlayer.setDataSource(dataSourcePath);
-		} catch (IllegalArgumentException e) {
-			Log.e(TAG, e.getMessage());
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			Log.e(TAG, e.getMessage());
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			Log.e(TAG, e.getMessage());
-			e.printStackTrace();
-		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
-			e.printStackTrace();
-		}
-        try {
-			mediaPlayer.prepare();
-		} catch (IllegalStateException e) {
-			Log.e(TAG, e.getMessage());
-			e.printStackTrace();
-		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
-			e.printStackTrace();
-		}
+	String TAG = this.getClass().getSimpleName();
+	Activity activity;
 
+    String dataSourcePath;
+    String dataSourceFileName = "vid.mp4";
+	VideoView videoView;
+	String currentVideoPath;
+
+	public VideoPlayer(Activity a, VideoView vv) {
+		activity = a;
+		videoView = vv;
+//		videoView.setMediaController(new MediaController(activity));
+		videoView.requestFocus();
+	}
+	
+	public String getCurrentVideoPath(){
+		return currentVideoPath;
+	}
+	
+	public void setVideoSourcePath(String path){
+		if (path == currentVideoPath) 
+			return;
+		currentVideoPath = path;
+		videoView.setVideoPath(path);
+	}
+	
+	public void click(){
+		if (videoView.isPlaying()){
+			videoView.pause();
+		} else {
+			videoView.start();
+		}
 	}
 	
 	public void start(){
-		mediaPlayer.start();
-	}
-	
-	public void stop(){
-		mediaPlayer.stop();
+		videoView.start();
 	}
 	
 	public void pause(){
-		mediaPlayer.pause();
+		videoView.pause();
 	}
 	
-	private void getMediaPlayer (){
-		if (mediaPlayer == null)
-			mediaPlayer = new MediaPlayer();
+	public void stop(){
+		videoView.stopPlayback();
+	}
+	
+	public void release(){
+//		videoView.r
 	}
 	
 	private void getDataSourcePath (){
@@ -88,34 +70,5 @@ public class VideoPlayer {
 		dataSourcePath = data_source_file.getPath();
 	}
 	
-	private class PlaySurfaceView extends SurfaceView implements SurfaceHolder.Callback {
-		String TAG = this.getClass().getSimpleName();
-
-		public PlaySurfaceView(Context context) {
-			super(context);
-			playSurfaceHolder = getHolder();
-			playSurfaceHolder.addCallback(this);
-			// deprecated setting, but required on Android versions prior to 3.0
-			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
-				playSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-		}
-		
-		@Override
-		public void surfaceCreated(SurfaceHolder holder) {
-			Log.i(TAG, "surfaceCreated.");
-			mediaPlayer.setDisplay(holder);
-		}
-
-		@Override
-		public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-			Log.i(TAG, "surfaceChanged.");
-		}
-
-		@Override
-		public void surfaceDestroyed(SurfaceHolder holder) {
-			Log.i(TAG, "surfaceDestroyed.");
-		}
-		
-	}
-
+	
 }

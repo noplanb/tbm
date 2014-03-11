@@ -1,3 +1,8 @@
+Record start & Stop
+  PROBLEM: Stop recording doesnt spit out the file seems like it only happens when you start recording again.
+  
+
+
 Setting size of the video:
   TRY: 
       176x144

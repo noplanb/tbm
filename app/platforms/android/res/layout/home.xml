@@ -1,48 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp" >
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/homeTable"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:shrinkColumns="0,1,2"
+    android:stretchColumns="0,1,2"
+    android:layout_margin="5dip" >
 
-    <FrameLayout
-        android:id="@+id/camera_preview_frame"
-        android:layout_width="96dp"
-        android:layout_height="118dp"
-        android:layout_centerInParent="true" >
-    </FrameLayout>
-
-    <Button
-        android:id="@+id/button_record"
+    <TableRow
+        android:id="@+id/tableRow2"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/camera_preview_frame"
-        android:layout_centerHorizontal="true"
-        android:text="Record" />
+        android:layout_height="wrap_content" >
 
-    <Button
-        android:id="@+id/button_play"
+        <VideoView
+            android:id="@+id/VideoView0"
+            style="@style/videoView"
+            android:layout_width="0dp"
+            android:layout_height="118dp" />
+
+        <VideoView
+            android:id="@+id/VideoView1"
+            style="@style/videoView"
+            android:layout_width="0dp"
+            android:layout_height="118dp" />
+
+        <VideoView
+            android:id="@+id/VideoView2"
+            style="@style/videoView"
+            android:layout_width="0dp"
+            android:layout_height="118dp" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow3"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/frame_video_play"
-        android:layout_below="@+id/camera_preview_frame"
-        android:text="Play" />
+        android:layout_height="wrap_content" >
 
-    <FrameLayout
-        android:id="@+id/frame_video_play"
-        android:layout_width="96dp"
-        android:layout_height="118dp"
-        android:layout_alignTop="@+id/camera_preview_frame"
-        android:layout_toLeftOf="@+id/camera_preview_frame" >
-    </FrameLayout>
+        <VideoView
+            android:id="@+id/VideoView3"
+            style="@style/videoView"
+            android:layout_width="0dp"
+            android:layout_height="118dp" />
 
-    <VideoView
-        android:id="@+id/play_video_view"
-        android:layout_width="96dp"
-        android:layout_height="118dp"
-        android:layout_above="@+id/button_record"
-        android:layout_alignTop="@+id/camera_preview_frame"
-        android:layout_toRightOf="@+id/camera_preview_frame"
-        />
+        <FrameLayout
+            android:id="@+id/camera_preview_frame"
+            style="@style/videoView"
+            android:layout_width="0dp"
+            android:layout_height="118dp" >
+        </FrameLayout>
 
-</RelativeLayout>
+        <VideoView
+            android:id="@+id/VideoView4"
+            style="@style/videoView"
+            android:layout_width="0dp"
+            android:layout_height="118dp" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <VideoView
+            android:id="@+id/VideoView5"
+            style="@style/videoView"
+            android:layout_width="0dp"
+            android:layout_height="118dp" />
+
+        <VideoView
+            android:id="@+id/VideoView6"
+            style="@style/videoView"
+            android:layout_width="0dp"
+            android:layout_height="118dp" />
+
+        <VideoView
+            android:id="@+id/VideoView7"
+            style="@style/videoView"
+            android:layout_width="0dp"
+            android:layout_height="118dp" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/btnUpload"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Upload" />
+       
+    </TableRow>
+
+</TableLayout>
