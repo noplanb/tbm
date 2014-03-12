@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,12 +16,12 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -244,13 +245,16 @@ public class HomeActivity extends Activity {
 		return true;
 	}
 
-	private void registerGCM(){
+	private String registerGCM(){
+		Log.i(TAG, "registerGCM");
 		gcm = GoogleCloudMessaging.getInstance(this);
 		regid = getRegistrationId(context);
-
+		Log.i(TAG, "registerGCM: got GCM registration id = " + regid);
+		
 		if (regid.isEmpty()) {
 			registerInBackground();
 		}
+		return regid;
 	}
 
 	/**
@@ -362,5 +366,46 @@ public class HomeActivity extends Activity {
 	    editor.commit();
 	}
 
+	/**
+	 * Send an echo message from the device to the server. We dont use this. However it is good for testing purposes.
+	 * Sending to a loopback server echos the message back doesn't require the server to have the device's
+	 * push_token.
+	 */
+	private class sendAsync extends AsyncTask<Void, Void, Void>{
+		@Override
+		protected Void doInBackground(Void... params) {
+            try {
+                Bundle data = new Bundle();
+                    data.putString("my_message", "Hello World");
+                    data.putString("my_action", "com.google.android.gcm.demo.app.ECHO_NOW");
+                    String id = Integer.toString(msgId.incrementAndGet());
+                    gcm.send(SENDER_ID + "@gcm.googleapis.com", id, data);
+                    Log.i(TAG, "Sent message");
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
+            }
+			return null;
+		}
+	}
+	
+	/**
+	 * 
+	 * We declare this receiver in the manifest to handle RECEIVE intents. In this way when a message is directed at us
+	 * onRecieve() in this receiver is triggered and calls our intent service. The WakefulBroadcastReceiver class 
+	 * makes sure that the device is kept awake while the intentservice it calls handles the message.
+	 *
+	 */
+	public class GcmBroadcastReceiver extends WakefulBroadcastReceiver {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	        // Explicitly specify that GcmIntentService will handle the intent.
+	        ComponentName comp = new ComponentName(context.getPackageName(),
+	                GcmIntentService.class.getName());
+	        // Start the service, keeping the device awake while it is launching.
+	        startWakefulService(context, (intent.setComponent(comp)));
+	        setResultCode(Activity.RESULT_OK);
+	    }
+	}
 
+	
 };
