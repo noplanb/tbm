@@ -67,7 +67,6 @@ public class FileUploadService extends IntentService {
 			DataOutputStream out = new DataOutputStream(con.getOutputStream());
 			out.writeBytes(twoHyphens + boundary + crlf);
 			out.writeBytes("Content-Disposition: form-data; ");
-//			out.writeBytes("Content-Type=video/mp4;");
 			out.writeBytes("name=\"" + attachmentName + "\";filename=\"" + attachmentFileName + "\";");
 			out.writeBytes(crlf + crlf);
 
@@ -77,18 +76,7 @@ public class FileUploadService extends IntentService {
             dis.close();
             out.write(fileData);
 			Log.i(TAG, String.format("Wrote %d bytes", fileData.length));
-
-//			FileReader fr = new FileReader(filePath);
-//			int b;
-//			int count = 0;
-//			while ( (b=fr.read()) != -1 ){
-//				out.write(b);
-//				count ++;
-//			}
-//			Log.i(TAG, String.format("Wrote %d bytes", count));
 			
-//			out.writeBytes("some text");
-
 			out.writeBytes(crlf);
 			out.writeBytes(twoHyphens + boundary + twoHyphens + crlf);
 			out.flush();

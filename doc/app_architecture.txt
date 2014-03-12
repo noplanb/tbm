@@ -45,8 +45,13 @@ File upload
   - Implement IntentService
   - Create intent with extras user id
   - Have the intent print them.
-      
-
   http://stackoverflow.com/questions/11766878/sending-files-using-post-with-httpurlconnection
+
+
+GCM
+  - id sonic-shuttle-517  
+  - project number 550639704405  
+  - api key: AIzaSyDSFYoue4kZiz9Fx1W9DSr03tMO-Pfl54Q
   
+Important: Because it is hard to anticipate the state of each device, you must always check for a compatible Google Play services APK before you access Google Play services features. For many apps, the best time to check is during the onResume() method of the main activity. See http://developer.android.com/google/play-services/setup.html
     
