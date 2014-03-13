@@ -56,5 +56,9 @@ GCM
   - sani htc push token: APA91bGHhfj80F-guuyyGchNWSDvQtMbjt1QYKe7KyTy-QKbDzNZA_ILBBrq4yJn_k_Ayx8-dyVlPf6yyuzDpiW207LudcCwn-KRd0NPLJUuSTjQK6RbNJFMZpMnviQf_mawfCbqD3LSavGNR-HRiOdhNeaTVmgdoQ
   
   
+  # curl --header "Authorization: key=$api_key" --header Content-Type:"application/json" https://android.googleapis.com/gcm/send  -d "{\"registration_ids\":[\"ABC\"]}"
+  
+  
+  
 Important: Because it is hard to anticipate the state of each device, you must always check for a compatible Google Play services APK before you access Google Play services features. For many apps, the best time to check is during the onResume() method of the main activity. See http://developer.android.com/google/play-services/setup.html
     

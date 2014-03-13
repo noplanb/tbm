@@ -1,0 +1,41 @@
+Todo
+  
+  App
+    - User model
+      - Registered?
+      - Save in prefs
+      
+    - Friend model
+      - First, last, id, view_index
+      - Find, find_by_view_index, video_path, video_played
+      - Save model in file.
+      - Retrieve from file.
+      
+    - Startup
+      - UI for unregistered user startup.
+      - Load saved models
+      - Show UI based on models
+      
+    - Server communication
+      - Http gets and posts
+      - upload video to paperclip
+      - download video
+        - Delete on server after successful download
+      - Send app errors to server
+      
+    - UI
+      - Recording indicator
+      - Unplayed video indicator
+      - Logo
+      
+    - Notifications
+      - Upload video in background
+      - Fix notification
+    
+    - Video play and record
+      - Replay your last
+    
+  
+  Server
+    - Send notifications
+    

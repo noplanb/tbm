@@ -10,14 +10,13 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.noplanbees.tbm.HomeActivity.GcmBroadcastReceiver;
 
 /**
  * This IntentService handles push notifications. It is called by
  * GcmBroadcastReciever.
  */
 public class GcmIntentService extends IntentService {
-	private final String TAG = this.getClass().getSimpleName();
+	private final String TAG = "GCM " + this.getClass().getSimpleName();
     public static final int NOTIFICATION_ID = 1;
     private NotificationManager mNotificationManager;
     NotificationCompat.Builder builder;
