@@ -33,6 +33,7 @@ public class HomeActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
+		FriendTest.run();
 		setContentView(R.layout.home);
 		gcmHandler = new GcmHandler(this);
 		if (gcmHandler.checkPlayServices()){
