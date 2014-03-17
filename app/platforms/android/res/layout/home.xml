@@ -3,9 +3,9 @@
     android:id="@+id/homeTable"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="5dip"
     android:shrinkColumns="0,1,2"
-    android:stretchColumns="0,1,2"
-    android:layout_margin="5dip" >
+    android:stretchColumns="0,1,2" >
 
     <TableRow
         android:id="@+id/tableRow2"
@@ -47,6 +47,16 @@
             style="@style/videoView"
             android:layout_width="0dp"
             android:layout_height="118dp" >
+
+            <com.noplanbees.tbm.CameraOverlay
+                android:id="@+id/camera_overlay_surface"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
+
+            <com.noplanbees.tbm.CameraPreview
+                android:id="@+id/camera_preview_surface"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
         </FrameLayout>
 
         <VideoView
@@ -91,7 +101,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Upload" />
-       
+
+        <FrameLayout
+            android:id="@+id/drawTest"
+            style="@style/videoView"
+            android:layout_width="0dp"
+            android:layout_height="50dp">
+        </FrameLayout>
     </TableRow>
 
 </TableLayout>

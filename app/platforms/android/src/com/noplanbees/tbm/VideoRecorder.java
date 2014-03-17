@@ -2,67 +2,69 @@ package com.noplanbees.tbm;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
+import android.graphics.drawable.shapes.PathShape;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
-import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.widget.FrameLayout;
 
 public class VideoRecorder {
-    
+
 	private final String RECORDING_FILE_NAME = "new.mp4";
 	private final String RECORDED_FILE_NAME = "last.mp4";
-	
+
 	private final String TAG = this.getClass().getSimpleName();
-	
+
 	private final File video_dir;
-	
+
 	private Context context;
 	private Activity activity;
 	private Camera camera;
-	private CameraPreview cameraPreview; // The SurfaceView for the preview from the camera.
-	private SurfaceHolder surfaceHolder; // The surface holder holding the above SurfaceView
-	private MediaRecorder mediaRecorder; // The video recorder that attaches to the above SurfaceView
-	private FrameLayout preview_frame; // The view element that we add the SurfaceView to.
+	private CameraPreview cameraPreview; 
+	private SurfaceHolder previewSurfaceHolder; 
+	private SurfaceHolder overlaySurfaceHolder;
+	private MediaRecorder mediaRecorder;
 
 	public VideoRecorder(Activity a) {
 		activity = a;
 		context = activity.getApplicationContext();
-		
-		video_dir = getVideoDir();
-		
-		getCameraInstance(1);
-		printCameraParams(camera);
-		setCameraParams();
 
-		cameraPreview = new CameraPreview(context);
-		preview_frame = (FrameLayout) activity.findViewById(R.id.camera_preview_frame);
-		preview_frame.addView(cameraPreview);
+		video_dir = getVideoDir();
+
+		getCameraInstance(1);
+		//		printCameraParams(camera);
+		setCameraParams();
 	}
 
 	public boolean stopRecording() {
+		Log.i(TAG, "stopRecording");
 		boolean rval = true;
+		hideRecordingIndicator();
 		if (mediaRecorder !=null){
 			try {
 				mediaRecorder.stop();
 				Log.i(TAG, String.format("Recorded file %s : %d",getRecordingFile().getPath(), getRecordingFile().length()));
 				moveRecordingToRecorded();
 			} catch (IllegalStateException e) {
-				Log.i(TAG, "stopRecording: called in illegal state.");
+				Log.e(TAG, "stopRecording: called in illegal state.");
 				rval = false;
 				releaseMediaRecorder();
 			} catch (RuntimeException e) {
@@ -76,7 +78,9 @@ public class VideoRecorder {
 	}
 
 	public boolean startRecording() {
+		Log.i(TAG, "startRecording");
 		if (mediaRecorder != null) {
+			showRecordingIndicator();
 			mediaRecorder.start();
 			return true;
 		} else {
@@ -85,15 +89,55 @@ public class VideoRecorder {
 		}
 	}
 
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+	public void showRecordingIndicator(){
+		Runnable sri = new Runnable() {
+			@Override
+			public void run() {
+				Log.i(TAG, "showRecordingIndicator");
+				Canvas c = overlaySurfaceHolder.lockCanvas();
+				Path borderPath = new Path();
+				borderPath.lineTo(c.getWidth(), 0);
+				borderPath.lineTo(c.getWidth(), c.getHeight());
+				borderPath.lineTo(0, c.getHeight());
+				borderPath.lineTo(0, 0);
+				Paint paint = new Paint();
+				paint.setColor(0xffCC171E);
+				paint.setStrokeWidth(16);
+				paint.setStyle(Paint.Style.STROKE);
+				Paint cpaint = new Paint();
+				cpaint.setColor(0xffCC171E);
+				cpaint.setStyle(Paint.Style.FILL);
+				c.drawPath(borderPath, paint);
+				c.drawCircle(35, 35, 10, cpaint);
+				overlaySurfaceHolder.unlockCanvasAndPost(c);
+			}
+		};
+		activity.runOnUiThread(sri);
+	}
+	
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+	public void hideRecordingIndicator(){
+		Runnable hri = new Runnable(){
+			@Override
+			public void run() {
+				Log.i(TAG, "hideRecordingIndicator");
+				Canvas c = overlaySurfaceHolder.lockCanvas();
+				c.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+				overlaySurfaceHolder.unlockCanvasAndPost(c);
+			}
+		};
+		activity.runOnUiThread(hri);
+	}
+
 	public void dispose() {
 		releaseMediaRecorder();
 		releaseCamera();
 	}
 
-	public void cameraPreviewSurfaceCreated(SurfaceHolder holder) {
+	public void previewSurfaceCreated(SurfaceHolder holder) {
 		Log.i(TAG, "cameraPreviewSurfaceCreated");
-		// The Surface has been created, now tell the camera where to draw the
-		// preview.
+		previewSurfaceHolder = holder;
 		try {
 			camera.setPreviewDisplay(holder);
 			camera.startPreview();
@@ -103,44 +147,10 @@ public class VideoRecorder {
 		}
 	}
 
-	public void cameraPreviewSurfaceDestroyed(SurfaceHolder holder) {
-		Log.i(TAG, "cameraPreviewSurfaceDestroyed");
-		// Take care of releasing the Camera preview.
-	}
-
-	public void cameraPreviewSurfaceChanged(SurfaceHolder holder, int format,
-			int w, int h) {
-		Log.i(TAG, "cameraPreviewSurfaceChanged");
-		// If your preview can change or rotate, take care of those events here.
-		// Make sure to stop the preview before resizing or reformatting it.
-
-		if (holder.getSurface() == null) {
-			// preview surface does not exist
-			return;
-		}
-
-		// stop preview before making changes
-		try {
-			// camera.stopPreview();
-		} catch (Exception e) {
-			Log.d(TAG,
-					"cameraPreviewSurfaceChanged: Error camera.stopPreview(): "
-							+ e.getMessage());
-		}
-
-		// set preview size and make any resize, rotate or
-		// reformatting changes here
-
-		// start preview with new settings
-		try {
-			// camera.setPreviewDisplay(holder);
-			// camera.startPreview();
-
-		} catch (Exception e) {
-			Log.d(TAG,
-					"cameraPreviewSurfaceChanged: Error camera.startPreview(): "
-							+ e.getMessage());
-		}
+	public void overlaySurfaceCreated(SurfaceHolder holder){
+		Log.i(TAG, "overlaySurfaceCreated");
+		overlaySurfaceHolder = holder;
+		holder.setFormat(PixelFormat.TRANSPARENT);
 	}
 
 	private void setCameraParams() {
@@ -188,21 +198,21 @@ public class VideoRecorder {
 	private File getRecordingFile() {
 		return new File(video_dir, RECORDING_FILE_NAME);
 	}
-	
+
 	public String getRecordedFilePath() {
 		return getRecordedFile().getPath();
 	}
-	
+
 	private File getRecordedFile() {
 		return new File(video_dir, RECORDED_FILE_NAME);
 	}
-	
+
 	private void moveRecordingToRecorded(){
 		File ed = getRecordedFile();
 		File ing = getRecordingFile();
 		ing.renameTo(ed);
 	}
-	
+
 	private void prepareMediaRecorder() {
 		if (mediaRecorder == null)
 			mediaRecorder = new MediaRecorder();
@@ -216,21 +226,21 @@ public class VideoRecorder {
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
 		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-		
-//		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+
+		//		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
 
 		mediaRecorder.setVideoSize(176, 144);
-		
+
 		String ofile = getRecordingFile().toString();
-		
+
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
 		mediaRecorder.setOutputFile(ofile);
 		mediaRecorder.setOrientationHint(270);
 		// Step 5: Set the preview output
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder.setPreviewDisplay");
-		mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
+		mediaRecorder.setPreviewDisplay(previewSurfaceHolder.getSurface());
 
 
 		// Step 6: Prepare configured MediaRecorder
@@ -258,8 +268,6 @@ public class VideoRecorder {
 
 	private void releaseCamera() {
 		Log.i(TAG, "releaseCamera");
-		if (preview_frame != null)
-			preview_frame.removeView(cameraPreview);
 		if (camera != null) {
 			camera.release(); // release the camera for other applications
 			camera = null;
@@ -280,7 +288,7 @@ public class VideoRecorder {
 		List<Size> video_sizes = cparams.getSupportedVideoSizes();
 		if (video_sizes == null) {
 			System.out
-					.print("Video sizes not supported separately from preview sizes or picture sizes.");
+			.print("Video sizes not supported separately from preview sizes or picture sizes.");
 		} else {
 			for (Camera.Size size : video_sizes) {
 				printWH("Video", size);
@@ -303,47 +311,4 @@ public class VideoRecorder {
 		System.out.print("\n");
 	}
 
-	private class CameraPreview extends SurfaceView implements
-			SurfaceHolder.Callback {
-		private String TAG = this.getClass().getSimpleName();
-
-		public CameraPreview(Context context) {
-			super(context);
-			Log.i(TAG, "Instantiating CameraPreview");
-			if (camera == null) {
-				Log.i(TAG, "CameraPreview constructor camera is null");
-			} else {
-				Log.i(TAG, "CameraPreview constructor camera good");
-			}
-			// Install a SurfaceHolder.Callback so we get notified when the
-			// underlying surface is created and destroyed.
-			surfaceHolder = getHolder();
-			surfaceHolder.addCallback(this);
-			// deprecated setting, but required on Android versions prior to 3.0
-			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
-				surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-		}
-
-		@Override
-		public void surfaceCreated(SurfaceHolder holder) {
-			if (camera == null) {
-				Log.i(TAG, "CameraPreview surfaceCreated camera is null");
-			} else {
-				Log.i(TAG, "CameraPreview surfaceCreated camera good");
-			}
-			cameraPreviewSurfaceCreated(holder);
-		}
-
-		@Override
-		public void surfaceDestroyed(SurfaceHolder holder) {
-			cameraPreviewSurfaceDestroyed(holder);
-		}
-
-		@Override
-		public void surfaceChanged(SurfaceHolder holder, int format, int w,
-				int h) {
-			cameraPreviewSurfaceChanged(holder, format, w, h);
-		}
-
-	}
 }

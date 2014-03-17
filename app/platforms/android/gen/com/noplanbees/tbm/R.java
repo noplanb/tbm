@@ -424,26 +424,30 @@ containing a value of this type.
         public static final int ic_plusone_standard_off_client=0x7f02001b;
         public static final int ic_plusone_tall_off_client=0x7f02001c;
         public static final int ic_stat_gcm=0x7f02001d;
+        public static final int recording_shape=0x7f02001e;
     }
     public static final class id {
         public static final int VideoView0=0x7f050019;
         public static final int VideoView1=0x7f05001a;
         public static final int VideoView2=0x7f05001b;
         public static final int VideoView3=0x7f05001d;
-        public static final int VideoView4=0x7f05001f;
-        public static final int VideoView5=0x7f050021;
-        public static final int VideoView6=0x7f050022;
-        public static final int VideoView7=0x7f050023;
+        public static final int VideoView4=0x7f050021;
+        public static final int VideoView5=0x7f050023;
+        public static final int VideoView6=0x7f050024;
+        public static final int VideoView7=0x7f050025;
         public static final int alignBounds=0x7f050007;
         public static final int alignMargins=0x7f050008;
         public static final int bottom=0x7f05000a;
-        public static final int btnUpload=0x7f050025;
+        public static final int btnUpload=0x7f050027;
+        public static final int camera_overlay_surface=0x7f05001f;
         public static final int camera_preview_frame=0x7f05001e;
+        public static final int camera_preview_surface=0x7f050020;
         public static final int center=0x7f050011;
         public static final int center_horizontal=0x7f05000f;
         public static final int center_vertical=0x7f05000d;
         public static final int clip_horizontal=0x7f050014;
         public static final int clip_vertical=0x7f050013;
+        public static final int drawTest=0x7f050028;
         public static final int end=0x7f050016;
         public static final int fill=0x7f050012;
         public static final int fill_horizontal=0x7f050010;
@@ -457,13 +461,13 @@ containing a value of this type.
         public static final int right=0x7f05000c;
         public static final int satellite=0x7f050002;
         public static final int start=0x7f050015;
-        public static final int tableRow1=0x7f050020;
+        public static final int tableRow1=0x7f050022;
         public static final int tableRow2=0x7f050018;
         public static final int tableRow3=0x7f05001c;
-        public static final int tableRow4=0x7f050024;
+        public static final int tableRow4=0x7f050026;
         public static final int terrain=0x7f050003;
         public static final int top=0x7f050009;
-        public static final int tt=0x7f050026;
+        public static final int tt=0x7f050029;
         public static final int vertical=0x7f050006;
     }
     public static final class integer {

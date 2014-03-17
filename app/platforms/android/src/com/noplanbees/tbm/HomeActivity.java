@@ -20,9 +20,11 @@ public class HomeActivity extends Activity {
 
 	final String TAG = this.getClass().getSimpleName();
 	final Float ASPECT = 144F/176F;
+	
+	public static HomeActivity instance;
 
 	private FrameLayout cameraPreviewFrame;
-	private VideoRecorder videoRecorder;
+	public VideoRecorder videoRecorder;
 	private GcmHandler gcmHandler;
 	private ArrayList<VideoView> videoViews = new ArrayList<VideoView>(8);
 	@SuppressLint("UseSparseArrays")
@@ -33,8 +35,9 @@ public class HomeActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-		FriendTest.run();
+		instance = this;
 		setContentView(R.layout.home);
+		new DrawTest(this);
 		gcmHandler = new GcmHandler(this);
 		if (gcmHandler.checkPlayServices()){
 			gcmHandler.registerGcm();

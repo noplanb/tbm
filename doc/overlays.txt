@@ -1,0 +1,4 @@
+GOAL: To be able to overlay a border and perhaps a dot on the video recorder preview when recording
+
+TRY: Add drawable background in xml to the frame the video preview is in.
+RESULT: Works ok but when you add a padding to this
