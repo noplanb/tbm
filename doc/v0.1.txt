@@ -5,13 +5,40 @@ Todo
       - Registered?
       - Save in prefs
       
-    - Friend model
-      - First, last, id, view_index
-      - Find, find_by_view_index, video_path, video_played
-      - Save model in file.
-      - Retrieve from file.
+    x Friend model
+      x First, last, id, view_index
+      x Find, find_by_view_index, video_path, video_played
+      x Save model in file.
+      x Retrieve from file.
+    
       
     - Startup
+      - Sequence
+        x Try to retrieve config else create
+        x Try to retrieve friends
+        x If not registered user start RegisterActivity
+          x Pull signup list from server
+          x Add self to config
+          x Add friends
+        - Back to HomeActivity
+        - Draw the ui with him and his friends.
+        
+          
+    - Shutdown
+      - Save data
+        - Save config
+        - Save friends
+        
+        
+      
+      - Make config an active model.
+      - Get config on startup.
+      - Add fields
+        - user_first_name
+        - user_last_name
+        - user_registered
+        - server_uri
+        
       - UI for unregistered user startup.
       - Load saved models
       - Show UI based on models
@@ -23,8 +50,8 @@ Todo
         - Delete on server after successful download
       - Send app errors to server
       
-    - UI
-      - Recording indicator
+    x UI
+      x Recording indicator
       - Unplayed video indicator
       - Logo
       
@@ -38,4 +65,13 @@ Todo
   
   Server
     - Send notifications
+    - Register
+      - user_list
+        - list of ids, first, last
+      - pick_user/id
+        - list of friends
+          - id, first, last
     
+    
+Post release
+  - Make the upload service wakeful

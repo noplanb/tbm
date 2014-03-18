@@ -5,9 +5,23 @@ import java.io.File;
 import android.os.Environment;
 import android.util.Log;
 
-public class Config {
+public class Config extends ActiveModel{
     
+	public final static String serverUri = "http://192.168.1.82:3000";
+	
 	private static File videoDir = null;
+	
+	
+	@Override
+	public String[] attributeList() {
+      final String[] a = {"id", "firstName", "lastName", "registered"};
+      return a;
+	}
+	
+	public static boolean isRegistered(){
+		ConfigFactory cf = ConfigFactory.getFactoryInstance();
+		return cf.instances.get(0) != null && cf.instances.get(0).get("registered") != null;
+	}
 	
 	public static File getVideoDir() {
 		if (videoDir !=null) 
@@ -21,7 +35,7 @@ public class Config {
 				return null;
 			}
 		}
-		videoDir = dir;
+		videoDir = dir;		
 		return videoDir;
 	}
 	

@@ -21,9 +21,11 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <permission
         android:name="com.noplanbees.tbm.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
+
     <uses-permission android:name="com.noplanbees.tbm.permission.C2D_MESSAGE" />
     <uses-permission android:name="com.google.android.c2dm.SEND" />
 
@@ -42,11 +44,13 @@
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
         <activity android:name="TouchTestActivity" />
+        <activity android:name="RegisterActivity" />
+
         <service android:name="FileUploadService" />
 
         <receiver
@@ -54,6 +58,7 @@
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
                 <category android:name="com.noplanbees.tbm" />
             </intent-filter>
         </receiver>

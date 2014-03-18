@@ -14,30 +14,39 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.VideoView;
 
 public class HomeActivity extends Activity {
 
 	final String TAG = this.getClass().getSimpleName();
 	final Float ASPECT = 144F/176F;
-	
+
 	public static HomeActivity instance;
 
+	private FriendFactory friendFactory;
+	private ConfigFactory configFactory;
+	private Config config;
+	
 	private FrameLayout cameraPreviewFrame;
 	public VideoRecorder videoRecorder;
 	private GcmHandler gcmHandler;
+	
 	private ArrayList<VideoView> videoViews = new ArrayList<VideoView>(8);
-	@SuppressLint("UseSparseArrays")
+	private ArrayList<TextView> plusTexts = new ArrayList<TextView>(8);
+	private ArrayList<FrameLayout> frames = new ArrayList<FrameLayout>(8);
 	private HashMap<Integer, Integer> indexOfView = new HashMap<Integer, Integer>(8);
+	private HashMap<Integer, Integer> indexOfText = new HashMap<Integer, Integer>(8);
 	private ArrayList<VideoPlayer> videoPlayers = new ArrayList<VideoPlayer>(8);
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-		instance = this;
 		setContentView(R.layout.home);
-		new DrawTest(this);
+		instance = this;
+		boot();
+		runTests();
 		gcmHandler = new GcmHandler(this);
 		if (gcmHandler.checkPlayServices()){
 			gcmHandler.registerGcm();
@@ -45,6 +54,18 @@ public class HomeActivity extends Activity {
 		} else {
 			Log.e(TAG, "No valid Google Play Services APK found.");
 		}
+	}
+
+	private void boot() {
+		Boot.boot(this); //Note Boot.boot must happen first as it restores friend and config if necessary.
+		friendFactory = FriendFactory.getFactoryInstance();
+		configFactory = ConfigFactory.getFactoryInstance();
+		config = configFactory.makeInstance();
+	}
+
+	private void runTests() {
+		new DrawTest(this);
+		// ConfigTest.run();		
 	}
 
 	@Override
@@ -64,6 +85,13 @@ public class HomeActivity extends Activity {
 		}
 	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		configFactory.save();
+		friendFactory.save();
+	}
+
 	private void ulTest(){
 		Log.i(TAG, "ulTest");
 		Intent i = new Intent(this, FileUploadService.class);
@@ -80,16 +108,41 @@ public class HomeActivity extends Activity {
 	}
 
 	private void getVideoViewsAndPlayers() {
-		videoViews.add((VideoView) this.findViewById(R.id.VideoView0));
-		videoViews.add((VideoView) this.findViewById(R.id.VideoView1));
-		videoViews.add((VideoView) this.findViewById(R.id.VideoView2));
-		videoViews.add((VideoView) this.findViewById(R.id.VideoView3));
-		videoViews.add((VideoView) this.findViewById(R.id.VideoView4));
-		videoViews.add((VideoView) this.findViewById(R.id.VideoView5));
-		videoViews.add((VideoView) this.findViewById(R.id.VideoView6));
-		videoViews.add((VideoView) this.findViewById(R.id.VideoView7));
+		videoViews.add((VideoView) findViewById(R.id.VideoView0));
+		videoViews.add((VideoView) findViewById(R.id.VideoView1));
+		videoViews.add((VideoView) findViewById(R.id.VideoView2));
+		videoViews.add((VideoView) findViewById(R.id.VideoView3));
+		videoViews.add((VideoView) findViewById(R.id.VideoView4));
+		videoViews.add((VideoView) findViewById(R.id.VideoView5));
+		videoViews.add((VideoView) findViewById(R.id.VideoView6));
+		videoViews.add((VideoView) findViewById(R.id.VideoView7));
+		
+		plusTexts.add((TextView) findViewById(R.id.PlusText0));
+		plusTexts.add((TextView) findViewById(R.id.PlusText1));
+		plusTexts.add((TextView) findViewById(R.id.PlusText2));
+		plusTexts.add((TextView) findViewById(R.id.PlusText3));
+		plusTexts.add((TextView) findViewById(R.id.PlusText4));
+		plusTexts.add((TextView) findViewById(R.id.PlusText5));
+		plusTexts.add((TextView) findViewById(R.id.PlusText6));
+		plusTexts.add((TextView) findViewById(R.id.PlusText7));
+		
+		frames.add((FrameLayout) findViewById(R.id.Frame0));
+		frames.add((FrameLayout) findViewById(R.id.Frame1));
+		frames.add((FrameLayout) findViewById(R.id.Frame2));
+		frames.add((FrameLayout) findViewById(R.id.Frame3));
+		frames.add((FrameLayout) findViewById(R.id.Frame4));
+		frames.add((FrameLayout) findViewById(R.id.Frame5));
+		frames.add((FrameLayout) findViewById(R.id.Frame6));
+		frames.add((FrameLayout) findViewById(R.id.Frame7));
+		
 		for (int i=0; i<8; i++){
+			indexOfText.put(plusTexts.get(i).getId(), i);
 			indexOfView.put(videoViews.get(i).getId(), i);
+		}
+		
+		for (int i=0; i<friendFactory.count(); i++){
+			plusTexts.get(i).setVisibility(View.INVISIBLE);
+			videoViews.get(i).setVisibility(View.VISIBLE);
 			videoPlayers.add( i, new VideoPlayer( this, videoViews.get(i) ) );
 		}
 	}
@@ -101,10 +154,10 @@ public class HomeActivity extends Activity {
 		cameraPreviewFrame.setLayoutParams(lp);
 		Log.i(TAG, String.format("setVideoViewHeights %d  %d", height, lp.height));
 
-		lp = videoViews.get(0).getLayoutParams();
+		lp = frames.get(0).getLayoutParams();
 		lp.height = h;
-		for (VideoView vv: videoViews)
-			vv.setLayoutParams(lp);
+		for (FrameLayout f: frames)
+			f.setLayoutParams(lp);
 	}
 
 	private void getVideoRecorder() {
@@ -201,9 +254,4 @@ public class HomeActivity extends Activity {
 			setVideoViewHeights(width, height);
 		}
 	}
-
-
-
-
-	
 };

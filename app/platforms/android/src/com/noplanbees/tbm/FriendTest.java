@@ -12,10 +12,10 @@ public class FriendTest {
 	public final static String TAG = "FriendTest";
 
 	public static void run() {		
-		FriendFactory ff = new FriendFactory();
+		FriendFactory ff = FriendFactory.getFactoryInstance();
 		ff.destroyAll();
-		ActiveModel f0 = ff.makeInstance();
-		ActiveModel f1 = ff.makeInstance();
+		Friend f0 = ff.makeInstance();
+		Friend f1 = ff.makeInstance();
 		f0.set("id", "0");
 		f1.set("id", "1");
 		f0.set("first_name", "first0");

@@ -1,5 +1,7 @@
 package com.noplanbees.tbm;
 
+import android.util.Log;
+
 import com.google.gson.internal.LinkedTreeMap;
 
 
@@ -31,8 +33,14 @@ public class ActiveModel {
 	// Getters and setters
 	//--------------------
 	public ActiveModel set(String a, String v){
-		attributes.put(a, v);
-		return this;
+		if ( attributes.containsKey(a) ) {
+			attributes.put(a, v);
+			return this;
+		} else {
+			Log.e(TAG, "set: " + a + " is not an attr.");
+			return null;
+		}
+
 	}
 
 	public String get(String a){

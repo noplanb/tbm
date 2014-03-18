@@ -17,7 +17,7 @@ import com.google.gson.internal.LinkedTreeMap;
 
 public class ActiveModelFactory {
 	private String TAG = this.getClass().getSimpleName();
-
+    
 	public ArrayList<ActiveModel> instances = new ArrayList<ActiveModel>();
 
 	//--------------------
@@ -49,7 +49,7 @@ public class ActiveModelFactory {
 		Gson g = new Gson();
 		String j = g.toJson(all);
 		try {
-			File f = new File(Config.getVideoDir(), this.getClass().getSimpleName() + "_saved_instances.json");
+			File f = new File(getSaveFilePath());
 			if (f.exists())
 				f.delete();
 			FileOutputStream fos = new FileOutputStream(f, true);
@@ -66,11 +66,11 @@ public class ActiveModelFactory {
 		return j;
 	}
 
-	public void retrieve(){
+	public boolean retrieve(){
 		instances.clear();
 		String json = null;
 		try {
-			File f = new File(Config.getVideoDir(), this.getClass().getSimpleName() + "_saved_instances.json");
+			File f = new File(getSaveFilePath());
 			FileInputStream fis = new FileInputStream(f);
 			InputStreamReader isr = new InputStreamReader(fis);
 			BufferedReader br = new BufferedReader(isr);
@@ -86,8 +86,10 @@ public class ActiveModelFactory {
 		}
 		catch (FileNotFoundException e) {
 			Log.e(TAG, e.getMessage());
+			return false;
 		} catch (IOException e) {
 			Log.e(TAG, e.getMessage());
+			return false;
 		}
 		Log.i(TAG, "retrieve(): Got json from file = " + json);
 
@@ -102,7 +104,16 @@ public class ActiveModelFactory {
 			i.attributes.clear();
 			i.attributes.putAll(ats);
 		}
-
+		return true;
+	}
+	
+	public String getSaveFilePath(){
+		return Config.getVideoDir().getPath() + this.getClass().getSimpleName() + "_saved_instances.json";
+	}
+	
+	public void deleteSaveFile(){
+		File f = new File(getSaveFilePath());
+		f.delete();
 	}
 
 
@@ -110,6 +121,11 @@ public class ActiveModelFactory {
 	//--------------------
 	// Finders
 	//--------------------
+	public boolean hasInstances(){
+		return !instances.isEmpty();
+	}
+	
+	
 	public ActiveModel findWhere(String a, String v){
 		ActiveModel found = null;
 		for (ActiveModel i : instances){
@@ -123,5 +139,9 @@ public class ActiveModelFactory {
 
 	public ActiveModel find(String id){
 		return findWhere("id", id);
+	}
+	
+	public int count(){
+		return instances.size();
 	}
 }

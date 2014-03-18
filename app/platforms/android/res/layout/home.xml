@@ -7,46 +7,81 @@
     android:shrinkColumns="0,1,2"
     android:stretchColumns="0,1,2" >
 
-    <TableRow
-        android:id="@+id/tableRow2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
+    <TableRow>
 
-        <VideoView
-            android:id="@+id/VideoView0"
-            style="@style/videoView"
-            android:layout_width="0dp"
-            android:layout_height="118dp" />
+        <FrameLayout
+            android:id="@+id/Frame0"
+            style="@style/vFrame">
 
-        <VideoView
-            android:id="@+id/VideoView1"
-            style="@style/videoView"
-            android:layout_width="0dp"
-            android:layout_height="118dp" />
+            <VideoView
+                android:id="@+id/VideoView0"
+                style="@style/videoView" />
 
-        <VideoView
-            android:id="@+id/VideoView2"
-            style="@style/videoView"
-            android:layout_width="0dp"
-            android:layout_height="118dp" />
+            <TextView
+                android:id="@+id/PlusText0"
+                style="@style/plusText" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/Frame1"
+            style="@style/vFrame" >
+
+            <VideoView
+                android:id="@+id/VideoView1"
+                style="@style/videoView" />
+
+            <TextView
+                android:id="@+id/PlusText1"
+                style="@style/plusText" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/Frame2"
+            style="@style/vFrame" >
+
+            <VideoView
+                android:id="@+id/VideoView2"
+                style="@style/videoView" />
+
+            <TextView
+                android:id="@+id/PlusText2"
+                style="@style/plusText" />
+        </FrameLayout>
     </TableRow>
 
-    <TableRow
-        android:id="@+id/tableRow3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
+    <TableRow>
 
-        <VideoView
-            android:id="@+id/VideoView3"
-            style="@style/videoView"
-            android:layout_width="0dp"
-            android:layout_height="118dp" />
+        <TextView
+            android:id="@+id/nameText0"
+            style="@style/nameText" />
+
+        <TextView
+            android:id="@+id/nameText1"
+            style="@style/nameText" />
+
+        <TextView
+            android:id="@+id/nameText2"
+            style="@style/nameText" />
+    </TableRow>
+
+    <TableRow>
+
+        <FrameLayout
+            android:id="@+id/Frame3"
+            style="@style/vFrame" >
+
+            <VideoView
+                android:id="@+id/VideoView3"
+                style="@style/videoView" />
+
+            <TextView
+                android:id="@+id/PlusText3"
+                style="@style/plusText" />
+        </FrameLayout>
 
         <FrameLayout
             android:id="@+id/camera_preview_frame"
-            style="@style/videoView"
-            android:layout_width="0dp"
-            android:layout_height="118dp" >
+            style="@style/vFrame" >
 
             <com.noplanbees.tbm.CameraOverlay
                 android:id="@+id/camera_overlay_surface"
@@ -59,41 +94,91 @@
                 android:layout_height="fill_parent" />
         </FrameLayout>
 
-        <VideoView
-            android:id="@+id/VideoView4"
-            style="@style/videoView"
-            android:layout_width="0dp"
-            android:layout_height="118dp" />
+        <FrameLayout
+            android:id="@+id/Frame4"
+            style="@style/vFrame" >
+
+            <VideoView
+                android:id="@+id/VideoView4"
+                style="@style/videoView" />
+
+            <TextView
+                android:id="@+id/PlusText4"
+                style="@style/plusText" />
+        </FrameLayout>
     </TableRow>
 
-    <TableRow
-        android:id="@+id/tableRow1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
+    <TableRow>
 
-        <VideoView
-            android:id="@+id/VideoView5"
-            style="@style/videoView"
-            android:layout_width="0dp"
-            android:layout_height="118dp" />
+        <TextView
+            android:id="@+id/nameText3"
+            style="@style/nameText" />
 
-        <VideoView
-            android:id="@+id/VideoView6"
-            style="@style/videoView"
-            android:layout_width="0dp"
-            android:layout_height="118dp" />
+        <TextView style="@style/nameText" />
 
-        <VideoView
-            android:id="@+id/VideoView7"
-            style="@style/videoView"
-            android:layout_width="0dp"
-            android:layout_height="118dp" />
+        <TextView
+            android:id="@+id/nameText4"
+            style="@style/nameText" />
     </TableRow>
 
-    <TableRow
-        android:id="@+id/tableRow4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
+    <TableRow>
+
+        <FrameLayout
+            android:id="@+id/Frame5"
+            style="@style/vFrame" >
+
+            <VideoView
+                android:id="@+id/VideoView5"
+                style="@style/videoView" />
+
+            <TextView
+                android:id="@+id/PlusText5"
+                style="@style/plusText" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/Frame6"
+            style="@style/vFrame" >
+
+            <VideoView
+                android:id="@+id/VideoView6"
+                style="@style/videoView" />
+
+            <TextView
+                android:id="@+id/PlusText6"
+                style="@style/plusText" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/Frame7"
+            style="@style/vFrame" >
+
+            <VideoView
+                android:id="@+id/VideoView7"
+                style="@style/videoView" />
+
+            <TextView
+                android:id="@+id/PlusText7"
+                style="@style/plusText" />
+        </FrameLayout>
+    </TableRow>
+
+    <TableRow>
+
+        <TextView
+            android:id="@+id/nameText5"
+            style="@style/nameText" />
+
+        <TextView
+            android:id="@+id/nameText6"
+            style="@style/nameText" />
+
+        <TextView
+            android:id="@+id/nameText7"
+            style="@style/nameText" />
+    </TableRow>
+
+    <TableRow>
 
         <Button
             android:id="@+id/btnUpload"
@@ -106,7 +191,7 @@
             android:id="@+id/drawTest"
             style="@style/videoView"
             android:layout_width="0dp"
-            android:layout_height="50dp">
+            android:layout_height="50dp" >
         </FrameLayout>
     </TableRow>
 
