@@ -23,25 +23,30 @@ public abstract class Server {
 	public Server(String uri, LinkedTreeMap<String, String> params, String method){
 		this.uri = uri;
 		this.method = method;
-		new BgHttpGet().execute();
+		sParams = paramsToString(params);
+		new BgHttpReq().execute();
 	}
 
 	public Server(String uri, LinkedTreeMap<String, String> params){
 		this.uri = uri; 
-		new BgHttpGet().execute();
+		sParams = paramsToString(params);
+		new BgHttpReq().execute();
 	}
 
 	public Server(String uri){
 		this.uri = uri; 
-		new BgHttpGet().execute();
+		new BgHttpReq().execute();
 	}
 
 	public abstract void callback(String response);
 
-	public static String paramsToString(LinkedTreeMap<String, String> params){
+	public String paramsToString(LinkedTreeMap<String, String> params){
 		String s = "?";
 		for (String k: params.keySet()){
-			s += Uri.encode(k) + "=" + Uri.encode(params.get(k));
+			s += Uri.encode(k) + "=" + Uri.encode(params.get(k)) + "&";
+		}
+		if (s.length() > 0 && s.charAt(s.length()-1)=='&') {
+			s = s.substring(0, s.length()-1);
 		}
 		return s;
 	}
@@ -55,7 +60,7 @@ public abstract class Server {
 		if ( !isPost() )
 			sUrl += sParams;
 
-		Log.i(TAG, "httpGet: url = " + sUrl);
+		Log.i(TAG, "httpReq " + method + " url=" + sUrl +"  params=" + sParams);
 		String result = "";
 		try {
 			URL url = new URL(sUrl);
@@ -88,16 +93,16 @@ public abstract class Server {
 			br.close();
 			con.disconnect();
 		} catch (MalformedURLException e) {
-			Log.e(TAG, "get:" + e.getMessage());
+			Log.e(TAG, "httpReq: MalformedURLException " + e.getMessage());
 			result = null;
 		} catch (IOException e) {
-			Log.e(TAG, "get:" + e.getMessage());
+			Log.e(TAG, "httpReq: IOException " + e.getMessage());
 			result = null;
 		}
 		return result;
 	}
 
-	private class BgHttpGet extends AsyncTask<Void, Void, String>{
+	private class BgHttpReq extends AsyncTask<Void, Void, String>{
 		@Override
 		protected String doInBackground(Void... params) {
 			return httpReq();
@@ -105,6 +110,11 @@ public abstract class Server {
 
 		@Override
 		protected void onPostExecute(String result) {
+			String r = result;
+			if (result == null)
+				r = "";
+			
+			Log.i(TAG, "response: " + r);
 			callback(result);
 		}
 

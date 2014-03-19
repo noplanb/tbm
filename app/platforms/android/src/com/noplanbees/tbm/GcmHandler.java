@@ -153,18 +153,18 @@ public class GcmHandler {
 	}
 	
 	private void sendRegistrationIdToBackend() {
-	    new postPushToken("reg/pushToken", "POST");
+//	    new postPushToken("reg/pushToken", "POST");
 	}
 	
-	class postPushToken extends Server{
-		public postPushToken(String uri, String method) {
-			super(uri, method);
-		}
-		@Override
-		public void callback(String response) {	
-			Log.i(TAG, "postPushToken: got response = " + response);
-		}
-	}
+//	class postPushToken extends Server{
+//		public postPushToken(String uri, String method) {
+//			super(uri, method);
+//		}
+//		@Override
+//		public void callback(String response) {	
+//			Log.i(TAG, "postPushToken: got response = " + response);
+//		}
+//	}
 	
 	/**
 	 * Stores the registration ID and app versionCode in the application's

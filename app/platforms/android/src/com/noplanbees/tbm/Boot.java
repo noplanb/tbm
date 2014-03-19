@@ -44,6 +44,9 @@ public class Boot {
 			Log.i(TAG, "Friend not retrievable from local storage.");
 		}
 		
+		//--------------------------
+		// Init GCM
+		//--------------------------
 		GcmHandler gcmHandler = new GcmHandler(activity);
 		if (gcmHandler.checkPlayServices()){
 			gcmHandler.registerGcm();

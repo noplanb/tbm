@@ -52,22 +52,24 @@ public class HomeActivity extends Activity {
 			finish();
 			return;
 		}
-		// runTests();
-		initModels();
-		init_page();
+		runTests();
+		 initModels();
+		 init_page();
 	}
 
 	private void initModels() {
 		instance = this;
+		gcmHandler = new GcmHandler(this);
 		friendFactory = FriendFactory.getFactoryInstance();
 		userFactory = UserFactory.getFactoryInstance();
 		user = userFactory.makeInstance();
 	}
 
 	private void runTests() {
-		new DrawTest(this);
+		// new DrawTest(this);
 		// ConfigTest.run();
-		FriendTest.run();
+		// FriendTest.run();
+		new ServerTest().run();
 	}
 
 	@Override
