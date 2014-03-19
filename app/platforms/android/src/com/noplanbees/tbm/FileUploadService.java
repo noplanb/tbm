@@ -23,14 +23,10 @@ import android.util.Log;
 
 public class FileUploadService extends IntentService {
 
-	private final String SERVER_URL = "http://192.168.1.82:3000/upload";
+	private final String SERVER_URL = Config.fullUrl("/videos/create");
+
 	private final String TAG = this.getClass().getSimpleName();
-	private final String attachmentName = "vid";
-	private final String attachmentFileName = "vid.mp4";
-	private final String crlf = "\r\n";
-	private final String twoHyphens = "--";
 	private final String boundary =  "*****";
-	private final String quote =  "\"";
 
 	public FileUploadService() {
 		super("FileUploadService");
@@ -39,20 +35,19 @@ public class FileUploadService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 
-
 		Bundle extras = intent.getExtras();
-//		String filePath = (String) extras.get("filePath");
-		String filePath = "/storage/sdcard0/Movies/tbm/last.mp4";
-		String toId = (String) extras.get("toId");
+		String filePath = (String) extras.get("filePath");
+		String receiverId = (String) extras.get("receiverId");
+		String userId = (String) extras.get("userId");
 
-		Log.i(TAG, "onHandleIntent: " + filePath + " " + toId);
+		Log.i(TAG, "onHandleIntent: " + filePath + " " + extras.toString());
 
 		HttpURLConnection con = null;
 		try {
 			File f = new File(filePath);
 			Log.i(TAG, String.format("File is %d bytes", f.length()));
 
-			URL url = new URL(SERVER_URL + "?to_id=" + toId);
+			URL url = new URL(SERVER_URL + "?receiver_id=" + receiverId + "&user_id=" + userId);
 			con = (HttpURLConnection) url.openConnection();
 			con.setDoOutput(true);
 			con.setChunkedStreamingMode(0);
@@ -65,10 +60,14 @@ public class FileUploadService extends IntentService {
 			con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
 
 			DataOutputStream out = new DataOutputStream(con.getOutputStream());
-			out.writeBytes(twoHyphens + boundary + crlf);
-			out.writeBytes("Content-Disposition: form-data; ");
-			out.writeBytes("name=\"" + attachmentName + "\";filename=\"" + attachmentFileName + "\";");
-			out.writeBytes(crlf + crlf);
+
+		    String preHeader = "--"+boundary+"\r\n";
+		    preHeader += "Content-Disposition: form-data; name=\"file\"; filename=\"vid.mp4\"\r\n";
+		    preHeader += "Content-Type: video/mp4\r\n";
+		    preHeader += "Content-Transfer-Encoding: binary\r\n";
+		    preHeader += "\r\n";
+		    out.writeBytes(preHeader);
+
 
             byte[] fileData = new byte[(int) f.length()];
             DataInputStream dis = new DataInputStream(new FileInputStream(f));
@@ -77,8 +76,9 @@ public class FileUploadService extends IntentService {
             out.write(fileData);
 			Log.i(TAG, String.format("Wrote %d bytes", fileData.length));
 			
-			out.writeBytes(crlf);
-			out.writeBytes(twoHyphens + boundary + twoHyphens + crlf);
+		    String postString = "\r\n--"+boundary+"--\r\n";
+			out.writeBytes(postString);
+
 			out.flush();
 			out.close();
 

@@ -25,7 +25,7 @@ public class GcmHandler {
 	
 	private Activity activity;
 	private Context context;
-	private final String GCM_TAG = "GCM";
+	private final String TAG = "GCM";
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 	private String SENDER_ID = "550639704405";
 	private GoogleCloudMessaging gcm;
@@ -45,7 +45,7 @@ public class GcmHandler {
 			if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
 				GooglePlayServicesUtil.getErrorDialog(resultCode, activity, PLAY_SERVICES_RESOLUTION_REQUEST).show();
 			} else {
-				Log.i(GCM_TAG, "This device is not supported.");
+				Log.i(TAG, "This device is not supported.");
 			}
 			return false;
 		}
@@ -53,10 +53,10 @@ public class GcmHandler {
 	}
 
 	public String registerGcm(){
-		Log.i(GCM_TAG, "registerGCM");
+		Log.i(TAG, "registerGCM");
 		gcm = GoogleCloudMessaging.getInstance(activity);
 		regid = getRegistrationId(context);
-		Log.i(GCM_TAG, "registerGCM: got GCM registration id = " + regid);
+		Log.i(TAG, "registerGCM: got GCM registration id = " + regid);
 		
 		if (regid.isEmpty()) {
 			registerInBackground();
@@ -76,7 +76,7 @@ public class GcmHandler {
 		final SharedPreferences prefs = getGCMPreferences(context);
 		String registrationId = prefs.getString(PROPERTY_REG_ID, "");
 		if (registrationId.isEmpty()) {
-			Log.i(GCM_TAG, "Registration not found.");
+			Log.i(TAG, "Registration not found.");
 			return "";
 		}
 		// Check if app was updated; if so, it must clear the registration ID
@@ -85,7 +85,7 @@ public class GcmHandler {
 		int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
 		int currentVersion = getAppVersion(context);
 		if (registeredVersion != currentVersion) {
-			Log.i(GCM_TAG, "App version changed.");
+			Log.i(TAG, "App version changed.");
 			return "";
 		}
 		return registrationId;
@@ -133,7 +133,7 @@ public class GcmHandler {
 					gcm = GoogleCloudMessaging.getInstance(context);
 				}
 				regid = gcm.register(SENDER_ID);
-				Log.i(GCM_TAG, "Device registered, registration ID=" + regid);
+				Log.i(TAG, "Device registered, registration ID=" + regid);
 
 				// Need to send registration id to our server over HTTP.
 				sendRegistrationIdToBackend();
@@ -146,14 +146,24 @@ public class GcmHandler {
 				storeRegistrationId(context, regid);
 			} catch (IOException ex) {
 				// If there is an error wait for the user to turn off the app to try again.
-				Log.e(GCM_TAG, "Error :" + ex.getMessage());
+				Log.e(TAG, "Error :" + ex.getMessage());
 			}
 			return null;
 		}
 	}
 	
 	private void sendRegistrationIdToBackend() {
-	    // GARF Need to implement this.
+	    new postPushToken("reg/pushToken", "POST");
+	}
+	
+	class postPushToken extends Server{
+		public postPushToken(String uri, String method) {
+			super(uri, method);
+		}
+		@Override
+		public void callback(String response) {	
+			Log.i(TAG, "postPushToken: got response = " + response);
+		}
 	}
 	
 	/**
@@ -166,7 +176,7 @@ public class GcmHandler {
 	private void storeRegistrationId(Context context, String regId) {
 	    final SharedPreferences prefs = getGCMPreferences(context);
 	    int appVersion = getAppVersion(context);
-	    Log.i(GCM_TAG, "Saving regId on app version " + appVersion);
+	    Log.i(TAG, "Saving regId on app version " + appVersion);
 	    SharedPreferences.Editor editor = prefs.edit();
 	    editor.putString(PROPERTY_REG_ID, regId);
 	    editor.putInt(PROPERTY_APP_VERSION, appVersion);
@@ -187,9 +197,9 @@ public class GcmHandler {
                     data.putString("my_action", "com.google.android.gcm.demo.app.ECHO_NOW");
                     String id = Integer.toString(msgId.incrementAndGet());
                     gcm.send(SENDER_ID + "@gcm.googleapis.com", id, data);
-                    Log.i(GCM_TAG, "Sent message");
+                    Log.i(TAG, "Sent message");
             } catch (IOException e) {
-                Log.e(GCM_TAG, e.getMessage());
+                Log.e(TAG, e.getMessage());
             }
 			return null;
 		}

@@ -18,12 +18,12 @@ public class FriendTest {
 		Friend f1 = ff.makeInstance();
 		f0.set("id", "0");
 		f1.set("id", "1");
-		f0.set("first_name", "first0");
-		f1.set("first_name", "first1");
+		f0.set("firstName", "first0");
+		f1.set("firstName", "first1");
 		
 
 		
-		Log.i(TAG, "Testing find(): First name of f1 = " + ff.find("1").get("first_name"));
+		Log.i(TAG, "Testing find(): First name of f1 = " + ff.find("1").get("firstName"));
 		
 		Log.i(TAG, "Saving...");
 	    ff.save();
@@ -31,7 +31,7 @@ public class FriendTest {
 		Log.i(TAG, "Retrieving...");
 		ff.retrieve();
 		
-		Log.i(TAG, "First name of f1 = " + ff.find("1").get("first_name"));
+		Log.i(TAG, "First name of f1 = " + ff.find("1").get("firstName"));
 
 		Log.i(TAG, "Done");
 

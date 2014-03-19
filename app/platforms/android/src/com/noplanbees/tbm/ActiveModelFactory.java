@@ -32,6 +32,8 @@ public class ActiveModelFactory {
 
 	public void destroyAll(){
 		instances.clear();
+		File f = new File(getSaveFilePath());
+		f.delete();
 	}
 
 
@@ -108,7 +110,7 @@ public class ActiveModelFactory {
 	}
 	
 	public String getSaveFilePath(){
-		return Config.getVideoDir().getPath() + this.getClass().getSimpleName() + "_saved_instances.json";
+		return Config.getVideoDir().getPath() + "/" + this.getClass().getSimpleName() + "_saved_instances.json";
 	}
 	
 	public void deleteSaveFile(){

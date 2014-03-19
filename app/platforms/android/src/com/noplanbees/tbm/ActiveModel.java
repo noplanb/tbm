@@ -7,13 +7,13 @@ import com.google.gson.internal.LinkedTreeMap;
 
 
 public class ActiveModel {
-	private final String TAG = this.getClass().getClass().getSimpleName();
+	private final String TAG = this.getClass().getSimpleName();
 
 	public LinkedTreeMap<String, String> attributes = new LinkedTreeMap<String, String>();
 
 	public void init(){
 		for(String atr : attributeList()){
-			attributes.put(atr, null);
+			attributes.put(atr, "");
 		}
 	}
 
@@ -33,14 +33,15 @@ public class ActiveModel {
 	// Getters and setters
 	//--------------------
 	public ActiveModel set(String a, String v){
+		ActiveModel result = this;
 		if ( attributes.containsKey(a) ) {
+			Log.i(TAG, "setting " + a + " : " + v);
 			attributes.put(a, v);
-			return this;
 		} else {
+			result = null;
 			Log.e(TAG, "set: " + a + " is not an attr.");
-			return null;
 		}
-
+		return result;
 	}
 
 	public String get(String a){

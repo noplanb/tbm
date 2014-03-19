@@ -3,6 +3,7 @@ package com.noplanbees.tbm;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,7 +17,9 @@ import com.google.gson.internal.LinkedTreeMap;
 
 public class RegisterActivity extends Activity{
 	private final String TAG = this.getClass().getSimpleName();
-	private Config config;
+	private UserFactory userFactory;
+	private User user;
+	private FriendFactory friendFactory;
 
 	private ArrayList<LinkedTreeMap<String, String>> userList = new ArrayList<LinkedTreeMap<String,String>>();
 	private ArrayList<LinkedTreeMap<String, String>> friendList = new ArrayList<LinkedTreeMap<String,String>>();
@@ -31,18 +34,10 @@ public class RegisterActivity extends Activity{
 	}
 
 	private void init(){
-		ConfigFactory cf = ConfigFactory.getFactoryInstance();
-		config = cf.makeInstance();
-	}
-	
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		ConfigFactory cf = ConfigFactory.getFactoryInstance();
-		cf.save();
-		FriendFactory ff = FriendFactory.getFactoryInstance();
-		ff.save();
+		userFactory = UserFactory.getFactoryInstance();
+		userFactory.destroyAll();
+		user = userFactory.makeInstance();
+		friendFactory = FriendFactory.getFactoryInstance();
 	}
 
 	class GetUserList extends Server{
@@ -89,10 +84,11 @@ public class RegisterActivity extends Activity{
 		int index = v.getId();
 		LinkedTreeMap<String, String> u = userList.get(index);	
 		Log.i(TAG, "userSelected: " + u.toString());
-		config.set("firstName", u.get("first_name"));
-		config.set("lastName", u.get("last_name"));
-		config.set("id", u.get("id"));
-		new RegisterUser("/reg/register/" + config.get("id"));
+		user.set("firstName", u.get("first_name"));
+		user.set("lastName", u.get("last_name"));
+		user.set("id", u.get("id"));
+		Log.i(TAG, "User set to: " + user.attributes.toString());
+		new RegisterUser("/reg/register/" + user.get("id"));
 	}
 
 	class RegisterUser extends Server{
@@ -111,17 +107,25 @@ public class RegisterActivity extends Activity{
 		Gson g = new Gson();
 		friendList = g.fromJson(r, friendList.getClass());
 		Log.i(TAG, "gotRegResponse: " + friendList.toString());
-		FriendFactory ff = FriendFactory.getFactoryInstance();
-		ff.destroyAll();
+		friendFactory.destroyAll();
 		Integer i = 0;
 		for (LinkedTreeMap<String, String> fm : friendList){
-			Friend f = ff.makeInstance();
+			Friend f = friendFactory.makeInstance();
 			f.set("firstName", fm.get("first_name"));
 			f.set("lastName", fm.get("last_name"));
 			f.set("id", fm.get("id"));
 			f.set("viewIndex", i.toString());
 			i ++;
 		}
-		config.set("registered", "true");
+		user.set("registered", "true");
+		regComplete();
+	}
+
+	private void regComplete() {
+		userFactory.save();
+		friendFactory.save();
+		Intent i = new Intent(this, HomeActivity.class);
+		startActivity(i);
+		finish();
 	}
 }

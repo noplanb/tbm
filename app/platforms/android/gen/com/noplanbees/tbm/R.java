@@ -372,6 +372,7 @@ containing a value of this type.
         public static final int zOrderOnTop=0x7f010010;
     }
     public static final class color {
+        public static final int beige_background=0x7f04000c;
         public static final int black_overlay=0x7f04000a;
         public static final int common_action_bar_splitter=0x7f040009;
         /**  Sign-in Button Colors 
@@ -385,9 +386,9 @@ containing a value of this type.
         public static final int common_signin_btn_light_text_disabled=0x7f040006;
         public static final int common_signin_btn_light_text_focused=0x7f040007;
         public static final int common_signin_btn_light_text_pressed=0x7f040005;
-        public static final int common_signin_btn_text_dark=0x7f04000d;
-        public static final int common_signin_btn_text_light=0x7f04000e;
-        public static final int dark_grey=0x7f04000c;
+        public static final int common_signin_btn_text_dark=0x7f04000e;
+        public static final int common_signin_btn_text_light=0x7f04000f;
+        public static final int dark_grey=0x7f04000d;
         public static final int grey_background=0x7f04000b;
     }
     public static final class dimen {
@@ -429,33 +430,34 @@ containing a value of this type.
         public static final int recording_shape=0x7f02001e;
     }
     public static final class id {
-        public static final int Frame0=0x7f050018;
-        public static final int Frame1=0x7f05001b;
-        public static final int Frame2=0x7f05001e;
-        public static final int Frame3=0x7f050024;
-        public static final int Frame4=0x7f05002a;
-        public static final int Frame5=0x7f05002f;
-        public static final int Frame6=0x7f050032;
-        public static final int Frame7=0x7f050035;
-        public static final int PlusText0=0x7f05001a;
-        public static final int PlusText1=0x7f05001d;
-        public static final int PlusText2=0x7f050020;
-        public static final int PlusText3=0x7f050026;
-        public static final int PlusText4=0x7f05002c;
-        public static final int PlusText5=0x7f050031;
-        public static final int PlusText6=0x7f050034;
-        public static final int PlusText7=0x7f050037;
-        public static final int VideoView0=0x7f050019;
-        public static final int VideoView1=0x7f05001c;
-        public static final int VideoView2=0x7f05001f;
-        public static final int VideoView3=0x7f050025;
-        public static final int VideoView4=0x7f05002b;
-        public static final int VideoView5=0x7f050030;
-        public static final int VideoView6=0x7f050033;
-        public static final int VideoView7=0x7f050036;
+        public static final int Frame0=0x7f05002a;
+        public static final int Frame1=0x7f050035;
+        public static final int Frame2=0x7f050032;
+        public static final int Frame3=0x7f05001e;
+        public static final int Frame4=0x7f05002f;
+        public static final int Frame5=0x7f050024;
+        public static final int Frame6=0x7f05001b;
+        public static final int Frame7=0x7f050018;
+        public static final int PlusText0=0x7f05002c;
+        public static final int PlusText1=0x7f050037;
+        public static final int PlusText2=0x7f050034;
+        public static final int PlusText3=0x7f050020;
+        public static final int PlusText4=0x7f050031;
+        public static final int PlusText5=0x7f050026;
+        public static final int PlusText6=0x7f05001d;
+        public static final int PlusText7=0x7f05001a;
+        public static final int VideoView0=0x7f05002b;
+        public static final int VideoView1=0x7f050036;
+        public static final int VideoView2=0x7f050033;
+        public static final int VideoView3=0x7f05001f;
+        public static final int VideoView4=0x7f050030;
+        public static final int VideoView5=0x7f050025;
+        public static final int VideoView6=0x7f05001c;
+        public static final int VideoView7=0x7f050019;
         public static final int alignBounds=0x7f050007;
         public static final int alignMargins=0x7f050008;
         public static final int bottom=0x7f05000a;
+        public static final int btnReset=0x7f05003c;
         public static final int btnUpload=0x7f05003b;
         public static final int camera_overlay_surface=0x7f050028;
         public static final int camera_preview_frame=0x7f050027;
@@ -465,7 +467,7 @@ containing a value of this type.
         public static final int center_vertical=0x7f05000d;
         public static final int clip_horizontal=0x7f050014;
         public static final int clip_vertical=0x7f050013;
-        public static final int drawTest=0x7f05003c;
+        public static final int drawTest=0x7f05003d;
         public static final int end=0x7f050016;
         public static final int fill=0x7f050012;
         public static final int fill_horizontal=0x7f050010;
@@ -474,24 +476,24 @@ containing a value of this type.
         public static final int horizontal=0x7f050005;
         public static final int hybrid=0x7f050004;
         public static final int left=0x7f05000b;
-        public static final int nameText0=0x7f050021;
-        public static final int nameText1=0x7f050022;
-        public static final int nameText2=0x7f050023;
-        public static final int nameText3=0x7f05002d;
-        public static final int nameText4=0x7f05002e;
-        public static final int nameText5=0x7f050038;
-        public static final int nameText6=0x7f050039;
-        public static final int nameText7=0x7f05003a;
+        public static final int nameText0=0x7f05002e;
+        public static final int nameText1=0x7f05003a;
+        public static final int nameText2=0x7f050039;
+        public static final int nameText3=0x7f050023;
+        public static final int nameText4=0x7f050038;
+        public static final int nameText5=0x7f05002d;
+        public static final int nameText6=0x7f050022;
+        public static final int nameText7=0x7f050021;
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
-        public static final int register=0x7f05003d;
+        public static final int register=0x7f05003e;
         public static final int right=0x7f05000c;
         public static final int satellite=0x7f050002;
         public static final int start=0x7f050015;
         public static final int terrain=0x7f050003;
-        public static final int textView1=0x7f05003e;
+        public static final int textView1=0x7f05003f;
         public static final int top=0x7f050009;
-        public static final int tt=0x7f05003f;
+        public static final int tt=0x7f050040;
         public static final int vertical=0x7f050006;
     }
     public static final class integer {

@@ -1,9 +1,11 @@
 Todo
   
   App
-    - User model
-      - Registered?
-      - Save in prefs
+    x User model
+    x Get user on startup.
+    x first, last, id, registered
+    
+      x Registered?
       
     x Friend model
       x First, last, id, view_index
@@ -12,51 +14,46 @@ Todo
       x Retrieve from file.
     
       
-    - Startup
-      - Sequence
+    x Startup
+      x Sequence
         x Try to retrieve config else create
         x Try to retrieve friends
         x If not registered user start RegisterActivity
           x Pull signup list from server
           x Add self to config
           x Add friends
-        - Back to HomeActivity
-        - Draw the ui with him and his friends.
-        
+        x Back to HomeActivity
+        x Draw the ui with him and his friends.
+        x Load saved models
+        x Show UI based on models
           
-    - Shutdown
-      - Save data
-        - Save config
-        - Save friends
+    x Shutdown
+      x Save data
+        x Save config
+        x Save friends
         
-        
+    x Config
+      x server_uri
       
-      - Make config an active model.
-      - Get config on startup.
-      - Add fields
-        - user_first_name
-        - user_last_name
-        - user_registered
-        - server_uri
-        
-      - UI for unregistered user startup.
-      - Load saved models
-      - Show UI based on models
+    x UI for unregistered user startup.
       
-    - Server communication
+    x Server communication
       - Http gets and posts
-      - upload video to paperclip
+      x upload video to paperclip
+        - user_id, recipient_id
       - download video
         - Delete on server after successful download
       - Send app errors to server
       
     x UI
-      x Recording indicator
+      - Recording indicator broken again.
       - Unplayed video indicator
+      - Show faces before play
       - Logo
       
     - Notifications
-      - Upload video in background
+      x Upload video in background
+      - Show unplayed.
       - Fix notification
     
     - Video play and record
@@ -64,13 +61,15 @@ Todo
     
   
   Server
+    - Save push token
     - Send notifications
-    - Register
-      - user_list
-        - list of ids, first, last
-      - pick_user/id
-        - list of friends
-          - id, first, last
+    - Save video
+    x Register
+      x user_list
+        x list of ids, first, last
+      x pick_user/id
+        x list of friends
+          x id, first, last
     
     
 Post release

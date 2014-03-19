@@ -4,67 +4,37 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="5dip"
+    android:background="@color/beige_background"
     android:shrinkColumns="0,1,2"
     android:stretchColumns="0,1,2" >
 
     <TableRow>
 
         <FrameLayout
-            android:id="@+id/Frame0"
+            android:id="@+id/Frame7"
             style="@style/vFrame">
 
             <VideoView
-                android:id="@+id/VideoView0"
+                android:id="@+id/VideoView7"
                 style="@style/videoView" />
 
             <TextView
-                android:id="@+id/PlusText0"
+                android:id="@+id/PlusText7"
                 style="@style/plusText" />
         </FrameLayout>
 
         <FrameLayout
-            android:id="@+id/Frame1"
+            android:id="@+id/Frame6"
             style="@style/vFrame" >
 
             <VideoView
-                android:id="@+id/VideoView1"
+                android:id="@+id/VideoView6"
                 style="@style/videoView" />
 
             <TextView
-                android:id="@+id/PlusText1"
+                android:id="@+id/PlusText6"
                 style="@style/plusText" />
         </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/Frame2"
-            style="@style/vFrame" >
-
-            <VideoView
-                android:id="@+id/VideoView2"
-                style="@style/videoView" />
-
-            <TextView
-                android:id="@+id/PlusText2"
-                style="@style/plusText" />
-        </FrameLayout>
-    </TableRow>
-
-    <TableRow>
-
-        <TextView
-            android:id="@+id/nameText0"
-            style="@style/nameText" />
-
-        <TextView
-            android:id="@+id/nameText1"
-            style="@style/nameText" />
-
-        <TextView
-            android:id="@+id/nameText2"
-            style="@style/nameText" />
-    </TableRow>
-
-    <TableRow>
 
         <FrameLayout
             android:id="@+id/Frame3"
@@ -78,46 +48,20 @@
                 android:id="@+id/PlusText3"
                 style="@style/plusText" />
         </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/camera_preview_frame"
-            style="@style/vFrame" >
-
-            <com.noplanbees.tbm.CameraOverlay
-                android:id="@+id/camera_overlay_surface"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent" />
-
-            <com.noplanbees.tbm.CameraPreview
-                android:id="@+id/camera_preview_surface"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/Frame4"
-            style="@style/vFrame" >
-
-            <VideoView
-                android:id="@+id/VideoView4"
-                style="@style/videoView" />
-
-            <TextView
-                android:id="@+id/PlusText4"
-                style="@style/plusText" />
-        </FrameLayout>
     </TableRow>
 
     <TableRow>
 
         <TextView
-            android:id="@+id/nameText3"
+            android:id="@+id/nameText7"
             style="@style/nameText" />
 
-        <TextView style="@style/nameText" />
+        <TextView
+            android:id="@+id/nameText6"
+            style="@style/nameText" />
 
         <TextView
-            android:id="@+id/nameText4"
+            android:id="@+id/nameText3"
             style="@style/nameText" />
     </TableRow>
 
@@ -137,28 +81,30 @@
         </FrameLayout>
 
         <FrameLayout
-            android:id="@+id/Frame6"
+            android:id="@+id/camera_preview_frame"
             style="@style/vFrame" >
 
-            <VideoView
-                android:id="@+id/VideoView6"
-                style="@style/videoView" />
+            <com.noplanbees.tbm.CameraOverlay
+                android:id="@+id/camera_overlay_surface"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
 
-            <TextView
-                android:id="@+id/PlusText6"
-                style="@style/plusText" />
+            <com.noplanbees.tbm.CameraPreview
+                android:id="@+id/camera_preview_surface"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
         </FrameLayout>
 
         <FrameLayout
-            android:id="@+id/Frame7"
+            android:id="@+id/Frame0"
             style="@style/vFrame" >
 
             <VideoView
-                android:id="@+id/VideoView7"
+                android:id="@+id/VideoView0"
                 style="@style/videoView" />
 
             <TextView
-                android:id="@+id/PlusText7"
+                android:id="@+id/PlusText0"
                 style="@style/plusText" />
         </FrameLayout>
     </TableRow>
@@ -169,12 +115,67 @@
             android:id="@+id/nameText5"
             style="@style/nameText" />
 
+        <TextView style="@style/nameText" />
+
         <TextView
-            android:id="@+id/nameText6"
+            android:id="@+id/nameText0"
+            style="@style/nameText" />
+    </TableRow>
+
+    <TableRow>
+
+        <FrameLayout
+            android:id="@+id/Frame4"
+            style="@style/vFrame" >
+
+            <VideoView
+                android:id="@+id/VideoView4"
+                style="@style/videoView" />
+
+            <TextView
+                android:id="@+id/PlusText4"
+                style="@style/plusText" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/Frame2"
+            style="@style/vFrame" >
+
+            <VideoView
+                android:id="@+id/VideoView2"
+                style="@style/videoView" />
+
+            <TextView
+                android:id="@+id/PlusText2"
+                style="@style/plusText" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/Frame1"
+            style="@style/vFrame" >
+
+            <VideoView
+                android:id="@+id/VideoView1"
+                style="@style/videoView" />
+
+            <TextView
+                android:id="@+id/PlusText1"
+                style="@style/plusText" />
+        </FrameLayout>
+    </TableRow>
+
+    <TableRow>
+
+        <TextView
+            android:id="@+id/nameText4"
             style="@style/nameText" />
 
         <TextView
-            android:id="@+id/nameText7"
+            android:id="@+id/nameText2"
+            style="@style/nameText" />
+
+        <TextView
+            android:id="@+id/nameText1"
             style="@style/nameText" />
     </TableRow>
 
@@ -186,7 +187,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Upload" />
-
+        
+        <Button
+            android:id="@+id/btnReset"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Reset" />
+        
         <FrameLayout
             android:id="@+id/drawTest"
             style="@style/videoView"

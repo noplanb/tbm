@@ -29,7 +29,6 @@ import android.view.SurfaceHolder;
 public class VideoRecorder {
 
 	private final String RECORDING_FILE_NAME = "new.mp4";
-	private final String RECORDED_FILE_NAME = "last.mp4";
 
 	private final String TAG = this.getClass().getSimpleName();
 
@@ -54,7 +53,7 @@ public class VideoRecorder {
 		setCameraParams();
 	}
 
-	public boolean stopRecording() {
+	public boolean stopRecording(String fileId) {
 		Log.i(TAG, "stopRecording");
 		boolean rval = true;
 		hideRecordingIndicator();
@@ -62,7 +61,7 @@ public class VideoRecorder {
 			try {
 				mediaRecorder.stop();
 				Log.i(TAG, String.format("Recorded file %s : %d",getRecordingFile().getPath(), getRecordingFile().length()));
-				moveRecordingToRecorded();
+				moveRecordingToRecorded(fileId);
 			} catch (IllegalStateException e) {
 				Log.e(TAG, "stopRecording: called in illegal state.");
 				rval = false;
@@ -199,16 +198,16 @@ public class VideoRecorder {
 		return new File(video_dir, RECORDING_FILE_NAME);
 	}
 
-	public String getRecordedFilePath() {
-		return getRecordedFile().getPath();
+	public String getRecordedFilePath(String fileId) {
+		return getRecordedFile(fileId).getPath();
 	}
 
-	private File getRecordedFile() {
-		return new File(video_dir, RECORDED_FILE_NAME);
+	private File getRecordedFile(String fileId) {
+		return new File(video_dir, "to_" + fileId + ".mp4");
 	}
 
-	private void moveRecordingToRecorded(){
-		File ed = getRecordedFile();
+	private void moveRecordingToRecorded(String fileId){
+		File ed = getRecordedFile(fileId);
 		File ing = getRecordingFile();
 		ing.renameTo(ed);
 	}

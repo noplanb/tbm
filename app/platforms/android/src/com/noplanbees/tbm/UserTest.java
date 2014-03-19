@@ -2,14 +2,14 @@ package com.noplanbees.tbm;
 
 import android.util.Log;
 
-public class ConfigTest {
+public class UserTest {
 	public final static String TAG = "ConfigTest";
 
 	public static void run() {	
-		ConfigFactory cf = ConfigFactory.getFactoryInstance();
+		UserFactory cf = UserFactory.getFactoryInstance();
 		cf.destroyAll();
-		Config c0 = cf.makeInstance();
-		Config c1 = cf.makeInstance();
+		User c0 = cf.makeInstance();
+		User c1 = cf.makeInstance();
 		Log.i(TAG, String.format("Number of config instances = %d. Should never be more than 1", cf.instances.size()));
 		
 		c0.set("first_name", "first");

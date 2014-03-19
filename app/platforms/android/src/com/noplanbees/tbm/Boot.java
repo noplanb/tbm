@@ -7,11 +7,11 @@ import android.util.Log;
 public class Boot {
 	public static final String TAG = "Boot";
 	
-	public static void boot(Activity activity){
+	public static boolean boot(Activity activity){
 		//--------------------------
 		// Retrieve or create Config model from local storage
 		//--------------------------
-		ConfigFactory cf = ConfigFactory.getFactoryInstance();
+		UserFactory cf = UserFactory.getFactoryInstance();
 		if (cf.hasInstances()){
 			Log.i(TAG, "Config present in memory.");
 		} else if (cf.retrieve()){
@@ -24,10 +24,12 @@ public class Boot {
 		//--------------------------
 		// Check registration
 		//--------------------------
-		if (!Config.isRegistered()) {
+		if (!User.isRegistered()) {
 			Log.i(TAG, "Not registered. Starting RegisterActivty");
 			Intent i = new Intent(activity, RegisterActivity.class);
 			activity.startActivity(i);
+			Log.i(TAG, "Exiting boot");
+			return false;
 		}
 		
 		//--------------------------
@@ -41,6 +43,15 @@ public class Boot {
 		} else {
 			Log.i(TAG, "Friend not retrievable from local storage.");
 		}
+		
+		GcmHandler gcmHandler = new GcmHandler(activity);
+		if (gcmHandler.checkPlayServices()){
+			gcmHandler.registerGcm();
+		} else {
+			Log.e(TAG, "No valid Google Play Services APK found.");
+			return false;
+		}
+		return true;
 
 	}
 
