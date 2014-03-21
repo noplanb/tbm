@@ -11,6 +11,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
@@ -66,7 +67,7 @@ public class RegisterActivity extends Activity{
 		for(LinkedTreeMap<String, String> u : userList){
 			Log.d(TAG, "Adding button for " + u.get("first_name"));
 			Button b = new Button(this);
-			b.setText(u.get("first_name") + " " + u.get("last_name"));
+			b.setText(u.get("first_name") + " " + u.get("last_name"));			
 			b.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 			b.setId(index);
 			b.setOnClickListener(new OnClickListener() {

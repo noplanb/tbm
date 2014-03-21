@@ -1,5 +1,7 @@
 package com.noplanbees.tbm;
 
+import android.view.View;
+
 public class FriendFactory extends ActiveModelFactory{
 
 	public static FriendFactory instance = null;
@@ -16,6 +18,13 @@ public class FriendFactory extends ActiveModelFactory{
 		i.init();
 		instances.add(i);
 		return i;	}
+	
+	public static Friend getFriendFromVew(View v){
+		Integer viewId = v.getId();
+		return (Friend) FriendFactory.getFactoryInstance().findWhere("viewId", viewId.toString());
+	}
+
+
 	
 	
 }

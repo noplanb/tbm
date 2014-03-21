@@ -3,6 +3,7 @@ package com.noplanbees.tbm;
 import java.io.File;
 import java.util.regex.Pattern;
 
+import android.graphics.Bitmap;
 import android.os.Environment;
 import android.util.Log;
 
@@ -26,6 +27,10 @@ public class Config {
 		videoDir = dir;		
 		return videoDir;
 	}
+	
+	public static String videoDirPath(){
+		return getVideoDir().getPath();
+	}
 
 	public static String fullUrl(String uri){
 
@@ -41,4 +46,34 @@ public class Config {
 		}
 		return url;
 	}
+
+	public static String downloadFilePath() {
+		return videoDirPath() + "/last_download.mp4";
+	}
+
+	public static String videoPathForFriendId(String friendId) {
+		return videoDirPath() + "/vid_for_" + friendId + ".mp4";
+	}
+	
+	public static String videoPathForFriend(Friend friend) {
+		return videoPathForFriendId(friend.get("id"));
+	}
+	
+	public static File videoFileForFriendId(String friendId) {
+		return new File(videoPathForFriendId(friendId));
+	}
+
+	public static String thumbPathForFriendId(String friendId) {
+		return videoDirPath() + "/thumb_for_" + friendId + ".png";
+	}
+	
+	public static String thumbPathForFriend(Friend friend){
+		return thumbPathForFriendId(friend.get("id"));
+	}
+
+	public static File thumbFileForFriendId(String friendId) {
+		return new File(thumbPathForFriendId(friendId));
+	}
+
+
 }

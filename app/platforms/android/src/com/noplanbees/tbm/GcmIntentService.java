@@ -1,11 +1,19 @@
 package com.noplanbees.tbm;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -48,19 +56,10 @@ public class GcmIntentService extends IntentService {
                 
             // If it's a regular GCM message, do some work.
             } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
-                // This loop represents the service doing some work.
-                for (int i=0; i<5; i++) {
-                    Log.i(TAG, "Working... " + (i+1)
-                            + "/5 @ " + SystemClock.elapsedRealtime());
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                    }
-                }
-                Log.i(TAG, "Completed work @ " + SystemClock.elapsedRealtime());
-                // Post notification of received message.
-                sendNotification("Received: " + extras.toString());
-                Log.i(TAG, "Received: " + extras.toString());
+                Log.i(TAG, "onHandleIntent: extras = " + extras.toString());
+                String friendId = extras.getString("from_id");
+                FileDownload.downloadFromFriendId(friendId);
+                sendNotification(friendId);
             }
         }
         // Release the wake lock provided by the WakefulBroadcastReceiver.
@@ -70,15 +69,29 @@ public class GcmIntentService extends IntentService {
     // Put the message into a notification and post it.
     // This is just one simple example of what you might choose to do with
     // a GCM message.
-    private void sendNotification(String msg) {
-        mNotificationManager = (NotificationManager)
-                this.getSystemService(Context.NOTIFICATION_SERVICE);
+    private void sendNotification(String friendId) {
+        mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, HomeActivity.class), 0);
-
+        
+        FriendFactory ff = FriendFactory.getFactoryInstance();
+        Friend f = (Friend) ff.find(friendId);
+        String msg = f.get("firstName") + " sent you a message.";
+        
+        Bitmap thumbBmp = null;
+		try {
+	        File thumbFile = Config.thumbFileForFriendId(friendId);
+	        FileInputStream fis;
+			fis = FileUtils.openInputStream(thumbFile);
+	        thumbBmp = BitmapFactory.decodeStream(fis);
+		} catch (IOException e) {
+			Log.i(TAG, "sendNotification: IOException: " + e.getMessage());
+		}
+        
+		Log.i(TAG, String.format("Got thumbBmp height=%d", thumbBmp.getHeight()));
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-        .setSmallIcon(R.drawable.ic_stat_gcm)
-        .setContentTitle("GCM Notification")
+        .setLargeIcon(thumbBmp)
+        .setContentTitle("Three By Me")
         .setStyle(new NotificationCompat.BigTextStyle()
         .bigText(msg))
         .setContentText(msg);

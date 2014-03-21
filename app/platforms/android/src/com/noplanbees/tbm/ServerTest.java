@@ -18,13 +18,13 @@ public class ServerTest {
 		params.put("key2", "value2");
 		
 		// Get relative url
-		new ServerTestU("/reg/server_test");
+		new ServerTestU("/reg/echo");
 		
         // Get relative url params
-		new ServerTestUP("reg/server_test", params);
+		new ServerTestUP("reg/echo", params);
 		
 		// Post absolute url params
-		new ServerTestUPM("http://192.168.1.82:3000/reg/server_test", params, "POST");
+		new ServerTestUPM("http://192.168.1.82:3000/reg/echo", params, "POST");
 	}
 
 	private class ServerTestUPM extends Server{

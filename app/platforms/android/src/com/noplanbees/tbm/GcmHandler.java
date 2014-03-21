@@ -15,6 +15,7 @@ import android.util.Log;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.gson.internal.LinkedTreeMap;
 
 public class GcmHandler {
 
@@ -153,18 +154,22 @@ public class GcmHandler {
 	}
 	
 	private void sendRegistrationIdToBackend() {
-//	    new postPushToken("reg/pushToken", "POST");
+		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+		User current_user = UserFactory.current_user();
+		params.put("user_id", current_user.get("id"));
+		params.put("push_token", regid);
+	    new GCMPostPushToken("reg/push_token", params, "POST");
 	}
 	
-//	class postPushToken extends Server{
-//		public postPushToken(String uri, String method) {
-//			super(uri, method);
-//		}
-//		@Override
-//		public void callback(String response) {	
-//			Log.i(TAG, "postPushToken: got response = " + response);
-//		}
-//	}
+	class GCMPostPushToken extends Server{
+		public GCMPostPushToken(String uri, LinkedTreeMap<String, String> params, String method) {
+			super(uri, params, method);
+		}
+		@Override
+		public void callback(String response) {	
+			Log.i(TAG, "postPushToken: got response = " + response);
+		}
+	}
 	
 	/**
 	 * Stores the registration ID and app versionCode in the application's

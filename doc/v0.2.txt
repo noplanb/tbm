@@ -1,0 +1,6 @@
+ - Dont try to load video player source if no video file exists.
+ - Indicator that a new video has arrived
+ - Fix the notification layout
+   - Get the first frame from the video
+   - Send with notification
+ - GCM doenst work all the time.

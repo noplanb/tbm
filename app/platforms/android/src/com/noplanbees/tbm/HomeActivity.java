@@ -38,7 +38,7 @@ public class HomeActivity extends Activity {
 	private ArrayList<FrameLayout> frames = new ArrayList<FrameLayout>(8);
 	private ArrayList<TextView> nameTexts = new ArrayList<TextView>(8);
 
-	private HashMap<Integer, VideoPlayer> videoPlayers = new HashMap<Integer, VideoPlayer>(8);
+	private HashMap<String, VideoPlayer> videoPlayers = new HashMap<String, VideoPlayer>(8);
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -52,9 +52,9 @@ public class HomeActivity extends Activity {
 			finish();
 			return;
 		}
+		initModels();
+		init_page();
 		runTests();
-		 initModels();
-		 init_page();
 	}
 
 	private void initModels() {
@@ -69,7 +69,10 @@ public class HomeActivity extends Activity {
 		// new DrawTest(this);
 		// ConfigTest.run();
 		// FriendTest.run();
-		new ServerTest().run();
+		// new ServerTest().run();
+		// new FileDownload.BgDownload().execute();
+		// Friend f = (Friend) friendFactory.findWhere("firstName", "Farhad");
+		// new FileDownload.BgDownloadFromFriendId().execute(f.get("id"));
 	}
 
 	@Override
@@ -158,7 +161,7 @@ public class HomeActivity extends Activity {
 			plusTexts.get(i).setVisibility(View.INVISIBLE);
 			videoViews.get(i).setVisibility(View.VISIBLE);
 			nameTexts.get(i).setText(f.get("firstName"));
-			videoPlayers.put(viewId, new VideoPlayer( this, videoViews.get(i) ));
+			videoPlayers.put(f.get("id"), new VideoPlayer( this, videoViews.get(i) ));
 		}
 	}
 
@@ -182,7 +185,7 @@ public class HomeActivity extends Activity {
 	}
 
 	private void onRecordStart(View v){
-		Friend f = getFriendFromVew(v);
+		Friend f = FriendFactory.getFriendFromVew(v);
 		if (videoRecorder.startRecording()) {
 			Log.i(TAG, "onRecordStart: START RECORDING. view = " +f.get("firstName"));
 		} else {
@@ -191,7 +194,7 @@ public class HomeActivity extends Activity {
 	}
 
 	private void onRecordStop(View v){
-		Friend f = getFriendFromVew(v);
+		Friend f = FriendFactory.getFriendFromVew(v);
 		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get("firstName"));
 		if ( videoRecorder.stopRecording(f.get("id")) ){
 			upload(v);
@@ -201,36 +204,29 @@ public class HomeActivity extends Activity {
 	}
 
 	private void onRecordCancel(View v){
-		Friend f = getFriendFromVew(v);
+		Friend f = FriendFactory.getFriendFromVew(v);
 		Log.i(TAG, "onRecordCancel: CANCEL RECORDING." + f.get("firstName"));
 		videoRecorder.stopRecording(f.get("id"));
 	}
 
 	private void onPlayClick(View v) {
-		Friend f = getFriendFromVew(v);
+		Friend f = FriendFactory.getFriendFromVew(v);
 		Log.i(TAG, "onPlayClick" + f.get("firstName"));
-		videoPlayers.get(v.getId()).setVideoSourcePath(videoRecorder.getRecordedFilePath(f.get("id")));
-		videoPlayers.get(v.getId()).click();
+		videoPlayers.get(f.get("id")).click();
 	}
-
-	private Friend getFriendFromVew(View v){
-		Integer viewId = v.getId();
-		return (Friend) friendFactory.findWhere("viewId", viewId.toString());
-	}
-	
 
 	private void upload(View v) {
 		Log.i(TAG, "upload");
-		Friend f = getFriendFromVew(v);
+		Friend f = FriendFactory.getFriendFromVew(v);
 		String receiverId = f.get("id");
-		
+
 		Intent i = new Intent(this, FileUploadService.class);
 		i.putExtra("filePath", videoRecorder.getRecordedFilePath(receiverId));
 		i.putExtra("userId", user.get("id"));
 		i.putExtra("receiverId", receiverId);
 		startService(i);
 	}
-	
+
 	private void addListeners() {
 
 		Button btnUpload = (Button) findViewById(R.id.btnUpload);
@@ -250,9 +246,9 @@ public class HomeActivity extends Activity {
 				Boot.boot(HomeActivity.instance);
 			}
 		});
-		
+
 		for (VideoView vv : videoViews){
-			Friend f = getFriendFromVew(vv);
+			Friend f = FriendFactory.getFriendFromVew(vv);
 			Integer vvId = vv.getId();
 			Log.i(TAG, "Adding LongPressTouchHandler for vv" + vvId.toString());
 			new LongpressTouchHandler(vv) {
@@ -305,10 +301,10 @@ public class HomeActivity extends Activity {
 			setVideoViewHeights(width, height);
 		}
 	}
-	
+
 	private void toast(String msg){
 		Toast toast=Toast.makeText(this, msg, Toast.LENGTH_SHORT);
-	     toast.setGravity(Gravity.CENTER, 0, 0);
-	     toast.show();
+		toast.setGravity(Gravity.CENTER, 0, 0);
+		toast.show();
 	}
 };

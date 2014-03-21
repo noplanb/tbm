@@ -1,6 +1,17 @@
 Todo
   
   App
+
+  - Full loop
+    x Take a video at friend
+    x Upload to server
+    x Send notification
+    x Receive notification
+    x Download video
+    x Post notification
+    x Show video unwatched
+    x Play video
+    
     x User model
     x Get user on startup.
     x first, last, id, registered
@@ -43,6 +54,9 @@ Todo
         - user_id, recipient_id
       - download video
         - Delete on server after successful download
+        x Test
+          x Become farhad send a video to sani
+          x Become sani try download from farhad
       - Send app errors to server
       
     x UI
@@ -61,9 +75,9 @@ Todo
     
   
   Server
-    - Save push token
+    x Save push token
+    x Save video
     - Send notifications
-    - Save video
     x Register
       x user_list
         x list of ids, first, last

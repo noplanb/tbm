@@ -49,7 +49,7 @@ public class VideoRecorder {
 		video_dir = getVideoDir();
 
 		getCameraInstance(1);
-		//		printCameraParams(camera);
+		printCameraParams(camera);
 		setCameraParams();
 	}
 
@@ -155,9 +155,9 @@ public class VideoRecorder {
 	private void setCameraParams() {
 		camera.setDisplayOrientation(90);
 		Parameters cparams = camera.getParameters();
-		cparams.setZoom(20);
+//		cparams.setZoom(20);
 		cparams.setPreviewSize(176, 144);
-		cparams.setPictureSize(176, 144);
+//		cparams.setPictureSize(176, 144);
 		camera.setParameters(cparams);
 	}
 
