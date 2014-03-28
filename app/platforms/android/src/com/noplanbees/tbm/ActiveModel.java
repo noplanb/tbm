@@ -7,7 +7,7 @@ import com.google.gson.internal.LinkedTreeMap;
 
 
 public class ActiveModel {
-	private final String TAG = this.getClass().getSimpleName();
+	protected final String TAG = this.getClass().getSimpleName();
 
 	public LinkedTreeMap<String, String> attributes = new LinkedTreeMap<String, String>();
 
@@ -46,5 +46,9 @@ public class ActiveModel {
 
 	public String get(String a){
 		return attributes.get(a);
+	}
+	
+	public String getId(){
+		return attributes.get("id");
 	}
 }

@@ -9,17 +9,10 @@ public class Boot {
 	
 	public static boolean boot(Activity activity){
 		//--------------------------
-		// Retrieve or create Config model from local storage
+		// Retrieve or create User model from local storage
 		//--------------------------
-		UserFactory cf = UserFactory.getFactoryInstance();
-		if (cf.hasInstances()){
-			Log.i(TAG, "Config present in memory.");
-		} else if (cf.retrieve()){
-			Log.i(TAG, "Retrieved Config from local storage.");
-		} else {
-			Log.i(TAG, "Config not retrievable from local storage. Creating Conf instance.");
-			cf.makeInstance();
-		}
+		ActiveModelsHandler.ensureUser();
+
 		
 		//--------------------------
 		// Check registration
@@ -35,14 +28,8 @@ public class Boot {
 		//--------------------------
         // Try to retrieve Friend model from local storage
 		//--------------------------
-		FriendFactory ff = FriendFactory.getFactoryInstance();
-		if (ff.hasInstances()){
-			Log.i(TAG, "Friend present in memory");
-		} else if (ff.retrieve()){
-			Log.i(TAG, "Retrieved Friend from local storage.");
-		} else {
-			Log.i(TAG, "Friend not retrievable from local storage.");
-		}
+		ActiveModelsHandler.ensureFriend();
+
 		
 		//--------------------------
 		// Init GCM
@@ -55,7 +42,6 @@ public class Boot {
 			return false;
 		}
 		return true;
-
 	}
 
 }

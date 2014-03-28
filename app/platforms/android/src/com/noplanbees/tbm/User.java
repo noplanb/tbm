@@ -19,6 +19,8 @@ public class User extends ActiveModel{
 		return cf.hasInstances() && cf.instances.get(0).get("registered").startsWith("t");
 	}
 	
-
+    public String getId(){
+    	return get("id");
+    }
 	
 }

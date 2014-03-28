@@ -4,16 +4,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -27,13 +35,13 @@ public class HomeActivity extends Activity {
 
 	private FriendFactory friendFactory;
 	private UserFactory userFactory;
-	private User user;
 
 	private FrameLayout cameraPreviewFrame;
 	public VideoRecorder videoRecorder;
 	private GcmHandler gcmHandler;
 
 	private ArrayList<VideoView> videoViews = new ArrayList<VideoView>(8);
+	private ArrayList<ImageView> thumbViews = new ArrayList<ImageView>(8);
 	private ArrayList<TextView> plusTexts = new ArrayList<TextView>(8);
 	private ArrayList<FrameLayout> frames = new ArrayList<FrameLayout>(8);
 	private ArrayList<TextView> nameTexts = new ArrayList<TextView>(8);
@@ -44,7 +52,17 @@ public class HomeActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-		setContentView(R.layout.home);
+		
+		// If activity was destroyed and we got an intent due to a new video download
+		// don't start up the activity. Send a notification instead and let the user 
+		// click on the notification if he wants to start tbm.
+		if (intentWasForNewVideo()){
+			sendNotification( getFriendFromIntent(this.getIntent()) );
+			Log.i(TAG, "aborting home_activity becuase intent was for new video");
+			finish();
+			return;
+		}
+
 		//Note Boot.boot must complete successfully before we continue the home activity. 
 		//Boot will start the registrationActivity and return false if needed. 
 		if (!Boot.boot(this)){
@@ -52,21 +70,34 @@ public class HomeActivity extends Activity {
 			finish();
 			return;
 		}
+		
+		setContentView(R.layout.home);
+
 		initModels();
 		init_page();
 		runTests();
 	}
 
+	private boolean intentWasForNewVideo() {
+		Boolean r = false;
+		Intent i = this.getIntent();
+		Bundle extras = i.getExtras();
+		if (extras != null){
+			String type = extras.getString("type");
+			r = type != null && type.startsWith("new_video");
+		}
+		return r;
+	}
+
 	private void initModels() {
 		instance = this;
+		videoRecorder = new VideoRecorder(this);
 		gcmHandler = new GcmHandler(this);
 		friendFactory = FriendFactory.getFactoryInstance();
 		userFactory = UserFactory.getFactoryInstance();
-		user = userFactory.makeInstance();
 	}
 
 	private void runTests() {
-		// new DrawTest(this);
 		// ConfigTest.run();
 		// FriendTest.run();
 		// new ServerTest().run();
@@ -76,38 +107,65 @@ public class HomeActivity extends Activity {
 	}
 
 	@Override
+	protected void onStart() {
+		super.onStart();
+		Log.i(TAG, "onStart:");
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		Log.i(TAG, "onStop:");
+	}
+
+	@Override
 	protected void onPause() {
 		super.onPause();
 		Log.i(TAG, "onPause");
 		videoRecorder.dispose();
-		videoRecorder = null;
+		ActiveModelsHandler.saveAll();
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		Log.i(TAG, "onNewIntent");
+		ActiveModelsHandler.retrieveFriend();
+		Friend friend = getFriendFromIntent(intent);
+		if (friend != null){
+			getVideoPlayerForFriend(friend).refreshThumb();
+			playNotificationTone();
+		}
+	}
+
+	private VideoPlayer getVideoPlayerForFriend(Friend friend) {
+		return videoPlayers.get(friend.getId());
+	}
+
+	private Friend getFriendFromIntent(Intent intent) {
+		Friend f = null;
+		Bundle extras = intent.getExtras();
+		if (extras != null){
+			String friendId = extras.getString("friendId");
+			f = (Friend) FriendFactory.getFactoryInstance().find(friendId);
+		}
+		return f;
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		Log.i(TAG, "onResume");
-		if (gcmHandler.checkPlayServices()){
-			getVideoRecorder();
+		videoRecorder.restore();
+		if (!gcmHandler.checkPlayServices()){
+			Log.e(TAG, "onResume: checkPlayServices = false");
 		}
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		if (userFactory != null)
-			userFactory.save();
-		if (friendFactory != null)
-			friendFactory.save();
-	}
-
-	private void ulTest(){
-		Log.i(TAG, "ulTest");
-		Intent i = new Intent(this, FileUploadService.class);
-		i.putExtra("filePath", "/storage/sdcard0/Movies/tbm/last.mp4");
-		i.putExtra("userId", "1");
-		i.putExtra("receiverId", "3");
-		startService(i);
+		Log.i(TAG, "onDestroy");
 	}
 
 	private void init_page() {
@@ -152,16 +210,32 @@ public class HomeActivity extends Activity {
 		nameTexts.add((TextView) findViewById(R.id.nameText4));
 		nameTexts.add((TextView) findViewById(R.id.nameText5));
 		nameTexts.add((TextView) findViewById(R.id.nameText6));		
-		nameTexts.add((TextView) findViewById(R.id.nameText6));
+		nameTexts.add((TextView) findViewById(R.id.nameText7));
+
+		thumbViews.add((ImageView) findViewById(R.id.ThumbView0));
+		thumbViews.add((ImageView) findViewById(R.id.ThumbView1));
+		thumbViews.add((ImageView) findViewById(R.id.ThumbView2));
+		thumbViews.add((ImageView) findViewById(R.id.ThumbView3));
+		thumbViews.add((ImageView) findViewById(R.id.ThumbView4));
+		thumbViews.add((ImageView) findViewById(R.id.ThumbView5));
+		thumbViews.add((ImageView) findViewById(R.id.ThumbView6));
+		thumbViews.add((ImageView) findViewById(R.id.ThumbView7));
 
 		for (Integer i=0; i<friendFactory.count(); i++){
-			Integer viewId = videoViews.get(i).getId();
 			Friend f = (Friend) friendFactory.findWhere("viewIndex", i.toString());
+			
+			Integer frameId = frames.get(i).getId();
+			f.set("frameId", frameId.toString());
+			Integer viewId = videoViews.get(i).getId();
 			f.set("viewId", viewId.toString());
+			Integer thumbViewId = thumbViews.get(i).getId();
+			f.set("thumbViewId", thumbViewId.toString());
+			
 			plusTexts.get(i).setVisibility(View.INVISIBLE);
 			videoViews.get(i).setVisibility(View.VISIBLE);
 			nameTexts.get(i).setText(f.get("firstName"));
-			videoPlayers.put(f.get("id"), new VideoPlayer( this, videoViews.get(i) ));
+			
+			videoPlayers.put(f.get("id"), new VideoPlayer( this, f.getId() ));
 		}
 	}
 
@@ -178,14 +252,8 @@ public class HomeActivity extends Activity {
 			f.setLayoutParams(lp);
 	}
 
-	private void getVideoRecorder() {
-		if (videoRecorder == null)
-			Log.i(TAG, "getVideoHandler: new VideoHandler");
-		videoRecorder = new VideoRecorder(this);
-	}
-
 	private void onRecordStart(View v){
-		Friend f = FriendFactory.getFriendFromVew(v);
+		Friend f = FriendFactory.getFriendFromFrame((View) v);
 		if (videoRecorder.startRecording()) {
 			Log.i(TAG, "onRecordStart: START RECORDING. view = " +f.get("firstName"));
 		} else {
@@ -194,9 +262,9 @@ public class HomeActivity extends Activity {
 	}
 
 	private void onRecordStop(View v){
-		Friend f = FriendFactory.getFriendFromVew(v);
+		Friend f = FriendFactory.getFriendFromFrame(v);
 		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get("firstName"));
-		if ( videoRecorder.stopRecording(f.get("id")) ){
+		if ( videoRecorder.stopRecording(f) ){
 			upload(v);
 		} else {
 			toast("Not sent. Too short.");
@@ -204,38 +272,24 @@ public class HomeActivity extends Activity {
 	}
 
 	private void onRecordCancel(View v){
-		Friend f = FriendFactory.getFriendFromVew(v);
+		Friend f = FriendFactory.getFriendFromFrame(v);
 		Log.i(TAG, "onRecordCancel: CANCEL RECORDING." + f.get("firstName"));
-		videoRecorder.stopRecording(f.get("id"));
+		videoRecorder.stopRecording(f);
 	}
 
 	private void onPlayClick(View v) {
-		Friend f = FriendFactory.getFriendFromVew(v);
+		Friend f = FriendFactory.getFriendFromFrame(v);
 		Log.i(TAG, "onPlayClick" + f.get("firstName"));
 		videoPlayers.get(f.get("id")).click();
 	}
 
 	private void upload(View v) {
 		Log.i(TAG, "upload");
-		Friend f = FriendFactory.getFriendFromVew(v);
-		String receiverId = f.get("id");
-
-		Intent i = new Intent(this, FileUploadService.class);
-		i.putExtra("filePath", videoRecorder.getRecordedFilePath(receiverId));
-		i.putExtra("userId", user.get("id"));
-		i.putExtra("receiverId", receiverId);
-		startService(i);
+		Friend f = FriendFactory.getFriendFromFrame(v);
+		f.uploadVideo(this);
 	}
 
 	private void addListeners() {
-
-		Button btnUpload = (Button) findViewById(R.id.btnUpload);
-		btnUpload.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				ulTest();
-			}
-		});
 
 		Button btnReset = (Button) findViewById(R.id.btnReset);
 		btnReset.setOnClickListener(new View.OnClickListener() {
@@ -247,11 +301,13 @@ public class HomeActivity extends Activity {
 			}
 		});
 
-		for (VideoView vv : videoViews){
-			Friend f = FriendFactory.getFriendFromVew(vv);
-			Integer vvId = vv.getId();
-			Log.i(TAG, "Adding LongPressTouchHandler for vv" + vvId.toString());
-			new LongpressTouchHandler(vv) {
+		for (ActiveModel am : FriendFactory.getFactoryInstance().instances){
+			Friend friend = (Friend) am;
+			
+			Integer frameId = Integer.parseInt( friend.get("frameId") );
+			Log.i(TAG, "Adding LongPressTouchHandler for frame" + frameId.toString());
+			FrameLayout frame = (FrameLayout) findViewById(frameId);
+			new LongpressTouchHandler(frame) {
 
 				@Override
 				public void click(View v) {
@@ -307,4 +363,33 @@ public class HomeActivity extends Activity {
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
 	}
+	
+    private void sendNotification(Friend friend) {
+        final int NOTIFICATION_ID = 1;
+        NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, HomeActivity.class), 0);
+        
+        String msg = "Message from " + friend.get("firstName") + "!";
+        
+        Bitmap sqThumbBmp = friend.sqThumbBitmap();
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+        .setLargeIcon(sqThumbBmp)
+        .setSmallIcon(R.drawable.ic_stat_gcm)
+        .setContentTitle(msg)
+        .setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
+        .setContentText("Three By Me");
+
+        Log.i(TAG, "sendNotification: Sending notification");
+        mBuilder.setContentIntent(contentIntent);
+        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+    }
+    
+    private void playNotificationTone(){
+    	Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+        r.play();
+    }
 };

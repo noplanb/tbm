@@ -35,24 +35,31 @@ public class FileDownload {
 			download(params[0], params[1]);
 			return null;
 		}
+		
 	}
 
-	public static synchronized void downloadFromFriendId(String friendId){
-		String sUrl = Config.fullUrl("/videos/get?user_id=" + friendId + "&receiver_id=" + UserFactory.current_user().get("id"));
+	public static synchronized void downloadForFriend(Friend friend){
+		String sUrl = Config.fullUrl("/videos/get?user_id=" + friend.getId() + "&receiver_id=" + UserFactory.current_user().getId());
 		String dfp = Config.downloadFilePath();
 		download(sUrl, dfp);
 		File f = new File(dfp);
-		String lfffp = Config.videoPathForFriendId(friendId);
+		String lfffp = friend.videoFromPath();
 		f.renameTo(new File(lfffp));
-		Log.i(TAG, "downloadFromFriendId: downloaded file for friend=" + friendId + " placed in " + lfffp);
-		createThumb(friendId);
+		Log.i(TAG, "downloadFromFriendId: downloaded file for friend=" + friend.get("firstName") + " placed in " + lfffp);
+		createThumb(friend);
 	}
 
-	public static synchronized void createThumb(String friendId){
-		Log.i(TAG, "createThumb for friend=" + friendId);
-		String vidPath = Config.videoPathForFriendId(friendId);
+	public static synchronized void createThumb(Friend friend){
+		Log.i(TAG, "createThumb for friend=" + friend.get("firstName"));
+		
+		if( !friend.videoFromFile().exists() || friend.videoFromFile().length() == 0 ){
+			Log.e(TAG, "createThumb: no video file found for friend=" + friend.get("fristName"));
+			return;
+		}
+		
+		String vidPath = friend.videoFromPath();
 		Bitmap thumb = ThumbnailUtils.createVideoThumbnail(vidPath, MediaStore.Images.Thumbnails.MINI_KIND);
-		File thumbFile = Config.thumbFileForFriendId(friendId);
+		File thumbFile = friend.thumbFile();
 		try {
 			FileOutputStream fos = FileUtils.openOutputStream(thumbFile);
 			thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
@@ -60,11 +67,15 @@ public class FileDownload {
 			Log.e(TAG, "createThumb: IOException " + e.getMessage());
 		}
 	}
-
-	public static class BgDownloadFromFriendId extends AsyncTask<String, Void, Void>{
+	
+	public static void bgDownloadForFriend(Friend friend){
+		new BgDownloadForFriend().execute(friend);
+	}
+	
+	public static class BgDownloadForFriend extends AsyncTask<Friend, Void, Void>{
 		@Override
-		protected Void doInBackground(String... params) {
-			downloadFromFriendId(params[0]);
+		protected Void doInBackground(Friend... params) {
+			downloadForFriend(params[0]);
 			return null;
 		}
 	}

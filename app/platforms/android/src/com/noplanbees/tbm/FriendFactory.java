@@ -1,6 +1,7 @@
 package com.noplanbees.tbm;
 
 import android.view.View;
+import android.widget.FrameLayout;
 
 public class FriendFactory extends ActiveModelFactory{
 
@@ -19,12 +20,9 @@ public class FriendFactory extends ActiveModelFactory{
 		instances.add(i);
 		return i;	}
 	
-	public static Friend getFriendFromVew(View v){
+	public static Friend getFriendFromFrame(View v){
 		Integer viewId = v.getId();
-		return (Friend) FriendFactory.getFactoryInstance().findWhere("viewId", viewId.toString());
+		return (Friend) FriendFactory.getFactoryInstance().findWhere("frameId", viewId.toString());
 	}
 
-
-	
-	
 }

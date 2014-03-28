@@ -61,6 +61,8 @@ public class GcmHandler {
 		
 		if (regid.isEmpty()) {
 			registerInBackground();
+		} else {
+			sendRegistrationIdToBackend();
 		}
 		return regid;
 	}

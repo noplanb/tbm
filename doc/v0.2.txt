@@ -1,6 +1,97 @@
- - Dont try to load video player source if no video file exists.
- - Indicator that a new video has arrived
- - Fix the notification layout
-   - Get the first frame from the video
-   - Send with notification
- - GCM doenst work all the time.
+Todo
+ - Video play view
+   - Indicator that a new video has arrived
+   - Thumb overlay
+     - Change when new video comes in
+     - Load on onCreate
+     - Has a background color to start
+     - Hide on video play
+     - Show on video stop
+  
+- Notification of new video
+  - If the home activity is on the task stack then open it and show indicate the unviewed video
+  - If the home activity is not active then send a notification
+  - Clicking on the notification should do the same as above.
+  
+TEST
+    - Declare HomeActivity as a standard launch
+      - Fire an intent from the upload service to start home activity.
+        - Test 
+          - When home is running
+            - I get onPause, onCreate
+            - Pushing back button causes a crash perhaps because it is trying to go back to previous instance of home activity..
+          - When home is stopped - got there by Pushing home button which causes onStop
+            - Intent launches our app and calls onCreate
+            - Pushing back button - causes same crash
+          - When home is destroyed - got there by killing the task in the task manager
+            - Intent launches our app and calls onCreate
+            - Home button leaves our ap.
+    - Declare HomeActivity as a single_top launch
+        - When home is running
+          - I get onPause, onNewIntent, onResume, 
+          - Backbutton goes to system home without crash
+        - When home is stopped
+          - I get onNewIntent, onStart, onResume
+          - Backbutton goes to system home without crash
+        - When home is destroyed
+          - onCreate, onStart, onResume (no onNewIntent)
+          
+CONCLUSION
+  - Declare homeActivity as single_top launch
+  - Load intent with info
+  
+ARCHITECTURE BASED ON CONCLUSION ABOVE
+  x GcmIntentService
+    x download video
+    x sets friend to unviewed
+    x saves models
+    x send intent to start home activity with extras:
+      x type: new_video
+      x friendId: friendId
+    x send notification
+  x On create 
+    x Checks intent if it is due to a new_video it finishes without doing anything
+  x On new intent
+    x Pulls models and redraws the thumb for the friend 
+    x Plays a notification tone.    
+          
+PROBLEM
+-------
+  x When homeActivity is launched as single_top it appears that when it is launched by clicking on a notification it is launched in a new task so that when the GcmIntentHandler then tries to send an intent to it newIntent is never called. 
+
+TRY
+  x Set lauchmode to single task for HomeActivity
+  
+RESULT 
+  x This seems to work newIntent is if HomeActivity is not destroyed and you are launching by clicking on a notification.
+  
+PROBLEM
+-------
+  x When homeActivity is not destroyed the user gets both the notification as well as the activity being brought to the front.
+  
+SOLUTION
+  x Move the code to generate the notification to the homeactivity. Generate the notification only in case onCreate gets called with a new video intent.
+ 
+PROBLEM
+-------
+  On pause we dispose the camera and media recorder. However the surface view they are attached to is not disposed. When we resume reinstantiate the camera and try to use the media recorder. But this causes an exception becuase they are no longer attached to the surface view.
+  
+TRY
+  Put the dispose in on_destroyed for surface view. Force destruction of the surface view onPause by putting setting surface view setVisibility(View.GONE) in onPause() and View.Visible in onResume()
+  
+  
+ Done
+ x Fix the notification layout
+   x Get the first frame from the video
+   x Send with notification
+ x GCM doenst work all the time.
+   x Move to server
+   x Write our own GcmServer
+   
+   
+
+Post release
+  Make the video frame in the notification square
+  Use the savedInstanceState bundle to save our models rather than our files.
+  Make the videoplayers a submodel of friend so that when friend is restored they come in too.
+  

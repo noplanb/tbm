@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -14,54 +15,45 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
-import android.graphics.drawable.shapes.PathShape;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
 import android.media.MediaRecorder;
 import android.os.Build;
-import android.os.Environment;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
 
 public class VideoRecorder {
 
-	private final String RECORDING_FILE_NAME = "new.mp4";
-
 	private final String TAG = this.getClass().getSimpleName();
-
-	private final File video_dir;
 
 	private Context context;
 	private Activity activity;
 	private Camera camera;
-	private CameraPreview cameraPreview; 
 	private SurfaceHolder previewSurfaceHolder; 
 	private SurfaceHolder overlaySurfaceHolder;
 	private MediaRecorder mediaRecorder;
+	private SurfaceView previewSurface;
+	private SurfaceView overlaySurface;
 
 	public VideoRecorder(Activity a) {
 		activity = a;
 		context = activity.getApplicationContext();
-
-		video_dir = getVideoDir();
-
-		getCameraInstance(1);
-		printCameraParams(camera);
-		setCameraParams();
+		previewSurface = (SurfaceView) activity.findViewById(R.id.camera_preview_surface);
+		overlaySurface = (SurfaceView) activity.findViewById(R.id.camera_overlay_surface);
 	}
 
-	public boolean stopRecording(String fileId) {
+	public boolean stopRecording(Friend friend) {
 		Log.i(TAG, "stopRecording");
 		boolean rval = true;
 		hideRecordingIndicator();
 		if (mediaRecorder !=null){
 			try {
 				mediaRecorder.stop();
-				Log.i(TAG, String.format("Recorded file %s : %d",getRecordingFile().getPath(), getRecordingFile().length()));
-				moveRecordingToRecorded(fileId);
+				Log.i(TAG, String.format("Recorded file %s : %d",Config.recordingFilePath(), Config.recordingFile().length()));
+				moveRecordingToFriend(friend);
 			} catch (IllegalStateException e) {
 				Log.e(TAG, "stopRecording: called in illegal state.");
 				rval = false;
@@ -77,12 +69,13 @@ public class VideoRecorder {
 	}
 
 	public boolean startRecording() {
-		Log.i(TAG, "startRecording");
 		if (mediaRecorder != null) {
+			Log.i(TAG, "startRecording");
+			mediaRecorder.start();	
 			showRecordingIndicator();
-			mediaRecorder.start();
 			return true;
 		} else {
+			Log.e(TAG, "startRecording: Error no mediaRecorder");
 			releaseMediaRecorder();
 			return false;
 		}
@@ -102,7 +95,7 @@ public class VideoRecorder {
 				borderPath.lineTo(0, 0);
 				Paint paint = new Paint();
 				paint.setColor(0xffCC171E);
-				paint.setStrokeWidth(16);
+				paint.setStrokeWidth(Convenience.dpToPx(context, 2));
 				paint.setStyle(Paint.Style.STROKE);
 				Paint cpaint = new Paint();
 				cpaint.setColor(0xffCC171E);
@@ -114,7 +107,7 @@ public class VideoRecorder {
 		};
 		activity.runOnUiThread(sri);
 	}
-	
+
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	public void hideRecordingIndicator(){
 		Runnable hri = new Runnable(){
@@ -124,26 +117,43 @@ public class VideoRecorder {
 				Canvas c = overlaySurfaceHolder.lockCanvas();
 				c.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 				overlaySurfaceHolder.unlockCanvasAndPost(c);
+				overlaySurface.invalidate();
 			}
 		};
 		activity.runOnUiThread(hri);
 	}
 
 	public void dispose() {
-		releaseMediaRecorder();
-		releaseCamera();
+		Log.i(TAG, "dispose");
+		previewSurface.setVisibility(View.GONE);
+		overlaySurface.setVisibility(View.GONE);
+	}
+
+	public void restore(){
+		Log.i(TAG, "restore");
+		overlaySurface.setVisibility(View.VISIBLE);
+		previewSurface.setVisibility(View.VISIBLE);
 	}
 
 	public void previewSurfaceCreated(SurfaceHolder holder) {
 		Log.i(TAG, "cameraPreviewSurfaceCreated");
 		previewSurfaceHolder = holder;
 		try {
+			getCameraInstance(1);
+			// printCameraParams(camera);
+			setCameraParams();
 			camera.setPreviewDisplay(holder);
 			camera.startPreview();
 			prepareMediaRecorder();
+			overlaySurface.bringToFront();
 		} catch (IOException e) {
 			Log.e(TAG, "Error setting camera preview: " + e.getMessage());
 		}
+	}
+
+	public void previewSurfaceDestroyed(SurfaceHolder holder){
+		releaseMediaRecorder();
+		releaseCamera();
 	}
 
 	public void overlaySurfaceCreated(SurfaceHolder holder){
@@ -152,12 +162,15 @@ public class VideoRecorder {
 		holder.setFormat(PixelFormat.TRANSPARENT);
 	}
 
+	@SuppressLint("NewApi")
 	private void setCameraParams() {
 		camera.setDisplayOrientation(90);
 		Parameters cparams = camera.getParameters();
-//		cparams.setZoom(20);
+		//		cparams.setZoom(20);
 		cparams.setPreviewSize(176, 144);
-//		cparams.setPictureSize(176, 144);
+		//		cparams.setPictureSize(176, 144);
+		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+			//cparams.setRecordingHint(true);
 		camera.setParameters(cparams);
 	}
 
@@ -172,6 +185,7 @@ public class VideoRecorder {
 
 	private void getCameraInstance(int camera_id) {
 		Log.i(TAG, "getCameraInstance");
+		releaseCamera();
 		try {
 			camera = Camera.open(camera_id);
 		} catch (Exception e) {
@@ -181,34 +195,9 @@ public class VideoRecorder {
 			Log.e(TAG, "getCameraInstance: got null for camera" + camera_id);
 	}
 
-	private File getVideoDir() {
-		String TAG = "getOutputMediaDir";
-		File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),"tbm");
-		if (!dir.exists()) {
-			if (!dir.mkdirs()) {
-				Log.e(TAG, "Failed to create storage directory.");
-				return null;
-			}
-		}
-		return dir;
-		//		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-	}
-
-	private File getRecordingFile() {
-		return new File(video_dir, RECORDING_FILE_NAME);
-	}
-
-	public String getRecordedFilePath(String fileId) {
-		return getRecordedFile(fileId).getPath();
-	}
-
-	private File getRecordedFile(String fileId) {
-		return new File(video_dir, "to_" + fileId + ".mp4");
-	}
-
-	private void moveRecordingToRecorded(String fileId){
-		File ed = getRecordedFile(fileId);
-		File ing = getRecordingFile();
+	private void moveRecordingToFriend(Friend friend){
+		File ed = friend.videoToFile();
+		File ing = Config.recordingFile();
 		ing.renameTo(ed);
 	}
 
@@ -216,23 +205,23 @@ public class VideoRecorder {
 		if (mediaRecorder == null)
 			mediaRecorder = new MediaRecorder();
 
-		// Step 1: Unlock and set camera to MediaRecorder
+		// Unlock and set camera to MediaRecorder
 		camera.unlock();
 		mediaRecorder.setCamera(camera);
 
-		// Step 2: Set sources
+		// Set sources
 		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
+		// Set format and encoder
 		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
 		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-
-		//		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
-
 		mediaRecorder.setVideoSize(176, 144);
 
-		String ofile = getRecordingFile().toString();
+		//		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
+
+		String ofile = Config.recordingFilePath();
 
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
 		mediaRecorder.setOutputFile(ofile);
@@ -271,7 +260,6 @@ public class VideoRecorder {
 			camera.release(); // release the camera for other applications
 			camera = null;
 		}
-		cameraPreview = null;
 	}
 
 	public void printCameraParams(Camera camera) {
@@ -309,5 +297,4 @@ public class VideoRecorder {
 		System.out.print(size.height);
 		System.out.print("\n");
 	}
-
 }

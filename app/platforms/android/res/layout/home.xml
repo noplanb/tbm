@@ -12,7 +12,11 @@
 
         <FrameLayout
             android:id="@+id/Frame7"
-            style="@style/vFrame">
+            style="@style/vFrame" >
+
+            <ImageView
+                android:id="@+id/ThumbView7"
+                style="@style/videoView" />
 
             <VideoView
                 android:id="@+id/VideoView7"
@@ -27,6 +31,10 @@
             android:id="@+id/Frame6"
             style="@style/vFrame" >
 
+            <ImageView
+                android:id="@+id/ThumbView6"
+                style="@style/videoView" />
+
             <VideoView
                 android:id="@+id/VideoView6"
                 style="@style/videoView" />
@@ -39,6 +47,10 @@
         <FrameLayout
             android:id="@+id/Frame3"
             style="@style/vFrame" >
+
+            <ImageView
+                android:id="@+id/ThumbView3"
+                style="@style/videoView" />
 
             <VideoView
                 android:id="@+id/VideoView3"
@@ -71,6 +83,10 @@
             android:id="@+id/Frame5"
             style="@style/vFrame" >
 
+            <ImageView
+                android:id="@+id/ThumbView5"
+                style="@style/videoView" />
+
             <VideoView
                 android:id="@+id/VideoView5"
                 style="@style/videoView" />
@@ -98,6 +114,10 @@
         <FrameLayout
             android:id="@+id/Frame0"
             style="@style/vFrame" >
+
+            <ImageView
+                android:id="@+id/ThumbView0"
+                style="@style/videoView" />
 
             <VideoView
                 android:id="@+id/VideoView0"
@@ -128,6 +148,10 @@
             android:id="@+id/Frame4"
             style="@style/vFrame" >
 
+            <ImageView
+                android:id="@+id/ThumbView4"
+                style="@style/videoView" />
+
             <VideoView
                 android:id="@+id/VideoView4"
                 style="@style/videoView" />
@@ -141,6 +165,10 @@
             android:id="@+id/Frame2"
             style="@style/vFrame" >
 
+            <ImageView
+                android:id="@+id/ThumbView2"
+                style="@style/videoView" />
+
             <VideoView
                 android:id="@+id/VideoView2"
                 style="@style/videoView" />
@@ -153,6 +181,10 @@
         <FrameLayout
             android:id="@+id/Frame1"
             style="@style/vFrame" >
+
+            <ImageView
+                android:id="@+id/ThumbView1"
+                style="@style/videoView" />
 
             <VideoView
                 android:id="@+id/VideoView1"
@@ -182,25 +214,11 @@
     <TableRow>
 
         <Button
-            android:id="@+id/btnUpload"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Upload" />
-        
-        <Button
             android:id="@+id/btnReset"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Reset" />
-        
-        <FrameLayout
-            android:id="@+id/drawTest"
-            style="@style/videoView"
-            android:layout_width="0dp"
-            android:layout_height="50dp" >
-        </FrameLayout>
     </TableRow>
 
 </TableLayout>

@@ -110,7 +110,7 @@ public class ActiveModelFactory {
 	}
 	
 	public String getSaveFilePath(){
-		return Config.getVideoDir().getPath() + "/" + this.getClass().getSimpleName() + "_saved_instances.json";
+		return Config.getHomeDir().getPath() + "/" + this.getClass().getSimpleName() + "_saved_instances.json";
 	}
 	
 	public void deleteSaveFile(){
@@ -127,7 +127,7 @@ public class ActiveModelFactory {
 		return !instances.isEmpty();
 	}
 	
-	
+
 	public ActiveModel findWhere(String a, String v){
 		ActiveModel found = null;
 		for (ActiveModel i : instances){

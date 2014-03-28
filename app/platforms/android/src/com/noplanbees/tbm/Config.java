@@ -3,18 +3,18 @@ package com.noplanbees.tbm;
 import java.io.File;
 import java.util.regex.Pattern;
 
-import android.graphics.Bitmap;
 import android.os.Environment;
 import android.util.Log;
 
 public class Config {
 
-	public final static String serverUri = "http://192.168.1.82:3000";
-	private static File videoDir = null;
+//	public final static String serverUri = "http://192.168.1.82:3000";
+	public final static String serverUri = "http://www.threebyme.com";
+	private static File homeDir = null;
 
-	public static File getVideoDir() {
-		if (videoDir !=null) 
-			return videoDir;
+	public static File getHomeDir() {
+		if (homeDir !=null) 
+			return homeDir;
 
 		String TAG = "getOutputMediaDir";
 		File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),"tbm");
@@ -24,12 +24,12 @@ public class Config {
 				return null;
 			}
 		}
-		videoDir = dir;		
-		return videoDir;
+		homeDir = dir;		
+		return homeDir;
 	}
 	
-	public static String videoDirPath(){
-		return getVideoDir().getPath();
+	public static String homeDirPath(){
+		return getHomeDir().getPath();
 	}
 
 	public static String fullUrl(String uri){
@@ -48,32 +48,15 @@ public class Config {
 	}
 
 	public static String downloadFilePath() {
-		return videoDirPath() + "/last_download.mp4";
-	}
-
-	public static String videoPathForFriendId(String friendId) {
-		return videoDirPath() + "/vid_for_" + friendId + ".mp4";
+		return homeDirPath() + "/last_download.mp4";
 	}
 	
-	public static String videoPathForFriend(Friend friend) {
-		return videoPathForFriendId(friend.get("id"));
+	public static String recordingFilePath(){
+		return homeDirPath() + "/new.mp4";
 	}
 	
-	public static File videoFileForFriendId(String friendId) {
-		return new File(videoPathForFriendId(friendId));
+	public static File recordingFile(){
+		return new File(recordingFilePath());
 	}
-
-	public static String thumbPathForFriendId(String friendId) {
-		return videoDirPath() + "/thumb_for_" + friendId + ".png";
-	}
-	
-	public static String thumbPathForFriend(Friend friend){
-		return thumbPathForFriendId(friend.get("id"));
-	}
-
-	public static File thumbFileForFriendId(String friendId) {
-		return new File(thumbPathForFriendId(friendId));
-	}
-
 
 }

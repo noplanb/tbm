@@ -57,7 +57,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {		
 		Log.i(TAG, "surfaceDestroyed");
-//		HomeActivity.instance.videoRecorder.cameraPreviewSurfaceDestroyed(holder);
+		HomeActivity.instance.videoRecorder.previewSurfaceDestroyed(holder);
 	}
 
 }

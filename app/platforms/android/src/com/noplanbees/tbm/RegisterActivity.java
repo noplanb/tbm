@@ -123,8 +123,7 @@ public class RegisterActivity extends Activity{
 	}
 
 	private void regComplete() {
-		userFactory.save();
-		friendFactory.save();
+		ActiveModelsHandler.saveAll();
 		Intent i = new Intent(this, HomeActivity.class);
 		startActivity(i);
 		finish();

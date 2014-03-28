@@ -35,6 +35,11 @@ Setting size of the video:
   		Video much better.
   		Audio ok
       
+      mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
+  		30 seconds = 564337
+  		320x240
+  		Video much better.
+  		Audio ok
       
       mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_CIF));
   		30 seconds = 2708912  TOO BIG!
