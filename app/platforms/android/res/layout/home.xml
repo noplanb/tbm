@@ -135,7 +135,9 @@
             android:id="@+id/nameText5"
             style="@style/nameText" />
 
-        <TextView style="@style/nameText" />
+        <TextView 
+            android:id="@+id/previewText"
+            style="@style/nameText" />
 
         <TextView
             android:id="@+id/nameText0"

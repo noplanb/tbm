@@ -8,6 +8,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.media.Ringtone;
@@ -15,6 +16,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -29,7 +31,7 @@ import android.widget.VideoView;
 public class HomeActivity extends Activity {
 
 	final String TAG = this.getClass().getSimpleName();
-	final Float ASPECT = 144F/176F;
+	final Float ASPECT = 240F/320F;
 
 	public static HomeActivity instance;
 
@@ -39,6 +41,8 @@ public class HomeActivity extends Activity {
 	private FrameLayout cameraPreviewFrame;
 	public VideoRecorder videoRecorder;
 	private GcmHandler gcmHandler;
+	private FileUploadBroadcastReceiver fileUploadBroadcastReceiver;
+	public LocalBroadcastManager localBroadcastManger;
 
 	private ArrayList<VideoView> videoViews = new ArrayList<VideoView>(8);
 	private ArrayList<ImageView> thumbViews = new ArrayList<ImageView>(8);
@@ -98,6 +102,7 @@ public class HomeActivity extends Activity {
 	}
 
 	private void runTests() {
+		new CamcorderHelper();
 		// ConfigTest.run();
 		// FriendTest.run();
 		// new ServerTest().run();
@@ -123,6 +128,7 @@ public class HomeActivity extends Activity {
 		super.onPause();
 		Log.i(TAG, "onPause");
 		videoRecorder.dispose();
+		unRegisterLocalReceivers();
 		ActiveModelsHandler.saveAll();
 	}
 
@@ -157,6 +163,7 @@ public class HomeActivity extends Activity {
 		super.onResume();
 		Log.i(TAG, "onResume");
 		videoRecorder.restore();
+		registerLocalReceivers();
 		if (!gcmHandler.checkPlayServices()){
 			Log.e(TAG, "onResume: checkPlayServices = false");
 		}
@@ -173,6 +180,21 @@ public class HomeActivity extends Activity {
 		cameraPreviewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
 		cameraPreviewFrame.addView(new ViewSizeGetter(this));
 		addListeners();
+	}
+
+	private void registerLocalReceivers() {
+		Log.i(TAG, "FUBR - registerLocalReceivers");
+		if (localBroadcastManger == null)
+			localBroadcastManger = LocalBroadcastManager.getInstance(this);
+	    if (fileUploadBroadcastReceiver == null)
+			fileUploadBroadcastReceiver = new FileUploadBroadcastReceiver();
+		IntentFilter intf = new IntentFilter(FileUploadService.ACTION_UPLOAD);
+		localBroadcastManger.registerReceiver(fileUploadBroadcastReceiver, intf);
+	}
+	
+	private void unRegisterLocalReceivers(){
+		Log.i(TAG, "FUBR - unRegisterLocalReceivers");
+		localBroadcastManger.unregisterReceiver(fileUploadBroadcastReceiver);
 	}
 
 	private void getVideoViewsAndPlayers() {

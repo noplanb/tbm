@@ -1,0 +1,20 @@
+ - Notification not working properly when phone goes into sleep mode app is still active.
+ - Abort slide away show notice.
+ - Restart shows black views for friends.
+ - Pull camera and video settings from phones.
+ - Reset needs to delete the whole directory
+ - Clicking on grey guy (cant play this video.)
+ - Indicate video sent status
+   - pxsp! p...
+ 
+ - Upload should be a wakeful service.
+   - Create a broadcast receiver
+   - Register it locally
+   - Create an intent for it
+   - Call it
+   - Retry exponential holdoff
+ 
+
+  Make the video frame in the notification square
+  Use the savedInstanceState bundle to save our models rather than our files.
+  Make the videoplayers a submodel of friend so that when friend is restored they come in too.

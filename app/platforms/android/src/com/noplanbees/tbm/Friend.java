@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.VideoView;
@@ -91,15 +92,16 @@ public class Friend extends ActiveModel{
 	//-------------------------
 	// Video upload
 	//-------------------------
-	public void uploadVideo(Activity activity){
+	public void uploadVideo(HomeActivity activity){
+		Log.i(TAG, "uploadVideo. For friend=" + get("firstName"));
 		User user = UserFactory.current_user();
 		String receiverId = get("id");
 
-		Intent i = new Intent(activity, FileUploadService.class);
+		Intent i = new Intent(FileUploadService.ACTION_UPLOAD);
 		i.putExtra("filePath", videoToPath());
 		i.putExtra("userId", user.get("id"));
 		i.putExtra("receiverId", receiverId);
-		activity.startService(i);
+		activity.localBroadcastManger.sendBroadcast(i);
 	}
 	
 	//-------------------------

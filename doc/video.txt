@@ -29,7 +29,6 @@ Setting size of the video:
 	    30 seconds = 163765
       Audio ok.
       
-      
       mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
   		30 seconds = 564337
   		Video much better.
@@ -45,4 +44,33 @@ Setting size of the video:
   		30 seconds = 2708912  TOO BIG!
   		Video much better.
   		Audio ok
+  		
+PROBLEM - 
+ - Getting crappy quality with MOTO with lots of lines. 
+ - Looks like preview size changes when you start recording on phones
+ - Farhads records very dark
+
+TRY - 
+  - Using camcorder profile figure out all the available qualities there are on each phone.
+  
+  - Sani HTC
+  03-28 07:59:31.687: I/CamcorderHelper(21207): QUALITY_1080P-false
+  03-28 07:59:31.687: I/CamcorderHelper(21207): QUALITY_480P-true
+  03-28 07:59:31.687: I/CamcorderHelper(21207): QUALITY_720P-true
+  03-28 07:59:31.687: I/CamcorderHelper(21207): QUALITY_CIF-true
+  03-28 07:59:31.687: I/CamcorderHelper(21207): QUALITY_HIGH-true
+  03-28 07:59:31.687: I/CamcorderHelper(21207): QUALITY_LOW-true
+  03-28 07:59:31.687: I/CamcorderHelper(21207): QUALITY_QCIF-false
+  03-28 07:59:31.687: I/CamcorderHelper(21207): QUALITY_QVGA-true
+  
+  - Sani moto
+  03-28 08:01:55.569: I/CamcorderHelper(22536): QUALITY_1080P-false
+  03-28 08:01:55.570: I/CamcorderHelper(22536): QUALITY_480P-true
+  03-28 08:01:55.570: I/CamcorderHelper(22536): QUALITY_720P-true
+  03-28 08:01:55.570: I/CamcorderHelper(22536): QUALITY_CIF-false
+  03-28 08:01:55.570: I/CamcorderHelper(22536): QUALITY_HIGH-true
+  03-28 08:01:55.570: I/CamcorderHelper(22536): QUALITY_LOW-true
+  03-28 08:01:55.570: I/CamcorderHelper(22536): QUALITY_QCIF-false
+  03-28 08:01:55.571: I/CamcorderHelper(22536): QUALITY_QVGA-true
+  
       

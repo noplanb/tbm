@@ -18,12 +18,14 @@ import android.graphics.PorterDuff;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.TextView;
 
 public class VideoRecorder {
 
@@ -37,12 +39,14 @@ public class VideoRecorder {
 	private MediaRecorder mediaRecorder;
 	private SurfaceView previewSurface;
 	private SurfaceView overlaySurface;
+	private TextView previewText;
 
 	public VideoRecorder(Activity a) {
 		activity = a;
 		context = activity.getApplicationContext();
 		previewSurface = (SurfaceView) activity.findViewById(R.id.camera_preview_surface);
 		overlaySurface = (SurfaceView) activity.findViewById(R.id.camera_overlay_surface);
+		previewText = (TextView) activity.findViewById(R.id.previewText);
 	}
 
 	public boolean stopRecording(Friend friend) {
@@ -87,6 +91,9 @@ public class VideoRecorder {
 			@Override
 			public void run() {
 				Log.i(TAG, "showRecordingIndicator");
+				previewText.setText("Recording...");
+				previewText.setTextColor(Color.RED);
+				previewText.setVisibility(View.VISIBLE);
 				Canvas c = overlaySurfaceHolder.lockCanvas();
 				Path borderPath = new Path();
 				borderPath.lineTo(c.getWidth(), 0);
@@ -114,6 +121,7 @@ public class VideoRecorder {
 			@Override
 			public void run() {
 				Log.i(TAG, "hideRecordingIndicator");
+				previewText.setVisibility(View.INVISIBLE);
 				Canvas c = overlaySurfaceHolder.lockCanvas();
 				c.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 				overlaySurfaceHolder.unlockCanvasAndPost(c);
@@ -167,7 +175,11 @@ public class VideoRecorder {
 		camera.setDisplayOrientation(90);
 		Parameters cparams = camera.getParameters();
 		//		cparams.setZoom(20);
-		cparams.setPreviewSize(176, 144);
+		//cparams.setPreviewSize(176, 144);
+		int width = 320;
+		int height = 240;
+		Log.i(TAG, String.format("setCameraParams: setPreviewSize %d %d", width, height) );
+		cparams.setPreviewSize(width, height);
 		//		cparams.setPictureSize(176, 144);
 		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 			//cparams.setRecordingHint(true);
@@ -214,12 +226,12 @@ public class VideoRecorder {
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
 		// Set format and encoder
-		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-		mediaRecorder.setVideoSize(176, 144);
+//		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+//		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+//		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+//		mediaRecorder.setVideoSize(176, 144);
 
-		//		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
+		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA));
 
 		String ofile = Config.recordingFilePath();
 

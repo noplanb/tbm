@@ -23,6 +23,7 @@ import android.util.Log;
 
 public class FileUploadService extends IntentService {
 
+	public final static String ACTION_UPLOAD = "file_upload";
 	private final String SERVER_URL = Config.fullUrl("/videos/create");
 
 	private final String TAG = this.getClass().getSimpleName();
@@ -34,7 +35,7 @@ public class FileUploadService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-
+		
 		Bundle extras = intent.getExtras();
 		String filePath = (String) extras.get("filePath");
 		String receiverId = (String) extras.get("receiverId");
@@ -89,14 +90,19 @@ public class FileUploadService extends IntentService {
 			}
 			in.close();
 
-
 		} catch (MalformedURLException e) {
 			Log.e(TAG, "MalformedURLException " + e.getMessage());
 		} catch (IOException e) {
-			Log.e(TAG, "IOException " + e.getMessage());
+			Log.e(TAG, "IOException retrying..." + e.getMessage());
+			retry(intent);
 		} finally {
 			con.disconnect();
 		}
+		FileUploadBroadcastReceiver.completeWakefulIntent(intent);
+	}
+
+	private void retry(Intent intent) {
+		this.startService(intent);
 	}
 
 	private void get(Intent intent){
