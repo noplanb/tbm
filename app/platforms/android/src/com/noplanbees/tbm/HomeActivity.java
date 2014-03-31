@@ -41,7 +41,6 @@ public class HomeActivity extends Activity {
 	private FrameLayout cameraPreviewFrame;
 	public VideoRecorder videoRecorder;
 	private GcmHandler gcmHandler;
-	private FileUploadBroadcastReceiver fileUploadBroadcastReceiver;
 	public LocalBroadcastManager localBroadcastManger;
 
 	private ArrayList<VideoView> videoViews = new ArrayList<VideoView>(8);
@@ -56,7 +55,7 @@ public class HomeActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-		
+
 		// If activity was destroyed and we got an intent due to a new video download
 		// don't start up the activity. Send a notification instead and let the user 
 		// click on the notification if he wants to start tbm.
@@ -74,7 +73,7 @@ public class HomeActivity extends Activity {
 			finish();
 			return;
 		}
-		
+
 		setContentView(R.layout.home);
 
 		initModels();
@@ -102,13 +101,27 @@ public class HomeActivity extends Activity {
 	}
 
 	private void runTests() {
-		new CamcorderHelper();
+		// new CamcorderHelper();
+		//testService();
 		// ConfigTest.run();
 		// FriendTest.run();
 		// new ServerTest().run();
 		// new FileDownload.BgDownload().execute();
 		// Friend f = (Friend) friendFactory.findWhere("firstName", "Farhad");
 		// new FileDownload.BgDownloadFromFriendId().execute(f.get("id"));
+	}
+
+	private void testService(){
+		Log.i(TAG, "testService");
+
+		for(int n=0; n<4; n++){
+			Log.i(TAG, "testService " + n);
+			Intent i = new Intent(this, TestService.class);	
+			Bundle extras = new Bundle();
+			extras.putInt("n", n);
+			i.putExtras(extras);
+			startService(i);
+		}
 	}
 
 	@Override
@@ -128,7 +141,6 @@ public class HomeActivity extends Activity {
 		super.onPause();
 		Log.i(TAG, "onPause");
 		videoRecorder.dispose();
-		unRegisterLocalReceivers();
 		ActiveModelsHandler.saveAll();
 	}
 
@@ -163,7 +175,6 @@ public class HomeActivity extends Activity {
 		super.onResume();
 		Log.i(TAG, "onResume");
 		videoRecorder.restore();
-		registerLocalReceivers();
 		if (!gcmHandler.checkPlayServices()){
 			Log.e(TAG, "onResume: checkPlayServices = false");
 		}
@@ -180,21 +191,6 @@ public class HomeActivity extends Activity {
 		cameraPreviewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
 		cameraPreviewFrame.addView(new ViewSizeGetter(this));
 		addListeners();
-	}
-
-	private void registerLocalReceivers() {
-		Log.i(TAG, "FUBR - registerLocalReceivers");
-		if (localBroadcastManger == null)
-			localBroadcastManger = LocalBroadcastManager.getInstance(this);
-	    if (fileUploadBroadcastReceiver == null)
-			fileUploadBroadcastReceiver = new FileUploadBroadcastReceiver();
-		IntentFilter intf = new IntentFilter(FileUploadService.ACTION_UPLOAD);
-		localBroadcastManger.registerReceiver(fileUploadBroadcastReceiver, intf);
-	}
-	
-	private void unRegisterLocalReceivers(){
-		Log.i(TAG, "FUBR - unRegisterLocalReceivers");
-		localBroadcastManger.unregisterReceiver(fileUploadBroadcastReceiver);
 	}
 
 	private void getVideoViewsAndPlayers() {
@@ -245,18 +241,18 @@ public class HomeActivity extends Activity {
 
 		for (Integer i=0; i<friendFactory.count(); i++){
 			Friend f = (Friend) friendFactory.findWhere("viewIndex", i.toString());
-			
+
 			Integer frameId = frames.get(i).getId();
 			f.set("frameId", frameId.toString());
 			Integer viewId = videoViews.get(i).getId();
 			f.set("viewId", viewId.toString());
 			Integer thumbViewId = thumbViews.get(i).getId();
 			f.set("thumbViewId", thumbViewId.toString());
-			
+
 			plusTexts.get(i).setVisibility(View.INVISIBLE);
 			videoViews.get(i).setVisibility(View.VISIBLE);
 			nameTexts.get(i).setText(f.get("firstName"));
-			
+
 			videoPlayers.put(f.get("id"), new VideoPlayer( this, f.getId() ));
 		}
 	}
@@ -325,7 +321,7 @@ public class HomeActivity extends Activity {
 
 		for (ActiveModel am : FriendFactory.getFactoryInstance().instances){
 			Friend friend = (Friend) am;
-			
+
 			Integer frameId = Integer.parseInt( friend.get("frameId") );
 			Log.i(TAG, "Adding LongPressTouchHandler for frame" + frameId.toString());
 			FrameLayout frame = (FrameLayout) findViewById(frameId);
@@ -385,33 +381,33 @@ public class HomeActivity extends Activity {
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
 	}
-	
-    private void sendNotification(Friend friend) {
-        final int NOTIFICATION_ID = 1;
-        NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, HomeActivity.class), 0);
-        
-        String msg = "Message from " + friend.get("firstName") + "!";
-        
-        Bitmap sqThumbBmp = friend.sqThumbBitmap();
+	private void sendNotification(Friend friend) {
+		final int NOTIFICATION_ID = 1;
+		NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-        .setLargeIcon(sqThumbBmp)
-        .setSmallIcon(R.drawable.ic_stat_gcm)
-        .setContentTitle(msg)
-        .setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
-        .setContentText("Three By Me");
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, HomeActivity.class), 0);
 
-        Log.i(TAG, "sendNotification: Sending notification");
-        mBuilder.setContentIntent(contentIntent);
-        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-    }
-    
-    private void playNotificationTone(){
-    	Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-        r.play();
-    }
+		String msg = "Message from " + friend.get("firstName") + "!";
+
+		Bitmap sqThumbBmp = friend.sqThumbBitmap();
+
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+		.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+		.setLargeIcon(sqThumbBmp)
+		.setSmallIcon(R.drawable.ic_stat_gcm)
+		.setContentTitle(msg)
+		.setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
+		.setContentText("Three By Me");
+
+		Log.i(TAG, "sendNotification: Sending notification");
+		mBuilder.setContentIntent(contentIntent);
+		notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+	}
+
+	private void playNotificationTone(){
+		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+		r.play();
+	}
 };

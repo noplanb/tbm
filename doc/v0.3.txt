@@ -7,11 +7,11 @@
  - Indicate video sent status
    - pxsp! p...
  
- - Upload should be a wakeful service.
-   - Create a broadcast receiver
-   - Register it locally
-   - Create an intent for it
-   - Call it
+ x Upload should be a wakeful service.
+   x Create a broadcast receiver
+   x Register it locally
+   x Create an intent for it
+   x Call it
    - Retry exponential holdoff
  
 

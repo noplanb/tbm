@@ -7,23 +7,24 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-public class FileUploadService extends IntentService {
+public class FileUploadService extends NonStopIntentService {
 
-	public final static String ACTION_UPLOAD = "file_upload";
+	private final static int MAX_RETRIES = 100;
 	private final String SERVER_URL = Config.fullUrl("/videos/create");
 
 	private final String TAG = this.getClass().getSimpleName();
@@ -34,8 +35,21 @@ public class FileUploadService extends IntentService {
 	}
 
 	@Override
-	protected void onHandleIntent(Intent intent) {
-		
+	public void onDestroy() {
+		Log.i(TAG, "onDestroy");
+	}
+
+	@Override
+	protected void onHandleIntent(Intent intent, int startId) {
+		if (intent == null){
+			Log.i(TAG, "onHandleIntent: got null intent");
+		} else {
+			Log.i(TAG, "onHandleIntent: startId=" + startId);
+			upload(intent, startId);
+		}
+	}
+
+	private void upload(Intent intent, int startId){
 		Bundle extras = intent.getExtras();
 		String filePath = (String) extras.get("filePath");
 		String receiverId = (String) extras.get("receiverId");
@@ -62,22 +76,22 @@ public class FileUploadService extends IntentService {
 
 			DataOutputStream out = new DataOutputStream(con.getOutputStream());
 
-		    String preHeader = "--"+boundary+"\r\n";
-		    preHeader += "Content-Disposition: form-data; name=\"file\"; filename=\"vid.mp4\"\r\n";
-		    preHeader += "Content-Type: video/mp4\r\n";
-		    preHeader += "Content-Transfer-Encoding: binary\r\n";
-		    preHeader += "\r\n";
-		    out.writeBytes(preHeader);
+			String preHeader = "--"+boundary+"\r\n";
+			preHeader += "Content-Disposition: form-data; name=\"file\"; filename=\"vid.mp4\"\r\n";
+			preHeader += "Content-Type: video/mp4\r\n";
+			preHeader += "Content-Transfer-Encoding: binary\r\n";
+			preHeader += "\r\n";
+			out.writeBytes(preHeader);
 
 
-            byte[] fileData = new byte[(int) f.length()];
-            DataInputStream dis = new DataInputStream(new FileInputStream(f));
-            dis.readFully(fileData);
-            dis.close();
-            out.write(fileData);
+			byte[] fileData = new byte[(int) f.length()];
+			DataInputStream dis = new DataInputStream(new FileInputStream(f));
+			dis.readFully(fileData);
+			dis.close();
+			out.write(fileData);
 			Log.i(TAG, String.format("Wrote %d bytes", fileData.length));
-			
-		    String postString = "\r\n--"+boundary+"--\r\n";
+
+			String postString = "\r\n--"+boundary+"--\r\n";
 			out.writeBytes(postString);
 
 			out.flush();
@@ -94,15 +108,32 @@ public class FileUploadService extends IntentService {
 			Log.e(TAG, "MalformedURLException " + e.getMessage());
 		} catch (IOException e) {
 			Log.e(TAG, "IOException retrying..." + e.getMessage());
-			retry(intent);
+			retry(intent, startId);
 		} finally {
 			con.disconnect();
+			stopSelf(startId);
 		}
-		FileUploadBroadcastReceiver.completeWakefulIntent(intent);
 	}
 
-	private void retry(Intent intent) {
-		this.startService(intent);
+	private void retry(Intent intent, int startId) {
+		Bundle extras = intent.getExtras();
+		Integer retryCount = (Integer) extras.get("retryCount");
+		Long delay = (long) (1000 * (1 << retryCount));
+		retryCount ++;
+
+		if (retryCount < MAX_RETRIES){
+			Log.i(TAG, "startId=" + startId + " retry " +  retryCount.toString() + String.format(" will retry in %d seconds", delay/1000));
+			intent.putExtra("retryCount", retryCount);
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {
+				Log.e(TAG, "retry interrupted: " + e.getMessage());
+			}
+			upload(intent, startId);
+		} else {
+			Log.e(TAG, "max retries reached for startId=" + startId);
+			stopSelf(startId);
+		}
 	}
 
 	private void get(Intent intent){

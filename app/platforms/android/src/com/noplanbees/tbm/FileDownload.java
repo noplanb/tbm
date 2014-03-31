@@ -34,8 +34,7 @@ public class FileDownload {
 		protected Void doInBackground(String... params) {
 			download(params[0], params[1]);
 			return null;
-		}
-		
+		}	
 	}
 
 	public static synchronized void downloadForFriend(Friend friend){
@@ -79,5 +78,4 @@ public class FileDownload {
 			return null;
 		}
 	}
-
 }

@@ -54,7 +54,7 @@
             android:name="RegisterActivity"
             android:screenOrientation="portrait" />
 
-        <service android:name="FileUploadService" />
+        <service android:name="FileUploadService" android:process=":remote"/>
 
         <receiver
             android:name=".GcmBroadcastReceiver"
@@ -65,8 +65,9 @@
                 <category android:name="com.noplanbees.tbm" />
             </intent-filter>
         </receiver>
-
-        <service android:name=".GcmIntentService" />
+        
+        <service android:name=".TestService" android:process=":remote"/>
+        <service android:name=".GcmIntentService"/>
     </application>
 
 </manifest>
