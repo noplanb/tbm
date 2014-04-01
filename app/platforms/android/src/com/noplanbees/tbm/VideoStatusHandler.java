@@ -174,7 +174,7 @@ public class VideoStatusHandler {
 		int shortLen = Math.min(7, fn.length());
 		String shortFn = fn.substring(0, shortLen);
 		String r = shortFn;
-		if (status == null || status == SENT_VIEWED){
+		if (status == null || status == SENT_VIEWED  || status == NEW){
 			r = fn;
 		}
 		return r;

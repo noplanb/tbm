@@ -118,19 +118,20 @@ public class HomeActivity extends Activity {
 	protected void onStart() {
 		super.onStart();
 		Log.i(TAG, "onStart:");
+		videoRecorder.restore();
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
 		Log.i(TAG, "onStop:");
+		videoRecorder.dispose();
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
 		Log.i(TAG, "onPause");
-		videoRecorder.dispose();
 		ActiveModelsHandler.saveAll();
 	}
 
@@ -149,7 +150,6 @@ public class HomeActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		Log.i(TAG, "onResume");
-		videoRecorder.restore();
 		if (!gcmHandler.checkPlayServices()){
 			Log.e(TAG, "onResume: checkPlayServices = false");
 		}

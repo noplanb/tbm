@@ -56,8 +56,9 @@ public class IntentHandler {
 		Log.i(TAG, "handleVideoStatusUpdate");
 		if (state == STATE_ON_NEW_INTENT){
 			updateHomeViewSentVideoStatus();
-		}
-		return RESULT_CONTINUE;
+			return RESULT_CONTINUE;
+		} 
+		return RESULT_FINISH;
 	}
 
 	private void updateHomeViewSentVideoStatus() {
