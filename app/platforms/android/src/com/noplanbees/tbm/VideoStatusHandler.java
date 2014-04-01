@@ -8,24 +8,125 @@ import android.util.Log;
 public class VideoStatusHandler {
 	private final String TAG = this.getClass().getSimpleName();
 	
+	private Context context;
+	public VideoStatusHandler(Context c){
+		context = c;
+	}
+	
+	public VideoStatusHandler(){}
+	
+	
+	//-------------------
+	// Local videoViewed stuff
+	//-------------------
+
+	public void setVideoViewed(Friend f) {
+		setVideoNotViewedState(f, false);
+	}
+
+	public void setVideoNotViewed(Friend f){
+		setVideoNotViewedState(f, true);
+	}
+
+	// Assume that multiple processes can update the videoViewed field in the friend model
+	// let the saved state be used for interprocess communication. Therefore always read
+	// from file update model then save to file when writing.
+	private void setVideoNotViewedState(Friend f, Boolean value){
+		Log.i(TAG, String.format("setVideoNotViewedState: %s %b", f.get("firstName"), value ));
+		String friendId = f.getId();
+		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
+		Friend friend = (Friend) friendFactory.find(friendId);
+		if (value){
+			friend.set("videoNotViewed", "true");
+		} else{
+			friend.set("videoNotViewed", "false");
+		}
+		friendFactory.save();
+	}
+	
+	// Assumes multiple processes can read and the file saved model is used for IPC
+	// so always read from file.
+	public boolean videoNotViewed(Friend f){
+		Log.i(TAG, "videoNotViewed: checked for " + f.get("firstName"));
+		String friendId = f.getId();
+		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
+		Friend friend = (Friend) friendFactory.find(friendId);
+		return friend.get("videoNotViewed") != null && friend.get("videoNotViewed").startsWith("t");
+	}
+	
+	
+	//-------------------
+	// SentVideoStatus model stuff
+	//-------------------
 	public static final int NEW 		= 0;
 	public static final int UPLOADING 	= 1;
 	public static final int RETRY 		= 2;
 	public static final int UPLOADED 	= 3;
 	public static final int DOWNLOADED 	= 4;
-	public static final int VIEWED		= 5;
-	
+	public static final int SENT_VIEWED	= 5;
+
 	public static final String STATUS_KEY = "status";
 	public static final String RETRY_COUNT_KEY = "retryCount";
-	
-	private FriendFactory friendFactory;
-	private Context context;
-	
-	public VideoStatusHandler(Context c){
-		context = c;
-		friendFactory = ActiveModelsHandler.ensureFriend();
+
+	public void updateSentVideoStatus(Intent intent){
+		Log.i(TAG, "update");
+		updateFriendSentVideoStatus(intent);
+		notifyHomeActivityOfVideoStatus(intent);
 	}
 
+	// Assume that multiple processes can update the videoStatus fields in the friend model
+	// let the saved state be used for interprocess communication. Therefore always read
+	// from file update model then save to file when writing.
+	private synchronized void updateFriendSentVideoStatus(Intent intent) {
+		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
+		Friend friend = friendFactory.getFriendFromIntent(intent);
+		Bundle extras = intent.getExtras();
+		if(friend != null && extras != null){
+			Integer status = extras.getInt(STATUS_KEY);
+			Integer retryCount = extras.getInt(RETRY_COUNT_KEY);
+
+			if (status != null)
+				friend.set("sentVideoStatus", status.toString());
+			if (retryCount != null)
+				friend.set("sentVideoRetryCount", retryCount.toString());
+			friendFactory.save();
+		} else {
+			Log.e(TAG, "updateFriend: Tried to update where friend or extras where null");
+		}
+	}
+
+	// Assumes multiple processes can read and the file saved model is used for IPC
+	// so always read from file.	
+	private Bundle getSentVideoStatus(Friend f){
+		String friendId = f.getId();
+		Bundle r = new Bundle();
+		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
+		Friend friend = (Friend) friendFactory.find(friendId);
+
+		String status = friend.get("sentVideoStatus");
+		if (!status.isEmpty())
+			r.putInt( STATUS_KEY, Integer.parseInt(status) );
+
+		String retryCount = friend.get("sentVideoRetryCount");
+		if (!retryCount.isEmpty())
+			r.putInt( RETRY_COUNT_KEY, Integer.parseInt(retryCount) );
+
+		return r;
+	}
+
+	public void notifyHomeActivityOfVideoStatus(Intent intent){
+		Log.i(TAG, "notifyHomeActivity");
+		Bundle extras = intent.getExtras();		
+		Intent i = new Intent(context, HomeActivity.class);
+		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		extras.putInt(IntentHandler.INTENT_TYPE_KEY, IntentHandler.TYPE_VIDEO_STATUS_UPDATE);
+		i.putExtras(extras);
+		context.startActivity(i);
+	}
+
+	//------------------
+	// sentVideoStatus view helper stuff
+	//-----------------
 	private String statusStr(int status, int retryCount) {
 		switch (status){
 		case NEW: case UPLOADING:
@@ -36,51 +137,26 @@ public class VideoStatusHandler {
 			return ".s..";
 		case DOWNLOADED:
 			return "..p.";
-		case VIEWED:
+		case SENT_VIEWED:
 			return "v!";
 		}
 		return "";
 	}
-	
+
 	public String getStatusStr(Friend friend){
-		String sStatus = friend.get("sentVideoStatus");
-		if (sStatus.isEmpty())
-			return friend.get("firstName");
-		
-		Integer status = Integer.parseInt(sStatus);
-		Integer retryCount = Integer.parseInt(friend.get("sentVideoRetryCount"));
-		String name = status != VIEWED ? "" : friend.get("firstName");
-		String ss = statusStr(status, retryCount);
-		return name + " " + ss;
-	}
-	
-	public void update(Intent intent){
-		Log.i(TAG, "update");
-		updateFriend(intent);
-		notifyHomeActivity(intent);
-	}
-	
-	private void updateFriend(Intent intent) {
-		Friend friend = friendFactory.getFriendFromIntent(intent);
-		Bundle extras = intent.getExtras();
-		if(friend != null && extras != null){
-			Integer status = extras.getInt(STATUS_KEY);
-			Integer retryCount = extras.getInt(RETRY_COUNT_KEY);
-			friend.set("sentVideoStatus", status.toString());
-			friend.set("sentVideoRetryCount", retryCount.toString());
-			friendFactory.save();
-		} else {
-			Log.e(TAG, "updateFriend: Tried to update where friend or extras where null");
-		}
+		Bundle b = getSentVideoStatus(friend);
+		Integer status = b.getInt(STATUS_KEY);
+		String ss = statusStr( status, b.getInt(RETRY_COUNT_KEY) );
+		return getFirstName(friend, status) + " " + ss;
 	}
 
-	public void notifyHomeActivity(Intent intent){
-		Log.i(TAG, "notifyHomeActivity");
-		Bundle extras = intent.getExtras();		
-		Intent i = new Intent(context, HomeActivity.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		extras.putInt(IntentHandler.INTENT_TYPE_KEY, IntentHandler.TYPE_VIDEO_STATUS_UPDATE);
-		i.putExtras(extras);
-		context.startActivity(i);
+	public String getFirstName(Friend friend, Integer status){
+		String fn = friend.get("firstName");
+		String shortFn = fn.substring(0, 3);
+		String r = shortFn;
+		if (status == null || status == SENT_VIEWED){
+			r = fn;
+		}
+		return r;
 	}
 }

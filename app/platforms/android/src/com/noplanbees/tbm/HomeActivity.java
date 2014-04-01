@@ -214,7 +214,6 @@ public class HomeActivity extends Activity {
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView6));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView7));
 		
-		VideoStatusHandler vsh = new VideoStatusHandler(this);
 		for (Integer i=0; i<friendFactory.count(); i++){
 			Friend f = (Friend) friendFactory.findWhere("viewIndex", i.toString());
 
@@ -226,7 +225,12 @@ public class HomeActivity extends Activity {
 			f.set("thumbViewId", thumbViewId.toString());
 			Integer nameTextId = nameTexts.get(i).getId();
 			f.set("nameTextId", nameTextId.toString());
-
+		}
+		friendFactory.save();
+		
+		VideoStatusHandler vsh = new VideoStatusHandler(this);
+		for (Integer i=0; i<friendFactory.count(); i++){
+			Friend f = (Friend) friendFactory.findWhere("viewIndex", i.toString());
 			plusTexts.get(i).setVisibility(View.INVISIBLE);
 			videoViews.get(i).setVisibility(View.VISIBLE);
 			nameTexts.get(i).setText(vsh.getStatusStr(f));

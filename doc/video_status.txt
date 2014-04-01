@@ -64,4 +64,23 @@ Test
 Todo:
   - Look at docs for GCM and determine how to distinguish between messages for ReceivedVideo and UpdateVideoStatus
     - Add a type field and status field
+    
+ - Refactor
+   - VideoStatusHandler
+     - Should be the only place where Friend is updated or read for video status information (Viewed / SentVidoeStatus)
+     - Multiple process should be able to update video status without conflicting.
+     - For writes it should always read from file before updating model the write to file 
+     - For reads it should always read from file
+     
+     
+   - Add the methods to set and get status to the videostatushandler
+   - Move video viewed changes to got through the videostatushandler
+     - GCM intent
+     - Play video
+   - Move sentvideostatus updates to go through videostatus handler
+     - GCM intent
+     - Intent handler
+     
+     
+     
         

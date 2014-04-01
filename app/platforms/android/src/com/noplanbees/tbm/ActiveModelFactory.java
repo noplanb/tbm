@@ -93,7 +93,7 @@ public class ActiveModelFactory {
 			Log.e(TAG, e.getMessage());
 			return false;
 		}
-		Log.i(TAG, "retrieve(): Got json from file = " + json);
+		Log.i(TAG, "retrieve(): retrieved from file.");
 
 		ArrayList<LinkedTreeMap<String, String>> all = new ArrayList<LinkedTreeMap<String, String>>();
 		Gson g = new Gson();

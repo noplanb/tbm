@@ -93,12 +93,12 @@ public class Friend extends ActiveModel{
 	//-------------------------
 	public void downloadVideo(){
 		FileDownload.downloadForFriend(this);
-		setVideoNotViewed();
+		new VideoStatusHandler().setVideoNotViewed(this);
 	}
 	
 	public void bgDownloadVideo(){
 		FileDownload.bgDownloadForFriend(this);
-		setVideoNotViewed();
+		new VideoStatusHandler().setVideoNotViewed(this);
 	}
 	
 	//-------------------------
@@ -131,15 +131,5 @@ public class Friend extends ActiveModel{
 		return (ImageView) activity.findViewById(id);
 	}
 	
-	public boolean videoNotViewed(){
-		return get("videoNotViewed") != null && get("videoNotViewed").startsWith("t");
-	}
 
-	public void setVideoViewed() {
-		set("videoNotViewed", "false");
-	}
-	
-	public void setVideoNotViewed(){
-		set("videoNotViewed", "true");
-	}
 }

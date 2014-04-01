@@ -11,10 +11,12 @@ public class VideoPlayer {
 	Activity activity;
 	Context context;	
 	String friendId;
+	VideoStatusHandler videoStatusHandler;
 
 	public VideoPlayer(Activity a, String friendId) {
 		activity = a;
 		context = activity.getApplicationContext();
+		videoStatusHandler = new VideoStatusHandler(context);
 		this.friendId = friendId;
 		showThumb();
 	}
@@ -40,7 +42,7 @@ public class VideoPlayer {
 			videoView.setVideoPath(friend.videoFromPath());
 			hideThumb();
 			videoView.start();
-			friend.setVideoViewed();
+			videoStatusHandler.setVideoViewed(friend);
 		}
 	}
 
@@ -84,7 +86,7 @@ public class VideoPlayer {
 	private void setThumbBorder(){
 		ImageView thumbView = getThumbView();
 		Friend friend = getFriend();
-		if (friend.videoNotViewed()){
+		if (videoStatusHandler.videoNotViewed(friend)){
 			Log.i(TAG, "setThumbBorder: setting thumb background to unviewed_shape");
 			thumbView.setBackgroundResource(R.drawable.blue_border_shape);
 

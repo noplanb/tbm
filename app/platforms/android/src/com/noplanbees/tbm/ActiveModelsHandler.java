@@ -43,9 +43,10 @@ public class ActiveModelsHandler {
 		return r;
 	}
 	
-	public static void retrieveFriend(){
+	public static FriendFactory retrieveFriend(){
 		FriendFactory ff = FriendFactory.getFactoryInstance();
         ff.retrieve();
+        return ff;
 	}
 	
 	public static void saveUser(){

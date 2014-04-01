@@ -49,53 +49,38 @@ public class GcmIntentService extends IntentService {
 				} else if ( extras.getString("type").equalsIgnoreCase("video_status_update") ){
 					handleVideoStatusUpdate(intent);
 				}
-
-
 			}
 		}
 		// Release the wake lock provided by the WakefulBroadcastReceiver.
 		GcmBroadcastReceiver.completeWakefulIntent(intent);
 	}
 
+	//---------
+	// Handle video status update
+	//---------
 	private void handleVideoStatusUpdate(Intent intent) {
 		String status = intent.getExtras().getString("status");
-		
-		FriendFactory ff = ActiveModelsHandler.ensureFriend();
-		if (ff == null){
-			Log.e(TAG, "handleVideoStatusUpdate: no friend model.");
-			return;
-		}
-		
-		Friend friend = ff.getFriendFromIntent(intent);
-		if (friend == null){
-			Log.e(TAG, "handleVideoStatusUpdate: friend found." );
-			return;
-		}
-		
-		Intent i = new Intent(this, HomeActivity.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		Bundle extras = new Bundle();
-		extras.putInt(IntentHandler.INTENT_TYPE_KEY, IntentHandler.TYPE_VIDEO_STATUS_UPDATE);
-		extras.putString("friendId", friend.getId());
-		
 		if ( status.equalsIgnoreCase("downloaded")){
-			extras.putInt(VideoStatusHandler.STATUS_KEY, VideoStatusHandler.DOWNLOADED);
+			intent.putExtra(VideoStatusHandler.STATUS_KEY, VideoStatusHandler.DOWNLOADED);
 		} else if ( status.equalsIgnoreCase("viewed") ){
-			extras.putInt(VideoStatusHandler.STATUS_KEY, VideoStatusHandler.VIEWED);
+			intent.putExtra(VideoStatusHandler.STATUS_KEY, VideoStatusHandler.SENT_VIEWED);
+		} else {
+			Log.e(TAG, "handleVideoStatusUpdate: ERROR got unknow sent video status");
 		}
-
-		i.putExtras(extras);
-		startActivity(i);
+		// VidoeStatusHandler is responsible for forwarding intent to homeActivity in this case.
+		new VideoStatusHandler(getApplicationContext()).updateSentVideoStatus(intent);
 	}
-
+	
+	//--------
+	// Handling video received
+	//---------
 	private void handleVideoReceived(Intent intent) {
-		Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(intent);
+		Friend friend = ActiveModelsHandler.ensureFriend().getFriendFromIntent(intent);
 		friend.downloadVideo();
-		ActiveModelsHandler.saveFriend();  
-		sendHomeActivityIntent(friend);
+		sendHomeActivityVideoRecievedIntent(friend);
 	}
 
-	private void sendHomeActivityIntent(Friend friend){
+	private void sendHomeActivityVideoRecievedIntent(Friend friend){
 		Log.i(TAG, "sendNotification: Sending intent to start home activity");
 		Intent i = new Intent(this, HomeActivity.class);
 		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
