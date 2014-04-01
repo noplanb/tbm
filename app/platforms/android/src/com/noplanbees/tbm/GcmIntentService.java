@@ -60,7 +60,7 @@ public class GcmIntentService extends IntentService {
 		Intent i = new Intent(this, HomeActivity.class);
 		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		Bundle extras = new Bundle();
-		extras.putString("type", "new_video");
+		extras.putInt(IntentHandler.INTENT_TYPE_KEY, IntentHandler.TYPE_VIDEO_RECEIVED);
 		extras.putString("friendId", friend.getId());
 		i.putExtras(extras);
 		startActivity(i);

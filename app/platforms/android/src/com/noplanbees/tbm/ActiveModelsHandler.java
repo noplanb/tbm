@@ -27,15 +27,20 @@ public class ActiveModelsHandler {
 		}
 	}
 	
-	public static void ensureFriend(){
+	public static FriendFactory ensureFriend(){
 		FriendFactory ff = FriendFactory.getFactoryInstance();
+		FriendFactory r;
 		if (ff.hasInstances()){
 			Log.i(TAG, "Friend present in memory");
+			r = ff;
 		} else if (ff.retrieve()){
 			Log.i(TAG, "Retrieved Friend from local storage.");
+			r = ff;
 		} else {
 			Log.i(TAG, "Friend not retrievable from local storage.");
+			r = null;
 		}
+		return r;
 	}
 	
 	public static void retrieveFriend(){

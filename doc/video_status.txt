@@ -1,0 +1,67 @@
+Indicate Video Status for User
+  - States
+    - New
+    - Uploading
+    - Retry (count)
+    - Uploaded
+    - Downloaded
+    - Viewed
+
+  - UI states
+    - (px)spv p...
+
+
+
+Architecture
+  - VideoStatusHandler
+    x Update status (intent)
+    - Refresh UI
+      x getStatusString
+  x Friend model has fields for
+    x videoStatus
+    x retryCount
+  x Friend
+    x update_video_status
+  x FileUploadService
+    x update_video_status
+  - Send messages to GcmBroadcastReceiver
+    - type
+      - VIDEO_RECEIVED
+      - VIDEO_STATUS_UPDATE
+    - from_id
+    - to_id
+    - status
+      - UPLOADING
+      - RETRY
+      - UPLOADED
+      - DOWNLOADED
+      - VIEWED
+    - retry_count
+  x Intent for upload has extras for
+    x videoStatus
+    x retryCount
+    x friendId
+  - GcmIntentService
+    - Formats intent appropriately depending on whether it is for VIDEO_RECEIVED VIDEO_STATUS_UPDATE
+    - Forwards to HomeActivity
+  - HomeActivity
+    x HomeActivityIntentHelper
+      x Intent = VIDEO_RECEIVED
+        x onCreate
+          x Send notification with buzz
+        x onNewIntent
+          x Buzz
+          x Update videoplayer with new indicator.
+      - Intent = VIDEO_STATUS_UPDATE
+        x onCreate
+          x do nothing
+        - onNewIntent
+          - Update UI with status.
+      
+Test
+
+
+Todo:
+  - Look at docs for GCM and determine how to distinguish between messages for ReceivedVideo and UpdateVideoStatus
+    - Add a type field and status field
+        

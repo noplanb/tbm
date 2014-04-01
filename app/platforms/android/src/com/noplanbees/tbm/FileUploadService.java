@@ -45,6 +45,8 @@ public class FileUploadService extends NonStopIntentService {
 			Log.i(TAG, "onHandleIntent: got null intent");
 		} else {
 			Log.i(TAG, "onHandleIntent: startId=" + startId);
+			intent.putExtra("status", VideoStatusHandler.UPLOADING);
+			new VideoStatusHandler(getApplicationContext()).update(intent);
 			upload(intent, startId);
 		}
 	}
@@ -110,12 +112,15 @@ public class FileUploadService extends NonStopIntentService {
 			Log.e(TAG, "IOException retrying..." + e.getMessage());
 			retry(intent, startId);
 		} finally {
+			intent.putExtra("status", VideoStatusHandler.UPLOADED);
+			new VideoStatusHandler(getApplicationContext()).update(intent);
 			con.disconnect();
 			stopSelf(startId);
 		}
 	}
 
 	private void retry(Intent intent, int startId) {
+		intent.putExtra("status", VideoStatusHandler.RETRY);
 		Bundle extras = intent.getExtras();
 		Integer retryCount = (Integer) extras.get("retryCount");
 		Long delay = (long) (1000 * (1 << retryCount));
@@ -129,6 +134,7 @@ public class FileUploadService extends NonStopIntentService {
 			} catch (InterruptedException e) {
 				Log.e(TAG, "retry interrupted: " + e.getMessage());
 			}
+			new VideoStatusHandler(getApplicationContext()).update(intent);
 			upload(intent, startId);
 		} else {
 			Log.e(TAG, "max retries reached for startId=" + startId);

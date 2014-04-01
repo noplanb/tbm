@@ -54,7 +54,7 @@
             android:name="RegisterActivity"
             android:screenOrientation="portrait" />
 
-        <service android:name="FileUploadService" android:process=":remote"/>
+        <service android:name=".FileUploadService" />
 
         <receiver
             android:name=".GcmBroadcastReceiver"

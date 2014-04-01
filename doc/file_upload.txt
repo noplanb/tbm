@@ -5,5 +5,9 @@ PROBLEM
 TEST
  - Create test remote long lived service that is not activity service and see if we can make it outlive the activity.
 
- - Todo
-   - 
+
+SOLUTION:
+  - Created a class I call NonStopIntentService that does not call stopSelf and relies on onhandleintent to do so.
+  - Returned START_REDELIVER_INTENT to onStart so that after our activity goes away and service is restarted it gets the last non completed intent.
+  
+  

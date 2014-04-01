@@ -49,22 +49,23 @@ public class HomeActivity extends Activity {
 	private ArrayList<FrameLayout> frames = new ArrayList<FrameLayout>(8);
 	private ArrayList<TextView> nameTexts = new ArrayList<TextView>(8);
 
-	private HashMap<String, VideoPlayer> videoPlayers = new HashMap<String, VideoPlayer>(8);
+	public HashMap<String, VideoPlayer> videoPlayers = new HashMap<String, VideoPlayer>(8);
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-
+		
 		// If activity was destroyed and we got an intent due to a new video download
 		// don't start up the activity. Send a notification instead and let the user 
 		// click on the notification if he wants to start tbm.
-		if (intentWasForNewVideo()){
-			sendNotification( getFriendFromIntent(this.getIntent()) );
+		Integer intentResult = new IntentHandler(this, getIntent()).handle(IntentHandler.STATE_ON_CREATE);
+		if (intentResult != null && intentResult == IntentHandler.RESULT_FINISH){
 			Log.i(TAG, "aborting home_activity becuase intent was for new video");
 			finish();
 			return;
 		}
+
 
 		//Note Boot.boot must complete successfully before we continue the home activity. 
 		//Boot will start the registrationActivity and return false if needed. 
@@ -79,17 +80,6 @@ public class HomeActivity extends Activity {
 		initModels();
 		init_page();
 		runTests();
-	}
-
-	private boolean intentWasForNewVideo() {
-		Boolean r = false;
-		Intent i = this.getIntent();
-		Bundle extras = i.getExtras();
-		if (extras != null){
-			String type = extras.getString("type");
-			r = type != null && type.startsWith("new_video");
-		}
-		return r;
 	}
 
 	private void initModels() {
@@ -148,26 +138,11 @@ public class HomeActivity extends Activity {
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		Log.i(TAG, "onNewIntent");
-		ActiveModelsHandler.retrieveFriend();
-		Friend friend = getFriendFromIntent(intent);
-		if (friend != null){
-			getVideoPlayerForFriend(friend).refreshThumb();
-			playNotificationTone();
-		}
+		new IntentHandler(this, intent).handle(IntentHandler.STATE_ON_NEW_INTENT);
 	}
 
-	private VideoPlayer getVideoPlayerForFriend(Friend friend) {
+	public VideoPlayer getVideoPlayerForFriend(Friend friend) {
 		return videoPlayers.get(friend.getId());
-	}
-
-	private Friend getFriendFromIntent(Intent intent) {
-		Friend f = null;
-		Bundle extras = intent.getExtras();
-		if (extras != null){
-			String friendId = extras.getString("friendId");
-			f = (Friend) FriendFactory.getFactoryInstance().find(friendId);
-		}
-		return f;
 	}
 
 	@Override
@@ -238,7 +213,8 @@ public class HomeActivity extends Activity {
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView5));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView6));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView7));
-
+		
+		VideoStatusHandler vsh = new VideoStatusHandler(this);
 		for (Integer i=0; i<friendFactory.count(); i++){
 			Friend f = (Friend) friendFactory.findWhere("viewIndex", i.toString());
 
@@ -248,10 +224,12 @@ public class HomeActivity extends Activity {
 			f.set("viewId", viewId.toString());
 			Integer thumbViewId = thumbViews.get(i).getId();
 			f.set("thumbViewId", thumbViewId.toString());
+			Integer nameTextId = nameTexts.get(i).getId();
+			f.set("nameTextId", nameTextId.toString());
 
 			plusTexts.get(i).setVisibility(View.INVISIBLE);
 			videoViews.get(i).setVisibility(View.VISIBLE);
-			nameTexts.get(i).setText(f.get("firstName"));
+			nameTexts.get(i).setText(vsh.getStatusStr(f));
 
 			videoPlayers.put(f.get("id"), new VideoPlayer( this, f.getId() ));
 		}
@@ -315,7 +293,7 @@ public class HomeActivity extends Activity {
 			public void onClick(View v) {
 				friendFactory.destroyAll();
 				userFactory.destroyAll();
-				Boot.boot(HomeActivity.instance);
+				finish();
 			}
 		});
 
@@ -380,34 +358,5 @@ public class HomeActivity extends Activity {
 		Toast toast=Toast.makeText(this, msg, Toast.LENGTH_SHORT);
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
-	}
-
-	private void sendNotification(Friend friend) {
-		final int NOTIFICATION_ID = 1;
-		NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, HomeActivity.class), 0);
-
-		String msg = "Message from " + friend.get("firstName") + "!";
-
-		Bitmap sqThumbBmp = friend.sqThumbBitmap();
-
-		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-		.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-		.setLargeIcon(sqThumbBmp)
-		.setSmallIcon(R.drawable.ic_stat_gcm)
-		.setContentTitle(msg)
-		.setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
-		.setContentText("Three By Me");
-
-		Log.i(TAG, "sendNotification: Sending notification");
-		mBuilder.setContentIntent(contentIntent);
-		notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-	}
-
-	private void playNotificationTone(){
-		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-		r.play();
 	}
 };

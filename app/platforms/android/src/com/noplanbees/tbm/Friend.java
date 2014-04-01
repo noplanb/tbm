@@ -21,7 +21,18 @@ public class Friend extends ActiveModel{
 
 	@Override
 	public String[] attributeList() {
-      final String[] a = {"id", "viewIndex", "frameId", "viewId", "thumbViewId",  "firstName", "lastName", "videoPath", "videoNotViewed"};
+      final String[] a = {	"id", 
+    		  			  	"viewIndex", 
+    		  			  	"frameId", 
+    		  			  	"viewId", 
+    		  			  	"thumbViewId",
+    		  			  	"nameTextId",
+    		  			  	"firstName", 
+    		  			  	"lastName", 
+    		  			  	"videoPath", 
+    		  			  	"videoNotViewed",
+    		  			  	"sentVideoStatus",
+    		  			  	"sentVideoRetryCount"};
       return a;
 	}
 	
@@ -99,7 +110,8 @@ public class Friend extends ActiveModel{
 		String receiverId = get("id");
 
 		Intent i = new Intent(activity, FileUploadService.class);
-		i.putExtra("retryCount", 0);
+		i.putExtra(VideoStatusHandler.STATUS_KEY, VideoStatusHandler.NEW);
+		i.putExtra(VideoStatusHandler.RETRY_COUNT_KEY, 0);
 		i.putExtra("filePath", videoToPath());
 		i.putExtra("userId", user.get("id"));
 		i.putExtra("receiverId", receiverId);

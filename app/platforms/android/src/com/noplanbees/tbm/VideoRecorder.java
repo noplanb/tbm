@@ -108,7 +108,7 @@ public class VideoRecorder {
 				cpaint.setColor(0xffCC171E);
 				cpaint.setStyle(Paint.Style.FILL);
 				c.drawPath(borderPath, paint);
-				c.drawCircle(35, 35, 10, cpaint);
+				c.drawCircle(Convenience.dpToPx(context, 13), Convenience.dpToPx(context, 13), Convenience.dpToPx(context, 4), cpaint);
 				overlaySurfaceHolder.unlockCanvasAndPost(c);
 			}
 		};

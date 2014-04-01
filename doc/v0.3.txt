@@ -6,13 +6,14 @@
  - Clicking on grey guy (cant play this video.)
  - Indicate video sent status
    - pxsp! p...
+ - If we start recording we should immediately stop any playing on that friend.
  
  x Upload should be a wakeful service.
    x Create a broadcast receiver
    x Register it locally
    x Create an intent for it
    x Call it
-   - Retry exponential holdoff
+   x Retry exponential holdoff
  
 
   Make the video frame in the notification square
