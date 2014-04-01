@@ -26,8 +26,8 @@ Architecture
     x update_video_status
   - Send messages to GcmBroadcastReceiver
     - type
-      - VIDEO_RECEIVED
-      - VIDEO_STATUS_UPDATE
+      - video_recieved
+      - video_status_update
     - from_id
     - to_id
     - status
