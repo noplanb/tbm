@@ -254,6 +254,7 @@ public class HomeActivity extends Activity {
 
 	private void onRecordStart(View v){
 		Friend f = FriendFactory.getFriendFromFrame((View) v);
+		getVideoPlayer(f).stop();
 		if (videoRecorder.startRecording()) {
 			Log.i(TAG, "onRecordStart: START RECORDING. view = " +f.get("firstName"));
 		} else {
@@ -275,18 +276,23 @@ public class HomeActivity extends Activity {
 		Friend f = FriendFactory.getFriendFromFrame(v);
 		Log.i(TAG, "onRecordCancel: CANCEL RECORDING." + f.get("firstName"));
 		videoRecorder.stopRecording(f);
+		toast("Not Sent");
 	}
 
 	private void onPlayClick(View v) {
 		Friend f = FriendFactory.getFriendFromFrame(v);
 		Log.i(TAG, "onPlayClick" + f.get("firstName"));
-		videoPlayers.get(f.get("id")).click();
+		getVideoPlayer(f).click();
 	}
 
 	private void upload(View v) {
 		Log.i(TAG, "upload");
 		Friend f = FriendFactory.getFriendFromFrame(v);
 		f.uploadVideo(this);
+	}
+	
+	private VideoPlayer getVideoPlayer(Friend f){
+		return videoPlayers.get(f.getId());
 	}
 
 	private void addListeners() {

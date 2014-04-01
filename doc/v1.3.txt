@@ -1,0 +1,27 @@
+ Features
+ --------
+ - Upload and download
+   - Works in the background even if the app is killed
+   - Retries with exponential hold off if the server is not reachable.
+   (you can test by sending videos in airplane mode)
+
+ - Slide your finger down when recording to abort. Recording is discarded.
+ 
+ - Video Status
+   - A temporary text indicator in the name text field indicates the status of the message
+     - p...   Still on your phone being uploaded
+     - rn...  Still on your phone retrying for the nth time
+     - .s..   On the server 
+     - ..p.   On the recipients phone
+     - ...v!  Viewed!
+
+ Bug fixes
+ ---------
+ - Starting to record stops playback if was happening.
+ - Clicking on grey guy (cant play this video.)
+ - Reset not working properly
+ - Sometime black views for friends.
+ 
+ Next release
+ ------------
+ - Fix Kons video problem and dim recording screen on farhads and kons phones.

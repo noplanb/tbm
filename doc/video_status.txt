@@ -31,20 +31,21 @@ Architecture
     - from_id
     - to_id
     - status
-      - UPLOADING
-      - RETRY
-      - UPLOADED
-      - DOWNLOADED
-      - VIEWED
-    - retry_count
+      x NEW
+      x UPLOADING
+      x RETRY
+      x UPLOADED
+      x DOWNLOADED
+      x VIEWED
+    x retry_count
   x Intent for upload has extras for
     x videoStatus
     x retryCount
     x friendId
-  - GcmIntentService
-    - Formats intent appropriately depending on whether it is for VIDEO_RECEIVED VIDEO_STATUS_UPDATE
-    - Forwards to HomeActivity
-  - HomeActivity
+  x GcmIntentService
+    x Formats intent appropriately depending on whether it is for VIDEO_RECEIVED VIDEO_STATUS_UPDATE
+    x Forwards to HomeActivity or in case of videoStatusUpdate relies on VideoStatusHandler to do that.
+  x HomeActivity
     x HomeActivityIntentHelper
       x Intent = VIDEO_RECEIVED
         x onCreate
@@ -52,11 +53,11 @@ Architecture
         x onNewIntent
           x Buzz
           x Update videoplayer with new indicator.
-      - Intent = VIDEO_STATUS_UPDATE
+      x Intent = VIDEO_STATUS_UPDATE
         x onCreate
           x do nothing
-        - onNewIntent
-          - Update UI with status.
+        x onNewIntent
+          x Update UI with status.
       
 Test
 

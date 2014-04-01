@@ -36,6 +36,10 @@ public class VideoPlayer {
 	public void click(){
 		Friend friend = getFriend();
 		VideoView videoView = getVideoView();
+		
+		if (friend.videoFromFile().length() < 100)
+			return;
+		
 		if (videoView.isPlaying()){
 			videoView.pause();
 		} else {
@@ -44,6 +48,12 @@ public class VideoPlayer {
 			videoView.start();
 			videoStatusHandler.setVideoViewed(friend);
 		}
+	}
+	
+	public void stop(){
+		VideoView videoView = getVideoView();
+		if (videoView.isPlaying())
+			videoView.stopPlayback();
 	}
 
 
