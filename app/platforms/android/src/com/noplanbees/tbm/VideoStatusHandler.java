@@ -152,7 +152,7 @@ public class VideoStatusHandler {
 
 	public String getFirstName(Friend friend, Integer status){
 		String fn = friend.get("firstName");
-		String shortFn = fn.substring(0, 3);
+		String shortFn = fn.substring(0, 7);
 		String r = shortFn;
 		if (status == null || status == SENT_VIEWED){
 			r = fn;

@@ -43,8 +43,7 @@ public class GcmIntentService extends IntentService {
 				//Not used
 			} else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
 				Log.i(TAG, "onHandleIntent: extras = " + extras.toString());
-
-				if ( extras.getString("type").equalsIgnoreCase("video_recieved") ){
+				if ( extras.getString("type").equalsIgnoreCase("video_received") ){
 					handleVideoReceived(intent);	
 				} else if ( extras.getString("type").equalsIgnoreCase("video_status_update") ){
 					handleVideoStatusUpdate(intent);
@@ -75,6 +74,7 @@ public class GcmIntentService extends IntentService {
 	// Handling video received
 	//---------
 	private void handleVideoReceived(Intent intent) {
+		Log.i(TAG, "handleVideoReceived:");
 		Friend friend = ActiveModelsHandler.ensureFriend().getFriendFromIntent(intent);
 		friend.downloadVideo();
 		sendHomeActivityVideoRecievedIntent(friend);
