@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.google.gson.internal.LinkedTreeMap;
+
 public class VideoStatusHandler {
 	private final String TAG = this.getClass().getSimpleName();
 	
@@ -22,6 +24,7 @@ public class VideoStatusHandler {
 
 	public void setVideoViewed(Friend f) {
 		setVideoNotViewedState(f, false);
+		notifyServerVideoViewed(f);
 	}
 
 	public void setVideoNotViewed(Friend f){
@@ -54,6 +57,22 @@ public class VideoStatusHandler {
 		return friend.get("videoNotViewed") != null && friend.get("videoNotViewed").startsWith("t");
 	}
 	
+	private void notifyServerVideoViewed(Friend f) {
+		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
+		params.put("from_id", f.getId());
+		params.put("to_id", User.userId());
+		new SGet("videos/update_viewed", params);
+	}
+	
+	private class SGet extends Server{
+		public SGet(String uri, LinkedTreeMap<String, String> params) {
+			super(uri, params);
+		}
+		@Override
+		public void callback(String response) {
+			Log.i(TAG, "callback: " + response);
+		}
+	}
 	
 	//-------------------
 	// SentVideoStatus model stuff
@@ -152,7 +171,8 @@ public class VideoStatusHandler {
 
 	public String getFirstName(Friend friend, Integer status){
 		String fn = friend.get("firstName");
-		String shortFn = fn.substring(0, 7);
+		int shortLen = Math.min(7, fn.length());
+		String shortFn = fn.substring(0, shortLen);
 		String r = shortFn;
 		if (status == null || status == SENT_VIEWED){
 			r = fn;

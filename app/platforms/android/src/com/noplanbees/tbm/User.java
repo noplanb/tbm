@@ -15,8 +15,17 @@ public class User extends ActiveModel{
 	}
 	
 	public static boolean isRegistered(){
-		UserFactory cf = UserFactory.getFactoryInstance();
-		return cf.hasInstances() && cf.instances.get(0).get("registered").startsWith("t");
+		UserFactory uf = ActiveModelsHandler.ensureUser();
+		return uf.hasInstances() && uf.instances.get(0).get("registered").startsWith("t");
+	}
+	
+	public static String userId(){
+		String id = null;
+		UserFactory uf = ActiveModelsHandler.ensureUser();
+		if (uf.hasInstances()){
+			id = uf.instances.get(0).getId();
+		}
+		return id;
 	}
 	
     public String getId(){

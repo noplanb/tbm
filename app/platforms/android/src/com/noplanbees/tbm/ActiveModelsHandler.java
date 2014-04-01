@@ -15,7 +15,7 @@ public class ActiveModelsHandler {
 		saveFriend();
 	}
 	
-	public static void ensureUser(){
+	public static UserFactory ensureUser(){
 		UserFactory uf = UserFactory.getFactoryInstance();
 		if (uf.hasInstances()){
 			Log.i(TAG, "User present in memory.");
@@ -25,6 +25,7 @@ public class ActiveModelsHandler {
 			Log.i(TAG, "Config not retrievable from local storage. Creating Conf instance.");
 			uf.makeInstance();
 		}
+		return uf;
 	}
 	
 	public static FriendFactory ensureFriend(){
