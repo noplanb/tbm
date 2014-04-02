@@ -66,7 +66,7 @@ public class GcmIntentService extends IntentService {
 		} else {
 			Log.e(TAG, "handleVideoStatusUpdate: ERROR got unknow sent video status");
 		}
-		// VidoeStatusHandler is responsible for forwarding intent to homeActivity in this case.
+		// VideoStatusHandler is responsible for forwarding intent to homeActivity in this case.
 		new VideoStatusHandler(getApplicationContext()).updateSentVideoStatus(intent);
 	}
 	
@@ -76,7 +76,7 @@ public class GcmIntentService extends IntentService {
 	private void handleVideoReceived(Intent intent) {
 		Log.i(TAG, "handleVideoReceived:");
 		Friend friend = ActiveModelsHandler.ensureFriend().getFriendFromIntent(intent);
-		friend.downloadVideo();
+		friend.downloadVideo(getApplicationContext());
 		sendHomeActivityVideoRecievedIntent(friend);
 	}
 

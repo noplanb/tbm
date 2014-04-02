@@ -29,6 +29,14 @@ public class VideoStatusHandler {
 
 	public void setVideoNotViewed(Friend f){
 		setVideoNotViewedState(f, true);
+		// Also clear the sentVideoStatus for the last received video here because it makes sense in the ui
+		// if you got a new video it definitely means the other person has seen your last 
+		String friendId = f.getId();
+		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
+		Friend friend = (Friend) friendFactory.find(friendId);
+		friend.set("sentVideoStatus", ((Integer) NEW).toString());
+		Log.i(TAG, "setVideoNotViewed" + f.attributes.toString());
+		ActiveModelsHandler.saveFriend();
 	}
 
 	// Assume that multiple processes can update the videoViewed field in the friend model
@@ -90,7 +98,8 @@ public class VideoStatusHandler {
 	public void updateSentVideoStatus(Intent intent){
 		Log.i(TAG, "update");
 		updateFriendSentVideoStatus(intent);
-		notifyHomeActivityOfVideoStatus(intent);
+		Friend friend = ActiveModelsHandler.ensureFriend().getFriendFromIntent(intent);
+		notifyHomeActivityOfVideoStatus(friend);
 	}
 
 	// Assume that multiple processes can update the videoStatus fields in the friend model
@@ -133,12 +142,13 @@ public class VideoStatusHandler {
 		return r;
 	}
 
-	public void notifyHomeActivityOfVideoStatus(Intent intent){
+	public void notifyHomeActivityOfVideoStatus(Friend friend){
 		Log.i(TAG, "notifyHomeActivity");
-		Bundle extras = intent.getExtras();		
+		Bundle extras = new Bundle();		
 		Intent i = new Intent(context, HomeActivity.class);
 		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		extras.putInt(IntentHandler.INTENT_TYPE_KEY, IntentHandler.TYPE_VIDEO_STATUS_UPDATE);
+		extras.putString("friendId", friend.getId());
 		i.putExtras(extras);
 		context.startActivity(i);
 	}
@@ -148,7 +158,9 @@ public class VideoStatusHandler {
 	//-----------------
 	private String statusStr(int status, int retryCount) {
 		switch (status){
-		case NEW: case UPLOADING:
+		case NEW: 
+			return "";
+		case UPLOADING:
 			return "p...";
 		case RETRY: 
 			return String.format("r%d...", retryCount);
@@ -163,6 +175,7 @@ public class VideoStatusHandler {
 	}
 
 	public String getStatusStr(Friend friend){
+		Log.i(TAG, "getStatusStr: ");
 		Bundle b = getSentVideoStatus(friend);
 		Integer status = b.getInt(STATUS_KEY);
 		String ss = statusStr( status, b.getInt(RETRY_COUNT_KEY) );

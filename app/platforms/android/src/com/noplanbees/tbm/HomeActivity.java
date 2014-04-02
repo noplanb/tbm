@@ -53,7 +53,6 @@ public class HomeActivity extends Activity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
 		
 		// If activity was destroyed and we got an intent due to a new video download
@@ -62,10 +61,11 @@ public class HomeActivity extends Activity {
 		Integer intentResult = new IntentHandler(this, getIntent()).handle(IntentHandler.STATE_ON_CREATE);
 		if (intentResult != null && intentResult == IntentHandler.RESULT_FINISH){
 			Log.i(TAG, "aborting home_activity becuase intent was for new video");
+			super.onCreate(savedInstanceState);
 			finish();
 			return;
 		}
-
+		super.onCreate(savedInstanceState);
 
 		//Note Boot.boot must complete successfully before we continue the home activity. 
 		//Boot will start the registrationActivity and return false if needed. 

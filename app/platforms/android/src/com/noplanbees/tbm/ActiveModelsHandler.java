@@ -15,6 +15,11 @@ public class ActiveModelsHandler {
 		saveFriend();
 	}
 	
+	public static void retreiveAll(){
+		retrieveUser();
+		retrieveFriend();
+	}
+	
 	public static UserFactory ensureUser(){
 		UserFactory uf = UserFactory.getFactoryInstance();
 		if (uf.hasInstances()){
@@ -48,6 +53,12 @@ public class ActiveModelsHandler {
 		FriendFactory ff = FriendFactory.getFactoryInstance();
         ff.retrieve();
         return ff;
+	}
+	
+	public static UserFactory retrieveUser(){
+		UserFactory uf = UserFactory.getFactoryInstance();
+        uf.retrieve();
+        return uf;
 	}
 	
 	public static void saveUser(){

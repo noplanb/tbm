@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -47,21 +48,24 @@ public class IntentHandler {
 		} else if (typeIsVideoStatusUpdate()){
 			r = handleVideoStatusUpdate(state);
 		} else {
-			Log.i(TAG, "handle: no inent type ");
+			Log.i(TAG, "handle: no intent type ");
 		}
 		return r;
 	}
-
+    
+	//-----------------------
+	// VideoStausUpdate stuff
+	//-----------------------
 	private int handleVideoStatusUpdate(int state) {
 		Log.i(TAG, "handleVideoStatusUpdate");
 		if (state == STATE_ON_NEW_INTENT){
-			updateHomeViewSentVideoStatus();
+			updateHomeViewSentVideoStatus(friend);
 			return RESULT_CONTINUE;
 		} 
 		return RESULT_FINISH;
 	}
 
-	private void updateHomeViewSentVideoStatus() {
+	public void updateHomeViewSentVideoStatus(Friend friend) {
 		if (friend != null){
 			Log.i(TAG, "updateHomeViewSentVideoStatus: friend = " + friend.get("firstName"));
 			Integer nameTextId = Integer.parseInt(friend.get("nameTextId"));
@@ -73,12 +77,15 @@ public class IntentHandler {
 		}
 	}
 
+	//-----------------------
+	// VideoRecievedStuff stuff
+	//-----------------------
 	private Integer handleVideoReceived(int state) {
 		Log.i(TAG, "handleVideoReceived");
 		Integer r = null;
 		switch (state){
 		case STATE_ON_CREATE:
-			sendNotification();
+			new SendNotificationAsync().execute();
 			r = RESULT_FINISH;
 			break;
 		case STATE_ON_NEW_INTENT:
@@ -96,9 +103,19 @@ public class IntentHandler {
 		if (friend != null){
 			homeActivity.getVideoPlayerForFriend(friend).refreshThumb();
 			playNotificationTone();
+			updateHomeViewSentVideoStatus(friend);
 		}	
 	}
-
+	
+	// Using async to prevent the screen from flashing by minimizing the delay to finish onCreate
+	class SendNotificationAsync extends AsyncTask<Void, Void, Void>{
+		@Override
+		protected Void doInBackground(Void... params) {
+			sendNotification();
+			return null;
+		}
+	}
+	
 	private void sendNotification() {
 		Log.i(TAG, "sendNotification");
 		final int NOTIFICATION_ID = 1;

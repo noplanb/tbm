@@ -7,12 +7,11 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 
 import android.app.Activity;
-import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
-import android.sax.StartElementListener;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.VideoView;
@@ -91,9 +90,9 @@ public class Friend extends ActiveModel{
 	//-------------------------
 	// Video download
 	//-------------------------
-	public void downloadVideo(){
+	public void downloadVideo(Context context){
 		FileDownload.downloadForFriend(this);
-		new VideoStatusHandler().setVideoNotViewed(this);
+		new VideoStatusHandler(context).setVideoNotViewed(this);
 	}
 	
 	public void bgDownloadVideo(){

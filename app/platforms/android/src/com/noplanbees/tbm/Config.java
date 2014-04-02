@@ -8,8 +8,8 @@ import android.util.Log;
 
 public class Config {
 
-	public final static String serverUri = "http://192.168.1.82:3000";
-//	public final static String serverUri = "http://www.threebyme.com";
+//	public final static String serverUri = "http://192.168.1.82:3000";
+	public final static String serverUri = "http://www.threebyme.com";
 	private static File homeDir = null;
 
 	public static File getHomeDir() {
