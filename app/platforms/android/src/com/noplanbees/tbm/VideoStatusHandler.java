@@ -22,33 +22,27 @@ public class VideoStatusHandler {
 	// Local videoViewed stuff
 	//-------------------
 
-	public void setVideoViewed(Friend f) {
-		setVideoNotViewedState(f, false);
-		notifyServerVideoViewed(f);
+	public void setVideoViewed(String friendId) {
+		setVideoNotViewedState(friendId, false);
+		notifyServerVideoViewed(friendId);
 	}
 
-	public void setVideoNotViewed(Friend f){
-		setVideoNotViewedState(f, true);
-		// Also clear the sentVideoStatus for the last received video here because it makes sense in the ui
-		// if you got a new video it definitely means the other person has seen your last 
-		String friendId = f.getId();
-		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
-		Friend friend = (Friend) friendFactory.find(friendId);
-		friend.set("sentVideoStatus", ((Integer) NEW).toString());
-		Log.i(TAG, "setVideoNotViewed" + f.attributes.toString());
-		ActiveModelsHandler.saveFriend();
+	public void setVideoNotViewed(String friendId){
+		setVideoNotViewedState(friendId, true);
 	}
 
 	// Assume that multiple processes can update the videoViewed field in the friend model
 	// let the saved state be used for interprocess communication. Therefore always read
 	// from file update model then save to file when writing.
-	private void setVideoNotViewedState(Friend f, Boolean value){
-		Log.i(TAG, String.format("setVideoNotViewedState: %s %b", f.get("firstName"), value ));
-		String friendId = f.getId();
+	private void setVideoNotViewedState(String friendId, Boolean value){
 		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
 		Friend friend = (Friend) friendFactory.find(friendId);
+		Log.i(TAG, String.format("setVideoNotViewedState: %s %b", friend.get("firstName"), value ));
 		if (value){
 			friend.set("videoNotViewed", "true");
+			// Also clear the sentVideoStatus for the last received video here because it makes sense in the ui
+			// if you got a new video it definitely means the other person has seen your last 
+			friend.set("sentVideoStatus", ((Integer) NEW).toString());
 		} else{
 			friend.set("videoNotViewed", "false");
 		}
@@ -65,9 +59,9 @@ public class VideoStatusHandler {
 		return friend.get("videoNotViewed") != null && friend.get("videoNotViewed").startsWith("t");
 	}
 	
-	private void notifyServerVideoViewed(Friend f) {
+	private void notifyServerVideoViewed(String friendId) {
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-		params.put("from_id", f.getId());
+		params.put("from_id", friendId);
 		params.put("to_id", User.userId());
 		new SGet("videos/update_viewed", params);
 	}

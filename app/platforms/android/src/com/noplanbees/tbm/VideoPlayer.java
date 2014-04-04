@@ -46,7 +46,7 @@ public class VideoPlayer {
 			videoView.setVideoPath(friend.videoFromPath());
 			hideThumb();
 			videoView.start();
-			videoStatusHandler.setVideoViewed(friend);
+			videoStatusHandler.setVideoViewed(friend.getId());
 		}
 	}
 	

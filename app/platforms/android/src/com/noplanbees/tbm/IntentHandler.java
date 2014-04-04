@@ -16,32 +16,35 @@ import android.widget.TextView;
 
 public class IntentHandler {
 	private final String TAG = this.getClass().getSimpleName();
-	
+
 	public static final int TYPE_VIDEO_RECEIVED = 0;
 	public static final int TYPE_VIDEO_STATUS_UPDATE = 1;
-	
-	public static final int STATE_ON_CREATE = 0;
-	public static final int STATE_ON_NEW_INTENT = 1;
-	
+
+	public static final int STATE_SHUTDOWN = 0;
+	public static final int STATE_FOREGROUND = 1;
+	public static final int STATE_BACKGROUND = 2;
+
 	public static final String INTENT_TYPE_KEY = "type";
 
 	public static final int RESULT_FINISH = 0;
 	public static final int RESULT_CONTINUE = 1;
 
 
+
 	private HomeActivity homeActivity;
 	private Intent intent;
 	private Bundle extras;
 	private Friend friend;
-	
+
 	public IntentHandler(HomeActivity a, Intent i){
 		homeActivity = a;
 		intent = i;
 		extras = intent.getExtras();
 		friend = FriendFactory.getFactoryInstance().getFriendFromIntent(intent);
 	}
-	
+
 	public Integer handle(int state){
+		Log.i(TAG, "handle: state = " + state);
 		Integer r = null;
 		if (typeIsVideoReceived()){
 			r = handleVideoReceived(state);
@@ -52,13 +55,13 @@ public class IntentHandler {
 		}
 		return r;
 	}
-    
+
 	//-----------------------
 	// VideoStausUpdate stuff
 	//-----------------------
 	private int handleVideoStatusUpdate(int state) {
 		Log.i(TAG, "handleVideoStatusUpdate");
-		if (state == STATE_ON_NEW_INTENT){
+		if (state == STATE_FOREGROUND){
 			updateHomeViewSentVideoStatus(friend);
 			return RESULT_CONTINUE;
 		} 
@@ -83,17 +86,12 @@ public class IntentHandler {
 	private Integer handleVideoReceived(int state) {
 		Log.i(TAG, "handleVideoReceived");
 		Integer r = null;
-		switch (state){
-		case STATE_ON_CREATE:
+		if (state == STATE_SHUTDOWN){
 			new SendNotificationAsync().execute();
 			r = RESULT_FINISH;
-			break;
-		case STATE_ON_NEW_INTENT:
+		} else {
 			updateHomeViewReceivedVideo();
 			r = RESULT_CONTINUE;
-			break;
-		default:
-			Log.e(TAG, "handleVideoReceived: unknown state = " + state);
 		}
 		return r;
 	}
@@ -106,7 +104,7 @@ public class IntentHandler {
 			updateHomeViewSentVideoStatus(friend);
 		}	
 	}
-	
+
 	// Using async to prevent the screen from flashing by minimizing the delay to finish onCreate
 	class SendNotificationAsync extends AsyncTask<Void, Void, Void>{
 		@Override
@@ -115,7 +113,7 @@ public class IntentHandler {
 			return null;
 		}
 	}
-	
+
 	private void sendNotification() {
 		Log.i(TAG, "sendNotification");
 		final int NOTIFICATION_ID = 1;
@@ -144,7 +142,7 @@ public class IntentHandler {
 	private boolean typeIsVideoStatusUpdate() {
 		return  type() != null && type() == TYPE_VIDEO_STATUS_UPDATE;
 	}
-	
+
 	private Integer type(){
 		Integer t = null;
 		if (extras != null){
@@ -152,11 +150,11 @@ public class IntentHandler {
 		}
 		return t; 
 	}
-	
+
 	private boolean typeIsVideoReceived() {
 		return type() != null && type() == TYPE_VIDEO_RECEIVED;
 	}
-	
+
 	private void playNotificationTone(){
 		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 		Ringtone r = RingtoneManager.getRingtone(homeActivity.getApplicationContext(), notification);

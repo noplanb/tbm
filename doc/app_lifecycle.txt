@@ -1,0 +1,35 @@
+QUESTION - How does startActivity due to new intents work into the application lifecycle.
+  
+  - What happens when new intent comes in when State is:
+    - State: Activity shutdown
+      - Goes to onCreate()
+    - State: Activity running
+      - Goes to onPause() -> onNewIntent() -> onResume()
+    - State: Activity Stopped but restartable
+      - Goes to onNewIntent() -> onRestart() -> onStart() -> onResume()
+    - State: Activity Stopped but app processes killed
+      - I have never been able to create this but I think it might be responsible for the spurious bug in jills phone. Perhaps we sometimes go to 
+        onNewintent() here even though the app processes were killed when it should be going to onCreate() instead.
+        
+        
+=======
+PROBLEM - Jills phone has a spurious bug where models retrieved from the file system are empty. This is very hard to reproduce though I once saw it on my phone as well. Probably need to try several things and see if it goes away.
+
+POSSIBLE CAUSES
+ - Cause: app enters through newIntent() even though it was in a stopped state where app process were killed.
+   - Try: ensuring models are loaded on NewIntent.
+ - Cause: We have a thread safety issue where VideoStatusHandler is reading the models from file at the same time our activity is writing them onPause for example.
+   - Try: In ActiveModelFactory make save and retrieve synchronized. 
+
+=======
+PROBLEM - Sometimes when you come back to the app the thumbnails are blacked out. 
+
+POSSIBLE CAUSE
+  - Cause - somehow when stopped the activity looses some view state but it is not sent to onCreate() but rather to onStart() when returning so it is not initialized.
+  - Try 
+    - moving view initialization into onStart 
+    - making model initialization lazy in onStart()
+
+=======
+PROBLEM - Don't want app to come to the foreground for SentVideoStatus but want it to come to the foreground for VideoReceived.
+    

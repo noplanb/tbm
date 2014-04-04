@@ -40,7 +40,8 @@ public class ActiveModelFactory {
 	//--------------------
 	// Save and retrieve
 	//--------------------
-	public String save(){
+	// See app_lifecycle.text for why these are synchronized.
+	public synchronized String save(){
 		if (instances == null || instances.isEmpty())
 			return "";
 
@@ -68,7 +69,7 @@ public class ActiveModelFactory {
 		return j;
 	}
 
-	public boolean retrieve(){
+	public synchronized boolean retrieve(){
 		instances.clear();
 		String json = null;
 		try {

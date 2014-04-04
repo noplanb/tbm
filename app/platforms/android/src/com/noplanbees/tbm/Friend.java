@@ -92,12 +92,12 @@ public class Friend extends ActiveModel{
 	//-------------------------
 	public void downloadVideo(Context context){
 		FileDownload.downloadForFriend(this);
-		new VideoStatusHandler(context).setVideoNotViewed(this);
+		new VideoStatusHandler(context).setVideoNotViewed(getId());
 	}
 	
 	public void bgDownloadVideo(){
 		FileDownload.bgDownloadForFriend(this);
-		new VideoStatusHandler().setVideoNotViewed(this);
+		new VideoStatusHandler().setVideoNotViewed(getId());
 	}
 	
 	//-------------------------

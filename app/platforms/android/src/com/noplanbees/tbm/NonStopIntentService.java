@@ -46,7 +46,7 @@ public abstract class NonStopIntentService extends Service {
     	if (intent == null){
         	Log.i(TAG, "onStart: null intent");
     	} else {
-        	Log.i(TAG, "onStart: null intent");
+        	Log.i(TAG, "onStart: intent = " + intent.toString());
     	}
         Message msg = mServiceHandler.obtainMessage();
         msg.arg1 = startId;

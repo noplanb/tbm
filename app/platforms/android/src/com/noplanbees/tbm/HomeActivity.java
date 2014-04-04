@@ -4,18 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.app.Activity;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
@@ -42,6 +34,7 @@ public class HomeActivity extends Activity {
 	public VideoRecorder videoRecorder;
 	private GcmHandler gcmHandler;
 	public LocalBroadcastManager localBroadcastManger;
+	private String lastState;
 
 	private ArrayList<VideoView> videoViews = new ArrayList<VideoView>(8);
 	private ArrayList<ImageView> thumbViews = new ArrayList<ImageView>(8);
@@ -53,12 +46,12 @@ public class HomeActivity extends Activity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		Log.i(TAG, "onCreate");
-		
+		Log.i(TAG, "onCreate state");
+
 		// If activity was destroyed and we got an intent due to a new video download
 		// don't start up the activity. Send a notification instead and let the user 
 		// click on the notification if he wants to start tbm.
-		Integer intentResult = new IntentHandler(this, getIntent()).handle(IntentHandler.STATE_ON_CREATE);
+		Integer intentResult = new IntentHandler(this, getIntent()).handle(IntentHandler.STATE_SHUTDOWN);
 		if (intentResult != null && intentResult == IntentHandler.RESULT_FINISH){
 			Log.i(TAG, "aborting home_activity becuase intent was for new video");
 			super.onCreate(savedInstanceState);
@@ -74,12 +67,9 @@ public class HomeActivity extends Activity {
 			finish();
 			return;
 		}
-
 		setContentView(R.layout.home);
-
-		initModels();
-		init_page();
-		runTests();
+		addListeners();
+		lastState = "onCreate";
 	}
 
 	private void initModels() {
@@ -88,6 +78,18 @@ public class HomeActivity extends Activity {
 		gcmHandler = new GcmHandler(this);
 		friendFactory = FriendFactory.getFactoryInstance();
 		userFactory = UserFactory.getFactoryInstance();
+		getVideoViewsAndPlayers();
+	}
+
+	private void ensureModels() {
+		if ( instance == null ||
+				videoRecorder == null ||
+				gcmHandler == null ||
+				friendFactory == null ||
+				userFactory == null
+				){
+			initModels();
+		}
 	}
 
 	private void runTests() {
@@ -101,45 +103,52 @@ public class HomeActivity extends Activity {
 		// new FileDownload.BgDownloadFromFriendId().execute(f.get("id"));
 	}
 
-	private void testService(){
-		Log.i(TAG, "testService");
-
-		for(int n=0; n<4; n++){
-			Log.i(TAG, "testService " + n);
-			Intent i = new Intent(this, TestService.class);	
-			Bundle extras = new Bundle();
-			extras.putInt("n", n);
-			i.putExtras(extras);
-			startService(i);
-		}
-	}
-
 	@Override
 	protected void onStart() {
 		super.onStart();
-		Log.i(TAG, "onStart:");
+		Log.i(TAG, "onStart: state");
+		ensureModels();
+		initViews();
 		videoRecorder.restore();
+		//runTests();
+		lastState = "onStart";
+	}
+
+	@Override
+	protected void onRestart() {
+		super.onRestart();
+		Log.i(TAG, "onRestart: state");
+		lastState = "onRestart";
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
-		Log.i(TAG, "onStop:");
+		Log.i(TAG, "onStop: state");
 		videoRecorder.dispose();
+		lastState = "onStop";
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		Log.i(TAG, "onPause");
+		Log.i(TAG, "onPause: state");
 		ActiveModelsHandler.saveAll();
+		lastState = "onPause";
 	}
 
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-		Log.i(TAG, "onNewIntent");
-		new IntentHandler(this, intent).handle(IntentHandler.STATE_ON_NEW_INTENT);
+		Log.i(TAG, "onNewIntent: state");
+		int appState = (lastState.startsWith("onPause")) ? IntentHandler.STATE_FOREGROUND : IntentHandler.STATE_BACKGROUND;
+		Integer intentResult = new IntentHandler(this, intent).handle(appState);
+		if (intentResult != null && intentResult == IntentHandler.RESULT_FINISH){
+			Log.i(TAG, "aborting home_activity on directive from intentHandler");
+			finish();
+			return;
+		}
+		lastState = "onNewIntent";
 	}
 
 	public VideoPlayer getVideoPlayerForFriend(Friend friend) {
@@ -149,7 +158,7 @@ public class HomeActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Log.i(TAG, "onResume");
+		Log.i(TAG, "onResume: state");
 		if (!gcmHandler.checkPlayServices()){
 			Log.e(TAG, "onResume: checkPlayServices = false");
 		}
@@ -158,15 +167,9 @@ public class HomeActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		Log.i(TAG, "onDestroy");
+		Log.i(TAG, "onDestroy: state");
 	}
 
-	private void init_page() {
-		getVideoViewsAndPlayers();
-		cameraPreviewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
-		cameraPreviewFrame.addView(new ViewSizeGetter(this));
-		addListeners();
-	}
 
 	private void getVideoViewsAndPlayers() {
 		videoViews.add((VideoView) findViewById(R.id.VideoView0));
@@ -213,7 +216,7 @@ public class HomeActivity extends Activity {
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView5));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView6));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView7));
-		
+
 		for (Integer i=0; i<friendFactory.count(); i++){
 			Friend f = (Friend) friendFactory.findWhere("viewIndex", i.toString());
 
@@ -227,14 +230,15 @@ public class HomeActivity extends Activity {
 			f.set("nameTextId", nameTextId.toString());
 		}
 		friendFactory.save();
-		
+	}
+	
+	private void initViews(){
 		VideoStatusHandler vsh = new VideoStatusHandler(this);
 		for (Integer i=0; i<friendFactory.count(); i++){
 			Friend f = (Friend) friendFactory.findWhere("viewIndex", i.toString());
 			plusTexts.get(i).setVisibility(View.INVISIBLE);
 			videoViews.get(i).setVisibility(View.VISIBLE);
 			nameTexts.get(i).setText(vsh.getStatusStr(f));
-
 			videoPlayers.put(f.get("id"), new VideoPlayer( this, f.getId() ));
 		}
 	}
@@ -290,13 +294,17 @@ public class HomeActivity extends Activity {
 		Friend f = FriendFactory.getFriendFromFrame(v);
 		f.uploadVideo(this);
 	}
-	
+
 	private VideoPlayer getVideoPlayer(Friend f){
 		return videoPlayers.get(f.getId());
 	}
 
 	private void addListeners() {
-
+		// Attache ViewSizeGetter
+		cameraPreviewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
+		cameraPreviewFrame.addView(new ViewSizeGetter(this));
+		
+		// Reset button
 		Button btnReset = (Button) findViewById(R.id.btnReset);
 		btnReset.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -306,7 +314,8 @@ public class HomeActivity extends Activity {
 				finish();
 			}
 		});
-
+		
+		// Friend box clicks.
 		for (ActiveModel am : FriendFactory.getFactoryInstance().instances){
 			Friend friend = (Friend) am;
 

@@ -1,0 +1,15 @@
+Done
+ x Screens turn black on switch from phone app for example
+   x Attempted fix see app_lifecycle.txt
+ x Click from notification in certain cases causes crash? List all conditions for rentry and make intentHandler has the models it needs.
+   x Attempted fix see app_lifecycle.txt
+ x SentMessageStatus should not launch the app when it is in the background.
+
+Next release
+ - Fix Kons video problem and dim recording screen on farhads and kons phones.
+ - Swipe abort too short a distance use dp instead of px
+ - Always notify but remove the notification from the notifications pane on resume
+ - Change tone to the textmessage tone.
+ - Server should delete the old videos.
+ 
+ 
