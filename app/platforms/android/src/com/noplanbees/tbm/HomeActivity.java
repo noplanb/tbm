@@ -68,7 +68,6 @@ public class HomeActivity extends Activity {
 			return;
 		}
 		setContentView(R.layout.home);
-		addListeners();
 		lastState = "onCreate";
 	}
 
@@ -109,6 +108,7 @@ public class HomeActivity extends Activity {
 		Log.i(TAG, "onStart: state");
 		ensureModels();
 		initViews();
+		ensureListeners();
 		videoRecorder.restore();
 		//runTests();
 		lastState = "onStart";
@@ -298,7 +298,13 @@ public class HomeActivity extends Activity {
 	private VideoPlayer getVideoPlayer(Friend f){
 		return videoPlayers.get(f.getId());
 	}
-
+	
+	private void ensureListeners(){
+		if (cameraPreviewFrame == null){
+			addListeners();
+		}
+	}
+	
 	private void addListeners() {
 		// Attache ViewSizeGetter
 		cameraPreviewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
