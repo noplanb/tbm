@@ -1,0 +1,2 @@
+It is better, however, if you are able to store BLOBs as resources on the filesystem, and to maintain links (such as URLs or paths) to those resources. You can then load a BLOB as and when necessary.
+
