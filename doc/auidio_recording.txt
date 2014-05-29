@@ -1,0 +1,9 @@
+ - mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very tinny.
+ - mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC_ELD); // Better than AAC
+ - mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB); // Voice a bit distorted but pretty clean. Best one
+ - mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB); // Clean but scratchiness at the end of words makes it unacceptable.
+ - mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC);  // Lots of background buzz.
+ 
+ Conclusion use AMR_NB
+
+QUESTION: What about messing with the audio sample rate: I noticed that on hiq videos it is set to 48000 with audio bit rate set to 96000?

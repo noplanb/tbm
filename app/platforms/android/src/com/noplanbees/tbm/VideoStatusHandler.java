@@ -120,11 +120,13 @@ public class VideoStatusHandler {
 	// Assumes multiple processes can read and the file saved model is used for IPC
 	// so always read from file.	
 	private Bundle getSentVideoStatus(Friend f){
+		Log.i(TAG, "getSentVideoStatus");
 		String friendId = f.getId();
 		Bundle r = new Bundle();
 		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
 		Friend friend = (Friend) friendFactory.find(friendId);
-
+		Log.i(TAG, friend.toString());
+		
 		String status = friend.get("sentVideoStatus");
 		if (!status.isEmpty())
 			r.putInt( STATUS_KEY, Integer.parseInt(status) );

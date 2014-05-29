@@ -174,15 +174,14 @@ public class VideoRecorder {
 	private void setCameraParams() {
 		camera.setDisplayOrientation(90);
 		Parameters cparams = camera.getParameters();
-		//		cparams.setZoom(20);
-		//cparams.setPreviewSize(176, 144);
 		int width = 320;
 		int height = 240;
 		Log.i(TAG, String.format("setCameraParams: setPreviewSize %d %d", width, height) );
 		cparams.setPreviewSize(width, height);
-		//		cparams.setPictureSize(176, 144);
-		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-			//cparams.setRecordingHint(true);
+		cparams.setAntibanding(Camera.Parameters.ANTIBANDING_OFF);
+        // cparams.setFlashMode(Camera.Parameters.FLASH_MODE_OFF); not necessary since never a flash for video mode.
+		// cparams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO); crashes the device
+	    cparams.setRecordingHint(true);
 		camera.setParameters(cparams);
 	}
 
@@ -224,14 +223,19 @@ public class VideoRecorder {
 		// Set sources
 		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+		// mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA));
 
-		// Set format and encoder
-//		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-//		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-//		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-//		mediaRecorder.setVideoSize(176, 144);
+		// Set format and encoder see tbm-ios/docs/video_recorder.txt for the research that lead to these settings for compatability with IOS.
+		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very tinny but plays on ios
+		mediaRecorder.setAudioChannels(2);
+		mediaRecorder.setAudioEncodingBitRate(96000);
+		mediaRecorder.setAudioSamplingRate(48000);
 
-		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA));
+		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+		mediaRecorder.setVideoEncodingBitRate(150000);
+		mediaRecorder.setVideoFrameRate(15);
+		mediaRecorder.setVideoSize(320, 240);
 
 		String ofile = Config.recordingFilePath();
 
