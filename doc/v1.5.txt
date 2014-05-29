@@ -1,0 +1,5 @@
+ Released
+ x Sound - improve the sound using a higher audio sample rate.
+ x Video works between ios and android.
+ x Remove antibanding in recorder
+ x Use explicit settings for recorder rather than camcorder
