@@ -14,7 +14,7 @@ public class TouchTestActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.touch_test);
 
-		lph = new LongpressTouchHandler(findViewById(R.id.tt));
+		lph = new LongpressTouchHandler(this, findViewById(R.id.tt));
 	}
 
 

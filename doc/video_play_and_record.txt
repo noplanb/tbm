@@ -1,0 +1,50 @@
+PROBLEM: 
+ - On nexus when I start on some occasions the phone goes into an infinite loop around this error: 
+   - 05-30 11:06:01.895: E/mm-camera(197): mct_stream_metadata_bus_msg:Failed to get_buf
+   - 05-30 11:06:01.895: E/mm-camera(197): mct_stream_metadata_bus_msg:1259: NULL ptr
+   - The phone freezes and the display paints lines all over. 
+ 
+ - I also get this error intermittently and in an infinite loop 
+   - 05-30 11:06:01.725: E/mm-camera(197): aec_process_apply_antibanding: 60 Hz but ET less than 8ms: 0.004076
+   - The above error seems to depend on what the camera is looking as I can sometimes make it stop and start by changing what I point the camera at.
+   - I thought I fixed it by setting 	cparams.setAntibanding(Camera.Parameters.ANTIBANDING_OFF); But apparently it was just intermittent when I tested and does not fix it.
+   
+   
+QUESTION: Is this related to changing the videoRecorder to not use the camcorder preset but use explicit settings to play nice with the iPhone?
+  TRY: Change to mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA)); - RESULT: Still  fails.
+	TRY: 	mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_480P)); - RESULT: Still  fails.
+	TRY: 	mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P)); - RESULT: Still  fails.
+	
+QUESTION: Does this happen if the videoRecorder is never initialized?
+  TRY: In videoRecorder remove all init of camera in public void previewSurfaceCreated(SurfaceHolder holder) 
+    RESULT: I get the crash that ties up the screen but I dont the E/mm-camera(197): mct_stream_metadata_bus_msg:1259: NULL ptr
+    SPECULATION: I wonder if this means that the mm-camera error is a symptom rather than a cause of the error.
+
+QUESTION: Does this ever happen with only one videoPlayer instance?
+  TRY: Having all recorder off. 5 of the 8 video views backed by a video. Play one over and over 20 times.  - RESULT - does not fail.
+  TRY: Playing one video followed by a different one followed by a different one - RESULT after playing about 3 different videos it fails
+  SPECULATION: the videoView uses MediaPlayer and the mediaPlayer documentation says: 
+  
+  http://developer.android.com/reference/android/media/MediaPlayer.html :
+  It is also recommended that once a MediaPlayer object is no longer being used, call release() immediately so that resources used by the internal player engine associated with the MediaPlayer object can be released immediately. Resource may include singleton resources such as hardware acceleration components and failure to call release() may cause subsequent instances of MediaPlayer objects to fallback to software implementations or fail altogether. Once the MediaPlayer object is in the End state, it can no longer be used and there is no way to bring it back to any other state.
+  
+  We are running keeping several mediaPlayers in the non idle state which is a no no.
+  
+QUESTION: What if we make sure we release all media players prior to playing anything. When reading the source code for video view it looks like stopPlayback causes release of the MediaPlayer backing it. 
+  TRY: 
+    - Call videoView.stopPlayback under the following scenarios:
+      - Click while playing (currently pause)
+      - Video has finished playing callback.
+  RESULT!!! WOOHOO! Fixes it!
+  
+
+TODO:
+  x To button it up further when we startUp lets release all 8 videoViews that are instantiated that way the ones that arent used by friends dont have any mediaPlayer resources instantiated.
+  x Add a class method to VideoPlayer which takes all videoViews and sets releases them. Call it in home activity when we set up the views.
+      
+  
+  
+  
+	
+	
+   

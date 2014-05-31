@@ -1,59 +1,74 @@
 package com.noplanbees.tbm;
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.content.Context;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.VideoView;
 
-public class VideoPlayer {
+public class VideoPlayer implements OnCompletionListener{
 	String TAG = this.getClass().getSimpleName();
 	Activity activity;
 	Context context;	
 	String friendId;
+	Friend friend;
+	VideoView videoView;
+	ImageView thumbView;
 	VideoStatusHandler videoStatusHandler;
-
+	
+	private static ArrayList <VideoView> allVideoViews;
+	
+	public static void setAllVideoViews(ArrayList<VideoView> videoViews){
+		Log.i("VideoPlayer", "suspending all video views");
+		VideoPlayer.allVideoViews = videoViews;
+		for (VideoView v : VideoPlayer.allVideoViews){
+			v.suspend();
+		}
+	}
+	
 	public VideoPlayer(Activity a, String friendId) {
 		activity = a;
 		context = activity.getApplicationContext();
 		videoStatusHandler = new VideoStatusHandler(context);
 		this.friendId = friendId;
+		friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
+		videoView = friend.videoView(activity);
+		videoView.setOnCompletionListener(this);
+		thumbView = friend.thumbView(activity);
 		showThumb();
 	}
 
-	private Friend getFriend() {
-		return (Friend) FriendFactory.getFactoryInstance().find(friendId);
-	}
-	
-	private VideoView getVideoView(){
-		return getFriend().videoView(activity);
-	}
-	
-	private ImageView getThumbView(){
-		return getFriend().thumbView(activity);
-	}
 
 	public void click(){
-		Friend friend = getFriend();
-		VideoView videoView = getVideoView();
 		
 		if (friend.videoFromFile().length() < 100)
 			return;
 		
 		if (videoView.isPlaying()){
-			videoView.pause();
+			stop();
 		} else {
-			videoView.setVideoPath(friend.videoFromPath());
-			hideThumb();
-			videoView.start();
-			videoStatusHandler.setVideoViewed(friend.getId());
+			start();
 		}
 	}
 	
+	public void start(){
+		Log.i(TAG, "start");
+		videoView.setVideoPath(friend.videoFromPath());
+		hideThumb();
+		videoView.start();
+		videoStatusHandler.setVideoViewed(friend.getId());
+	}
+	
 	public void stop(){
-		VideoView videoView = getVideoView();
-		if (videoView.isPlaying())
-			videoView.stopPlayback();
+		Log.i(TAG, "stop");
+		videoView.stopPlayback();
+		showThumb();
+//		if (videoView.isPlaying())
+//			videoView.stopPlayback();
 	}
 
 
@@ -65,8 +80,6 @@ public class VideoPlayer {
 	}
 	
 	public void showThumb(){
-		ImageView thumbView = getThumbView();
-		VideoView videoView = getVideoView();
 		setThumbBorder();
 		loadThumb();
 		thumbView.invalidate();
@@ -75,15 +88,11 @@ public class VideoPlayer {
 	}
 
 	public void hideThumb(){
-		ImageView thumbView = getThumbView();
-		VideoView videoView = getVideoView();
 		thumbView.setVisibility(View.INVISIBLE);
 		videoView.setVisibility(View.VISIBLE);
 	}
 
 	private void loadThumb(){
-		ImageView thumbView = getThumbView();
-		Friend friend = getFriend();
 		if (!friend.thumbExists() ){
 			Log.i(TAG, "loadThumb: Loading icon for thumb for friend=" + friend.get("firstName"));
 			(thumbView).setImageResource(R.drawable.head);
@@ -94,8 +103,6 @@ public class VideoPlayer {
 	}
 
 	private void setThumbBorder(){
-		ImageView thumbView = getThumbView();
-		Friend friend = getFriend();
 		if (videoStatusHandler.videoNotViewed(friend)){
 			Log.i(TAG, "setThumbBorder: setting thumb background to unviewed_shape");
 			thumbView.setBackgroundResource(R.drawable.blue_border_shape);
@@ -104,5 +111,11 @@ public class VideoPlayer {
 			Log.i(TAG, "setThumbBorder: setting thumb background to null");
 			thumbView.setBackgroundResource(0);
 		}
+	}
+
+	@Override
+	public void onCompletion(MediaPlayer mp) {
+		Log.i(TAG, "play complete.");
+		stop();
 	}
 }

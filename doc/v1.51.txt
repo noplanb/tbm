@@ -1,0 +1,2 @@
+Same as version 1.5 with a bug fix for multiple videoPlayers on nexus causing crashing. 
+See doc/video_play_and_record.txt for details.

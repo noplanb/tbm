@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.app.Activity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,13 +18,15 @@ public class LongpressTouchHandler {
 	Boolean bigMoveCalled;
 	Boolean isLongPress;
 	Timer longPressTimer;
-
-	public LongpressTouchHandler (View t){
+	Activity activity;
+	
+	public LongpressTouchHandler (Activity activity, View t){
 		target = t;
+		this.activity = activity;
 		setupActionToString();
 		setupEventListeners();
 	}
-
+    
 	public void click(View v) {
 		Log.i(TAG, "click");
 	}
@@ -72,9 +75,15 @@ public class LongpressTouchHandler {
 			longPressTimer.schedule(new TimerTask() {
 				@Override
 				public void run() {
-					startLongpress(target);
+				    // These public interface methods should be run on the UIThread of the activity that instantiated
+				    // this longpress touchHandler. This is because Longpress events may need to change views and 
+					// only the original thread that created a view heirarchy can touch its views.
+					activity.runOnUiThread(new Runnable(){
+						@Override
+						public void run() { startLongpress(target);}
+					});
 				}
-			}, 500);
+			}, 200);
             break;
             
 		case MotionEvent.ACTION_MOVE:

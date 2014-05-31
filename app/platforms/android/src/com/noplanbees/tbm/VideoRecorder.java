@@ -181,7 +181,7 @@ public class VideoRecorder {
 		cparams.setAntibanding(Camera.Parameters.ANTIBANDING_OFF);
         // cparams.setFlashMode(Camera.Parameters.FLASH_MODE_OFF); not necessary since never a flash for video mode.
 		// cparams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO); crashes the device
-	    cparams.setRecordingHint(true);
+	    //cparams.setRecordingHint(true);
 		camera.setParameters(cparams);
 	}
 
@@ -223,7 +223,7 @@ public class VideoRecorder {
 		// Set sources
 		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-		// mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA));
+//		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
 
 		// Set format and encoder see tbm-ios/docs/video_recorder.txt for the research that lead to these settings for compatability with IOS.
 		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);

@@ -180,6 +180,7 @@ public class HomeActivity extends Activity {
 		videoViews.add((VideoView) findViewById(R.id.VideoView5));
 		videoViews.add((VideoView) findViewById(R.id.VideoView6));
 		videoViews.add((VideoView) findViewById(R.id.VideoView7));
+		VideoPlayer.setAllVideoViews(videoViews);
 
 		plusTexts.add((TextView) findViewById(R.id.PlusText0));
 		plusTexts.add((TextView) findViewById(R.id.PlusText1));
@@ -328,7 +329,7 @@ public class HomeActivity extends Activity {
 			Integer frameId = Integer.parseInt( friend.get("frameId") );
 			Log.i(TAG, "Adding LongPressTouchHandler for frame" + frameId.toString());
 			FrameLayout frame = (FrameLayout) findViewById(frameId);
-			new LongpressTouchHandler(frame) {
+			new LongpressTouchHandler(this, frame) {
 
 				@Override
 				public void click(View v) {
