@@ -1,0 +1,2 @@
+Same as version 1.51 
+but fixes the case where you click another video WHILE the first one is playing.

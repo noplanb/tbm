@@ -259,7 +259,7 @@ public class HomeActivity extends Activity {
 
 	private void onRecordStart(View v){
 		Friend f = FriendFactory.getFriendFromFrame((View) v);
-		getVideoPlayer(f).stop();
+		VideoPlayer.stopAll();
 		if (videoRecorder.startRecording()) {
 			Log.i(TAG, "onRecordStart: START RECORDING. view = " +f.get("firstName"));
 		} else {

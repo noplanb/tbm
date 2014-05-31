@@ -1,5 +1,6 @@
 package com.noplanbees.tbm;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,12 +22,29 @@ public class VideoPlayer implements OnCompletionListener{
 	VideoStatusHandler videoStatusHandler;
 	
 	private static ArrayList <VideoView> allVideoViews;
+	private static HashMap <Integer, VideoPlayer> allVideoPlayers = new HashMap <Integer, VideoPlayer>();
 	
 	public static void setAllVideoViews(ArrayList<VideoView> videoViews){
-		Log.i("VideoPlayer", "suspending all video views");
 		VideoPlayer.allVideoViews = videoViews;
+	}
+	
+	public static void stopAll(){
+		VideoPlayer.showAllThumbs();
+		VideoPlayer.suspendAll();
+	}
+	
+	private static void suspendAll(){
+		Log.i("VideoPlayer", "suspending all video views");
 		for (VideoView v : VideoPlayer.allVideoViews){
+			Log.i("VideoPlayer", String.format("stoping and suspending %s", v.toString()));
+			v.stopPlayback();
 			v.suspend();
+		}
+	}
+	
+	private static void showAllThumbs(){
+		for (Integer key : VideoPlayer.allVideoPlayers.keySet()){
+			allVideoPlayers.get(key).showThumb();
 		}
 	}
 	
@@ -38,6 +56,7 @@ public class VideoPlayer implements OnCompletionListener{
 		friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
 		videoView = friend.videoView(activity);
 		videoView.setOnCompletionListener(this);
+		VideoPlayer.allVideoPlayers.put(videoView.getId(), this);
 		thumbView = friend.thumbView(activity);
 		showThumb();
 	}
@@ -57,6 +76,7 @@ public class VideoPlayer implements OnCompletionListener{
 	
 	public void start(){
 		Log.i(TAG, "start");
+		VideoPlayer.stopAll();
 		videoView.setVideoPath(friend.videoFromPath());
 		hideThumb();
 		videoView.start();
@@ -65,10 +85,7 @@ public class VideoPlayer implements OnCompletionListener{
 	
 	public void stop(){
 		Log.i(TAG, "stop");
-		videoView.stopPlayback();
-		showThumb();
-//		if (videoView.isPlaying())
-//			videoView.stopPlayback();
+		VideoPlayer.stopAll();
 	}
 
 
@@ -86,7 +103,7 @@ public class VideoPlayer implements OnCompletionListener{
 		thumbView.setVisibility(View.VISIBLE);
 		videoView.setVisibility(View.INVISIBLE);
 	}
-
+	
 	public void hideThumb(){
 		thumbView.setVisibility(View.INVISIBLE);
 		videoView.setVisibility(View.VISIBLE);
@@ -95,7 +112,7 @@ public class VideoPlayer implements OnCompletionListener{
 	private void loadThumb(){
 		if (!friend.thumbExists() ){
 			Log.i(TAG, "loadThumb: Loading icon for thumb for friend=" + friend.get("firstName"));
-			(thumbView).setImageResource(R.drawable.head);
+			thumbView.setImageResource(R.drawable.head);
 		}else{
 			Log.i(TAG, "loadThumb: Loading bitmap for friend=" + friend.get("firstName"));
 			thumbView.setImageBitmap(friend.thumbBitmap());

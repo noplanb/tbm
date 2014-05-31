@@ -36,12 +36,30 @@ QUESTION: What if we make sure we release all media players prior to playing any
       - Click while playing (currently pause)
       - Video has finished playing callback.
   RESULT!!! WOOHOO! Fixes it!
+  SOLUTION: Make sure we release all underlying MediaPlayers before we start another.
   
 
 TODO:
   x To button it up further when we startUp lets release all 8 videoViews that are instantiated that way the ones that arent used by friends dont have any mediaPlayer resources instantiated.
   x Add a class method to VideoPlayer which takes all videoViews and sets releases them. Call it in home activity when we set up the views.
       
+  
+PROBLEM: 
+  If I have multiple videos and hit play one after the other without waiting for them to stop I get the same problem even with the fix above.
+  SPECULATION: Even with the fix above I in this case I am having multiple video players not idle at the same time. 
+  TRY: Before each play stopAll of them.
+    RESULT: Still fails if I try to play one WHILE another is still running.
+    
+  SPECULATION: When I stopAll the MediaPlayer for the running video doesnt release immediately.
+  TRY: Wait for them all to release before calling start on the second one.
+    - For test purposes just wait 2 seconds.
+    RESULT: Still fails.
+  
+  NOTICED: When I click to stop the view that is playing then click to start another it doesnt fail. The only difference between stopping a particular view and stopAll is that stop a view also calls showThumb which has the effect of hiding the view. 
+  TRY: Set views to invisible when doing stopAll. 
+    RESULT: WOOHOO! Fixes it!
+  
+  SOLUTION: Make sure all video players are set to showThumb before starting another.
   
   
   
