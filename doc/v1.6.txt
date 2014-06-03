@@ -1,0 +1,37 @@
+Released 1.6 - 12  6/3/14
+Camera 
+x Checks for presence of any camera.
+x Checks for presence of a front camera.
+x If unable to get the front camera it does not crash but notifies the user.
+x Checks for support for all camera settings and media recorder settings before making them.
+x Fails gracefully without crashing in all corner cases of obtaining camera and setting up media recorder.
+x Explicitly releases the camera and the media recorder on 
+x Added a crash button. 
+  x I find that on the on the Nexus when I crash the app when not recording or when playing there is no interaction with other camera apps or if there is an interaction the the other app is able to get the camera on the next relaunch.
+  x I find that if I crash while I am recording 1 out of 4 or 5 times the phone will get into a wedged state where the camera is no longer accessible by our app even after restart of the app. The only way out is to reboot the phone.
+  x Moral for now is never crash while recording.
+
+
+- Test whether crashing without releasing the camera does leave it locked.
+
+
+- Check if the user has a front camera.
+  x No - notify and quit
+x Get the camera
+  - Notify of various fails suggest fix and quit.
+- Set the camera params
+  - 
+
+
+TODO: 
+  x Implement CameraManager
+  x Make VideoRecorder use CameraManager.
+  x Add CameraExceptionHandler dialogs to homeActivity.
+  x Find error and make sure it is Log.e
+  x Wrap lock and unlock in runtime exception handler. 
+    x Add unlock and lock to CameraManager
+    x Call them in videoRecorder
+  x Wrap camera.open in exception
+
+
+ - I do not put dispose and restore of the recorder in pause and resume becuase we enter those states when doing uploads and we dont want the preview to flash black in that case.

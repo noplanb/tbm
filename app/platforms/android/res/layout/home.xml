@@ -135,7 +135,7 @@
             android:id="@+id/nameText5"
             style="@style/nameText" />
 
-        <TextView 
+        <TextView
             android:id="@+id/previewText"
             style="@style/nameText" />
 
@@ -221,6 +221,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Reset" />
+
+        <Button
+            android:id="@+id/btnCrash"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Crash" />
     </TableRow>
 
 </TableLayout>

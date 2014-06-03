@@ -1,5 +1,5 @@
  x Create a vn.n.txt in doc describing the release.
  x Update android manifest with the release versionName and versionCode.
  x Export apk.
- - Push to gitHub and tag.
+ x Push to gitHub and tag.
  - Put in store. 

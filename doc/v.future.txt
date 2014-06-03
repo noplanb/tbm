@@ -10,6 +10,8 @@
  - Handle no connection on register.
  - Delay in starting to record.
  - Distance you have to move off to cancel recording.
+ - First upload to the server seems to fail every time now and we go to R1.
+ - Fix flicker to black when starting to play. Try putting thumb on top. Try waiting till prepared to show player.
  
  Android notification.
  1) Notification banners to the user.

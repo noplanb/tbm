@@ -466,6 +466,7 @@ containing a value of this type.
         public static final int alignBounds=0x7f050007;
         public static final int alignMargins=0x7f050008;
         public static final int bottom=0x7f05000a;
+        public static final int btnCrash=0x7f050045;
         public static final int btnReset=0x7f050044;
         public static final int camera_overlay_surface=0x7f05002c;
         public static final int camera_preview_frame=0x7f05002b;
@@ -494,14 +495,14 @@ containing a value of this type.
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
         public static final int previewText=0x7f050033;
-        public static final int register=0x7f050045;
+        public static final int register=0x7f050046;
         public static final int right=0x7f05000c;
         public static final int satellite=0x7f050002;
         public static final int start=0x7f050015;
         public static final int terrain=0x7f050003;
-        public static final int textView1=0x7f050046;
+        public static final int textView1=0x7f050047;
         public static final int top=0x7f050009;
-        public static final int tt=0x7f050047;
+        public static final int tt=0x7f050048;
         public static final int vertical=0x7f050006;
     }
     public static final class integer {

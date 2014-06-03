@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -20,7 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-public class HomeActivity extends Activity {
+public class HomeActivity extends Activity implements CameraExceptionHandler{
 
 	final String TAG = this.getClass().getSimpleName();
 	final Float ASPECT = 240F/320F;
@@ -74,6 +77,7 @@ public class HomeActivity extends Activity {
 	private void initModels() {
 		instance = this;
 		videoRecorder = new VideoRecorder(this);
+		CameraManager.addCameraExceptionHandlerDelegate(this);
 		gcmHandler = new GcmHandler(this);
 		friendFactory = FriendFactory.getFactoryInstance();
 		userFactory = UserFactory.getFactoryInstance();
@@ -109,8 +113,7 @@ public class HomeActivity extends Activity {
 		ensureModels();
 		initViews();
 		ensureListeners();
-		videoRecorder.restore();
-		//runTests();
+		runTests();
 		lastState = "onStart";
 	}
 
@@ -119,14 +122,15 @@ public class HomeActivity extends Activity {
 		super.onRestart();
 		Log.i(TAG, "onRestart: state");
 		lastState = "onRestart";
+		videoRecorder.restore();
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
 		Log.i(TAG, "onStop: state");
-		videoRecorder.dispose();
 		lastState = "onStop";
+		videoRecorder.dispose();
 	}
 
 	@Override
@@ -322,6 +326,16 @@ public class HomeActivity extends Activity {
 			}
 		});
 		
+		Button btnCrash = (Button) findViewById(R.id.btnCrash);
+		btnCrash.setOnClickListener(new View.OnClickListener() {
+			@SuppressWarnings("null")
+			@Override
+			public void onClick(View v) {
+				Camera c = null;
+				c.cancelAutoFocus();
+			}
+		});
+		
 		// Friend box clicks.
 		for (ActiveModel am : FriendFactory.getFactoryInstance().instances){
 			Friend friend = (Friend) am;
@@ -385,4 +399,42 @@ public class HomeActivity extends Activity {
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
 	}
+    
+	// -------------------------------
+	// CameraExceptionHandler delegate
+	// -------------------------------
+	@Override
+	public void noCameraHardware() {	
+		showCameraExceptionDialog("No Camera", "Your device does not seem to have a camera. This app requires a camera.", "Quit");
+	}
+
+	@Override
+	public void noFrontCamera() {		
+		showCameraExceptionDialog("No Front Camera", "Your device does not seem to have a front facing camera. This app requires a front facing camera.", "Quit");
+	}
+
+	@Override
+	public void cameraInUseByOtherApplication() {
+		showCameraExceptionDialog("Camera in Use", "Your camera seems to be in use by another application. Please close that app and try again. You may also need to restart your device.", "Quit");
+	}
+
+	@Override
+	public void unableToSetCameraParams() {
+	}
+
+	@Override
+	public void unableToFindAppropriateVideoSize() {		
+	}
+	
+    private void showCameraExceptionDialog(String title, String message, String button){
+        AlertDialog.Builder builder = new AlertDialog.Builder(instance);
+ 	    builder.setTitle(title)
+ 	    	   .setMessage(message)
+               .setNeutralButton(button, new DialogInterface.OnClickListener() {
+                   public void onClick(DialogInterface dialog, int id) {
+                	   instance.finish();
+                   }
+               }).create().show();
+    }
+
 };
