@@ -1,3 +1,8 @@
+ - 
+
+ - Test whether crashing without releasing the camera does leave it locked.
+ 
+ - Differentiate on the server between a request that cant be fulfilled now and one that will never be fulfilled because for example the device is asking for a video that will never exist.
  - Change videoRecording to use the settings I came up with in video_recorder.txt in tbm-ios.
  - Fix Kons video problem and dim recording screen on farhads and kons phones.
  - Swipe abort too short a distance use dp instead of px

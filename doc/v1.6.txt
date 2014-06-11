@@ -12,6 +12,10 @@ x Added a crash button.
   x Moral for now is never crash while recording.
 
 
+- Task manager picture and link to our app due to a intent via a notification.
+- Phone call coming when app is running either recording or not.
+- 
+
 - Test whether crashing without releasing the camera does leave it locked.
 
 

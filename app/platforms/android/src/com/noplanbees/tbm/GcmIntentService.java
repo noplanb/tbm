@@ -84,6 +84,8 @@ public class GcmIntentService extends IntentService {
 		Log.i(TAG, "sendNotification: Sending intent to start home activity");
 		Intent i = new Intent(this, HomeActivity.class);
 		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); // See doc/task_manager_bug.txt for the reason for this flag.
+		i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // This is probably not necessary but on a test bed I needed it to make sure onNewIntent is called in the activity.
 		Bundle extras = new Bundle();
 		extras.putInt(IntentHandler.INTENT_TYPE_KEY, IntentHandler.TYPE_VIDEO_RECEIVED);
 		extras.putString("friendId", friend.getId());

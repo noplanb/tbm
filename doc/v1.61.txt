@@ -1,0 +1,7 @@
+Release 1.61 13  6/11/2014
+
+x Task manager picture of our app and link to our app due to a intent via a notification gets changed to something that is incorrect. See doc/task_manager_bug.txt.
+
+x App crashes when getting a phone call while recording. hideRecordingIndicator should only be called if we have not already disposed the Video Recorder due to a pause caused for example by a phone call coming in.
+
+

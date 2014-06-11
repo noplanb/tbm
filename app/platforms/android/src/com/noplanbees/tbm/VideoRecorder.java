@@ -70,8 +70,12 @@ public class VideoRecorder {
 	public boolean stopRecording(Friend friend) {
 		Log.i(TAG, "stopRecording");
 		boolean rval = true;
-		hideRecordingIndicator();
 		if (mediaRecorder !=null){
+			// hideRecordingIndicator is in the if statement because if VideoRecorder was disposed due to an external event such as a 
+			// phone call while the user was still pressing record when he releases his finger
+			// we will get a stopRecording even though our app has been paused. If we try to hideRecordingIndicator at this point the surface
+			// will have already been disposed of and app will crash. 
+			hideRecordingIndicator();
 			try {
 				mediaRecorder.stop();
 				Log.i(TAG, String.format("Recorded file %s : %d",Config.recordingFilePath(), Config.recordingFile().length()));
@@ -111,6 +115,13 @@ public class VideoRecorder {
 	
 	public void dispose() {
 		Log.i(TAG, "dispose");
+		if (mediaRecorder !=null){
+			try {
+				mediaRecorder.stop();
+			} catch (IllegalStateException e) {
+			} catch (RuntimeException e) {
+			}
+		}
         // Change to releasing explicitly here rather than in the surfacedDestroyed callback becuase I am worried that 
 		// in the case the os is terminating us and we call dispose the async callback may not come back in time for us to
 		// release before we are dead. 

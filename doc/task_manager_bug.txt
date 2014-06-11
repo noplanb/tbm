@@ -1,0 +1,24 @@
+PROBLEM:
+  When a service such the notification service starts our app with an intent and based on the intent we decide not to go to proceed the foreground but rather to adjust our db, send a notification alert to the user, then to finish, the task manager snaps an incorrect picture of our app. It is usually of a black screen. Furthermore, the link carries the intent that the service used to launch the app. Therefore if a user clicks on the app image in the task manager it launches with the old service intent which causes it to exit again. 
+  
+  
+TEST BED:
+  - Create an app with a single activity and a single service.
+  - The activity has a static home screen with some text on it so you can see what it should look like when active.
+  - After a delay the service calls the app with an intent which the app recieves either when running or not.
+  - When the app receives the intent in onCreate it finishes without bringing the app to the foreground.
+  - When the app receives the intent while running it calls onNewIntent. 
+  
+OBSERVATIONS:
+  - If the app receives the intent when not in a destroyed state all is well and the app gets onNewIntent
+  - If the app receives the intent when destroyed it gets onCreate with the intent. When it calls finish() the task manager is left with a link to the app with the old intent and with a bad photo of our app.
+  - Note that even if the activity calls finish() and onDestroy is called and the app is destroyed. The task manager still shows the activity as running with an incorrect link and picture.
+  
+TRY: 	echoIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY); RESULT: No difference. Recent activities panel shows the activity.
+
+TRY: android:excludeFromRecents in the manifest. This is not what I want since I want it in the recents except when started by an intent.
+
+SOLUTION: echoIntent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); when starting an activity with an intent you dont want to preserve in recents.
+
+
+  
