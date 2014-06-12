@@ -1,0 +1,11 @@
+v1.62 14 Released 6/12/2014
+
+- Bug reported by Kon
+ * record message
+ * click home immediately after done recording
+ * Go to task manager
+ EXPECT -> TBM to be normal and can click on it
+ ACTUAL -> TBM fucked up and can't click on it; when you do, you go to home screen, not TBM
+ FIXED in VideoStatusHandler
+ 
+- Added a Try Again button to the camera in use dialog. If you encounter the error try that button and see if it clears in the next couple attempts.

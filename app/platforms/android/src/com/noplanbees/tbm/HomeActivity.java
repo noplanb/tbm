@@ -76,8 +76,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 
 	private void initModels() {
 		instance = this;
-		videoRecorder = new VideoRecorder(this);
 		CameraManager.addCameraExceptionHandlerDelegate(this);
+		videoRecorder = new VideoRecorder(this);
 		gcmHandler = new GcmHandler(this);
 		friendFactory = FriendFactory.getFactoryInstance();
 		userFactory = UserFactory.getFactoryInstance();
@@ -405,17 +405,17 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	// -------------------------------
 	@Override
 	public void noCameraHardware() {	
-		showCameraExceptionDialog("No Camera", "Your device does not seem to have a camera. This app requires a camera.", "Quit");
+		showCameraExceptionDialog("No Camera", "Your device does not seem to have a camera. This app requires a camera.", "Quit", "Try Again");
 	}
 
 	@Override
 	public void noFrontCamera() {		
-		showCameraExceptionDialog("No Front Camera", "Your device does not seem to have a front facing camera. This app requires a front facing camera.", "Quit");
+		showCameraExceptionDialog("No Front Camera", "Your device does not seem to have a front facing camera. This app requires a front facing camera.", "Quit", "Try Again");
 	}
 
 	@Override
 	public void cameraInUseByOtherApplication() {
-		showCameraExceptionDialog("Camera in Use", "Your camera seems to be in use by another application. Please close that app and try again. You may also need to restart your device.", "Quit");
+		showCameraExceptionDialog("Camera in Use", "Your camera seems to be in use by another application. Please close that app and try again. You may also need to restart your device.", "Quit", "Try Again");
 	}
 
 	@Override
@@ -426,15 +426,22 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	public void unableToFindAppropriateVideoSize() {		
 	}
 	
-    private void showCameraExceptionDialog(String title, String message, String button){
-        AlertDialog.Builder builder = new AlertDialog.Builder(instance);
- 	    builder.setTitle(title)
- 	    	   .setMessage(message)
-               .setNeutralButton(button, new DialogInterface.OnClickListener() {
-                   public void onClick(DialogInterface dialog, int id) {
-                	   instance.finish();
-                   }
-               }).create().show();
+    private void showCameraExceptionDialog(String title, String message, String negativeButton, String positiveButton){
+    	AlertDialog.Builder builder = new AlertDialog.Builder(instance);
+    	builder.setTitle(title)
+    	.setMessage(message)
+    	.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
+    		public void onClick(DialogInterface dialog, int id) {
+    			instance.finish();
+    		}
+    	})
+    	.setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
+    		public void onClick(DialogInterface dialog, int id) {
+    			videoRecorder.dispose();
+    			videoRecorder.restore();
+    		}
+    	})
+    	.create().show();
     }
 
 };

@@ -1,0 +1,11 @@
+I added widgetDemo project to my workspace.
+
+Todo
+ - create an activity in widget demo.
+ - Make it add and remove the widget from the homescreen.
+ - Add the widget to the keyguard screen.
+ 
+
+
+http://viralpatel.net/blogs/android-install-uninstall-shortcut-example/
+http://javatechig.com/android/app-widgets-example-in-android

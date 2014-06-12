@@ -1,4 +1,5 @@
 package com.noplanbees.tbm;
+
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.content.Intent;
@@ -18,7 +19,8 @@ public class GcmIntentService extends IntentService {
 
 	public GcmIntentService() {
 		super("GcmIntentService");
-		// Pull our models from storage so we can use them in handling the notification
+		// Pull our models from storage so we can use them in handling the
+		// notification
 		ActiveModelsHandler.ensureAll();
 	}
 
@@ -30,22 +32,22 @@ public class GcmIntentService extends IntentService {
 		// in your BroadcastReceiver.
 		String messageType = gcm.getMessageType(intent);
 
-		if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
+		if (!extras.isEmpty()) { // has effect of unparcelling Bundle
 			/*
-			 * Filter messages based on message type. Since it is likely that GCM
-			 * will be extended in the future with new message types, just ignore
-			 * any message types you're not interested in, or that you don't
-			 * recognize.
+			 * Filter messages based on message type. Since it is likely that
+			 * GCM will be extended in the future with new message types, just
+			 * ignore any message types you're not interested in, or that you
+			 * don't recognize.
 			 */
 			if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
-				//Not used
+				// Not used
 			} else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
-				//Not used
+				// Not used
 			} else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
 				Log.i(TAG, "onHandleIntent: extras = " + extras.toString());
-				if ( extras.getString("type").equalsIgnoreCase("video_received") ){
-					handleVideoReceived(intent);	
-				} else if ( extras.getString("type").equalsIgnoreCase("video_status_update") ){
+				if (extras.getString("type").equalsIgnoreCase("video_received")) {
+					handleVideoReceived(intent);
+				} else if (extras.getString("type").equalsIgnoreCase("video_status_update")) {
 					handleVideoStatusUpdate(intent);
 				}
 			}
@@ -54,25 +56,26 @@ public class GcmIntentService extends IntentService {
 		GcmBroadcastReceiver.completeWakefulIntent(intent);
 	}
 
-	//---------
+	// ---------
 	// Handle video status update
-	//---------
+	// ---------
 	private void handleVideoStatusUpdate(Intent intent) {
 		String status = intent.getExtras().getString("status");
-		if ( status.equalsIgnoreCase("downloaded")){
+		if (status.equalsIgnoreCase("downloaded")) {
 			intent.putExtra(VideoStatusHandler.STATUS_KEY, VideoStatusHandler.DOWNLOADED);
-		} else if ( status.equalsIgnoreCase("viewed") ){
+		} else if (status.equalsIgnoreCase("viewed")) {
 			intent.putExtra(VideoStatusHandler.STATUS_KEY, VideoStatusHandler.SENT_VIEWED);
 		} else {
-			Log.e(TAG, "handleVideoStatusUpdate: ERROR got unknow sent video status");
+			Log.e(TAG,"handleVideoStatusUpdate: ERROR got unknow sent video status");
 		}
-		// VideoStatusHandler is responsible for forwarding intent to homeActivity in this case.
+		// VideoStatusHandler is responsible for forwarding intent to
+		// homeActivity in this case.
 		new VideoStatusHandler(getApplicationContext()).updateSentVideoStatus(intent);
 	}
-	
-	//--------
+
+	// --------
 	// Handling video received
-	//---------
+	// ---------
 	private void handleVideoReceived(Intent intent) {
 		Log.i(TAG, "handleVideoReceived:");
 		Friend friend = ActiveModelsHandler.ensureFriend().getFriendFromIntent(intent);
@@ -80,7 +83,7 @@ public class GcmIntentService extends IntentService {
 		sendHomeActivityVideoRecievedIntent(friend);
 	}
 
-	private void sendHomeActivityVideoRecievedIntent(Friend friend){
+	private void sendHomeActivityVideoRecievedIntent(Friend friend) {
 		Log.i(TAG, "sendNotification: Sending intent to start home activity");
 		Intent i = new Intent(this, HomeActivity.class);
 		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -94,4 +97,3 @@ public class GcmIntentService extends IntentService {
 	}
 
 }
-

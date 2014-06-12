@@ -1,36 +1,54 @@
- - 
-
- - Test whether crashing without releasing the camera does leave it locked.
- 
- - Differentiate on the server between a request that cant be fulfilled now and one that will never be fulfilled because for example the device is asking for a video that will never exist.
- - Change videoRecording to use the settings I came up with in video_recorder.txt in tbm-ios.
- - Fix Kons video problem and dim recording screen on farhads and kons phones.
- - Swipe abort too short a distance use dp instead of px
- - Always notify but remove the notification from the notifications pane on resume
- - Change tone to the textmessage tone.
- - Server should delete the old videos.
+Misc
  - Only send viewed event once.
+ - Differentiate on the server between a request that cant be fulfilled now and one that will never be fulfilled because for example the device is asking for a video that will never exist.
+ - Fix Kons video problem and dim recording screen on farhads and kons phones.
  - Send platform :android when sending push_token.
- - Force a crash while still locking the camera and see if the os never gets it.
  - Handle no connection on register.
  - Delay in starting to record.
- - Distance you have to move off to cancel recording.
  - First upload to the server seems to fail every time now and we go to R1.
  - Fix flicker to black when starting to play. Try putting thumb on top. Try waiting till prepared to show player.
  
- Android notification.
- 1) Notification banners to the user.
-   a) Need to send anytime app is paused. Currently I try to resume the app in those cases. But i think the app can be paused while the screen is off. In that case you dont get a notification and the app does not come on. So you miss the fact that a message came in. This is probably the biggest problem. My bad in designing that way. My phone never turned screen off in all my testing so I thought it made sense but doesnt.
-   b) Remove stale notification banners whenever you launch the app. Jill just sees the old ones and thinks nothing new has happened. 
-   c) Add notification splash banner to off screen. This will be huge for android. 
+ Bugs
+ - Uploading shows stuck on phone for android p but no retry.
+ 
+ LongPressTouchHandler
+ - Distance you have to move off to cancel recording use dp instead of px
+ - Dont crash when you put down 2 fingers
+ - Make sure we pass the view where the start happened when we stop or abort.
+ - Make sure we always pass a view
+ 
+ New Server API
+ - Switch to the ios server api scheme. 
+ - Create a random filename for the uploaded file. Send with the file. 
+ - Send notification to android with filename to download.
+ - Request download with the filename.
+ 
+ Downloading
+ - Add retries for downloading
+ - Show downloading indicator with retries
+ - Distinguish an error condition where the file attempted to download is not available and download is impossible. 404 not found.
+ - Restart downloading retries with reset holdoff when app is resumed.
+ 
+ Uploading
+ - Upload retry holdoff should max out.
+ - When upload is retrying with long holdoff when app comes to foreground it should restart the retry count.
+ 
+ Make models similar to IOS
+ - On ios I have all video status stuff in Friend rather than a separate video status handler. Refactor to that scheme on android.
+ 
+ Polling
+ 
+ Android notification. Notification banners to the user.
+ - Need to send anytime app is paused. Currently I try to resume the app in those cases. But i think the app can be paused while the screen is off. In that case you dont get a notification and the app does not come on. So you miss the fact that a message came in. This is probably the biggest problem. My bad in designing that way. My phone never turned screen off in all my testing so I thought it made sense but doesnt.
+ - Remove stale notification banners whenever you launch the app. Jill just sees the old ones and thinks nothing new has happened. 
+ - Add notification splash banner to off screen. This will be huge for android. 
+ - Change tone to our custom tone.
+   
 
- 2) Notification unreliability.
+Notification unreliability.
    This is not as big a problem but definitely one that has come up in many cases for Kon and some cases with Jill. Often you are connected to wifi but the port for notifications is not allowed by router policy, tcp socket not allowed, or you dont get notification for some other reason. In this case messages are stuck on the server even if you check your app when you think you have good coverage. This is the case for Kon right now with a message stuck on server.
    This can significantly improved with some simple polling on startup. And periodic smart polling when running and you are in a state that is expecting a reply might be even better with a trade off on expense.
    
- 3) Retry
-   - Upload retry holdoff should max out.
-   - When upload is retrying with long holdoff when app comes to foreground it should restart the retry count.
   
    
 Architecture change to properly save instance state:
@@ -66,3 +84,9 @@ Proposed rearchitecture.
  - Actions on the models may still be taken on multiple threads but always in the same single app Activity process.
 
 Problem is that it is a huge rewrite. Probably 2 weeks to redo and test.
+
+RESOLUTION: after looking into savedInstanceState it really does not do what I want. So we should:
+  - Stick with the active model scheme and save to file. 
+  - Never load the access the models from a service running on another thread.
+  - Always write to file when changing an attribute (in case of crash before chance to save).
+  - 
