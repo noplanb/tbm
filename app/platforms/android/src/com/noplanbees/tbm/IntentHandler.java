@@ -86,7 +86,7 @@ public class IntentHandler {
 	private Integer handleVideoReceived(int state) {
 		Log.i(TAG, "handleVideoReceived");
 		Integer r = null;
-		if (state == STATE_SHUTDOWN){
+		if (state != STATE_FOREGROUND){
 			new SendNotificationAsync().execute();
 			r = RESULT_FINISH;
 		} else {

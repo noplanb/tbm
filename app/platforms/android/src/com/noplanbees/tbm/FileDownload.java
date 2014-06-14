@@ -25,7 +25,7 @@ public class FileDownload {
 		} catch (MalformedURLException e) {
 			Log.e(TAG, "download2: MalformedURLException: " + e.getMessage());
 		} catch (IOException e) {
-			Log.e(TAG, "download2: IOException: " + e.getMessage());
+			Log.e(TAG, "download2: IOException: " + e.getMessage() + e.toString());
 		}
 	}
 

@@ -1,0 +1,10 @@
+Features and changes:
+--------------------
+
+Bug Fixes:
+----------
+  - FIXED: Record a message | Hit home | App not in task manager - see doc/task_manager_bug.txt
+  - FIXED: Our app is frequently removed from the task manager. It was being removed due to finish() when an intent that should not put us in the foreground was handled when we were not in the foreground. see doc/task_manager_bug
+  - FIXED: Error messages during release of mediaRecorder and camera - I get in the log: E/BufferQueue(181): [SurfaceView] queueBuffer: BufferQueue has been abandoned! - see doc/video_play_and_record.txt
+  
+  

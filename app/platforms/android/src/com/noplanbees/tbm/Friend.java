@@ -110,6 +110,7 @@ public class Friend extends ActiveModel{
 
 		Intent i = new Intent(activity, FileUploadService.class);
 		i.putExtra(VideoStatusHandler.STATUS_KEY, VideoStatusHandler.NEW);
+		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); // See doc/task_manager_bug.txt for the reason for this flag.
 		i.putExtra(VideoStatusHandler.RETRY_COUNT_KEY, 0);
 		i.putExtra("filePath", videoToPath());
 		i.putExtra("userId", user.get("id"));

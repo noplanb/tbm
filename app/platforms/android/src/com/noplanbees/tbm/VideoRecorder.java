@@ -2,13 +2,10 @@ package com.noplanbees.tbm;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -16,9 +13,6 @@ import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.hardware.Camera;
-import android.hardware.Camera.Parameters;
-import android.hardware.Camera.Size;
-import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.util.Log;
@@ -113,7 +107,7 @@ public class VideoRecorder {
 		return true;
 	}
 	
-	public void dispose() {
+	public void release() {
 		Log.i(TAG, "dispose");
 		if (mediaRecorder !=null){
 			try {
@@ -122,11 +116,11 @@ public class VideoRecorder {
 			} catch (RuntimeException e) {
 			}
 		}
-        // Change to releasing explicitly here rather than in the surfacedDestroyed callback becuase I am worried that 
-		// in the case the os is terminating us and we call dispose the async callback may not come back in time for us to
-		// release before we are dead. 
-		releaseMediaRecorder();
 		CameraManager.releaseCamera();
+		releaseMediaRecorder();
+	}
+	
+	public void dispose(){
 		previewSurface.setVisibility(View.GONE);
 		overlaySurface.setVisibility(View.GONE);
 	}
@@ -173,6 +167,7 @@ public class VideoRecorder {
 	}
 
 	public void previewSurfaceDestroyed(SurfaceHolder holder){
+		release();
 	}
 
 	public void overlaySurfaceCreated(SurfaceHolder holder){

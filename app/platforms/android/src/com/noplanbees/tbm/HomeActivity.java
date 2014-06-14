@@ -50,18 +50,16 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		Log.i(TAG, "onCreate state");
+		super.onCreate(savedInstanceState);
 
 		// If activity was destroyed and we got an intent due to a new video download
 		// don't start up the activity. Send a notification instead and let the user 
 		// click on the notification if he wants to start tbm.
 		Integer intentResult = new IntentHandler(this, getIntent()).handle(IntentHandler.STATE_SHUTDOWN);
 		if (intentResult != null && intentResult == IntentHandler.RESULT_FINISH){
-			Log.i(TAG, "aborting home_activity becuase intent was for new video");
-			super.onCreate(savedInstanceState);
-			finish();
-			return;
+			Log.i(TAG, "moveTaskToBack becase we were not in foreground when we received the video.");
+			moveTaskToBack(true);
 		}
-		super.onCreate(savedInstanceState);
 
 		//Note Boot.boot must complete successfully before we continue the home activity. 
 		//Boot will start the registrationActivity and return false if needed. 
@@ -130,7 +128,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		super.onStop();
 		Log.i(TAG, "onStop: state");
 		lastState = "onStop";
-		videoRecorder.dispose();
+        videoRecorder.dispose(); // Probably redundant since the preview surface will have been destroyed by the time we get here.
 	}
 
 	@Override
@@ -149,7 +147,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		Integer intentResult = new IntentHandler(this, intent).handle(appState);
 		if (intentResult != null && intentResult == IntentHandler.RESULT_FINISH){
 			Log.i(TAG, "aborting home_activity on directive from intentHandler");
-			finish();
+			moveTaskToBack(true);
 			return;
 		}
 		lastState = "onNewIntent";
@@ -170,8 +168,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 
 	@Override
 	protected void onDestroy() {
-		super.onDestroy();
 		Log.i(TAG, "onDestroy: state");
+		super.onDestroy();
 	}
 
 

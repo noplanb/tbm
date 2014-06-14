@@ -1,11 +1,32 @@
 I added widgetDemo project to my workspace.
 
-Todo
- - create an activity in widget demo.
- - Make it add and remove the widget from the homescreen.
- - Add the widget to the keyguard screen.
+POSSIBLE TECHNIQUE: use a widget that you can programmatically add and remove from the lock screen.
+ x Download WidgetDemo and import into eclipse.
+ x Test that you can add the widget to the home screen. 
+ x create an activity in WidgetDemo.
+ x Make it add and remove a shortcut from the home page using addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+ o Make it add and remove the widget from the homescreen. Cant.
+ o Add the widget to the keyguard screen. Didnt try.
  
-
+ o I am able to add an icon to the home screen programmatically but not a widget. I am barking up the wrong tree.
+ 
+POSSIBLE TECHNIQUE: use and activity with  getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+  TRY
+  x Using the test project: TestTaskManager
+  x Add a splash activity
+  x Make the activity launch after a delay with intent echo service
+  x Give the activity the right look and feel.
+  x Make the dismiss button work: finish()
+  x Make the view button work: Intent to open main
+  
+Integrate into TBM
+  x Look at how we currently do notifications. 
+  x Instead of calling finish when we dont want to bring our app to the fore after an intent call moveTaskToBack()
+  x If we are not Foreground then always keep in back
+  x Test receive video
+    x In foreground
+    x In background
+    x Terminated
 
 http://viralpatel.net/blogs/android-install-uninstall-shortcut-example/
 http://javatechig.com/android/app-widgets-example-in-android

@@ -61,8 +61,13 @@ PROBLEM:
   
   SOLUTION: Make sure all video players are set to showThumb before starting another.
   
+PROBLEM:
+  - Record a video | put the app in the background.
+  - I get in the log: 06-13 17:49:40.409: E/BufferQueue(181): [SurfaceView] queueBuffer: BufferQueue has been abandoned!
+  REASON: In v1.6 had switched to not disposing when the previewSurface is destroyed but explicitly doing so on stop. This was not a good idea as the surface is destroyed before we get to stop. And pulling it out from under the camera and media recorder isnt good. 
+  SOLUTION: So in v1.7 I went back to disposing on surfaceDestroyed. As and extra measure I also call for the surfaceView to be made invisible onStop if it hasnt already (It should always have already been destroyed by then.)
   
-  
+    
 	
 	
    

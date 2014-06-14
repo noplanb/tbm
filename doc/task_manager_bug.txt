@@ -20,5 +20,15 @@ TRY: android:excludeFromRecents in the manifest. This is not what I want since I
 
 SOLUTION: echoIntent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); when starting an activity with an intent you dont want to preserve in recents.
 
-
+PROBLEM:
+  - When notifications come in and we are in the not in the foreground we are removed from the TaskManager.
+  REASON: We used to call finish() if we were not in the foreground when we the IntentHandler got an intent that should not put us in the foreground.
+  SOLUTION: Call moveTaskToBack() instead.
+  
+PROBLEM:
+  - Record a message
+  - Hit home
+  - App not in task manager
+  REASON: The task manger was getting the intent of FileUpload when we launched it. And since we are a single activity task when that finishes and is destroyed it would remove us from the task manager. 
+  SOLUTION: In the intent to the FileUpload service make sure we addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS). 
   

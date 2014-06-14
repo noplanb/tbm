@@ -9,7 +9,19 @@ Misc
  - Fix flicker to black when starting to play. Try putting thumb on top. Try waiting till prepared to show player.
  
  Bugs
+ - Holding to cheek to listen to message causes unwanted record presses. Use FLAG_IGNORE_CHEEK_PRESSES
  - Uploading shows stuck on phone for android p but no retry.
+ - In some cases crash when download fails:
+   06-12 21:30:33.199: E/FileDownload(27057): download2: IOException: null
+   06-12 16:49:22.736: E/AndroidRuntime(12688): java.lang.NullPointerException
+   06-12 16:49:22.736: E/AndroidRuntime(12688): 	at com.noplanbees.tbm.FileDownload.createThumb(FileDownload.java:64)
+   thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
+ - Hold record button while call is coming in and keep holding even after call is done.
+ - * record a message
+   * immediately after recording press the home button
+   * look at process list
+     EXPECT: TBM to be there
+     RESULT: TBM is gone
  
  LongPressTouchHandler
  - Distance you have to move off to cancel recording use dp instead of px
@@ -48,7 +60,32 @@ Misc
 Notification unreliability.
    This is not as big a problem but definitely one that has come up in many cases for Kon and some cases with Jill. Often you are connected to wifi but the port for notifications is not allowed by router policy, tcp socket not allowed, or you dont get notification for some other reason. In this case messages are stuck on the server even if you check your app when you think you have good coverage. This is the case for Kon right now with a message stuck on server.
    This can significantly improved with some simple polling on startup. And periodic smart polling when running and you are in a state that is expecting a reply might be even better with a trade off on expense.
-   
+
+
+KON BUG EMAILS
+==============
+---
+Was on a call for a long time. When the call was over, TBM was the frontmost screen. Very weird! Why was it not the calling screen? I think TBM may have been there even before we hung up, but not sure. In this case, I made the outbound call.
+
+After the call, a new message was there, but it was actually an old message from you...just showed as new. Maybe this has something to do with the server roll?
+
+Interestingly, the camera did not work - it was stuck on a particular image. Playing the message worked fine.
+
+Then I hibernated and came back, everything was fine.
+
+Currently if a message comes in when app is stopped or paused but not destroyed it will bring the app to front most regardless of what app you are in with the exception of phone where we would be launched behind. In this case my guess is a message came in while you were on phone it launched our app behind and when you hid your phone our app came to the fore. 
+
+Note that this is all changing with the change of notifications that I am currently working on. If app is not foreground you will get a notification rather than auto launching the app in all cases. If phone screen is locked or off you will get a notification on your lock (keyguard screen). In all cases you will get a notification in your notification pane. Notifications will be removed when you enter the app.
+
+Regarding the old message appearing as new. You are probably right that had to do with the server switch. I saw a few of those due to the server switch between my test phones. However I also saw some of these with before the server switch. Sever is completely changing as is the API that our app will use for it so probably not worth debugging until we tear all that up and redo.
+
+Regarding camera not working. I will try to reproduce that in the context of fixing the bug where you hold record through a phone call and release. I believe it is in the same category. I.e. weirdness when our app comes back to the foreground after being overlayed by a window of TYPE_PHONE including getting touch events during and after the period we are overlayed.
+---
+
+
+
+
+
   
    
 Architecture change to properly save instance state:
