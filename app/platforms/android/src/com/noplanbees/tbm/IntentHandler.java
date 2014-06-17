@@ -20,14 +20,10 @@ public class IntentHandler {
 	public static final int TYPE_VIDEO_RECEIVED = 0;
 	public static final int TYPE_VIDEO_STATUS_UPDATE = 1;
 
-	public static final int STATE_SHUTDOWN = 0;
-	public static final int STATE_FOREGROUND = 1;
-	public static final int STATE_BACKGROUND = 2;
-
 	public static final String INTENT_TYPE_KEY = "type";
 
-	public static final int RESULT_FINISH = 0;
-	public static final int RESULT_CONTINUE = 1;
+	public static final int RESULT_RUN_IN_BACKGROUND = 0;
+	public static final int RESULT_RUN_IN_FOREGROUND = 1;
 
 
 
@@ -43,15 +39,16 @@ public class IntentHandler {
 		friend = FriendFactory.getFactoryInstance().getFriendFromIntent(intent);
 	}
 
-	public Integer handle(int state){
-		Log.i(TAG, "handle: state = " + state);
-		Integer r = null;
+	public Integer handle(Boolean isOncreate){
+		Log.i(TAG, "handle: isOncreate = " + isOncreate.toString());
+		Integer r = RESULT_RUN_IN_FOREGROUND;
 		if (typeIsVideoReceived()){
-			r = handleVideoReceived(state);
+			r = handleVideoReceived(isOncreate);
 		} else if (typeIsVideoStatusUpdate()){
-			r = handleVideoStatusUpdate(state);
+			r = handleVideoStatusUpdate(isOncreate);
 		} else {
 			Log.i(TAG, "handle: no intent type ");
+			r = RESULT_RUN_IN_FOREGROUND;
 		}
 		return r;
 	}
@@ -59,13 +56,15 @@ public class IntentHandler {
 	//-----------------------
 	// VideoStausUpdate stuff
 	//-----------------------
-	private int handleVideoStatusUpdate(int state) {
+	private int handleVideoStatusUpdate(Boolean isOncreate) {
 		Log.i(TAG, "handleVideoStatusUpdate");
-		if (state == STATE_FOREGROUND){
-			updateHomeViewSentVideoStatus(friend);
-			return RESULT_CONTINUE;
+		if (isOncreate){
+			return RESULT_RUN_IN_BACKGROUND;
 		} 
-		return RESULT_FINISH;
+		if (homeActivity.isForeground){
+			updateHomeViewSentVideoStatus(friend);
+		} 
+		return RESULT_RUN_IN_FOREGROUND;
 	}
 
 	public void updateHomeViewSentVideoStatus(Friend friend) {
@@ -83,15 +82,15 @@ public class IntentHandler {
 	//-----------------------
 	// VideoRecievedStuff stuff
 	//-----------------------
-	private Integer handleVideoReceived(int state) {
+	private Integer handleVideoReceived(Boolean isOncreate) {
 		Log.i(TAG, "handleVideoReceived");
 		Integer r = null;
-		if (state != STATE_FOREGROUND){
-			new SendNotificationAsync().execute();
-			r = RESULT_FINISH;
+		if (isOncreate || !homeActivity.isForeground){
+			NotificationAlertManager.alert(homeActivity, friend);
+			r = RESULT_RUN_IN_BACKGROUND;
 		} else {
 			updateHomeViewReceivedVideo();
-			r = RESULT_CONTINUE;
+			r = RESULT_RUN_IN_FOREGROUND;
 		}
 		return r;
 	}
@@ -104,7 +103,7 @@ public class IntentHandler {
 			updateHomeViewSentVideoStatus(friend);
 		}	
 	}
-
+	
 	// Using async to prevent the screen from flashing by minimizing the delay to finish onCreate
 	class SendNotificationAsync extends AsyncTask<Void, Void, Void>{
 		@Override

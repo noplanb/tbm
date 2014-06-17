@@ -7,7 +7,7 @@ import android.util.Log;
 public class Boot {
 	public static final String TAG = "Boot";
 	
-	public static boolean boot(Activity activity){
+	public static boolean boot(HomeActivity homeActivity){
 		//--------------------------
 		// Retrieve or create User model from local storage
 		//--------------------------
@@ -19,8 +19,8 @@ public class Boot {
 		//--------------------------
 		if (!User.isRegistered()) {
 			Log.i(TAG, "Not registered. Starting RegisterActivty");
-			Intent i = new Intent(activity, RegisterActivity.class);
-			activity.startActivity(i);
+			Intent i = new Intent(homeActivity, RegisterActivity.class);
+			homeActivity.startActivity(i);
 			Log.i(TAG, "Exiting boot");
 			return false;
 		}
@@ -34,9 +34,9 @@ public class Boot {
 		//--------------------------
 		// Init GCM
 		//--------------------------
-		GcmHandler gcmHandler = new GcmHandler(activity);
-		if (gcmHandler.checkPlayServices()){
-			gcmHandler.registerGcm();
+		homeActivity.gcmHandler = new GcmHandler(homeActivity);
+		if (homeActivity.gcmHandler.checkPlayServices()){
+			homeActivity.gcmHandler.registerGcm();
 		} else {
 			Log.e(TAG, "No valid Google Play Services APK found.");
 			return false;

@@ -422,13 +422,16 @@ containing a value of this type.
         public static final int common_signin_btn_text_normal_light=0x7f020016;
         public static final int common_signin_btn_text_pressed_dark=0x7f020017;
         public static final int common_signin_btn_text_pressed_light=0x7f020018;
-        public static final int head=0x7f020019;
-        public static final int ic_launcher=0x7f02001a;
-        public static final int ic_plusone_medium_off_client=0x7f02001b;
-        public static final int ic_plusone_small_off_client=0x7f02001c;
-        public static final int ic_plusone_standard_off_client=0x7f02001d;
-        public static final int ic_plusone_tall_off_client=0x7f02001e;
-        public static final int ic_stat_gcm=0x7f02001f;
+        public static final int green_button_background_shape=0x7f020019;
+        public static final int head=0x7f02001a;
+        public static final int ic_launcher=0x7f02001b;
+        public static final int ic_plusone_medium_off_client=0x7f02001c;
+        public static final int ic_plusone_small_off_client=0x7f02001d;
+        public static final int ic_plusone_standard_off_client=0x7f02001e;
+        public static final int ic_plusone_tall_off_client=0x7f02001f;
+        public static final int ic_stat_gcm=0x7f020020;
+        public static final int red_button_background_shape=0x7f020021;
+        public static final int top_bottom_border_shape=0x7f020022;
     }
     public static final class id {
         public static final int Frame0=0x7f05002e;
@@ -467,7 +470,9 @@ containing a value of this type.
         public static final int alignMargins=0x7f050008;
         public static final int bottom=0x7f05000a;
         public static final int btnCrash=0x7f050045;
+        public static final int btnDismiss=0x7f05004b;
         public static final int btnReset=0x7f050044;
+        public static final int btnView=0x7f05004c;
         public static final int camera_overlay_surface=0x7f05002c;
         public static final int camera_preview_frame=0x7f05002b;
         public static final int camera_preview_surface=0x7f05002d;
@@ -483,7 +488,9 @@ containing a value of this type.
         public static final int homeTable=0x7f050017;
         public static final int horizontal=0x7f050005;
         public static final int hybrid=0x7f050004;
+        public static final int i_Not =0x7f050047;
         public static final int left=0x7f05000b;
+        public static final int logoImage=0x7f050048;
         public static final int nameText0=0x7f050034;
         public static final int nameText1=0x7f050043;
         public static final int nameText2=0x7f050042;
@@ -495,14 +502,17 @@ containing a value of this type.
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
         public static final int previewText=0x7f050033;
-        public static final int register=0x7f050046;
+        public static final int register=0x7f05004d;
         public static final int right=0x7f05000c;
         public static final int satellite=0x7f050002;
         public static final int start=0x7f050015;
+        public static final int subtitleTextView=0x7f05004a;
         public static final int terrain=0x7f050003;
-        public static final int textView1=0x7f050047;
+        public static final int textView1=0x7f05004e;
+        public static final int thumbImage=0x7f050046;
+        public static final int titleTextView=0x7f050049;
         public static final int top=0x7f050009;
-        public static final int tt=0x7f050048;
+        public static final int tt=0x7f05004f;
         public static final int vertical=0x7f050006;
     }
     public static final class integer {
@@ -511,8 +521,9 @@ containing a value of this type.
     public static final class layout {
         public static final int drawable_test=0x7f030000;
         public static final int home=0x7f030001;
-        public static final int register=0x7f030002;
-        public static final int touch_test=0x7f030003;
+        public static final int lock_screen_alert=0x7f030002;
+        public static final int register=0x7f030003;
+        public static final int touch_test=0x7f030004;
     }
     public static final class string {
         public static final int app_name=0x7f06001a;
@@ -642,8 +653,9 @@ containing a value of this type.
         public static final int AppTheme=0x7f090001;
         public static final int ButtonBar=0x7f090007;
         public static final int ButtonBarButton=0x7f090008;
-        public static final int FullscreenActionBarStyle=0x7f090009;
+        public static final int FullscreenActionBarStyle=0x7f09000a;
         public static final int FullscreenTheme=0x7f090006;
+        public static final int darkButton=0x7f090009;
         public static final int nameText=0x7f090005;
         public static final int plusText=0x7f090002;
         public static final int vFrame=0x7f090004;

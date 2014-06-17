@@ -3,9 +3,8 @@ package com.noplanbees.tbm;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import org.apache.commons.io.FileUtils;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -63,23 +62,16 @@ public class Friend extends ActiveModel{
 	}
 	
 	public Bitmap thumbBitmap(){
-        Bitmap bmp = null;
-		try {
-	        File thumbFile = thumbFile();
-	        FileInputStream fis;
-			fis = FileUtils.openInputStream(thumbFile);
-	        bmp = BitmapFactory.decodeStream(fis);
-		} catch (IOException e) {
-			Log.i(TAG, "sendNotification: IOException: " + e.getMessage());
-		}
-		return bmp;
+		return Convenience.bitmapWithFile(thumbFile());
 	}
 	
+	@SuppressLint("NewApi")
 	public Bitmap sqThumbBitmap(){
 		Bitmap sq = null;
 		Bitmap thumbBmp = thumbBitmap();
 		if (thumbBmp != null)
 			sq = ThumbnailUtils.extractThumbnail(thumbBmp, thumbBmp.getWidth(), thumbBmp.getWidth());
+		Log.i(TAG, "sqThumbBitmap: size = " + ((Integer) sq.getByteCount()).toString());
 		return sq;
 	}
 	

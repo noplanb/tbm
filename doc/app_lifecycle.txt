@@ -11,7 +11,34 @@ QUESTION - How does startActivity due to new intents work into the application l
       - I have never been able to create this but I think it might be responsible for the spurious bug in jills phone. Perhaps we sometimes go to 
         onNewintent() here even though the app processes were killed when it should be going to onCreate() instead.
         
-        
+QUESTION - How can we determine if in a particular lifecycle of our app we will be in the foreground or in the background
+  - onCreate
+    - FOREGROUND - When a user launches our app (not an VR or VS intent)
+    - BACKGROUND - When we are launched due to a VR or VS intent and go through onCreate.
+  - onNewIntent
+    - FOREGROUND - if last state was Pause()
+    - BACKGROUND - if last state was Stop()  
+  - onStop
+    - BACKGROUND - always
+  - onRestart
+    - BACKGROUND - if last state was onNewIntent
+    - FOREGROUND - otherwise (user launched us again)
+
+Architecture:
+  - Track foreground vs background:
+    - Create a boolean flag isForeground in HomeActivity
+    - set as follows
+      - onCreate depending on intent
+      - onNewIntent depending on lastState
+      - onStop - false
+
+  - Initialization and persistence:
+    - onCreate (boot)
+      - ActiveModelsHandler.ensureAll()
+      - GCM
+    - onPause
+      - ActiveModelsHandler.saveAll()
+  
 =======
 PROBLEM - Jills phone has a spurious bug where models retrieved from the file system are empty. This is very hard to reproduce though I once saw it on my phone as well. Probably need to try several things and see if it goes away.
 

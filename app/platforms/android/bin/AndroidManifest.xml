@@ -52,6 +52,10 @@
         <activity
             android:name="RegisterActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name="com.example.testtaskmanager.LockScreenAlertActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" />
 
         <service android:name=".FileUploadService" />
 
@@ -64,9 +68,11 @@
                 <category android:name="com.noplanbees.tbm" />
             </intent-filter>
         </receiver>
-        
-        <service android:name=".TestService" android:process=":remote"/>
-        <service android:name=".GcmIntentService"/>
+
+        <service
+            android:name=".TestService"
+            android:process=":remote" />
+        <service android:name=".GcmIntentService" />
     </application>
 
 </manifest>

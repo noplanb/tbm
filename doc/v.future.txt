@@ -7,6 +7,7 @@ Misc
  - Delay in starting to record.
  - First upload to the server seems to fail every time now and we go to R1.
  - Fix flicker to black when starting to play. Try putting thumb on top. Try waiting till prepared to show player.
+ - LocalBroadcastManager ? in homeActivity?
  
  Bugs
  - Holding to cheek to listen to message causes unwanted record presses. Use FLAG_IGNORE_CHEEK_PRESSES
@@ -23,6 +24,11 @@ Misc
      EXPECT: TBM to be there
      RESULT: TBM is gone
  
+ Make sure our application and activity settings are correct
+   - http://developer.android.com/guide/topics/manifest/application-element.html#allowbackup
+   - http://developer.android.com/guide/topics/manifest/activity-element.html#aff
+   - android:alwaysRetainTaskState
+   
  LongPressTouchHandler
  - Distance you have to move off to cancel recording use dp instead of px
  - Dont crash when you put down 2 fingers

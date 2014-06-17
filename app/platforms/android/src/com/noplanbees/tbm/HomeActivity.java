@@ -29,13 +29,14 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	final Float ASPECT = 240F/320F;
 
 	public static HomeActivity instance;
-
+	public Boolean isForeground;
+	public VideoRecorder videoRecorder;
+	public GcmHandler gcmHandler;
+	
 	private FriendFactory friendFactory;
 	private UserFactory userFactory;
 
 	private FrameLayout cameraPreviewFrame;
-	public VideoRecorder videoRecorder;
-	private GcmHandler gcmHandler;
 	public LocalBroadcastManager localBroadcastManger;
 	private String lastState;
 
@@ -52,15 +53,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		Log.i(TAG, "onCreate state");
 		super.onCreate(savedInstanceState);
 
-		// If activity was destroyed and we got an intent due to a new video download
-		// don't start up the activity. Send a notification instead and let the user 
-		// click on the notification if he wants to start tbm.
-		Integer intentResult = new IntentHandler(this, getIntent()).handle(IntentHandler.STATE_SHUTDOWN);
-		if (intentResult != null && intentResult == IntentHandler.RESULT_FINISH){
-			Log.i(TAG, "moveTaskToBack becase we were not in foreground when we received the video.");
-			moveTaskToBack(true);
-		}
-
 		//Note Boot.boot must complete successfully before we continue the home activity. 
 		//Boot will start the registrationActivity and return false if needed. 
 		if (!Boot.boot(this)){
@@ -68,6 +60,17 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 			finish();
 			return;
 		}
+
+		// If activity was destroyed and activity was created due to an intent for videoReceived or videoStatus keep task in the background.
+		Integer intentResult = new IntentHandler(this, getIntent()).handle(true);
+		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
+			Log.i(TAG, "moveTaskToBack becase we were not in foreground and app was created due to a non user action.");
+			moveTaskToBack(true);
+			isForeground = false;
+		} else {
+			isForeground = true;
+		}
+
 		setContentView(R.layout.home);
 		lastState = "onCreate";
 	}
@@ -94,6 +97,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	}
 
 	private void runTests() {
+		// NotificationAlertManager.alert(this, (Friend) FriendFactory.getFactoryInstance().find("3")); 
 		// new CamcorderHelper();
 		//testService();
 		// ConfigTest.run();
@@ -108,10 +112,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	protected void onStart() {
 		super.onStart();
 		Log.i(TAG, "onStart: state");
-		ensureModels();
-		initViews();
-		ensureListeners();
-		runTests();
+		if (isForeground){
+			ensureModels();
+			initViews();
+			ensureListeners();
+			runTests();
+		}
 		lastState = "onStart";
 	}
 
@@ -119,16 +125,19 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	protected void onRestart() {
 		super.onRestart();
 		Log.i(TAG, "onRestart: state");
+		if (isForeground && videoRecorder != null)
+			videoRecorder.restore();
 		lastState = "onRestart";
-		videoRecorder.restore();
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
 		Log.i(TAG, "onStop: state");
+		isForeground = false;
+		if (videoRecorder != null)
+			videoRecorder.dispose(); // Probably redundant since the preview surface will have been destroyed by the time we get here.
 		lastState = "onStop";
-        videoRecorder.dispose(); // Probably redundant since the preview surface will have been destroyed by the time we get here.
 	}
 
 	@Override
@@ -142,13 +151,17 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-		Log.i(TAG, "onNewIntent: state");
-		int appState = (lastState.startsWith("onPause")) ? IntentHandler.STATE_FOREGROUND : IntentHandler.STATE_BACKGROUND;
-		Integer intentResult = new IntentHandler(this, intent).handle(appState);
-		if (intentResult != null && intentResult == IntentHandler.RESULT_FINISH){
-			Log.i(TAG, "aborting home_activity on directive from intentHandler");
+		Log.i(TAG, "onNewIntent: state lastState=" + lastState + " isForeground=" + isForeground.toString());
+
+		isForeground = lastState.startsWith("onPause") ? true : false;
+
+		Integer intentResult = new IntentHandler(this, intent).handle(false);
+		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
+			Log.i(TAG, "onNewIntent: keeping in activity in background.");
 			moveTaskToBack(true);
-			return;
+			isForeground = false;
+		} else {
+			isForeground = true;
 		}
 		lastState = "onNewIntent";
 	}
@@ -161,9 +174,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	protected void onResume() {
 		super.onResume();
 		Log.i(TAG, "onResume: state");
-		if (!gcmHandler.checkPlayServices()){
-			Log.e(TAG, "onResume: checkPlayServices = false");
-		}
+		if (gcmHandler != null)
+			gcmHandler.checkPlayServices();
+		if (isForeground)
+			NotificationAlertManager.cancelNativeAlerts(this);
 	}
 
 	@Override
@@ -234,7 +248,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		}
 		friendFactory.save();
 	}
-	
+
 	private void initViews(){
 		VideoStatusHandler vsh = new VideoStatusHandler(this);
 		for (Integer i=0; i<friendFactory.count(); i++){
@@ -301,18 +315,18 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	private VideoPlayer getVideoPlayer(Friend f){
 		return videoPlayers.get(f.getId());
 	}
-	
+
 	private void ensureListeners(){
 		if (cameraPreviewFrame == null){
 			addListeners();
 		}
 	}
-	
+
 	private void addListeners() {
 		// Attache ViewSizeGetter
 		cameraPreviewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
 		cameraPreviewFrame.addView(new ViewSizeGetter(this));
-		
+
 		// Reset button
 		Button btnReset = (Button) findViewById(R.id.btnReset);
 		btnReset.setOnClickListener(new View.OnClickListener() {
@@ -323,7 +337,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 				finish();
 			}
 		});
-		
+
 		Button btnCrash = (Button) findViewById(R.id.btnCrash);
 		btnCrash.setOnClickListener(new View.OnClickListener() {
 			@SuppressWarnings("null")
@@ -333,7 +347,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 				c.cancelAutoFocus();
 			}
 		});
-		
+
 		// Friend box clicks.
 		for (ActiveModel am : FriendFactory.getFactoryInstance().instances){
 			Friend friend = (Friend) am;
@@ -397,7 +411,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
 	}
-    
+
 	// -------------------------------
 	// CameraExceptionHandler delegate
 	// -------------------------------
@@ -423,23 +437,23 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	@Override
 	public void unableToFindAppropriateVideoSize() {		
 	}
-	
-    private void showCameraExceptionDialog(String title, String message, String negativeButton, String positiveButton){
-    	AlertDialog.Builder builder = new AlertDialog.Builder(instance);
-    	builder.setTitle(title)
-    	.setMessage(message)
-    	.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
-    		public void onClick(DialogInterface dialog, int id) {
-    			instance.finish();
-    		}
-    	})
-    	.setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
-    		public void onClick(DialogInterface dialog, int id) {
-    			videoRecorder.dispose();
-    			videoRecorder.restore();
-    		}
-    	})
-    	.create().show();
-    }
+
+	private void showCameraExceptionDialog(String title, String message, String negativeButton, String positiveButton){
+		AlertDialog.Builder builder = new AlertDialog.Builder(instance);
+		builder.setTitle(title)
+		.setMessage(message)
+		.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				instance.finish();
+			}
+		})
+		.setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				videoRecorder.dispose();
+				videoRecorder.restore();
+			}
+		})
+		.create().show();
+	}
 
 };

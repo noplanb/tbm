@@ -27,6 +27,21 @@ Integrate into TBM
     x In foreground
     x In background
     x Terminated
+  x Create class NotificationAlertManager
+    x Add notification code from intent handler.
+    x Point intent handler to NotificationAlertManager
+    x Add remove notifications on resume
+    x Copy activity, layout, drawables etc from testTaskManager
+    x Factor the intent for creating the native notification and use for creating lock screen notification.
+    x Show lock screen notification under the right conditions (Screen is off)
+      x Pass and include attributes for notification in intent.
+      x Do not finish home activity when showing lock screen notification just keep in background
+      x Put task in background and finish lock screen notification for dismiss
+    - Get custom notification tone
+  - Test
+    - App on VR | VS
+    - App Stopped
+    
 
 http://viralpatel.net/blogs/android-install-uninstall-shortcut-example/
 http://javatechig.com/android/app-widgets-example-in-android

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:layout_margin="0dp"
+    android:background="@drawable/top_bottom_border_shape"
+    android:orientation="vertical"
+    android:paddingBottom="15dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="15dp" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <ImageView
+            android:id="@+id/thumbImage"
+            android:layout_width="80dp"
+            android:layout_height="120dp"
+            android:layout_alignParentLeft="true"
+             />
+
+        <TextView
+            android:id="@+id/i.Not	"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="20dp"
+            android:layout_toRightOf="@+id/thumbImage"
+            android:text="From Konstantin"
+            android:textSize="24sp" />
+
+        <ImageView
+            android:id="@+id/logoImage"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_below="@+id/titleTextView"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_toRightOf="@+id/thumbImage"
+             />
+
+        <TextView
+            android:id="@+id/subtitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/titleTextView"
+            android:layout_marginLeft="5dp"
+            android:layout_toRightOf="@+id/logoImage"
+            android:text="Three By Me"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btnDismiss"
+            style="@style/darkButton"
+            android:layout_below="@+id/subtitleTextView"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="18dp"
+            android:layout_toRightOf="@+id/thumbImage"
+            android:background="@drawable/red_button_background_shape"
+            android:text="Dismiss"
+            android:textColor="#ff0000" />
+
+        <Button
+            android:id="@+id/btnView"
+            style="@style/darkButton"
+            android:layout_width="90sp"
+            android:layout_below="@+id/subtitleTextView"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="18dp"
+            android:layout_toRightOf="@+id/btnDismiss"
+            android:background="@drawable/green_button_background_shape"
+            android:text="View"
+            android:textColor="#00ff00" />
+    </RelativeLayout>
+
+</FrameLayout>

@@ -1,10 +1,18 @@
 Features and changes:
 --------------------
+ - Notification feature updates (see doc/notification_widget.txt)
+   
+Misc:
+-----
+ - Make sure application and activity settings are correct for all our activities
 
 Bug Fixes:
 ----------
-  - FIXED: Record a message | Hit home | App not in task manager - see doc/task_manager_bug.txt
-  - FIXED: Our app is frequently removed from the task manager. It was being removed due to finish() when an intent that should not put us in the foreground was handled when we were not in the foreground. see doc/task_manager_bug
-  - FIXED: Error messages during release of mediaRecorder and camera - I get in the log: E/BufferQueue(181): [SurfaceView] queueBuffer: BufferQueue has been abandoned! - see doc/video_play_and_record.txt
+  - phone call while recording...
+  
+  x FIXED: Some additional scenarios app does not properly release the camera.f
+  x FIXED: Record a message | Hit home | App not in task manager - see doc/task_manager_bug.txt
+  x FIXED: Our app is frequently removed from the task manager. It was being removed due to finish() when an intent that should not put us in the foreground was handled when we were not in the foreground. see doc/task_manager_bug
+  x FIXED: Error messages during release of mediaRecorder and camera - I get in the log: E/BufferQueue(181): [SurfaceView] queueBuffer: BufferQueue has been abandoned! - see doc/video_play_and_record.txt
   
   
