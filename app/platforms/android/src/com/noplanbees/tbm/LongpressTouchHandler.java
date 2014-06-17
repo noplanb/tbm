@@ -11,6 +11,9 @@ import android.view.View;
 
 public class LongpressTouchHandler {
 	final String TAG = this.getClass().getSimpleName();
+	// Cant go less than 200 here or htc thinks short clicks to play are longpresses.
+	final Integer longpressTime = 200;
+	
 	View target;
 	Hashtable<Integer, String> actionToString = new Hashtable<Integer, String>();
 	Double downPos[] = new Double[2];
@@ -83,7 +86,7 @@ public class LongpressTouchHandler {
 						public void run() { startLongpress(target);}
 					});
 				}
-			}, 200);
+			}, longpressTime);
             break;
             
 		case MotionEvent.ACTION_MOVE:
@@ -118,8 +121,8 @@ public class LongpressTouchHandler {
 		Double a2 = Math.pow(downPos[0] - lastPos[0], 2D);
 		Double b2 = Math.pow(downPos[1] - lastPos[1], 2D);
 		Double c2 = a2 + b2;
-//		Log.i(TAG, "c2 = " + Double.toString(c2));
-		if (a2+b2 > 20000D){
+		Double limit = (double) Convenience.dpToPx(activity, 20000);
+		if (a2+b2 > limit){
 			return true;
 		} else {
 			return false;

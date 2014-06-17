@@ -11,10 +11,12 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -52,7 +54,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	public void onCreate(Bundle savedInstanceState) {
 		Log.i(TAG, "onCreate state");
 		super.onCreate(savedInstanceState);
-
+		
 		//Note Boot.boot must complete successfully before we continue the home activity. 
 		//Boot will start the registrationActivity and return false if needed. 
 		if (!Boot.boot(this)){
@@ -64,18 +66,25 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		// If activity was destroyed and activity was created due to an intent for videoReceived or videoStatus keep task in the background.
 		Integer intentResult = new IntentHandler(this, getIntent()).handle(true);
 		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
-			Log.i(TAG, "moveTaskToBack becase we were not in foreground and app was created due to a non user action.");
+			Log.i(TAG, "moveTaskToBack becase we were not in foreground and app was created due to non user action.");
 			moveTaskToBack(true);
 			isForeground = false;
 		} else {
 			isForeground = true;
 		}
-
+		
+		setupWindow();
 		setContentView(R.layout.home);
 		lastState = "onCreate";
 	}
+	
+	private void setupWindow(){
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+	}
 
 	private void initModels() {
+		Log.i(TAG, "initModels");
 		instance = this;
 		CameraManager.addCameraExceptionHandlerDelegate(this);
 		videoRecorder = new VideoRecorder(this);
@@ -111,6 +120,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	@Override
 	protected void onStart() {
 		super.onStart();
+		
 		Log.i(TAG, "onStart: state");
 		if (isForeground){
 			ensureModels();
@@ -121,10 +131,26 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		lastState = "onStart";
 	}
 
+	private Boolean screenIsOff(){
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		return !pm.isScreenOn();
+	}
+	
 	@Override
 	protected void onRestart() {
 		super.onRestart();
 		Log.i(TAG, "onRestart: state");
+		
+		// To handle the fucked up Android (bug in my view) that when we are launched from the task manager 
+		// as opposed to from any other vector we dont go through new onNewIntent. We transition directly 
+		// from onStop() to onRestart(). In this case we need to set isForeground explicitly here.
+		// We also have to handle another fucked up Android bug where if the screen is off it takes us through:
+		// restart, start, resume, pause, then onNewIntent. 
+		if (lastState.startsWith("onStop") && !screenIsOff()){
+			Log.i(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
+			isForeground = true;
+		}
+		
 		if (isForeground && videoRecorder != null)
 			videoRecorder.restore();
 		lastState = "onRestart";
@@ -151,16 +177,22 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-		Log.i(TAG, "onNewIntent: state lastState=" + lastState + " isForeground=" + isForeground.toString());
-
-		isForeground = lastState.startsWith("onPause") ? true : false;
+		
+		if (lastState.startsWith("onPause") && !screenIsOff()){
+			Log.i(TAG, "onNewIntent: preliminary setting to foreground because came from pause and screen was on.");
+			isForeground = true;
+		} else {
+			Log.i(TAG, "onNewIntent: preliminary setting to background because did not come from pause or screen was off.");
+			isForeground = false;
+		}
 
 		Integer intentResult = new IntentHandler(this, intent).handle(false);
 		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
-			Log.i(TAG, "onNewIntent: keeping in activity in background.");
+			Log.i(TAG, "onNewIntent: moving activity to background.");
 			moveTaskToBack(true);
 			isForeground = false;
 		} else {
+			Log.i(TAG, "onNewIntent: moving activity to foreground.");
 			isForeground = true;
 		}
 		lastState = "onNewIntent";

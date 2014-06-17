@@ -15,10 +15,6 @@ public class NotificationAlertManager {
 	private final String TAG = this.getClass().getSimpleName();
 	private final static String STAG = NotificationAlertManager.class.getSimpleName();
 	
-	
-
-	
-
 	// ----------------------------
 	// Attributes for notifications
 	// ----------------------------
@@ -40,9 +36,8 @@ public class NotificationAlertManager {
 	}
 
 	private static String title(Friend friend){
-		return "Message from " + friend.get("firstName") + "!";
+		return "From " + friend.get("firstName") + "!";
 	}
-
 
 	// -------------------
 	// Notification Alerts
@@ -51,11 +46,12 @@ public class NotificationAlertManager {
 	// Public methods
 	public static void alert(HomeActivity homeActivity, Friend friend){
 		Log.i(STAG, "alert");
-		postNativeAlert(homeActivity, friend);
 		
-//		PowerManager pm = (PowerManager) homeActivity.getSystemService(Context.POWER_SERVICE);
-//		if ( !pm.isScreenOn() )
-//			postLockScreenAlert(homeActivity, friend);
+		PowerManager pm = (PowerManager) homeActivity.getSystemService(Context.POWER_SERVICE);
+		if ( !pm.isScreenOn() )
+			postLockScreenAlert(homeActivity, friend);
+		
+		postNativeAlert(homeActivity, friend);
 	}
 	
 	public static void cancelNativeAlerts(HomeActivity homeActivity){
@@ -67,7 +63,6 @@ public class NotificationAlertManager {
 	// Private 
 	private static void postNativeAlert(HomeActivity homeActivity, Friend friend) {
 		Log.i(STAG, "postNativeAlert");
-		Log.i(STAG, "LargeImage = " + largeImage(friend).toString());
 		final int NOTIFICATION_ID = 1;
 		NotificationManager notificationManager = (NotificationManager) homeActivity.getSystemService(Context.NOTIFICATION_SERVICE);
 		Intent intent = new Intent(homeActivity.getApplicationContext(), homeActivity.getClass());

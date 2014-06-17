@@ -2,27 +2,23 @@ Misc
  - Only send viewed event once.
  - Differentiate on the server between a request that cant be fulfilled now and one that will never be fulfilled because for example the device is asking for a video that will never exist.
  - Fix Kons video problem and dim recording screen on farhads and kons phones.
- - Send platform :android when sending push_token.
  - Handle no connection on register.
  - Delay in starting to record.
  - First upload to the server seems to fail every time now and we go to R1.
  - Fix flicker to black when starting to play. Try putting thumb on top. Try waiting till prepared to show player.
  - LocalBroadcastManager ? in homeActivity?
+ - Make sure application and activity settings are correct for all our activities
+ - Move models and videos to a private directory.
  
  Bugs
- - Holding to cheek to listen to message causes unwanted record presses. Use FLAG_IGNORE_CHEEK_PRESSES
+ - phone call while recording...
+ - We loose active models somehow.
  - Uploading shows stuck on phone for android p but no retry.
  - In some cases crash when download fails:
    06-12 21:30:33.199: E/FileDownload(27057): download2: IOException: null
    06-12 16:49:22.736: E/AndroidRuntime(12688): java.lang.NullPointerException
    06-12 16:49:22.736: E/AndroidRuntime(12688): 	at com.noplanbees.tbm.FileDownload.createThumb(FileDownload.java:64)
    thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
- - Hold record button while call is coming in and keep holding even after call is done.
- - * record a message
-   * immediately after recording press the home button
-   * look at process list
-     EXPECT: TBM to be there
-     RESULT: TBM is gone
  
  Make sure our application and activity settings are correct
    - http://developer.android.com/guide/topics/manifest/application-element.html#allowbackup
@@ -30,10 +26,11 @@ Misc
    - android:alwaysRetainTaskState
    
  LongPressTouchHandler
- - Distance you have to move off to cancel recording use dp instead of px
+ x Distance you have to move off to cancel recording use dp instead of px fixed: 1.7
  - Dont crash when you put down 2 fingers
  - Make sure we pass the view where the start happened when we stop or abort.
  - Make sure we always pass a view
+ - Send platform :android when sending push_token.
  
  New Server API
  - Switch to the ios server api scheme. 
@@ -50,18 +47,12 @@ Misc
  Uploading
  - Upload retry holdoff should max out.
  - When upload is retrying with long holdoff when app comes to foreground it should restart the retry count.
+ - Use a single holdoff for both upload and download?
  
  Make models similar to IOS
  - On ios I have all video status stuff in Friend rather than a separate video status handler. Refactor to that scheme on android.
  
- Polling
- 
- Android notification. Notification banners to the user.
- - Need to send anytime app is paused. Currently I try to resume the app in those cases. But i think the app can be paused while the screen is off. In that case you dont get a notification and the app does not come on. So you miss the fact that a message came in. This is probably the biggest problem. My bad in designing that way. My phone never turned screen off in all my testing so I thought it made sense but doesnt.
- - Remove stale notification banners whenever you launch the app. Jill just sees the old ones and thinks nothing new has happened. 
- - Add notification splash banner to off screen. This will be huge for android. 
- - Change tone to our custom tone.
-   
+ Polling   
 
 Notification unreliability.
    This is not as big a problem but definitely one that has come up in many cases for Kon and some cases with Jill. Often you are connected to wifi but the port for notifications is not allowed by router policy, tcp socket not allowed, or you dont get notification for some other reason. In this case messages are stuck on the server even if you check your app when you think you have good coverage. This is the case for Kon right now with a message stuck on server.

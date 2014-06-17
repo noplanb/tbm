@@ -38,6 +38,14 @@ Architecture:
       - GCM
     - onPause
       - ActiveModelsHandler.saveAll()
+
+=======
+ Android state idiosyncrasies:
+ - Start from task manager does not go through onNewIntent
+   - It goes straight from stop to restart.
+ - Sending intent while screen is off does not go directly to onNewIntent it follows this ridiculous path:
+   - Restart, Start, Resume, Pause, onNewIntent, Stop.
+ 
   
 =======
 PROBLEM - Jills phone has a spurious bug where models retrieved from the file system are empty. This is very hard to reproduce though I once saw it on my phone as well. Probably need to try several things and see if it goes away.

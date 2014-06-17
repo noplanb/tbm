@@ -1,18 +1,64 @@
+v1.7 - 15  released 6/17/2014
+
 Features and changes:
 --------------------
  - Notification feature updates (see doc/notification_widget.txt)
+   - Notification is sent anytime app is not foreground.
+   - Notification is removed when the app comes to the foreground.
+   - Notification appears on lockscreen when the screen is off.
+   - You can dismiss the notification from the lock screen or hit view to view it.
+   - Clicking view with keyguard security will show you tbm after you unlock the phone.
+   - If you have no keyguard security clicking view will unlock for you and show you the message directly.
    
-Misc:
------
- - Make sure application and activity settings are correct for all our activities
 
 Bug Fixes:
-----------
-  - phone call while recording...
-  
-  x FIXED: Some additional scenarios app does not properly release the camera.f
+----------  
+  x FIXED: Some additional scenarios app does not properly release the camera.
+  x FIXED: Some additional crash scenarios.
   x FIXED: Record a message | Hit home | App not in task manager - see doc/task_manager_bug.txt
   x FIXED: Our app is frequently removed from the task manager. It was being removed due to finish() when an intent that should not put us in the foreground was handled when we were not in the foreground. see doc/task_manager_bug
   x FIXED: Error messages during release of mediaRecorder and camera - I get in the log: E/BufferQueue(181): [SurfaceView] queueBuffer: BufferQueue has been abandoned! - see doc/video_play_and_record.txt
+  x FIXED: Holding to cheek to listen to message causes unwanted record presses.
+  x FIXED: Swipe away to cancel was too short on some phones. Made distance pixel density independent.
+  
+  
+Things to try and notice
+------------------------
+  - Getting a message while your screen is off 
+    - with keyguard security code set | with no security code
+    - When app was in task manager and app was not in task manager.
+  - Notifications are cleared at the appropriate times.
+  - TBM does not disappear from the task manager unexpectedly.
+  - Camera should get wedged less frequently.
+  - Figure out how to make the non reproducible bugs happen.
+  
+  
+Known bugs
+----------
+  - If download fails which it does quite frequently on our server the app crashes after a timeout.
+  - If the app crashes during video recording the camera gets wedged.
+  - Touching the screen in two places crashes the app.
+  - Crashes on registration if cant reach the server.
+  - Crash due to vidoeStatus handler not being able to get friend on directive from UploadService.
+    - You can make this happen by making tens of recordings in rapid succession to different phones and eventually you will get this error and the app will crash.
+    - This should be fixed when we only allow access to the models through the app and not from services.
+  
+Non reproducible bugs
+---------------------
+  - File for active models gets corrupted and you need to manually clear the directory to recover. Perhaps related to the videoStatus handler known bug above.
+  - Camera gets wedged in a scenario which is unclear and which may not be caused by crash during recording.
+  - Phone call while recording hold recording button through the phone call release after call closes and we are back on our app.
+  
+  
+Future releases
+---------------
+  - Move models and videos to a private directory.
+  - Change architecture to use new server apis
+  - Redo upload and download to both use retries.
+  - Retry scheme.
+  - Always come back to app for models | services should not read or write them directly.
+  - Longpress touch handler issues
+  - Poll server when app launches for anything new.
+  
   
   

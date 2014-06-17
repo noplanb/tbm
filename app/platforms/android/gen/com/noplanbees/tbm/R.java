@@ -470,9 +470,9 @@ containing a value of this type.
         public static final int alignMargins=0x7f050008;
         public static final int bottom=0x7f05000a;
         public static final int btnCrash=0x7f050045;
-        public static final int btnDismiss=0x7f05004b;
+        public static final int btnDismiss=0x7f05004a;
         public static final int btnReset=0x7f050044;
-        public static final int btnView=0x7f05004c;
+        public static final int btnView=0x7f05004b;
         public static final int camera_overlay_surface=0x7f05002c;
         public static final int camera_preview_frame=0x7f05002b;
         public static final int camera_preview_surface=0x7f05002d;
@@ -488,7 +488,6 @@ containing a value of this type.
         public static final int homeTable=0x7f050017;
         public static final int horizontal=0x7f050005;
         public static final int hybrid=0x7f050004;
-        public static final int i_Not =0x7f050047;
         public static final int left=0x7f05000b;
         public static final int logoImage=0x7f050048;
         public static final int nameText0=0x7f050034;
@@ -502,17 +501,17 @@ containing a value of this type.
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
         public static final int previewText=0x7f050033;
-        public static final int register=0x7f05004d;
+        public static final int register=0x7f05004c;
         public static final int right=0x7f05000c;
         public static final int satellite=0x7f050002;
         public static final int start=0x7f050015;
-        public static final int subtitleTextView=0x7f05004a;
+        public static final int subtitleTextView=0x7f050049;
         public static final int terrain=0x7f050003;
-        public static final int textView1=0x7f05004e;
+        public static final int textView1=0x7f05004d;
         public static final int thumbImage=0x7f050046;
-        public static final int titleTextView=0x7f050049;
+        public static final int titleTextView=0x7f050047;
         public static final int top=0x7f050009;
-        public static final int tt=0x7f05004f;
+        public static final int tt=0x7f05004e;
         public static final int vertical=0x7f050006;
     }
     public static final class integer {
