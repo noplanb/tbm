@@ -1,6 +1,9 @@
 package com.noplanbees.tbm;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.KeyguardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -32,10 +35,15 @@ public class LockScreenAlertActivity extends Activity {
 		setupListeners();
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	protected void onResume() {
 		super.onResume();
 		Log.i(TAG, "onResume");
+		KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+		Log.i(TAG, "isKeyGuardRestrictedInputMode=" + ((Boolean) km.inKeyguardRestrictedInputMode()).toString());
+		Log.i(TAG, "isKeyguardLocked=" + ((Boolean) km.isKeyguardLocked()).toString());
+		Log.i(TAG, "isKeyguardSecure=" + ((Boolean) km.isKeyguardSecure()).toString());
 	}
 
 	private void setupWindow(){
@@ -63,16 +71,26 @@ public class LockScreenAlertActivity extends Activity {
 		startActivity(i);
 		finish();
 	}
+	
+	private void dismiss(){
+		// If you really want to know. This moveTaskToBack is so that after dismissing this activity if the user decides to unlock his screen 
+		// or if he doesnt have a security lock he doesnt see us on top and launched when he opens the phone.
+		moveTaskToBack(true); 
+		finish();
+	}
 
+	@Override
+	public void onBackPressed() {
+		super.onBackPressed();
+		dismiss();
+	}
+	
 	private void setupListeners(){
 		Button btnDismiss = (Button) findViewById(R.id.btnDismiss);
 		btnDismiss.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// If you really want to know. This moveTaskToBack is so that after dismissing this activity if the user decides to unlock his screen 
-				// or if he doesnt have a security lock he doesnt see us on top and launched when he opens the phone.
-				moveTaskToBack(true); 
-				finish();
+				dismiss();
 			}
 		});
 

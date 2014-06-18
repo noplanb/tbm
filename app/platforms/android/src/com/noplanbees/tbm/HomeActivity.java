@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,8 +17,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -31,7 +32,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	final Float ASPECT = 240F/320F;
 
 	public static HomeActivity instance;
-	public Boolean isForeground;
+	public Boolean isForeground = false;
 	public VideoRecorder videoRecorder;
 	public GcmHandler gcmHandler;
 	
@@ -66,10 +67,14 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		// If activity was destroyed and activity was created due to an intent for videoReceived or videoStatus keep task in the background.
 		Integer intentResult = new IntentHandler(this, getIntent()).handle(true);
 		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
-			Log.i(TAG, "moveTaskToBack becase we were not in foreground and app was created due to non user action.");
+			Log.i(TAG, "onCreate: moving activity to background.");
 			moveTaskToBack(true);
 			isForeground = false;
-		} else {
+		} else if (intentResult == IntentHandler.RESULT_FINISH){
+			Log.i(TAG, "onCreate: finishing.");
+			finish();
+		} else {			
+			Log.i(TAG, "onCreate: moving activity to foreground.");
 			isForeground = true;
 		}
 		
@@ -106,6 +111,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 	}
 
 	private void runTests() {
+		Convenience.printOurTaskInfo(this);
 		// NotificationAlertManager.alert(this, (Friend) FriendFactory.getFactoryInstance().find("3")); 
 		// new CamcorderHelper();
 		//testService();
@@ -191,6 +197,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 			Log.i(TAG, "onNewIntent: moving activity to background.");
 			moveTaskToBack(true);
 			isForeground = false;
+		} else if (intentResult == IntentHandler.RESULT_FINISH){
+			Log.i(TAG, "onNewIntent: finishing.");
+			finish();
 		} else {
 			Log.i(TAG, "onNewIntent: moving activity to foreground.");
 			isForeground = true;

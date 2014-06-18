@@ -1,17 +1,13 @@
 package com.noplanbees.tbm;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -25,6 +21,7 @@ public class IntentHandler {
 
 	public static final int RESULT_RUN_IN_BACKGROUND = 0;
 	public static final int RESULT_RUN_IN_FOREGROUND = 1;
+	public static final int RESULT_FINISH = 2; // not used
 
 
 
@@ -59,7 +56,8 @@ public class IntentHandler {
 	//-----------------------
 	private int handleVideoStatusUpdate(Boolean isOncreate) {
 		Log.i(TAG, "handleVideoStatusUpdate");
-		if (isOncreate){
+		// printState(isOncreate);
+		if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
 			return RESULT_RUN_IN_BACKGROUND;
 		} 
 		if (homeActivity.isForeground){
@@ -85,14 +83,11 @@ public class IntentHandler {
 	//-----------------------
 	private Integer handleVideoReceived(Boolean isOncreate) {
 		Log.i(TAG, "handleVideoReceived");
+		// printState(isOncreate);
 		Integer r = null;
-		if (isOncreate || !homeActivity.isForeground){
+		if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
 			NotificationAlertManager.alert(homeActivity, friend);
-			if (screenIsOff()){
-				r = RESULT_RUN_IN_FOREGROUND; // For our lock screen notification.
-			} else {
-				r = RESULT_RUN_IN_BACKGROUND;
-			}
+			r = RESULT_RUN_IN_BACKGROUND;
 		} else {
 			updateHomeViewReceivedVideo();
 			r = RESULT_RUN_IN_FOREGROUND;
@@ -103,6 +98,15 @@ public class IntentHandler {
 	private Boolean screenIsOff(){
 		PowerManager pm = (PowerManager) homeActivity.getSystemService(Context.POWER_SERVICE);
 		return !pm.isScreenOn();
+	}
+	
+	private Boolean screenIsLocked(){
+		KeyguardManager km = (KeyguardManager) homeActivity.getSystemService(Context.KEYGUARD_SERVICE);
+		return (Boolean) km.inKeyguardRestrictedInputMode();
+	}
+	
+	private Boolean screenIsLockedOrOff(){
+		return screenIsLocked() || screenIsOff();
 	}
 
 	private void updateHomeViewReceivedVideo() {
@@ -134,5 +138,14 @@ public class IntentHandler {
 		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 		Ringtone r = RingtoneManager.getRingtone(homeActivity.getApplicationContext(), notification);
 		r.play();
+	}
+	
+	private void printState(Boolean isOncreate){
+		Convenience.printRunningTaskInfo(homeActivity);
+		Log.i(TAG,"isOncreate=" + isOncreate.toString());
+		Log.i(TAG,"isForeground=" + homeActivity.isForeground.toString());
+		Log.i(TAG,"screenIsOff=" + screenIsOff().toString());
+		Log.i(TAG,"screenIsLocked=" + screenIsLocked().toString());
+		Log.i(TAG,"numActivities=" + Convenience.numActivitiesInOurTask(homeActivity));
 	}
 }

@@ -1,5 +1,6 @@
 package com.noplanbees.tbm;
 
+import android.app.KeyguardManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -47,8 +48,7 @@ public class NotificationAlertManager {
 	public static void alert(HomeActivity homeActivity, Friend friend){
 		Log.i(STAG, "alert");
 		
-		PowerManager pm = (PowerManager) homeActivity.getSystemService(Context.POWER_SERVICE);
-		if ( !pm.isScreenOn() )
+		if ( screenIsLocked(homeActivity) || screenIsOff(homeActivity))
 			postLockScreenAlert(homeActivity, friend);
 		
 		postNativeAlert(homeActivity, friend);
@@ -87,7 +87,19 @@ public class NotificationAlertManager {
 		i.putExtra(SMALL_ICON_KEY, smallIcon);
 		i.putExtra(TITLE_KEY, title(friend));
 		i.putExtra(SUB_TITLE_KEY, subTitle);
+		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK); // This is probably not necessary since the activity has launch mode singleInstance.
 		homeActivity.startActivity(i);
+	}
+	
+	private static Boolean screenIsLocked(Context context){
+		KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+		return (Boolean) km.inKeyguardRestrictedInputMode();
+	}
+	
+	private static Boolean screenIsOff(Context context){
+		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+		return (Boolean) !pm.isScreenOn();
 	}
 
 }

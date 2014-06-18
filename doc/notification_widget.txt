@@ -41,6 +41,15 @@ Integrate into TBM
   - Test
     - App on VR | VS
     - App Stopped
+
+ARCHITECTURE:
+  - LockScreenAlertActivity is singleInstance. 
+    - So it is launched in its own task.
+    - Thus the management of foregrounding and backgrounding of the task in which homeActivity resides does not interfere with it
+    - Also only a single instance of it is allowed to exist with the last notification alert.
+  - We put all attribute initialization in onStart so whether we get there via onCreate or onNewIntent it works or updates.
+  - We launch it with FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS so it doesnt go in the task manager.
+  
     
 
 http://viralpatel.net/blogs/android-install-uninstall-shortcut-example/

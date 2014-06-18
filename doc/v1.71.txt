@@ -1,0 +1,17 @@
+Bug Fixes
+---------
+  - FIXED: Getting a second screen lock notification while one is showing destroys both. Expect the second to replace the first.
+  - FIXED: Send a message | click home button to put in background | when receiving phone gets the message 
+           ACTUAL: we pop into foreground.
+           EXPECTED: we stay in the background.
+  - FIXED: When the lock screen is visible not dark.
+           ACTUAL: Does not get a lockScreen notification. 
+           EXPECTED: should get one.
+  - FIXED: When screen is off but not yet locked on a phone without lock security.
+           ACTUAL: Does not get a lockScreen notification.
+           EXPECTED: should get one.
+
+Not a bug
+---------
+  - Record a messages click home or task manager we are gone from the task manager. 
+    REASON: If anyone cares... We are sending an intent from our upload service as the upload progresses back to our app. This is handled by onNewIntent while the app is still running (background or foreground). We preclude that intent from having an effect on recent tasks using FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS. We do this so the link in the taskManager doest carry this non-user-launch-intent. The behavior one would expect would be that the original activity would remain in the task manager. But it seem Android has a bug or anomaly where if the activity gets an intent from a non activity context the task manager forgets about it presumably expecting it will soon be populated by the activity that the intent would have created which in our case we purposely preclude.
