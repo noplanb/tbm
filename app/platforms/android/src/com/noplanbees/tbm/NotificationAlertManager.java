@@ -37,7 +37,7 @@ public class NotificationAlertManager {
 	}
 
 	private static String title(Friend friend){
-		return "From " + friend.get("firstName") + "!";
+		return "From " + friend.get(Friend.Attributes.FIRST_NAME) + "!";
 	}
 
 	// -------------------

@@ -1,0 +1,42 @@
+ x FileTransfer
+   x Rewrite the code
+   x Subclass to FileDownload and FileUpload
+   x Fix retries for both upload and download
+   x Messaging to both download an upload via intent
+   x Messaging back to app via intents.
+   - Change calls to use the new methods
+     x upload 
+       x change to use the new api
+     x Notifications for videostatus and videoreceived.
+     - download 
+   - Check from unrecoverable errors like 404.
+   - Make retry exponential limited
+ - Register
+   - Send device platform
+ x VideoStatus handler
+   x Fold function back into friend model as it is in ios
+ - Friend
+   x Add video status handler functions
+   x Add status change callback abstracts to friends
+   x Add additional status states for QUEUED, FAILED_PERMANENTLY
+   x Remove retry state this is just uploading or downloading with non zero retry count.
+ x IntentHandler
+   x Handle additional intents in intent handler which then makes status changes in friend.
+   x Triggers download
+ - HomeActivity
+   x Indicate download and download retry in ui
+   x Indicate queued as well as proceessing in ui
+   x Register as a delegate for videoStatusUpdates
+   x Implement callback to update status
+   - Reset upload and download retry on foreground.
+ x Manifest
+   x Add new services
+     x Download
+     x Upload  
+ x Change attributes in act model to constants
+   x User
+   x Friend
+ - Config
+   - Change directory for video and models to private that gets destroyed with the app.
+ 
+ 

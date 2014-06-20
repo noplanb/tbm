@@ -9,6 +9,7 @@ Misc
  - LocalBroadcastManager ? in homeActivity?
  - Make sure application and activity settings are correct for all our activities
  - Move models and videos to a private directory.
+ - Screen should stay on while app is in foreground Jill has it go black while recording.
  
  Bugs
  - phone call while recording...

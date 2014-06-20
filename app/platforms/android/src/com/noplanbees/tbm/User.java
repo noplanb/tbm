@@ -7,16 +7,26 @@ import android.util.Log;
 
 public class User extends ActiveModel{
     
+	public static class Attributes{
+		public static final String ID = "id";
+		public static final String FIRST_NAME = "firstName";
+		public static final String LAST_NAME = "lastName";
+		public static final String REGISTERED = "registered";
+	}
 	
 	@Override
 	public String[] attributeList() {
-      final String[] a = {"id", "firstName", "lastName", "registered"};
+      final String[] a = {
+    		  Attributes.ID, 
+    		  Attributes.FIRST_NAME,
+    		  Attributes.LAST_NAME,
+    		  Attributes.REGISTERED};
       return a;
 	}
 	
 	public static boolean isRegistered(){
 		UserFactory uf = ActiveModelsHandler.ensureUser();
-		return uf.hasInstances() && uf.instances.get(0).get("registered").startsWith("t");
+		return uf.hasInstances() && uf.instances.get(0).get(User.Attributes.REGISTERED).startsWith("t");
 	}
 	
 	public static String userId(){
@@ -29,7 +39,7 @@ public class User extends ActiveModel{
 	}
 	
     public String getId(){
-    	return get("id");
+    	return get(User.Attributes.ID);
     }
 	
 }

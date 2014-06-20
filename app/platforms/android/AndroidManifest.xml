@@ -59,8 +59,9 @@
             android:launchMode="singleInstance"
             android:theme="@android:style/Theme.Black.NoTitleBar" />
 
-        <service android:name=".FileUploadService" />
-
+        <service android:name="FileUploadService" />
+        <service android:name=".FileDownloadService" />
+        
         <receiver
             android:name=".GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >

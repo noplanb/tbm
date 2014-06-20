@@ -162,7 +162,7 @@ public class CameraManager {
 		// Set the preview size
 		Camera.Size videoSize = getAppropriateVideoSize(cparams);
 		if (videoSize == null){
-			if (cameraExceptionHandler == null){
+			if (cameraExceptionHandler != null){
 				cameraExceptionHandler.unableToFindAppropriateVideoSize();
 			}
 			return false;
@@ -176,8 +176,9 @@ public class CameraManager {
 		if (ab != null)
 			cparams.setAntibanding(ab);
 		
-		if (Build.VERSION.SDK_INT >= 14)
-			cparams.setRecordingHint(true);
+//		THIS FUCKING BREAKS RECORDING ON MOTOG RUNNING 4.4.2 TOOK ME A SOLID 8 HOURS TO FIND IT!
+//		if (Build.VERSION.SDK_INT >= 14)
+//			cparams.setRecordingHint(true);
 		
 		camera.setParameters(cparams);
 		return true;

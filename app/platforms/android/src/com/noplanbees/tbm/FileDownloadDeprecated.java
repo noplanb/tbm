@@ -14,8 +14,8 @@ import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.util.Log;
 
-public class FileDownload {
-	private final static String TAG = "FileDownload";
+public class FileDownloadDeprecated {
+	private final static String TAG = "FileDownloadDeprecated";
 
 	public static void download(String sUrl, String file_path){
 		try {
@@ -39,7 +39,7 @@ public class FileDownload {
 
 	public static synchronized void downloadForFriend(Friend friend){
 		String sUrl = Config.fullUrl("/videos/get?user_id=" + friend.getId() + "&receiver_id=" + UserFactory.current_user().getId());
-		String dfp = Config.downloadFilePath();
+		String dfp = Config.downloadingFilePath();
 		download(sUrl, dfp);
 		File f = new File(dfp);
 		String lfffp = friend.videoFromPath();

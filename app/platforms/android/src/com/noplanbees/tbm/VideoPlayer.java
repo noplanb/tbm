@@ -19,7 +19,6 @@ public class VideoPlayer implements OnCompletionListener{
 	Friend friend;
 	VideoView videoView;
 	ImageView thumbView;
-	VideoStatusHandler videoStatusHandler;
 	
 	private static ArrayList <VideoView> allVideoViews;
 	private static HashMap <Integer, VideoPlayer> allVideoPlayers = new HashMap <Integer, VideoPlayer>();
@@ -51,7 +50,6 @@ public class VideoPlayer implements OnCompletionListener{
 	public VideoPlayer(Activity a, String friendId) {
 		activity = a;
 		context = activity.getApplicationContext();
-		videoStatusHandler = new VideoStatusHandler(context);
 		this.friendId = friendId;
 		friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
 		videoView = friend.videoView(activity);
@@ -80,7 +78,7 @@ public class VideoPlayer implements OnCompletionListener{
 		videoView.setVideoPath(friend.videoFromPath());
 		hideThumb();
 		videoView.start();
-		videoStatusHandler.setVideoViewed(friend.getId());
+		friend.setIncomingVideoViewed();
 	}
 	
 	public void stop(){
@@ -111,16 +109,16 @@ public class VideoPlayer implements OnCompletionListener{
 
 	private void loadThumb(){
 		if (!friend.thumbExists() ){
-			Log.i(TAG, "loadThumb: Loading icon for thumb for friend=" + friend.get("firstName"));
+			Log.i(TAG, "loadThumb: Loading icon for thumb for friend=" + friend.get(Friend.Attributes.FIRST_NAME));
 			thumbView.setImageResource(R.drawable.head);
 		}else{
-			Log.i(TAG, "loadThumb: Loading bitmap for friend=" + friend.get("firstName"));
+			Log.i(TAG, "loadThumb: Loading bitmap for friend=" + friend.get(Friend.Attributes.FIRST_NAME));
 			thumbView.setImageBitmap(friend.thumbBitmap());
 		}
 	}
 
 	private void setThumbBorder(){
-		if (videoStatusHandler.videoNotViewed(friend)){
+		if (friend.incomingVideoNotViewed()){
 			Log.i(TAG, "setThumbBorder: setting thumb background to unviewed_shape");
 			thumbView.setBackgroundResource(R.drawable.blue_border_shape);
 

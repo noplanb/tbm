@@ -158,8 +158,9 @@ public class GcmHandler {
 	private void sendRegistrationIdToBackend() {
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
 		User current_user = UserFactory.current_user();
-		params.put("user_id", current_user.get("id"));
+		params.put("user_id", current_user.getId());
 		params.put("push_token", regid);
+		params.put("device_platform", "android");
 	    new GCMPostPushToken("reg/push_token", params, "POST");
 	}
 	

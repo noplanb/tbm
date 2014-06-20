@@ -67,6 +67,19 @@ PROBLEM:
   REASON: In v1.6 had switched to not disposing when the previewSurface is destroyed but explicitly doing so on stop. This was not a good idea as the surface is destroyed before we get to stop. And pulling it out from under the camera and media recorder isnt good. 
   SOLUTION: So in v1.7 I went back to disposing on surfaceDestroyed. As and extra measure I also call for the surfaceView to be made invisible onStop if it hasnt already (It should always have already been destroyed by then.)
   
+PROBLEM: MOTOG
+  - MotoG stopped working. Sometimes it will record 1 video then the preview image freezes. I dont know when it broke. I thought it was working after I changed the videoRecorder and added cameraManager but I may be wrong. 
+  - DEBUG: 
+    - Create VideoTest2
+    - Add CameraManager and VideoRecorder as VideoRecorder2 from tbm to it.
+    - Reproduce the error. RESULT reproducible in VideoTest2 using VideoRecorder from tbm but works fine with the videoRecorder in videotest.
+  - SPECULATION:
+    - Is it the code in camera manager that sets up the camera?
+    - Create VideoRecorder3
+    - Add the camera code from other videoRecorder and try using that. RESULT works although I had to make a bunch of changes to videoRecorder.
+    - CONCLUSION - It might be the camera settings.
+    TRY - Change in VideoRecorder2 which uses CameraManager change camera manager to use simple settings.
+    SOLUTION: cparams.setRecordingHint(true) BREAKS THE MOTOG RECORDING!
     
 	
 	

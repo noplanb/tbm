@@ -85,11 +85,11 @@ public class RegisterActivity extends Activity{
 		int index = v.getId();
 		LinkedTreeMap<String, String> u = userList.get(index);	
 		Log.i(TAG, "userSelected: " + u.toString());
-		user.set("firstName", u.get("first_name"));
-		user.set("lastName", u.get("last_name"));
-		user.set("id", u.get("id"));
+		user.set(User.Attributes.FIRST_NAME, u.get("first_name"));
+		user.set(User.Attributes.LAST_NAME, u.get("last_name"));
+		user.set(User.Attributes.ID, u.get("id"));
 		Log.i(TAG, "User set to: " + user.attributes.toString());
-		new RegisterUser("/reg/register/" + user.get("id"));
+		new RegisterUser("/reg/register/" + user.getId());
 	}
 
 	class RegisterUser extends Server{
@@ -112,13 +112,13 @@ public class RegisterActivity extends Activity{
 		Integer i = 0;
 		for (LinkedTreeMap<String, String> fm : friendList){
 			Friend f = friendFactory.makeInstance();
-			f.set("firstName", fm.get("first_name"));
-			f.set("lastName", fm.get("last_name"));
-			f.set("id", fm.get("id"));
-			f.set("viewIndex", i.toString());
+			f.set(Friend.Attributes.FIRST_NAME, fm.get("first_name"));
+			f.set(Friend.Attributes.LAST_NAME, fm.get("last_name"));
+			f.set(Friend.Attributes.ID, fm.get("id"));
+			f.set(Friend.Attributes.VIEW_INDEX, i.toString());
 			i ++;
 		}
-		user.set("registered", "true");
+		user.set(User.Attributes.REGISTERED, "true");
 		regComplete();
 	}
 

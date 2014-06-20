@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 
@@ -90,6 +91,20 @@ public class Convenience {
 		Log.i(STAG, "numActivities: " + ti.numActivities);
 		Log.i(STAG, "numRunning: " + ti.numRunning);
 		Log.i(STAG, "topActivity: " + ti.topActivity.toString());
+	}
+
+	public static void printBundle(Bundle bundle) {
+		if (bundle == null){
+			Log.e(STAG, "null bundle");
+			return;
+		}
+		for(String key : bundle.keySet()){
+			if (bundle.get(key) == null){
+				Log.e(STAG, key + "=null");
+			} else {
+				Log.e(STAG, key + "=" + bundle.get(key).toString());
+			}
+		}
 	}
 
 }

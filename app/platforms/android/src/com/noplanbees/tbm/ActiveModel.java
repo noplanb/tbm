@@ -39,7 +39,8 @@ public class ActiveModel {
 			attributes.put(a, v);
 		} else {
 			result = null;
-			Log.e(TAG, "set: " + a + " is not an attr.");
+			Log.e(TAG, "ERROR: set: " + a + " is not an attr. This should neve happen");
+			throw new RuntimeException();
 		}
 		return result;
 	}

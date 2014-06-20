@@ -7,57 +7,57 @@ import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
 
-public class VideoStatusHandler {
+public class VideoStatusHandlerDeprecated {
 	private final String TAG = this.getClass().getSimpleName();
 	
 	private Context context;
-	public VideoStatusHandler(Context c){
+	public VideoStatusHandlerDeprecated(Context c){
 		context = c;
 	}
 	
-	public VideoStatusHandler(){}
+	public VideoStatusHandlerDeprecated(){}
 	
 	
 	//-------------------
 	// Local videoViewed stuff
 	//-------------------
 
-	public void setVideoViewed(String friendId) {
-		setVideoNotViewedState(friendId, false);
-		notifyServerVideoViewed(friendId);
-	}
-
-	public void setVideoNotViewed(String friendId){
-		setVideoNotViewedState(friendId, true);
-	}
+//	public void setVideoViewed(String friendId) {
+//		setVideoNotViewedState(friendId, false);
+//		notifyServerVideoViewed(friendId);
+//	}
+//
+//	public void setVideoNotViewed(String friendId){
+//		setVideoNotViewedState(friendId, true);
+//	}
 
 	// Assume that multiple processes can update the videoViewed field in the friend model
 	// let the saved state be used for interprocess communication. Therefore always read
 	// from file update model then save to file when writing.
-	private void setVideoNotViewedState(String friendId, Boolean value){
-		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
-		Friend friend = (Friend) friendFactory.find(friendId);
-		Log.i(TAG, String.format("setVideoNotViewedState: %s %b", friend.get("firstName"), value ));
-		if (value){
-			friend.set("videoNotViewed", "true");
+//	private void setVideoNotViewedState(String friendId, Boolean value){
+//		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
+//		Friend friend = (Friend) friendFactory.find(friendId);
+//		Log.i(TAG, String.format("setVideoNotViewedState: %s %b", friend.get(Friend.Attributes.FIRST_NAME), value ));
+//		if (value){
+//			friend.set("videoNotViewed"GARF, "true");
 			// Also clear the sentVideoStatus for the last received video here because it makes sense in the ui
 			// if you got a new video it definitely means the other person has seen your last 
-			friend.set("sentVideoStatus", ((Integer) NEW).toString());
-		} else{
-			friend.set("videoNotViewed", "false");
-		}
-		friendFactory.save();
-	}
+//			friend.set(Friend.Attributes.OUTGOING_VIDEO_STATUS, ((Integer) NEW).toString());
+//		} else{
+//			friend.set("videoNotViewed"GARF, "false");
+//		}
+//		friendFactory.save();
+//	}
 	
 	// Assumes multiple processes can read and the file saved model is used for IPC
 	// so always read from file.
-	public boolean videoNotViewed(Friend f){
-		Log.i(TAG, "videoNotViewed: checked for " + f.get("firstName"));
-		String friendId = f.getId();
-		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
-		Friend friend = (Friend) friendFactory.find(friendId);
-		return friend.get("videoNotViewed") != null && friend.get("videoNotViewed").startsWith("t");
-	}
+//	public boolean videoNotViewed(Friend f){
+//		Log.i(TAG, "videoNotViewed: checked for " + f.get(Friend.Attributes.FIRST_NAME));
+//		String friendId = f.getId();
+//		FriendFactory friendFactory = ActiveModelsHandler.retrieveFriend();
+//		Friend friend = (Friend) friendFactory.find(friendId);
+//		return friend.get("videoNotViewed"GARF) != null && friend.get("videoNotViewed"GARF).startsWith("t");
+//	}
 	
 	private void notifyServerVideoViewed(String friendId) {
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
@@ -108,9 +108,9 @@ public class VideoStatusHandler {
 			Integer retryCount = extras.getInt(RETRY_COUNT_KEY);
 
 			if (status != null)
-				friend.set("sentVideoStatus", status.toString());
+				friend.set(Friend.Attributes.OUTGOING_VIDEO_STATUS, status.toString());
 			if (retryCount != null)
-				friend.set("sentVideoRetryCount", retryCount.toString());
+				friend.set(Friend.Attributes.UPLOAD_RETRY_COUNT, retryCount.toString());
 			friendFactory.save();
 		} else {
 			Log.e(TAG, "updateFriend: Tried to update where friend or extras where null");
@@ -127,11 +127,11 @@ public class VideoStatusHandler {
 		Friend friend = (Friend) friendFactory.find(friendId);
 		Log.i(TAG, friend.toString());
 		
-		String status = friend.get("sentVideoStatus");
+		String status = friend.get(Friend.Attributes.OUTGOING_VIDEO_STATUS);
 		if (!status.isEmpty())
 			r.putInt( STATUS_KEY, Integer.parseInt(status) );
 
-		String retryCount = friend.get("sentVideoRetryCount");
+		String retryCount = friend.get(Friend.Attributes.UPLOAD_RETRY_COUNT);
 		if (!retryCount.isEmpty())
 			r.putInt( RETRY_COUNT_KEY, Integer.parseInt(retryCount) );
 
@@ -145,7 +145,7 @@ public class VideoStatusHandler {
 		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // Calling start activity from outside an activity context requires this flag.
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); // See doc/task_manager_bug.txt for the reason for this flag.
 		//i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // This is probably not necessary but on a test bed I needed it to make sure onNewIntent is called in the activity.
-		extras.putInt(IntentHandler.INTENT_TYPE_KEY, IntentHandler.TYPE_VIDEO_STATUS_UPDATE);
+//	s	extras.putInt(IntentHandler.INTENT_TYPE_KEY, IntentHandler.TYPE_VIDEO_STATUS_UPDATE);
 		extras.putString("friendId", friend.getId());
 		i.putExtras(extras);
 		context.startActivity(i);
@@ -161,7 +161,7 @@ public class VideoStatusHandler {
 		case UPLOADING:
 			return "p...";
 		case RETRY: 
-			return String.format("r%d...", retryCount);
+//			return String.format("r%d...", retryCount);
 		case UPLOADED:
 			return ".s..";
 		case DOWNLOADED:
@@ -181,7 +181,7 @@ public class VideoStatusHandler {
 	}
 
 	public String getFirstName(Friend friend, Integer status){
-		String fn = friend.get("firstName");
+		String fn = friend.get(Friend.Attributes.FIRST_NAME);
 		int shortLen = Math.min(7, fn.length());
 		String shortFn = fn.substring(0, shortLen);
 		String r = shortFn;

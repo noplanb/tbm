@@ -10,7 +10,7 @@ import java.net.URL;
 
 import android.os.AsyncTask;
 
-public class FileTransfer {
+public class FileTransferDeprecated {
 
 	public static final int DOWN_LOAD = 0;
 	public static final int UP_LOAD = 1;
@@ -20,7 +20,7 @@ public class FileTransfer {
 	int direction;
 
 
-	public FileTransfer (String url, String filePath, int direction){
+	public FileTransferDeprecated (String url, String filePath, int direction){
 		this.filePath = filePath;
 		this.url = url;
 		this.direction = direction;

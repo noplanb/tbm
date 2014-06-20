@@ -20,8 +20,8 @@ public class Config {
 		File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),"tbm");
 		if (!dir.exists()) {
 			if (!dir.mkdirs()) {
-				Log.e(TAG, "Failed to create storage directory.");
-				return null;
+				Log.e(TAG, "ERROR: This should never happen. getHomeDir: Failed to create storage directory.");
+				throw new RuntimeException();
 			}
 		}
 		homeDir = dir;		
@@ -46,8 +46,17 @@ public class Config {
 		}
 		return url;
 	}
+	
+	
+	public static String fileDownloadUrl() {
+		return fullUrl("/videos/get");
+	}
+	
+	public static String fileUploadUrl(){
+		return fullUrl("/videos/create");
+	}
 
-	public static String downloadFilePath() {
+	public static String downloadingFilePath() {
 		return homeDirPath() + "/last_download.mp4";
 	}
 	
@@ -58,5 +67,7 @@ public class Config {
 	public static File recordingFile(){
 		return new File(recordingFilePath());
 	}
+
+
 
 }

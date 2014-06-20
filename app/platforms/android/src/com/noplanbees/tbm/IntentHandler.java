@@ -14,85 +14,51 @@ import android.widget.TextView;
 public class IntentHandler {
 	private final String TAG = this.getClass().getSimpleName();
 
-	public static final int TYPE_VIDEO_RECEIVED = 0;
-	public static final int TYPE_VIDEO_STATUS_UPDATE = 1;
-
-	public static final String INTENT_TYPE_KEY = "type";
-
 	public static final int RESULT_RUN_IN_BACKGROUND = 0;
 	public static final int RESULT_RUN_IN_FOREGROUND = 1;
 	public static final int RESULT_FINISH = 2; // not used
 
-
-
 	private HomeActivity homeActivity;
 	private Intent intent;
-	private Bundle extras;
 	private Friend friend;
+	private String transferType;
+	private int status;
 
 	public IntentHandler(HomeActivity a, Intent i){
 		homeActivity = a;
 		intent = i;
-		extras = intent.getExtras();
 		friend = FriendFactory.getFactoryInstance().getFriendFromIntent(intent);
+		transferType = intent.getStringExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY);
+		status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
 	}
-
+	
 	public Integer handle(Boolean isOncreate){
 		Log.i(TAG, "handle: isOncreate = " + isOncreate.toString());
-		Integer r = RESULT_RUN_IN_FOREGROUND;
-		if (typeIsVideoReceived()){
-			r = handleVideoReceived(isOncreate);
-		} else if (typeIsVideoStatusUpdate()){
-			r = handleVideoStatusUpdate(isOncreate);
+		if (isDownloadIntent()){
+			handleDownloadIntent();
+			return getResultForDownloadIntent(isOncreate);
+		} else if (isUploadIntent()){
+			handleUploadIntent();
+			return getResultForUploadIntent(isOncreate);
 		} else {
 			Log.i(TAG, "handle: no intent type ");
-			r = RESULT_RUN_IN_FOREGROUND;
-		}
-		return r;
-	}
-
-	//-----------------------
-	// VideoStausUpdate stuff
-	//-----------------------
-	private int handleVideoStatusUpdate(Boolean isOncreate) {
-		Log.i(TAG, "handleVideoStatusUpdate");
-		// printState(isOncreate);
-		if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
-			return RESULT_RUN_IN_BACKGROUND;
-		} 
-		if (homeActivity.isForeground){
-			updateHomeViewSentVideoStatus(friend);
-		} 
-		return RESULT_RUN_IN_FOREGROUND;
-	}
-
-	public void updateHomeViewSentVideoStatus(Friend friend) {
-		if (friend != null){
-			Log.i(TAG, "updateHomeViewSentVideoStatus: friend = " + friend.get("firstName"));
-			Integer nameTextId = Integer.parseInt(friend.get("nameTextId"));
-			TextView nameText = (TextView) homeActivity.findViewById(nameTextId);
-			nameText.setText(new VideoStatusHandler(homeActivity).getStatusStr(friend));
-			nameText.invalidate();
-		} else {
-			Log.e(TAG, "updateHomeViewSentVideoStatus: Error friend was null");
+			return RESULT_RUN_IN_FOREGROUND;
 		}
 	}
+	
+	//------------
+	// Convenience
+	//------------
+	private boolean isUploadIntent() {
+		if (transferType == null)
+			return false;
+		return  transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
+	}
 
-	//-----------------------
-	// VideoRecievedStuff stuff
-	//-----------------------
-	private Integer handleVideoReceived(Boolean isOncreate) {
-		Log.i(TAG, "handleVideoReceived");
-		// printState(isOncreate);
-		Integer r = null;
-		if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
-			NotificationAlertManager.alert(homeActivity, friend);
-			r = RESULT_RUN_IN_BACKGROUND;
-		} else {
-			updateHomeViewReceivedVideo();
-			r = RESULT_RUN_IN_FOREGROUND;
-		}
-		return r;
+	private boolean isDownloadIntent() {
+		if (transferType == null)
+			return false;
+		return transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
 	}
 	
 	private Boolean screenIsOff(){
@@ -109,37 +75,6 @@ public class IntentHandler {
 		return screenIsLocked() || screenIsOff();
 	}
 
-	private void updateHomeViewReceivedVideo() {
-		Log.i(TAG, "updateHomeViewReceivedVideo");
-		if (friend != null){
-			homeActivity.getVideoPlayerForFriend(friend).refreshThumb();
-			playNotificationTone();
-			updateHomeViewSentVideoStatus(friend);
-		}	
-	}
-
-	private boolean typeIsVideoStatusUpdate() {
-		return  type() != null && type() == TYPE_VIDEO_STATUS_UPDATE;
-	}
-
-	private Integer type(){
-		Integer t = null;
-		if (extras != null){
-			t = extras.getInt(INTENT_TYPE_KEY);
-		}
-		return t; 
-	}
-
-	private boolean typeIsVideoReceived() {
-		return type() != null && type() == TYPE_VIDEO_RECEIVED;
-	}
-
-	private void playNotificationTone(){
-		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		Ringtone r = RingtoneManager.getRingtone(homeActivity.getApplicationContext(), notification);
-		r.play();
-	}
-	
 	private void printState(Boolean isOncreate){
 		Convenience.printRunningTaskInfo(homeActivity);
 		Log.i(TAG,"isOncreate=" + isOncreate.toString());
@@ -148,4 +83,59 @@ public class IntentHandler {
 		Log.i(TAG,"screenIsLocked=" + screenIsLocked().toString());
 		Log.i(TAG,"numActivities=" + Convenience.numActivitiesInOurTask(homeActivity));
 	}
+	
+	//---------------------
+	// Handle upload intent 
+	//---------------------
+	private void handleUploadIntent() {
+		Log.i(TAG, "handleUploadIntent");
+		friend.updateStatus(intent);
+	}
+	
+	private int getResultForUploadIntent(Boolean isOncreate){
+		Log.i(TAG, "getResultForUploadIntent");
+		 printState(isOncreate);
+		if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
+			return RESULT_RUN_IN_BACKGROUND;
+		} else {
+			return RESULT_RUN_IN_FOREGROUND;
+		}
+	}
+
+	//-------------------------
+	// Handle Download Intent
+	//-------------------------
+	private void handleDownloadIntent(){
+		friend.updateStatus(intent);
+		if (status == Friend.IncomingVideoStatus.NEW){
+			friend.downloadVideo(homeActivity, intent);
+		}
+		
+		if (status == Friend.IncomingVideoStatus.DOWNLOADED){
+			friend.createThumb();
+			if (homeActivity.isForeground){
+				homeActivity.getVideoPlayerForFriend(friend).refreshThumb();
+				playNotificationTone();
+			}
+		}
+	}
+	
+	private int getResultForDownloadIntent(Boolean isOncreate) {
+		Log.i(TAG, "getResultForDownloadIntent");
+		printState(isOncreate);
+		if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
+			NotificationAlertManager.alert(homeActivity, friend);
+			return RESULT_RUN_IN_BACKGROUND;
+		} else {
+			return RESULT_RUN_IN_FOREGROUND;
+		}
+	}
+
+	private void playNotificationTone(){
+		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		Ringtone r = RingtoneManager.getRingtone(homeActivity.getApplicationContext(), notification);
+		r.play();
+	}
+	
+
 }

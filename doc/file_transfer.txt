@@ -1,0 +1,54 @@
+FileTransferService
+  - Subclass of nonStopIntentService
+  - Is subclassed to FileUploadService and FileDownLoadService (so they can run in parallel.)
+  - Gets intent with attributes needed for the file transfer
+    - friendId
+    - filePath 
+    - web url
+    - parameters
+  - Never accesses active models directly
+  - Sends intents back to home activity for events
+    - Upload video status
+      o NEW
+      o QUEUED
+      - NOT_UPLOADABLE
+      - UPLOADING
+      - UPLOADED
+      o DOWNLOADED
+      o VIEWED
+    - Download video status
+      o QUEUED
+      - NOT_DOWNLOADABLE
+      - DOWNLOADING
+      - DOWNLOADED
+      o VIEWED
+  - Saves last intent and startid
+  - Ability to cancel retrying transfer and start from scratch. 
+  
+Todo
+  x build a skeleton of FileTransferService in a testbed application FileTransferTest
+  x Add NonStopIntent Service
+  x Add fileTransferService
+  x Add to manifest.
+  x Implement retry mechanism.
+  x Implement attributes needed for transfer
+  x Move back into tbm
+  - Add transfer type extra and keys to the intent.
+  x Upload
+    x Sublclass to FileUpload
+    x Insert the upload code from tbm
+    - Check for 404
+    x Send status updates as intents
+  x Download
+    - Move create the thumb to friend. 
+  
+      
+
+PROBLEM
+ - FileUpload extending IntentService when activity is destroyed it also stops the service.
+  TEST
+    - Create test remote long lived service that is not activity service and see if we can make it outlive the activity.
+  SOLUTION:
+    - Created a class I call NonStopIntentService that does not call stopSelf and relies on onhandleintent to do so.
+    - Returned START_REDELIVER_INTENT to onStart so that after our activity goes away and service is restarted it gets the last non completed intent.
+  

@@ -60,17 +60,16 @@ public class GcmIntentService extends IntentService {
 	// Handle video status update
 	// ---------
 	private void handleVideoStatusUpdate(Intent intent) {
-		String status = intent.getExtras().getString("status");
+		String status = intent.getStringExtra("status");
+		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
 		if (status.equalsIgnoreCase("downloaded")) {
-			intent.putExtra(VideoStatusHandler.STATUS_KEY, VideoStatusHandler.DOWNLOADED);
+			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.OutgoingVideoStatus.DOWNLOADED);
 		} else if (status.equalsIgnoreCase("viewed")) {
-			intent.putExtra(VideoStatusHandler.STATUS_KEY, VideoStatusHandler.SENT_VIEWED);
+			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.OutgoingVideoStatus.VIEWED);
 		} else {
 			Log.e(TAG,"handleVideoStatusUpdate: ERROR got unknow sent video status");
 		}
-		// VideoStatusHandler is responsible for forwarding intent to
-		// homeActivity in this case.
-		new VideoStatusHandler(getApplicationContext()).updateSentVideoStatus(intent);
+		startHomeActivity(intent);
 	}
 
 	// --------
@@ -78,22 +77,18 @@ public class GcmIntentService extends IntentService {
 	// ---------
 	private void handleVideoReceived(Intent intent) {
 		Log.i(TAG, "handleVideoReceived:");
-		Friend friend = ActiveModelsHandler.ensureFriend().getFriendFromIntent(intent);
-		friend.downloadVideo(getApplicationContext());
-		sendHomeActivityVideoRecievedIntent(friend);
+		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.IncomingVideoStatus.NEW);
+		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra("video_id")); // Normalize from server naming convention to internal.
+		startHomeActivity(intent);
 	}
 
-	private void sendHomeActivityVideoRecievedIntent(Friend friend) {
-		Log.i(TAG, "sendNotification: Sending intent to start home activity");
-		Intent i = new Intent(this, HomeActivity.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); // See doc/task_manager_bug.txt for the reason for this flag.
-		i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // This is probably not necessary but on a test bed I needed it to make sure onNewIntent is called in the activity.
-		Bundle extras = new Bundle();
-		extras.putInt(IntentHandler.INTENT_TYPE_KEY, IntentHandler.TYPE_VIDEO_RECEIVED);
-		extras.putString("friendId", friend.getId());
-		i.putExtras(extras);
-		startActivity(i);
+	private void startHomeActivity(Intent intent){
+		intent.setClass(getApplicationContext(), HomeActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); // See doc/task_manager_bug.txt for the reason for this flag.
+		intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // This is probably not necessary since HomeActivity is singleTask but on a test bed I needed it to make sure onNewIntent is called in the activity.
+		startActivity(intent);
 	}
 
 }

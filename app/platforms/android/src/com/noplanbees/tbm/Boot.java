@@ -8,6 +8,8 @@ public class Boot {
 	public static final String TAG = "Boot";
 	
 	public static boolean boot(HomeActivity homeActivity){
+		Log.i(TAG, "boot");
+		
 		//--------------------------
 		// Retrieve or create User model from local storage
 		//--------------------------

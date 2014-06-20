@@ -62,9 +62,11 @@ public class ActiveModelFactory {
 			osw.close();
 			fos.close();
 		} catch (FileNotFoundException e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "ERROR: This should never happen." + e.getMessage() + e.toString());
+			throw new RuntimeException();
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "ERROR: This shold never happen. " + e.getMessage() + e.toString());
+			throw new RuntimeException();
 		}
 		return j;
 	}
@@ -88,10 +90,10 @@ public class ActiveModelFactory {
 			fis.close();
 		}
 		catch (FileNotFoundException e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, e.getMessage() + e.toString());
 			return false;
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, e.getMessage() + e.toString());
 			return false;
 		}
 		Log.i(TAG, "retrieve(): retrieved from file.");
@@ -147,4 +149,5 @@ public class ActiveModelFactory {
 	public int count(){
 		return instances.size();
 	}
+	
 }

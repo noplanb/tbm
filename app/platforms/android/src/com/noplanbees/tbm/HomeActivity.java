@@ -26,7 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-public class HomeActivity extends Activity implements CameraExceptionHandler{
+public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback{
 
 	final String TAG = this.getClass().getSimpleName();
 	final Float ASPECT = 240F/320F;
@@ -51,6 +51,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 
 	public HashMap<String, VideoPlayer> videoPlayers = new HashMap<String, VideoPlayer>(8);
 
+	//--------------
+	// App lifecycle
+	//--------------
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		Log.i(TAG, "onCreate state");
@@ -83,46 +86,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		lastState = "onCreate";
 	}
 	
-	private void setupWindow(){
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-	}
-
-	private void initModels() {
-		Log.i(TAG, "initModels");
-		instance = this;
-		CameraManager.addCameraExceptionHandlerDelegate(this);
-		videoRecorder = new VideoRecorder(this);
-		gcmHandler = new GcmHandler(this);
-		friendFactory = FriendFactory.getFactoryInstance();
-		userFactory = UserFactory.getFactoryInstance();
-		getVideoViewsAndPlayers();
-	}
-
-	private void ensureModels() {
-		if ( instance == null ||
-				videoRecorder == null ||
-				gcmHandler == null ||
-				friendFactory == null ||
-				userFactory == null
-				){
-			initModels();
-		}
-	}
-
-	private void runTests() {
-		Convenience.printOurTaskInfo(this);
-		// NotificationAlertManager.alert(this, (Friend) FriendFactory.getFactoryInstance().find("3")); 
-		// new CamcorderHelper();
-		//testService();
-		// ConfigTest.run();
-		// FriendTest.run();
-		// new ServerTest().run();
-		// new FileDownload.BgDownload().execute();
-		// Friend f = (Friend) friendFactory.findWhere("firstName", "Farhad");
-		// new FileDownload.BgDownloadFromFriendId().execute(f.get("id"));
-	}
-
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -131,6 +94,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		if (isForeground){
 			ensureModels();
 			initViews();
+			setupVideoStatusChangedCallbacks();
 			ensureListeners();
 			runTests();
 		}
@@ -207,10 +171,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		lastState = "onNewIntent";
 	}
 
-	public VideoPlayer getVideoPlayerForFriend(Friend friend) {
-		return videoPlayers.get(friend.getId());
-	}
-
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -226,8 +186,50 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		Log.i(TAG, "onDestroy: state");
 		super.onDestroy();
 	}
+	
+	//---------------
+	// Initialization
+	//---------------
+	private void setupWindow(){
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+	}
 
+	private void initModels() {
+		Log.i(TAG, "initModels");
+		instance = this;
+		CameraManager.addCameraExceptionHandlerDelegate(this);
+		videoRecorder = new VideoRecorder(this);
+		gcmHandler = new GcmHandler(this);
+		friendFactory = FriendFactory.getFactoryInstance();
+		userFactory = UserFactory.getFactoryInstance();
+		getVideoViewsAndPlayers();
+	}
 
+	private void ensureModels() {
+		if ( instance == null ||
+				videoRecorder == null ||
+				gcmHandler == null ||
+				friendFactory == null ||
+				userFactory == null
+				){
+			initModels();
+		}
+	}
+
+	private void runTests() {
+		Convenience.printOurTaskInfo(this);
+		// NotificationAlertManager.alert(this, (Friend) FriendFactory.getFactoryInstance().find("3")); 
+		// new CamcorderHelper();
+		//testService();
+		// ConfigTest.run();
+		// FriendTest.run();
+		// new ServerTest().run();
+		// new FileDownloadDeprecated.BgDownload().execute();
+		// Friend f = (Friend) friendFactory.findWhere(Friend.Attributes.FIRST_NAME, "Farhad");
+		// new FileDownloadDeprecated.BgDownloadFromFriendId().execute(f.getId());
+	}
+	
 	private void getVideoViewsAndPlayers() {
 		videoViews.add((VideoView) findViewById(R.id.VideoView0));
 		videoViews.add((VideoView) findViewById(R.id.VideoView1));
@@ -276,28 +278,37 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView7));
 
 		for (Integer i=0; i<friendFactory.count(); i++){
-			Friend f = (Friend) friendFactory.findWhere("viewIndex", i.toString());
+			Friend f = (Friend) friendFactory.findWhere(Friend.Attributes.VIEW_INDEX, i.toString());
 
 			Integer frameId = frames.get(i).getId();
-			f.set("frameId", frameId.toString());
+			f.set(Friend.Attributes.FRAME_ID, frameId.toString());
 			Integer viewId = videoViews.get(i).getId();
-			f.set("viewId", viewId.toString());
+			f.set(Friend.Attributes.VIEW_ID, viewId.toString());
 			Integer thumbViewId = thumbViews.get(i).getId();
-			f.set("thumbViewId", thumbViewId.toString());
+			f.set(Friend.Attributes.THUMB_VIEW_ID, thumbViewId.toString());
 			Integer nameTextId = nameTexts.get(i).getId();
-			f.set("nameTextId", nameTextId.toString());
+			f.set(Friend.Attributes.NAME_TEXT_ID, nameTextId.toString());
 		}
 		friendFactory.save();
 	}
 
 	private void initViews(){
-		VideoStatusHandler vsh = new VideoStatusHandler(this);
 		for (Integer i=0; i<friendFactory.count(); i++){
-			Friend f = (Friend) friendFactory.findWhere("viewIndex", i.toString());
+			Friend f = (Friend) friendFactory.findWhere(Friend.Attributes.VIEW_INDEX, i.toString());
 			plusTexts.get(i).setVisibility(View.INVISIBLE);
 			videoViews.get(i).setVisibility(View.VISIBLE);
-			nameTexts.get(i).setText(vsh.getStatusStr(f));
-			videoPlayers.put(f.get("id"), new VideoPlayer( this, f.getId() ));
+			nameTexts.get(i).setText(f.getStatusString());
+			videoPlayers.put(f.get(Friend.Attributes.ID), new VideoPlayer( this, f.getId() ));
+		}
+	}
+	
+	public VideoPlayer getVideoPlayerForFriend(Friend friend) {
+		return videoPlayers.get(friend.getId());
+	}
+	
+	private void setupVideoStatusChangedCallbacks(){
+		for (Friend f : friendFactory.all()){
+			f.addVideoStatusChangedCallbackDelegate(this);
 		}
 	}
 
@@ -313,22 +324,26 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		for (FrameLayout f: frames)
 			f.setLayoutParams(lp);
 	}
-
+	
+	//-------
+	// Events
+	//-------
 	private void onRecordStart(View v){
 		Friend f = FriendFactory.getFriendFromFrame((View) v);
 		VideoPlayer.stopAll();
 		if (videoRecorder.startRecording()) {
-			Log.i(TAG, "onRecordStart: START RECORDING. view = " +f.get("firstName"));
+			Log.i(TAG, "onRecordStart: START RECORDING. view = " +f.get(Friend.Attributes.FIRST_NAME));
 		} else {
-			Log.e(TAG, "onRecordStart: unable to start recording" + f.get("firstName"));
+			Log.e(TAG, "onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
 		}	
 	}
 
 	private void onRecordStop(View v){
 		Friend f = FriendFactory.getFriendFromFrame(v);
-		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get("firstName"));
+		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
 		if ( videoRecorder.stopRecording(f) ){
-			upload(v);
+			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
+			f.uploadVideo(this);
 		} else {
 			toast("Not sent. Too short.");
 		}
@@ -336,27 +351,29 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 
 	private void onRecordCancel(View v){
 		Friend f = FriendFactory.getFriendFromFrame(v);
-		Log.i(TAG, "onRecordCancel: CANCEL RECORDING." + f.get("firstName"));
+		Log.i(TAG, "onRecordCancel: CANCEL RECORDING." + f.get(Friend.Attributes.FIRST_NAME));
 		videoRecorder.stopRecording(f);
 		toast("Not Sent");
 	}
 
 	private void onPlayClick(View v) {
 		Friend f = FriendFactory.getFriendFromFrame(v);
-		Log.i(TAG, "onPlayClick" + f.get("firstName"));
-		getVideoPlayer(f).click();
+		Log.i(TAG, "onPlayClick" + f.get(Friend.Attributes.FIRST_NAME));
+		getVideoPlayerForFriend(f).click();
+	}
+	
+	@Override
+	public void onVideoStatusChanged(Friend friend) {
+		TextView tv = (TextView) findViewById(Integer.parseInt(friend.get(Friend.Attributes.NAME_TEXT_ID)));
+		tv.setText(friend.getStatusString());
 	}
 
-	private void upload(View v) {
-		Log.i(TAG, "upload");
-		Friend f = FriendFactory.getFriendFromFrame(v);
-		f.uploadVideo(this);
-	}
 
-	private VideoPlayer getVideoPlayer(Friend f){
-		return videoPlayers.get(f.getId());
-	}
-
+	
+	
+	//----------------
+	// Setup Listeners
+	//----------------
 	private void ensureListeners(){
 		if (cameraPreviewFrame == null){
 			addListeners();
@@ -393,7 +410,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		for (ActiveModel am : FriendFactory.getFactoryInstance().instances){
 			Friend friend = (Friend) am;
 
-			Integer frameId = Integer.parseInt( friend.get("frameId") );
+			Integer frameId = Integer.parseInt( friend.get(Friend.Attributes.FRAME_ID) );
 			Log.i(TAG, "Adding LongPressTouchHandler for frame" + frameId.toString());
 			FrameLayout frame = (FrameLayout) findViewById(frameId);
 			new LongpressTouchHandler(this, frame) {
@@ -496,5 +513,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler{
 		})
 		.create().show();
 	}
+
 
 };

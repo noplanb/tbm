@@ -13,6 +13,7 @@ import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.hardware.Camera;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.util.Log;
@@ -75,10 +76,11 @@ public class VideoRecorder {
 				Log.i(TAG, String.format("Recorded file %s : %d",Config.recordingFilePath(), Config.recordingFile().length()));
 				moveRecordingToFriend(friend);
 			} catch (IllegalStateException e) {
+				Log.e(TAG, "stopRecording: IllegalStateException: " + e.toString());
  				rval = false;
 				releaseMediaRecorder();
 			} catch (RuntimeException e) {
-				Log.e(TAG, "stopRecording: Recording to short. No output file");
+				Log.e(TAG, "stopRecording: Recording to short. No output file " + e.toString());
 				rval = false;
 				releaseMediaRecorder();
 			}
@@ -201,18 +203,18 @@ public class VideoRecorder {
 		// Set sources
 		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-//		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
+		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA));
 
 		// Set format and encoder see tbm-ios/docs/video_recorder.txt for the research that lead to these settings for compatability with IOS.
-		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very tinny but plays on ios
-		mediaRecorder.setAudioChannels(2);
-		mediaRecorder.setAudioEncodingBitRate(96000);
-		mediaRecorder.setAudioSamplingRate(48000);
-
-		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-		mediaRecorder.setVideoEncodingBitRate(150000);
-		mediaRecorder.setVideoFrameRate(15);
+//		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+//		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very tinny but plays on ios
+//		mediaRecorder.setAudioChannels(2);
+//		mediaRecorder.setAudioEncodingBitRate(96000);
+//		mediaRecorder.setAudioSamplingRate(48000);
+//
+//		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+//		mediaRecorder.setVideoEncodingBitRate(150000);
+//		mediaRecorder.setVideoFrameRate(15);
 		
 		Camera.Size size = CameraManager.getPreviewSize();
 		if (size == null){
