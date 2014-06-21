@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -19,20 +20,20 @@ public class ActiveModelFactory {
 	private String TAG = this.getClass().getSimpleName();
     
 	public ArrayList<ActiveModel> instances = new ArrayList<ActiveModel>();
-
+	
 	//--------------------
 	// Factory
 	//--------------------
-	protected ActiveModel makeInstance(){
+	protected ActiveModel makeInstance(Context context){
 		ActiveModel i = new ActiveModel();
-		i.init();
+		i.init(context);
 		instances.add(i);
 		return i;
 	}
 
-	public void destroyAll(){
+	public void destroyAll(Context context){
 		instances.clear();
-		File f = new File(getSaveFilePath());
+		File f = new File(getSaveFilePath(context));
 		f.delete();
 	}
 
@@ -41,7 +42,7 @@ public class ActiveModelFactory {
 	// Save and retrieve
 	//--------------------
 	// See app_lifecycle.text for why these are synchronized.
-	public synchronized String save(){
+	public synchronized String save(Context context){
 		if (instances == null || instances.isEmpty())
 			return "";
 
@@ -52,7 +53,7 @@ public class ActiveModelFactory {
 		Gson g = new Gson();
 		String j = g.toJson(all);
 		try {
-			File f = new File(getSaveFilePath());
+			File f = new File(getSaveFilePath(context));
 			if (f.exists())
 				f.delete();
 			FileOutputStream fos = new FileOutputStream(f, true);
@@ -71,11 +72,11 @@ public class ActiveModelFactory {
 		return j;
 	}
 
-	public synchronized boolean retrieve(){
+	public synchronized boolean retrieve(Context context){
 		instances.clear();
 		String json = null;
 		try {
-			File f = new File(getSaveFilePath());
+			File f = new File(getSaveFilePath(context));
 			FileInputStream fis = new FileInputStream(f);
 			InputStreamReader isr = new InputStreamReader(fis);
 			BufferedReader br = new BufferedReader(isr);
@@ -105,19 +106,19 @@ public class ActiveModelFactory {
 		Log.i(TAG, "class of attr: " + all.get(0).getClass().getSimpleName());
 		
 		for (LinkedTreeMap<String, String> ats : all){
-			ActiveModel i = makeInstance();
+			ActiveModel i = makeInstance(context);
 			i.attributes.clear();
 			i.attributes.putAll(ats);
 		}
 		return true;
 	}
 	
-	public String getSaveFilePath(){
-		return Config.getHomeDir().getPath() + "/" + this.getClass().getSimpleName() + "_saved_instances.json";
+	public String getSaveFilePath(Context context){
+		return Config.homeDirPath(context) + "/" + this.getClass().getSimpleName() + "_saved_instances.json";
 	}
 	
-	public void deleteSaveFile(){
-		File f = new File(getSaveFilePath());
+	public void deleteSaveFile(Context context){
+		File f = new File(getSaveFilePath(context));
 		f.delete();
 	}
 

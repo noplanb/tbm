@@ -1,21 +1,66 @@
+v1.8 - 18 6/20/2014
+
+Visible Changes
+===============
+ - Video status includes downloading status including retry as well as sent status.
+ - Uses private directory for file storage
+   - Videos not accessible by the outside world
+   - Deleting the app deletes your data so shouldn't have that problem of getting wedged and having to use adb.
+   
+   
+Architecture changes (Virtually complete rewrite)
+=================================================
+ - Registration sends platform info
+ - Change to new server architecture
+   - Sender generates random id.
+   - Receiver queries by id.
+   - Ready for direct to AWS.
+ - Eliminate Video Status handler
+ - Fold video status into friend model as in ios
+ - HomeActivity registers as a delegate to receive videoStatus change events for each friend.
+ - Services never touch the models. 
+   - They only pass intents to the HomeActivity which processes them through the intent handler.
+   - They receive everything they need through intents.
+   - Hopefully no more thread safety considerations
+ - Rewrite of backgroundFileTransfer
+   - Now subclassed to download and upload
+   - The share the retry facility of the parent.
+   - Downloads get retry for the first time no crash on download fail.
+   - Very clean with and well encapsulated
+
+Bug Fixes
+=========
+ - FIXED: MotoG video recording doesnt work. This took me almost 8 hours to find. It turns out mm_camera driver on that device OEM does not like the standard API setting of setRecordingHint(true). This is a bummer because it causes a visible delay in the recording preview coming on on the other phones.
+ 
+ - HOPEFULLY FIXED: ActiveModel not being available at random times to other processes and threads. This should never happen anymore with the new architecture.
+ 
+TODO
+====
+ - Make retry holdoff exponential again after some testing.
+ - Reset retry holdoff on going to foreground.
+ 
+PunchList
+=========
  x FileTransfer
    x Rewrite the code
    x Subclass to FileDownload and FileUpload
    x Fix retries for both upload and download
+    o Exponential with limit
+    o Restart when we come to foreground.
    x Messaging to both download an upload via intent
    x Messaging back to app via intents.
-   - Change calls to use the new methods
+   x Change calls to use the new methods
      x upload 
        x change to use the new api
      x Notifications for videostatus and videoreceived.
-     - download 
-   - Check from unrecoverable errors like 404.
-   - Make retry exponential limited
- - Register
+     x download 
+   o Check from unrecoverable errors like 404.
+   x Make retry exponential limited
+ x Register
    - Send device platform
  x VideoStatus handler
    x Fold function back into friend model as it is in ios
- - Friend
+ x Friend
    x Add video status handler functions
    x Add status change callback abstracts to friends
    x Add additional status states for QUEUED, FAILED_PERMANENTLY
@@ -23,11 +68,12 @@
  x IntentHandler
    x Handle additional intents in intent handler which then makes status changes in friend.
    x Triggers download
- - HomeActivity
+ x HomeActivity
    x Indicate download and download retry in ui
    x Indicate queued as well as proceessing in ui
    x Register as a delegate for videoStatusUpdates
    x Implement callback to update status
+   x Put the banner on the top of the page
    - Reset upload and download retry on foreground.
  x Manifest
    x Add new services
@@ -36,7 +82,7 @@
  x Change attributes in act model to constants
    x User
    x Friend
- - Config
-   - Change directory for video and models to private that gets destroyed with the app.
+ x Config
+   x Change directory for video and models to private that gets destroyed with the app.
  
  

@@ -3,6 +3,7 @@ package com.noplanbees.tbm;
 import java.io.File;
 import java.util.regex.Pattern;
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
@@ -10,11 +11,11 @@ public class Config {
 
 //	public final static String serverUri = "http://192.168.1.91:3000";
 	public final static String serverUri = "http://www.threebyme.com";
-	private static File homeDir = null;
+	private static File publicDir = null;
 
-	public static File getHomeDir() {
-		if (homeDir !=null) 
-			return homeDir;
+	public static File getPublicDir() {
+		if (publicDir !=null) 
+			return publicDir;
 
 		String TAG = "getOutputMediaDir";
 		File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),"tbm");
@@ -24,12 +25,12 @@ public class Config {
 				throw new RuntimeException();
 			}
 		}
-		homeDir = dir;		
-		return homeDir;
+		publicDir = dir;		
+		return publicDir;
 	}
 	
-	public static String homeDirPath(){
-		return getHomeDir().getPath();
+	public static String homeDirPath(Context context){
+		return context.getFilesDir().getAbsolutePath();
 	}
 
 	public static String fullUrl(String uri){
@@ -47,7 +48,6 @@ public class Config {
 		return url;
 	}
 	
-	
 	public static String fileDownloadUrl() {
 		return fullUrl("/videos/get");
 	}
@@ -56,18 +56,16 @@ public class Config {
 		return fullUrl("/videos/create");
 	}
 
-	public static String downloadingFilePath() {
-		return homeDirPath() + "/last_download.mp4";
+	public static String downloadingFilePath(Context context) {
+		return homeDirPath(context) + "/last_download.mp4";
 	}
 	
-	public static String recordingFilePath(){
-		return homeDirPath() + "/new.mp4";
+	public static String recordingFilePath(Context context){
+		return homeDirPath(context) + "/new.mp4";
 	}
 	
-	public static File recordingFile(){
-		return new File(recordingFilePath());
+	public static File recordingFile(Context context){
+		return new File(recordingFilePath(context));
 	}
-
-
 
 }

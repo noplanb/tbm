@@ -78,7 +78,7 @@ public class VideoPlayer implements OnCompletionListener{
 		videoView.setVideoPath(friend.videoFromPath());
 		hideThumb();
 		videoView.start();
-		friend.setIncomingVideoViewed();
+		friend.setAndNotifyIncomingVideoViewed();
 	}
 	
 	public void stop(){

@@ -73,7 +73,7 @@ public class VideoRecorder {
 			hideRecordingIndicator();
 			try {
 				mediaRecorder.stop();
-				Log.i(TAG, String.format("Recorded file %s : %d",Config.recordingFilePath(), Config.recordingFile().length()));
+				Log.i(TAG, String.format("Recorded file %s : %d",Config.recordingFilePath(context), Config.recordingFile(context).length()));
 				moveRecordingToFriend(friend);
 			} catch (IllegalStateException e) {
 				Log.e(TAG, "stopRecording: IllegalStateException: " + e.toString());
@@ -139,7 +139,7 @@ public class VideoRecorder {
 	// ---------------
 	private void moveRecordingToFriend(Friend friend){
 		File ed = friend.videoToFile();
-		File ing = Config.recordingFile();
+		File ing = Config.recordingFile(context);
 		ing.renameTo(ed);
 	}
 
@@ -223,7 +223,7 @@ public class VideoRecorder {
 		}
 		mediaRecorder.setVideoSize(size.width, size.height);
 
-		String ofile = Config.recordingFilePath();
+		String ofile = Config.recordingFilePath(context);
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
 		mediaRecorder.setOutputFile(ofile);
 		

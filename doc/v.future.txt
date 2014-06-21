@@ -10,6 +10,7 @@ Misc
  - Make sure application and activity settings are correct for all our activities
  - Move models and videos to a private directory.
  - Screen should stay on while app is in foreground Jill has it go black while recording.
+ - Check from unrecoverable errors like 404.
  
  Bugs
  - phone call while recording...
@@ -40,8 +41,8 @@ Misc
  - Request download with the filename.
  
  Downloading
- - Add retries for downloading
  - Show downloading indicator with retries
+ - Exponential with limit
  - Distinguish an error condition where the file attempted to download is not available and download is impossible. 404 not found.
  - Restart downloading retries with reset holdoff when app is resumed.
  

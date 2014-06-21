@@ -13,13 +13,13 @@ public class Boot {
 		//--------------------------
 		// Retrieve or create User model from local storage
 		//--------------------------
-		ActiveModelsHandler.ensureUser();
+		ActiveModelsHandler.ensureUser(homeActivity);
 
 		
 		//--------------------------
 		// Check registration
 		//--------------------------
-		if (!User.isRegistered()) {
+		if (!User.isRegistered(homeActivity)) {
 			Log.i(TAG, "Not registered. Starting RegisterActivty");
 			Intent i = new Intent(homeActivity, RegisterActivity.class);
 			homeActivity.startActivity(i);
@@ -30,7 +30,7 @@ public class Boot {
 		//--------------------------
         // Try to retrieve Friend model from local storage
 		//--------------------------
-		ActiveModelsHandler.ensureFriend();
+		ActiveModelsHandler.ensureFriend(homeActivity);
 
 		
 		//--------------------------

@@ -99,8 +99,8 @@ public class Friend extends ActiveModel{
 	
 
 	@Override
-	public void init() {
-		super.init();
+	public void init(Context context) {
+		super.init(context);
 		setIncomingVideoStatus(IncomingVideoStatus.NONE);
 		setOutgoingVideoStatus(OutgoingVideoStatus.NONE);
 		set(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE, VideoStatusEventType.INCOMING.toString());
@@ -114,7 +114,7 @@ public class Friend extends ActiveModel{
 	// Video and thumb
 	//-------------------------
 	public String videoFromPath(){
-		return Config.homeDirPath() + "/vid_from_" + getId() + ".mp4";		
+		return Config.homeDirPath(context) + "/vid_from_" + getId() + ".mp4";		
 	}
 
 	public File videoFromFile(){
@@ -122,7 +122,7 @@ public class Friend extends ActiveModel{
 	}
 
 	public String videoToPath(){
-		return Config.homeDirPath() + "/vid_to_" + getId() + ".mp4";		
+		return Config.homeDirPath(context) + "/vid_to_" + getId() + ".mp4";		
 	}
 
 	public File videoToFile(){
@@ -130,7 +130,7 @@ public class Friend extends ActiveModel{
 	}
 
 	public String thumbPath(){
-		return Config.homeDirPath() + "/thumb_from_" + getId() + ".mp4";		
+		return Config.homeDirPath(context) + "/thumb_from_" + getId() + ".mp4";		
 	}
 
 	public File thumbFile(){
@@ -193,7 +193,7 @@ public class Friend extends ActiveModel{
 		set(Attributes.OUTGOING_VIDEO_ID, VideoIdUtils.OutgoingVideoId(this, UserFactory.current_user()));
 	}
 
-	public void uploadVideo(Context context){
+	public void uploadVideo(){
 		Log.i(TAG, "uploadVideo. For friend=" + get(Attributes.FIRST_NAME));
 
 		setAndNotifyOutgoingVideoStatus(OutgoingVideoStatus.QUEUED);
@@ -210,7 +210,7 @@ public class Friend extends ActiveModel{
 		context.startService(i);
 	}
 	
-	public void downloadVideo(Context context, Intent intent){
+	public void downloadVideo(Intent intent){
 		Log.i(TAG, "downloadVideo. For friend=" + get(Attributes.FIRST_NAME));
 		
 		String videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
@@ -310,6 +310,9 @@ public class Friend extends ActiveModel{
 		return Integer.parseInt(get(Attributes.INCOMING_VIDEO_STATUS));
 	}
 
+	public void setAndNotifyIncomingVideoViewed() {
+		setAndNotifyIncomingVideoStatus(IncomingVideoStatus.VIEWED);
+	}
 	public void setAndNotifyIncomingVideoStatus(int status){
 		if (getIncomingVideoStatus() != status){
 			setIncomingVideoStatus(status);
@@ -341,12 +344,10 @@ public class Friend extends ActiveModel{
 
 	// LastVideoStatusEventType
 	private void setLastEventTypeOutgoing(){
-		Log.e(TAG, "setLastEventTypeOutgoing");
 		set(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE, VideoStatusEventType.OUTGOING.toString());
 	}
 
 	private void setLastEventTypeIncoming(){
-		Log.e(TAG, "setLastEventTypeIncoming");
 		set(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE, VideoStatusEventType.INCOMING.toString());
 	}
 
@@ -376,9 +377,10 @@ public class Friend extends ActiveModel{
 	// Server notification of changes
 	//-------------------------------
 	private void notifyServerVideoViewed() {
+		Log.i(TAG, "notifyServerVideoViewed");
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
 		params.put("from_id", getId());
-		params.put("to_id", User.userId());
+		params.put("to_id", User.userId(context));
 		new SGet("videos/update_viewed", params);
 	}
 

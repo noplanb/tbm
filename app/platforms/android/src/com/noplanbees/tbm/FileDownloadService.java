@@ -28,8 +28,8 @@ public class FileDownloadService extends FileTransferService {
 	}
 	
 	private Boolean download(){
+		File f = FileUtils.getFile(Config.downloadingFilePath(getApplicationContext()));
 		try {
-			File f = FileUtils.getFile(Config.downloadingFilePath());
 			URL url = new URL(urlWithParams);
 			FileUtils.copyURLToFile(url, f, 60000, 60000);
 		} catch (MalformedURLException e) {
@@ -39,6 +39,7 @@ public class FileDownloadService extends FileTransferService {
 			Log.e(TAG, "download2: IOException: " + e.getMessage() + e.toString());
 			return false;
 		}
+		f.renameTo(FileUtils.getFile(filePath));
 		return true;
 	}
 

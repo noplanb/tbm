@@ -1,9 +1,6 @@
 package com.noplanbees.tbm;
 
-import java.io.File;
-
-import android.os.Environment;
-import android.util.Log;
+import android.content.Context;
 
 public class User extends ActiveModel{
     
@@ -24,14 +21,14 @@ public class User extends ActiveModel{
       return a;
 	}
 	
-	public static boolean isRegistered(){
-		UserFactory uf = ActiveModelsHandler.ensureUser();
+	public static boolean isRegistered(Context context){
+		UserFactory uf = ActiveModelsHandler.ensureUser(context);
 		return uf.hasInstances() && uf.instances.get(0).get(User.Attributes.REGISTERED).startsWith("t");
 	}
 	
-	public static String userId(){
+	public static String userId(Context context){
 		String id = null;
-		UserFactory uf = ActiveModelsHandler.ensureUser();
+		UserFactory uf = ActiveModelsHandler.ensureUser(context);
 		if (uf.hasInstances()){
 			id = uf.instances.get(0).getId();
 		}

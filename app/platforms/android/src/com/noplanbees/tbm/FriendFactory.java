@@ -2,9 +2,9 @@ package com.noplanbees.tbm;
 
 import java.util.ArrayList;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 public class FriendFactory extends ActiveModelFactory{
@@ -19,9 +19,9 @@ public class FriendFactory extends ActiveModelFactory{
 	}
 
 	@Override
-	protected Friend makeInstance() {
+	protected Friend makeInstance(Context context) {
 		Friend i = new Friend();
-		i.init();
+		i.init(context);
 		instances.add(i);
 		return i;	}
 
@@ -33,8 +33,6 @@ public class FriendFactory extends ActiveModelFactory{
 	public Friend getFriendFromIntent(Intent intent) {
 		Friend f = null;
 		Bundle extras = intent.getExtras();
-		Log.i(TAG, "getFriendFromIntent");
-		Convenience.printBundle(extras);
 		if (extras != null){
 			if ( extras.get("friendId") != null ){
 				f = (Friend) find(extras.getString("friendId"));

@@ -25,17 +25,19 @@ public class IntentHandler {
 	private int status;
 
 	public IntentHandler(HomeActivity a, Intent i){
+		// Convenience.printBundle(i.getExtras());
 		homeActivity = a;
 		intent = i;
 		friend = FriendFactory.getFactoryInstance().getFriendFromIntent(intent);
 		transferType = intent.getStringExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY);
 		status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
+		Log.e(TAG, status + "");
 	}
 	
 	public Integer handle(Boolean isOncreate){
 		Log.i(TAG, "handle: isOncreate = " + isOncreate.toString());
 		if (isDownloadIntent()){
-			handleDownloadIntent();
+			handleDownloadIntent(isOncreate);
 			return getResultForDownloadIntent(isOncreate);
 		} else if (isUploadIntent()){
 			handleUploadIntent();
@@ -58,7 +60,7 @@ public class IntentHandler {
 	private boolean isDownloadIntent() {
 		if (transferType == null)
 			return false;
-		return transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
+		return transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
 	}
 	
 	private Boolean screenIsOff(){
@@ -105,15 +107,17 @@ public class IntentHandler {
 	//-------------------------
 	// Handle Download Intent
 	//-------------------------
-	private void handleDownloadIntent(){
+	private void handleDownloadIntent(Boolean isOncreate){
 		friend.updateStatus(intent);
 		if (status == Friend.IncomingVideoStatus.NEW){
-			friend.downloadVideo(homeActivity, intent);
+			friend.downloadVideo(intent);
 		}
 		
 		if (status == Friend.IncomingVideoStatus.DOWNLOADED){
 			friend.createThumb();
-			if (homeActivity.isForeground){
+			if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
+				NotificationAlertManager.alert(homeActivity, friend);
+			} else {
 				homeActivity.getVideoPlayerForFriend(friend).refreshThumb();
 				playNotificationTone();
 			}
@@ -124,7 +128,6 @@ public class IntentHandler {
 		Log.i(TAG, "getResultForDownloadIntent");
 		printState(isOncreate);
 		if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
-			NotificationAlertManager.alert(homeActivity, friend);
 			return RESULT_RUN_IN_BACKGROUND;
 		} else {
 			return RESULT_RUN_IN_FOREGROUND;

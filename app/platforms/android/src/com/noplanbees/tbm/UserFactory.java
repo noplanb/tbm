@@ -1,5 +1,7 @@
 package com.noplanbees.tbm;
 
+import android.content.Context;
+
 public class UserFactory extends ActiveModelFactory {
 
 	public static UserFactory instance = null;
@@ -11,10 +13,10 @@ public class UserFactory extends ActiveModelFactory {
 	}
 	
 	@Override
-	protected User makeInstance() {
+	protected User makeInstance(Context context) {
 		if ( instances.isEmpty() ){
 			User i = new User();
-			i.init();
+			i.init(context);
 			instances.add(i);
 			return i;	
 		} else {

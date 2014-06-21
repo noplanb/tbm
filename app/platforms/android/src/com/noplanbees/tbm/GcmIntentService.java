@@ -19,9 +19,6 @@ public class GcmIntentService extends IntentService {
 
 	public GcmIntentService() {
 		super("GcmIntentService");
-		// Pull our models from storage so we can use them in handling the
-		// notification
-		ActiveModelsHandler.ensureAll();
 	}
 
 	@Override

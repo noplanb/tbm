@@ -1,5 +1,6 @@
 package com.noplanbees.tbm;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
@@ -10,8 +11,11 @@ public class ActiveModel {
 	protected final String TAG = this.getClass().getSimpleName();
 
 	public LinkedTreeMap<String, String> attributes = new LinkedTreeMap<String, String>();
+	
+	protected Context context;
 
-	public void init(){
+	public void init(Context context){
+		this.context = context;
 		for(String atr : attributeList()){
 			attributes.put(atr, "");
 		}

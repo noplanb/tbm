@@ -140,7 +140,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	protected void onPause() {
 		super.onPause();
 		Log.i(TAG, "onPause: state");
-		ActiveModelsHandler.saveAll();
+		ActiveModelsHandler.saveAll(this);
 		lastState = "onPause";
 	}
 
@@ -218,7 +218,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void runTests() {
-		Convenience.printOurTaskInfo(this);
+ 		// Log.e(TAG, getFilesDir().getAbsolutePath());
+		// Convenience.printOurTaskInfo(this);
 		// NotificationAlertManager.alert(this, (Friend) FriendFactory.getFactoryInstance().find("3")); 
 		// new CamcorderHelper();
 		//testService();
@@ -289,7 +290,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			Integer nameTextId = nameTexts.get(i).getId();
 			f.set(Friend.Attributes.NAME_TEXT_ID, nameTextId.toString());
 		}
-		friendFactory.save();
 	}
 
 	private void initViews(){
@@ -343,7 +343,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
 		if ( videoRecorder.stopRecording(f) ){
 			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
-			f.uploadVideo(this);
+			f.uploadVideo();
 		} else {
 			toast("Not sent. Too short.");
 		}
@@ -390,8 +390,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		btnReset.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				friendFactory.destroyAll();
-				userFactory.destroyAll();
+				friendFactory.destroyAll(instance);
+				userFactory.destroyAll(instance);
 				finish();
 			}
 		});

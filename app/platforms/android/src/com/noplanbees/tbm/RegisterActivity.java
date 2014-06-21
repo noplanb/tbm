@@ -36,8 +36,8 @@ public class RegisterActivity extends Activity{
 
 	private void init(){
 		userFactory = UserFactory.getFactoryInstance();
-		userFactory.destroyAll();
-		user = userFactory.makeInstance();
+		userFactory.destroyAll(this);
+		user = userFactory.makeInstance(this);
 		friendFactory = FriendFactory.getFactoryInstance();
 	}
 
@@ -108,10 +108,10 @@ public class RegisterActivity extends Activity{
 		Gson g = new Gson();
 		friendList = g.fromJson(r, friendList.getClass());
 		Log.i(TAG, "gotRegResponse: " + friendList.toString());
-		friendFactory.destroyAll();
+		friendFactory.destroyAll(this);
 		Integer i = 0;
 		for (LinkedTreeMap<String, String> fm : friendList){
-			Friend f = friendFactory.makeInstance();
+			Friend f = friendFactory.makeInstance(this);
 			f.set(Friend.Attributes.FIRST_NAME, fm.get("first_name"));
 			f.set(Friend.Attributes.LAST_NAME, fm.get("last_name"));
 			f.set(Friend.Attributes.ID, fm.get("id"));
@@ -123,7 +123,7 @@ public class RegisterActivity extends Activity{
 	}
 
 	private void regComplete() {
-		ActiveModelsHandler.saveAll();
+		ActiveModelsHandler.saveAll(this);
 		Intent i = new Intent(this, HomeActivity.class);
 		startActivity(i);
 		finish();

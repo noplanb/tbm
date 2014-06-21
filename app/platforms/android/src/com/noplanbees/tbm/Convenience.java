@@ -17,7 +17,7 @@ import android.util.Log;
 import android.util.TypedValue;
 
 public class Convenience {
-	public final static String STAG = Convenience.class.toString();
+	public final static String STAG = Convenience.class.getSimpleName();
 	
 	public static int dpToPx(Context context, int dp){
 		Resources r = context.getResources();
@@ -95,14 +95,14 @@ public class Convenience {
 
 	public static void printBundle(Bundle bundle) {
 		if (bundle == null){
-			Log.e(STAG, "null bundle");
+			Log.d(STAG, "null bundle");
 			return;
 		}
 		for(String key : bundle.keySet()){
 			if (bundle.get(key) == null){
-				Log.e(STAG, key + "=null");
+				Log.d(STAG, key + "=null");
 			} else {
-				Log.e(STAG, key + "=" + bundle.get(key).toString());
+				Log.d(STAG, key + "=" + bundle.get(key).toString());
 			}
 		}
 	}
