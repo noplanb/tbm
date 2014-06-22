@@ -1,0 +1,9 @@
+ v1.81 - 19 6/21
+ 
+ Bug Fixes
+ =========
+ - FIXED: On phone without keyguard security if screen was on but locked the getting a message would launch the app into the foreground rather than showing a lock screen message.
+ - FIXED: When a new message or a status update comes in while phone is on and not locked the app will launch inappropriately.
+ - FIXED: Video preview going blank if the app is put in the background for a period of time.
+ - FIXED: Crash where app would start from oncreate due to a notification intent be sent to the background by the intent manager but would continue through the lifecycle on its way to going to the background. (Finish instead.)
+ 

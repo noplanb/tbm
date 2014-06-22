@@ -78,7 +78,7 @@ public class IntentHandler {
 	}
 
 	private void printState(Boolean isOncreate){
-		Convenience.printRunningTaskInfo(homeActivity);
+		//Convenience.printRunningTaskInfo(homeActivity);
 		Log.i(TAG,"isOncreate=" + isOncreate.toString());
 		Log.i(TAG,"isForeground=" + homeActivity.isForeground.toString());
 		Log.i(TAG,"screenIsOff=" + screenIsOff().toString());

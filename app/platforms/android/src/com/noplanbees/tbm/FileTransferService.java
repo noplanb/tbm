@@ -52,7 +52,6 @@ public abstract class FileTransferService extends NonStopIntentService {
 	@Override
 	protected void onHandleIntent(Intent intent, int startId) {
 		Log.i(TAG, "onHandleIntent");
-		Log.i(TAG, " ------ " + startId + " ------ ");
 		filePath = intent.getStringExtra(IntentFields.FILE_PATH_KEY);
 		url = intent.getStringExtra(IntentFields.URL_KEY);
 		params = intent.getBundleExtra(IntentFields.PARAMS_KEY);

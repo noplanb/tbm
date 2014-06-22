@@ -56,7 +56,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	//--------------
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		Log.i(TAG, "onCreate state");
+		Log.e(TAG, "onCreate state");
 		super.onCreate(savedInstanceState);
 		
 		//Note Boot.boot must complete successfully before we continue the home activity. 
@@ -70,14 +70,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// If activity was destroyed and activity was created due to an intent for videoReceived or videoStatus keep task in the background.
 		Integer intentResult = new IntentHandler(this, getIntent()).handle(true);
 		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
-			Log.i(TAG, "onCreate: moving activity to background.");
-			moveTaskToBack(true);
-			isForeground = false;
-		} else if (intentResult == IntentHandler.RESULT_FINISH){
-			Log.i(TAG, "onCreate: finishing.");
+			Log.e(TAG, "onCreate: finishing.");
 			finish();
 		} else {			
-			Log.i(TAG, "onCreate: moving activity to foreground.");
+			Log.e(TAG, "onCreate: marking activity as foreground.");
 			isForeground = true;
 		}
 		
@@ -90,7 +86,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	protected void onStart() {
 		super.onStart();
 		
-		Log.i(TAG, "onStart: state");
+		Log.e(TAG, "onStart: state");
 		if (isForeground){
 			ensureModels();
 			initViews();
@@ -109,7 +105,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	@Override
 	protected void onRestart() {
 		super.onRestart();
-		Log.i(TAG, "onRestart: state");
+		Log.e(TAG, "onRestart: state");
 		
 		// To handle the fucked up Android (bug in my view) that when we are launched from the task manager 
 		// as opposed to from any other vector we dont go through new onNewIntent. We transition directly 
@@ -117,7 +113,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// We also have to handle another fucked up Android bug where if the screen is off it takes us through:
 		// restart, start, resume, pause, then onNewIntent. 
 		if (lastState.startsWith("onStop") && !screenIsOff()){
-			Log.i(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
+			Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
 			isForeground = true;
 		}
 		
@@ -129,7 +125,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	@Override
 	protected void onStop() {
 		super.onStop();
-		Log.i(TAG, "onStop: state");
+		Log.e(TAG, "onStop: state");
 		isForeground = false;
 		if (videoRecorder != null)
 			videoRecorder.dispose(); // Probably redundant since the preview surface will have been destroyed by the time we get here.
@@ -139,7 +135,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	@Override
 	protected void onPause() {
 		super.onPause();
-		Log.i(TAG, "onPause: state");
+		Log.e(TAG, "onPause: state");
 		ActiveModelsHandler.saveAll(this);
 		lastState = "onPause";
 	}
@@ -147,25 +143,23 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
+		Log.e(TAG, "onNewIntent state");
 		
-		if (lastState.startsWith("onPause") && !screenIsOff()){
-			Log.i(TAG, "onNewIntent: preliminary setting to foreground because came from pause and screen was on.");
-			isForeground = true;
-		} else {
-			Log.i(TAG, "onNewIntent: preliminary setting to background because did not come from pause or screen was off.");
-			isForeground = false;
-		}
+//		if (lastState.startsWith("onPause") && !screenIsOff()){
+//			Log.i(TAG, "onNewIntent: preliminary setting to foreground because came from pause and screen was on.");
+//			isForeground = true;
+//		} else {
+//			Log.i(TAG, "onNewIntent: preliminary setting to background because did not come from pause or screen was off.");
+//			isForeground = false;
+//		}
 
 		Integer intentResult = new IntentHandler(this, intent).handle(false);
 		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
-			Log.i(TAG, "onNewIntent: moving activity to background.");
+			Log.e(TAG, "onNewIntent: moving activity to background.");
 			moveTaskToBack(true);
 			isForeground = false;
-		} else if (intentResult == IntentHandler.RESULT_FINISH){
-			Log.i(TAG, "onNewIntent: finishing.");
-			finish();
 		} else {
-			Log.i(TAG, "onNewIntent: moving activity to foreground.");
+			Log.e(TAG, "onNewIntent: moving activity to foreground.");
 			isForeground = true;
 		}
 		lastState = "onNewIntent";
@@ -174,7 +168,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Log.i(TAG, "onResume: state");
+		Log.e(TAG, "onResume: state");
 		if (gcmHandler != null)
 			gcmHandler.checkPlayServices();
 		if (isForeground)
@@ -183,7 +177,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	@Override
 	protected void onDestroy() {
-		Log.i(TAG, "onDestroy: state");
+		Log.e(TAG, "onDestroy: state");
 		super.onDestroy();
 	}
 	
@@ -192,7 +186,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	//---------------
 	private void setupWindow(){
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 	}
 
 	private void initModels() {

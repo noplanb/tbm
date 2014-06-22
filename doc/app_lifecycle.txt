@@ -29,7 +29,8 @@ Architecture:
     - Create a boolean flag isForeground in HomeActivity
     - set as follows
       - onCreate depending on intent
-      - onNewIntent depending on lastState
+      - onNewIntent depending on lastState 
+        - if pause then set to foreground
       - onStop - false
 
   - Initialization and persistence:
@@ -38,6 +39,36 @@ Architecture:
       - GCM
     - onPause
       - ActiveModelsHandler.saveAll()
+      
+PROBLEM with above architecture.
+With the architecture change as of 1.8 we get the following bug: An intent comes in after a notification to start a download. The next intent comes in immediately thereafter when the download service reports starting the download. That causes us to go through the following cycle in case app was stopped. stop->newIntent->pause->newIntent. Pause->newIntent causes us to think we should be in the foreground and we launch the app when we shouldnt.
+
+TRY: the following algorithm:
+  - Basis for algorithm
+    - Transition from background to foreground may only happen due to user action. This can happen in several ways:
+      1) User clicks on task manager. 
+        - NOTE: We must be in stopped state here. 
+          - We cant be destroyed because we wouldnt be in the task manager. 
+          - We cant be paused becuase the task manager itself would not be showing. 
+        - We dont get an intent for this because Android is fucked. But we can detect it because the state change is stop -> restart.
+      2) User launches us from icon
+         - We get an intent that is not one of our background notification intents. 
+      3) User launches us from notification in notification manager 
+         - We get an intent that is not one of our background notification intents. 
+      4) User launches us from our lock screen notification activity.
+         - We get an intent that is not one of our background notification intents. 
+    - Transition from Foreground to background. Happens when the app goes to stop state. 
+  - Algorithm
+    - Set Foreground and Background 
+      - Set to Foreground:
+        - On any intent that is not one of our FileUpload, download, status intents.
+        - On a transition to restart directly from stop.
+      - Set to background on Stop. 
+  - Home activity actions
+    - If in oncreate
+      - Told to run in background by intent handler -> finish()
+    - If in onNew intent
+      - Told to run in background by intent handler -
 
 =======
  Android state idiosyncrasies:
