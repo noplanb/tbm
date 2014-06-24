@@ -68,15 +68,18 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		}
 
 		// If activity was destroyed and activity was created due to an intent for videoReceived or videoStatus keep task in the background.
-		Integer intentResult = new IntentHandler(this, getIntent()).handle(true);
+		Integer intentResult = new IntentHandler(this, getIntent()).handle();
 		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
 			Log.e(TAG, "onCreate: finishing.");
 			finish();
+			return;
 		} else {			
 			Log.e(TAG, "onCreate: marking activity as foreground.");
 			isForeground = true;
 		}
 		
+		Boot.initGCM(this);
+
 		setupWindow();
 		setContentView(R.layout.home);
 		lastState = "onCreate";
@@ -114,6 +117,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// restart, start, resume, pause, then onNewIntent. 
 		if (lastState.startsWith("onStop") && !screenIsOff()){
 			Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
+			// Budge go get around the fact that we dont get an intent here.
+			IntentHandler.handleUserLaunchIntent(this);
 			isForeground = true;
 		}
 		
@@ -144,16 +149,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		Log.e(TAG, "onNewIntent state");
-		
-//		if (lastState.startsWith("onPause") && !screenIsOff()){
-//			Log.i(TAG, "onNewIntent: preliminary setting to foreground because came from pause and screen was on.");
-//			isForeground = true;
-//		} else {
-//			Log.i(TAG, "onNewIntent: preliminary setting to background because did not come from pause or screen was off.");
-//			isForeground = false;
-//		}
-
-		Integer intentResult = new IntentHandler(this, intent).handle(false);
+		Integer intentResult = new IntentHandler(this, intent).handle();
 		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
 			Log.e(TAG, "onNewIntent: moving activity to background.");
 			moveTaskToBack(true);
@@ -171,8 +167,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		Log.e(TAG, "onResume: state");
 		if (gcmHandler != null)
 			gcmHandler.checkPlayServices();
-		if (isForeground)
-			NotificationAlertManager.cancelNativeAlerts(this);
 	}
 
 	@Override
@@ -360,9 +354,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		TextView tv = (TextView) findViewById(Integer.parseInt(friend.get(Friend.Attributes.NAME_TEXT_ID)));
 		tv.setText(friend.getStatusString());
 	}
-
-
-	
 	
 	//----------------
 	// Setup Listeners
@@ -396,6 +387,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			public void onClick(View v) {
 				Camera c = null;
 				c.cancelAutoFocus();
+//				IntentHandler.handleUserLaunchIntent(instance);
 			}
 		});
 
@@ -506,6 +498,4 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		})
 		.create().show();
 	}
-
-
 };

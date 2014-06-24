@@ -19,19 +19,53 @@ public class LockScreenAlertActivity extends Activity {
 
 	private final String TAG = getClass().getSimpleName();
 
+	//-------------------
+	// Activity lifecycle
+	//-------------------
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
 		setupWindow();
 		setContentView(R.layout.lock_screen_alert);
+		setupViews(getIntent());
+	}
+
+	@Override
+	protected void onRestart() {
+		super.onRestart();
+		Log.i(TAG, "onRestart");
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		Log.i(TAG, "onNewIntent");
+		setupViews(intent);
+	}
+
+	@Override
+	protected void onPause() {
+		Log.i(TAG, "onPause");
+		super.onPause();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		Log.i(TAG, "onStop");
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		Log.i(TAG, "onDestroy");
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 		Log.i(TAG, "onStart");
-		setupViews();
 		setupListeners();
 	}
 
@@ -47,7 +81,6 @@ public class LockScreenAlertActivity extends Activity {
 	}
 
 	private void setupWindow(){
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
@@ -57,8 +90,7 @@ public class LockScreenAlertActivity extends Activity {
 		getWindow().setAttributes(lp);
 	}
 
-	private void setupViews(){
-		Intent i = this.getIntent();
+	private void setupViews(Intent i){
 		((TextView) this.findViewById(R.id.titleTextView)).setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));
 		((TextView) this.findViewById(R.id.subtitleTextView)).setText(i.getStringExtra(NotificationAlertManager.SUB_TITLE_KEY));
 		((ImageView) this.findViewById(R.id.logoImage)).setBackgroundResource(i.getIntExtra(NotificationAlertManager.SMALL_ICON_KEY, 0));
@@ -69,6 +101,10 @@ public class LockScreenAlertActivity extends Activity {
 
 	private void startHomeActivity(){
 		Intent i = new Intent(this, HomeActivity.class);
+		// FLAG_DISMISS_KEYGUARD is put here rather than in setupWindow becuase of an Android bug I found and reported: 
+		// SingleInstance type activity with layoutParams FLAG_DISMISS_KEYGUARD does not receive onNewIntent callback.
+		// https://code.google.com/p/android/issues/detail?id=72242&thanks=72242&ts=1403540783
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 		startActivity(i);
 		finish();
 	}

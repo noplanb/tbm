@@ -5,34 +5,42 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
 public class FileUploadService extends FileTransferService {
 	private final String TAG = getClass().getSimpleName();
+	private static final String STAG = FileTransferService.class.getSimpleName();
 	
 	private final String boundary =  "*****";
 	
-	@Override
-	protected Boolean doTransfer(Intent intent) {	
-		intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_UPLOAD);
-		reportStatus(intent, Friend.OutgoingVideoStatus.UPLOADING);
-		
-		if (upload()){
-			reportStatus(intent, Friend.OutgoingVideoStatus.UPLOADED);
-			return true;
-		} else {
-			return false;
-		}
+	
+	public static void restartTransfersPendingRetry(Context context) {
+		Intent intent = new Intent(context, FileUploadService.class);
+		intent.setAction("INTERRUPT");
+		context.startService(intent);
+	}	
+	
+	public FileUploadService() {
+		super("FileUploadService");
 	}
 	
-	private Boolean upload(){
+	@Override
+	protected Boolean doTransfer(Intent intent)throws InterruptedException{	
+		intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_UPLOAD);
+		reportStatus(intent, Friend.OutgoingVideoStatus.UPLOADING);
+		return upload(intent);
+	}
+	
+	private Boolean upload(Intent intent) throws InterruptedException{
 		Log.i(TAG, "upload: " + urlWithParams);
 
 		HttpURLConnection con = null;
@@ -82,19 +90,28 @@ public class FileUploadService extends FileTransferService {
 			}
 			in.close();
 			
-			// GARF: need to check status from server and in case of an an error which indicates the file is never uploadable we 
-			// need return true and report FAILED_PERMANENTLY.
 		} catch (MalformedURLException e) {
 			Log.e(TAG, "MalformedURLException " + e.toString());
 			return false;
 		} catch (IOException e) {
-			Log.e(TAG, "IOException retrying..." + e.toString());
-			return false;
+			Log.e(TAG, "IOException..." + e.toString());
+			if (e.getClass().equals(FileNotFoundException.class)){
+				reportStatus(intent, Friend.OutgoingVideoStatus.FAILED_PERMANENTLY);
+				return true;
+			} else {
+				return false;
+			}
 		} finally {
 			con.disconnect();
 		}
+		reportStatus(intent, Friend.OutgoingVideoStatus.UPLOADED);
 		return true;
 	}
 
-	
+	@Override
+	protected void maxRetriesReached(Intent intent) throws InterruptedException{
+		reportStatus(intent, Friend.OutgoingVideoStatus.FAILED_PERMANENTLY);
+	}
+
+
 }

@@ -1,6 +1,7 @@
 package com.noplanbees.tbm;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,25 +10,33 @@ import org.apache.commons.io.FileUtils;
 
 import com.noplanbees.tbm.FileTransferService.IntentFields;
 
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
 public class FileDownloadService extends FileTransferService {
+	private final static String STAG = FileDownloadService.class.getSimpleName();
 	private final String TAG = getClass().getSimpleName();
 	
-	@Override
-	protected Boolean doTransfer(Intent intent) {
-		intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_DOWNLOAD);
-		reportStatus(intent, Friend.IncomingVideoStatus.DOWNLOADING);
-		if (download()){
-			reportStatus(intent, Friend.IncomingVideoStatus.DOWNLOADED);
-			return true;
-		} else {
-			return false;
-		}
+	public static void restartTransfersPendingRetry(Context context) {
+		Intent intent = new Intent(context, FileDownloadService.class);
+		intent.setAction("INTERRUPT");
+		context.startService(intent);
+	}	
+	
+	public FileDownloadService() {
+		super("FileDownloadService");
 	}
 	
-	private Boolean download(){
+	@Override
+	protected Boolean doTransfer(Intent intent) throws InterruptedException{
+		intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_DOWNLOAD);
+		reportStatus(intent, Friend.IncomingVideoStatus.DOWNLOADING);
+		return download(intent);
+	}
+	
+	private Boolean download(Intent intent) throws InterruptedException{
+		Log.e(TAG, "download " + params.toString());
 		File f = FileUtils.getFile(Config.downloadingFilePath(getApplicationContext()));
 		try {
 			URL url = new URL(urlWithParams);
@@ -36,11 +45,23 @@ public class FileDownloadService extends FileTransferService {
 			Log.e(TAG, "download2: MalformedURLException: " + e.getMessage() + e.toString());
 			return false;
 		} catch (IOException e) {
-			Log.e(TAG, "download2: IOException: " + e.getMessage() + e.toString());
-			return false;
+			Log.e(TAG, "download: IOException: e.tostring " +  e.toString() );
+			if (e.getClass().equals(FileNotFoundException.class)){
+				reportStatus(intent, Friend.IncomingVideoStatus.FAILED_PERMANENTLY);
+				return true;
+			} else {
+				return false;
+			}
 		}
 		f.renameTo(FileUtils.getFile(filePath));
+		Log.e(TAG, "download SUCCESS" + params.toString());
+		reportStatus(intent, Friend.IncomingVideoStatus.DOWNLOADED);
 		return true;
 	}
 
+	@Override
+	protected void maxRetriesReached(Intent intent) throws InterruptedException{
+		reportStatus(intent, Friend.IncomingVideoStatus.FAILED_PERMANENTLY);
+	}
+	
 }

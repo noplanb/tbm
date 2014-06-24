@@ -34,6 +34,7 @@ public abstract class NonStopIntentService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+    	Log.i(TAG, "onCreate");
         HandlerThread thread = new HandlerThread("IntentService[" + mName + "]");
         thread.start();
 
@@ -43,20 +44,33 @@ public abstract class NonStopIntentService extends Service {
 
     @Override
     public void onStart(Intent intent, int startId) {
-    	if (intent == null){
-        	Log.i(TAG, "onStart: null intent");
-    	} else {
-        	Log.i(TAG, "onStart: intent = " + intent.toString());
-    	}
+    	Log.i(TAG, "onStart");
+		
         Message msg = mServiceHandler.obtainMessage();
         msg.arg1 = startId;
         msg.obj = intent;
         mServiceHandler.sendMessage(msg);
     }
 
-    @Override
+
+	@Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+    	Log.i(TAG, "onStartCommand flags=" + flags + " startId=" + startId);
+    	
+    	if (intent == null){
+			return START_STICKY;
+    	}
+    	
+		if (intent.getAction() != null && intent.getAction().equals("INTERRUPT")){
+			Log.i(TAG, "onStart: Got a request to INTERRUPT");
+	        mServiceLooper.getThread().interrupt();
+	        // I dont want to call stopSelf on this becuase it wont have time to act.  But I also dont want it redelivered if the service is stopeed.
+			return START_STICKY;
+		}
+		
         onStart(intent, startId);
+        // If service is stopped when the queue still has intents that have not been handled.
+        // It will restart and redeliver the intents for which we did not send a stopSelf(startId).
         return START_REDELIVER_INTENT;
     }    
 
@@ -77,6 +91,7 @@ public abstract class NonStopIntentService extends Service {
      * worker thread that runs independently from other application logic.
      * So, if this code takes a long time, it will hold up other requests to
      * the same IntentService, but it will not hold up anything else.
+     * 
      *
      * @param intent The value passed to {@link
      *               android.content.Context#startService(Intent)}.

@@ -41,6 +41,14 @@ Todo
     x Send status updates as intents
   x Download
     - Move create the thumb to friend. 
+    
+  x Copy FileTransferService back 
+  x Uncomment commented lines
+  x Put exponential back on.
+  x Make the crash button restart.
+  x Make it so 404 returns true and errors out.
+  - Point it back at our server
+  - Test
   
       
 

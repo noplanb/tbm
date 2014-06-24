@@ -7,3 +7,18 @@
  - FIXED: Video preview going blank if the app is put in the background for a period of time.
  - FIXED: Crash where app would start from oncreate due to a notification intent be sent to the background by the intent manager but would continue through the lifecycle on its way to going to the background. (Finish instead.)
  
+ 
+Test:
+  - Get message when
+    x Foreground
+    x Background screen not locked
+    x Background lock screen & screen off
+    x Background lock screen & screen on
+    - Background lock screen with security & screen off 
+    - Background lock screen with security & screen on
+    - Terminated screen not locked
+    - Terminated lock screen & screen off
+    - Terminated lock screen & screen on
+    - Terminated lock screen with security & screen off 
+    - Terminated lock screen with security & screen on
+    

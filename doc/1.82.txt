@@ -1,0 +1,42 @@
+v1.82 - 20
+
+New Features
+============
+NEW: Retries have an exponential holdoff that maxes out at 512 seconds. 
+
+NEW: Permanent failure for upload and download. Currently this can happen 2 ways:
+  1) Maximum number of retries reached: currently 100.
+  2) FileNotFound (404) error which is unrecoverable given the url. 
+
+NEW: When app comes to the foreground any retries that are waiting on a long holdoff are started immediately and their exponential delay reset.
+
+NEW: UI now shows Downloading as well as Uploading status. It also shows e! for permanent failure. You should never see this.
+
+
+Bug Fixes
+=========
+FIXED: Getting old download and upload intents being processed over and over. Wasnt calling stopSelf(startId) after handling the intent for the service.
+
+FIXED: Getting a message when app terminated would cause multiple notification tones. What was happening - FileTransferService and its subclasses FileDownload and FileUpload were running in the same process as our HomeAcivity. When I called finish on onCreate in the activity the os would terminate our process killing the downloadService with it. The service would then restart itself since it has an unfinished intent. This would cause further intents to the activity which would finish again repeating the process several times. Solution was to put the services in different processes from the main activity.j
+
+FIXED: - When a new lock screen notification comes in and the old one is showing it does not update to the new one in the case where the phone has a nonSecure lockScreen. This was due to an android bug I found and reported here: SingleInstance type activity with layoutParams FLAG_DISMISS_KEYGUARD does not receive onNewIntent callback. - https://code.google.com/p/android/issues/detail?id=72242&thanks=72242&ts=1403540783
+e
+Notes
+=====
+ - Regarding app disappearing from task manager even though you might expect it to be in the background state. There will be cases where TBM in the background will be finished purposely by our app. This is done intentionally to simplify the state machine that handles the app lifecycle and reduce the chance of other anomalous behavior. Also in the case of shutting down the app while it is uploading. The os tends to move us from stopped to destroyed pretty much every time in this case. Probably wanting to claim resources since our upload process is creating a big buffer. 
+
+
+Tests for Lifecycle issues
+==========================
+  - Get message when
+    x Foreground
+    x Background screen not locked
+    x Background lock screen & screen off
+    x Background lock screen & screen on
+    x Background lock screen with security & screen off 
+    x Background lock screen with security & screen on
+    x Terminated screen not locked
+    x Terminated lock screen & screen off
+    x Terminated lock screen & screen on
+    x Terminated lock screen with security & screen off 
+    x Terminated lock screen with security & screen on

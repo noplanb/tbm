@@ -13,7 +13,8 @@ import android.widget.TextView;
 
 public class IntentHandler {
 	private final String TAG = this.getClass().getSimpleName();
-
+	private final static String STAG = IntentHandler.class.getSimpleName();
+	
 	public static final int RESULT_RUN_IN_BACKGROUND = 0;
 	public static final int RESULT_RUN_IN_FOREGROUND = 1;
 	public static final int RESULT_FINISH = 2; // not used
@@ -34,33 +35,48 @@ public class IntentHandler {
 		Log.e(TAG, status + "");
 	}
 	
-	public Integer handle(Boolean isOncreate){
-		Log.i(TAG, "handle: isOncreate = " + isOncreate.toString());
+	public Integer handle(){
+		Log.i(TAG, "handle:");
+		printState();
 		if (isDownloadIntent()){
-			handleDownloadIntent(isOncreate);
-			return getResultForDownloadIntent(isOncreate);
+			handleDownloadIntent();
 		} else if (isUploadIntent()){
 			handleUploadIntent();
-			return getResultForUploadIntent(isOncreate);
 		} else {
-			Log.i(TAG, "handle: no intent type ");
+			handleUserLaunchIntent(homeActivity);
+		}
+		return getReturnResult();
+	}
+
+	private Integer getReturnResult() {
+		if ( !isBackgroundIntent() ){
 			return RESULT_RUN_IN_FOREGROUND;
+		} else {
+			if (homeActivity.isForeground){
+				return RESULT_RUN_IN_FOREGROUND;
+			} else {
+				return RESULT_RUN_IN_BACKGROUND;
+			}
 		}
 	}
-	
+
 	//------------
 	// Convenience
 	//------------
-	private boolean isUploadIntent() {
+	private Boolean isUploadIntent() {
 		if (transferType == null)
 			return false;
 		return  transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
 	}
 
-	private boolean isDownloadIntent() {
+	private Boolean isDownloadIntent() {
 		if (transferType == null)
 			return false;
 		return transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+	}
+	
+	private Boolean isBackgroundIntent() {
+		return isUploadIntent() || isDownloadIntent();
 	}
 	
 	private Boolean screenIsOff(){
@@ -77,13 +93,24 @@ public class IntentHandler {
 		return screenIsLocked() || screenIsOff();
 	}
 
-	private void printState(Boolean isOncreate){
+	private void printState(){
 		//Convenience.printRunningTaskInfo(homeActivity);
-		Log.i(TAG,"isOncreate=" + isOncreate.toString());
 		Log.i(TAG,"isForeground=" + homeActivity.isForeground.toString());
+		Log.e(TAG, "is Background intent=" + isBackgroundIntent().toString());
 		Log.i(TAG,"screenIsOff=" + screenIsOff().toString());
 		Log.i(TAG,"screenIsLocked=" + screenIsLocked().toString());
 		Log.i(TAG,"numActivities=" + Convenience.numActivitiesInOurTask(homeActivity));
+	}
+	
+
+	//--------------------------
+	// Handle user launch intent 
+	//--------------------------
+	public static void handleUserLaunchIntent(HomeActivity homeActivity) {
+		Log.i(STAG, "handleUserLaunchIntent");
+		FileUploadService.restartTransfersPendingRetry(homeActivity);
+		FileDownloadService.restartTransfersPendingRetry(homeActivity);
+		NotificationAlertManager.cancelNativeAlerts(homeActivity);
 	}
 	
 	//---------------------
@@ -94,20 +121,12 @@ public class IntentHandler {
 		friend.updateStatus(intent);
 	}
 	
-	private int getResultForUploadIntent(Boolean isOncreate){
-		Log.i(TAG, "getResultForUploadIntent");
-		 printState(isOncreate);
-		if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
-			return RESULT_RUN_IN_BACKGROUND;
-		} else {
-			return RESULT_RUN_IN_FOREGROUND;
-		}
-	}
 
 	//-------------------------
 	// Handle Download Intent
 	//-------------------------
-	private void handleDownloadIntent(Boolean isOncreate){
+	private void handleDownloadIntent(){
+		Log.i(TAG, "handleDownloadIntent");
 		friend.updateStatus(intent);
 		if (status == Friend.IncomingVideoStatus.NEW){
 			friend.downloadVideo(intent);
@@ -115,7 +134,7 @@ public class IntentHandler {
 		
 		if (status == Friend.IncomingVideoStatus.DOWNLOADED){
 			friend.createThumb();
-			if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
+			if (!homeActivity.isForeground || screenIsLockedOrOff()){
 				NotificationAlertManager.alert(homeActivity, friend);
 			} else {
 				homeActivity.getVideoPlayerForFriend(friend).refreshThumb();
@@ -124,16 +143,6 @@ public class IntentHandler {
 		}
 	}
 	
-	private int getResultForDownloadIntent(Boolean isOncreate) {
-		Log.i(TAG, "getResultForDownloadIntent");
-		printState(isOncreate);
-		if (isOncreate || !homeActivity.isForeground || screenIsLockedOrOff()){
-			return RESULT_RUN_IN_BACKGROUND;
-		} else {
-			return RESULT_RUN_IN_FOREGROUND;
-		}
-	}
-
 	private void playNotificationTone(){
 		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 		Ringtone r = RingtoneManager.getRingtone(homeActivity.getApplicationContext(), notification);

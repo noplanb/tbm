@@ -32,10 +32,13 @@ public class Boot {
 		//--------------------------
 		ActiveModelsHandler.ensureFriend(homeActivity);
 
-		
-		//--------------------------
-		// Init GCM
-		//--------------------------
+		return true;
+	}
+	
+	//--------------------------
+	// Init GCM
+	//--------------------------
+	public static boolean initGCM(HomeActivity homeActivity){
 		homeActivity.gcmHandler = new GcmHandler(homeActivity);
 		if (homeActivity.gcmHandler.checkPlayServices()){
 			homeActivity.gcmHandler.registerGcm();
