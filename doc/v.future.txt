@@ -11,48 +11,35 @@ Misc
  - Move models and videos to a private directory.
  - Screen should stay on while app is in foreground Jill has it go black while recording.
  - Check from unrecoverable errors like 404.
+ - Put app icon on the home screen
+ - Make the last frame the poster frame.
+ - Custom notification tone for our app
+ - Make it work with headphones and blue tooth.
  
  Bugs
- - phone call while recording...
- - We loose active models somehow.
+ x We loose active models somehow.
  - Uploading shows stuck on phone for android p but no retry.
  - In some cases crash when download fails:
    06-12 21:30:33.199: E/FileDownload(27057): download2: IOException: null
    06-12 16:49:22.736: E/AndroidRuntime(12688): java.lang.NullPointerException
    06-12 16:49:22.736: E/AndroidRuntime(12688): 	at com.noplanbees.tbm.FileDownload.createThumb(FileDownload.java:64)
    thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
+ - Interruptions while recording
+   - phone call while recording...
+   - Shut down screen when recording causes problems. 
+ - Catch runtime exception on MediaRecorder.start and stop.
+ - Catch out low memory errors.
+ - Limit the size of the recording.
+ - Crash log from kons app in a wedged state.
+ - FileUploadService - after handling interrupt immediately put in queue so that it can call stop self in turn when its turn in the intent queue comes up.
  
  Make sure our application and activity settings are correct
    - http://developer.android.com/guide/topics/manifest/application-element.html#allowbackup
    - http://developer.android.com/guide/topics/manifest/activity-element.html#aff
    - android:alwaysRetainTaskState
-   
- LongPressTouchHandler
- x Distance you have to move off to cancel recording use dp instead of px fixed: 1.7
- - Dont crash when you put down 2 fingers
- - Make sure we pass the view where the start happened when we stop or abort.
- - Make sure we always pass a view
- - Send platform :android when sending push_token.
+    
+  
  
- New Server API
- - Switch to the ios server api scheme. 
- - Create a random filename for the uploaded file. Send with the file. 
- - Send notification to android with filename to download.
- - Request download with the filename.
- 
- Downloading
- - Show downloading indicator with retries
- - Exponential with limit
- - Distinguish an error condition where the file attempted to download is not available and download is impossible. 404 not found.
- - Restart downloading retries with reset holdoff when app is resumed.
- 
- Uploading
- - Upload retry holdoff should max out.
- - When upload is retrying with long holdoff when app comes to foreground it should restart the retry count.
- - Use a single holdoff for both upload and download?
- 
- Make models similar to IOS
- - On ios I have all video status stuff in Friend rather than a separate video status handler. Refactor to that scheme on android.
  
  Polling   
 
@@ -61,25 +48,6 @@ Notification unreliability.
    This can significantly improved with some simple polling on startup. And periodic smart polling when running and you are in a state that is expecting a reply might be even better with a trade off on expense.
 
 
-KON BUG EMAILS
-==============
----
-Was on a call for a long time. When the call was over, TBM was the frontmost screen. Very weird! Why was it not the calling screen? I think TBM may have been there even before we hung up, but not sure. In this case, I made the outbound call.
-
-After the call, a new message was there, but it was actually an old message from you...just showed as new. Maybe this has something to do with the server roll?
-
-Interestingly, the camera did not work - it was stuck on a particular image. Playing the message worked fine.
-
-Then I hibernated and came back, everything was fine.
-
-Currently if a message comes in when app is stopped or paused but not destroyed it will bring the app to front most regardless of what app you are in with the exception of phone where we would be launched behind. In this case my guess is a message came in while you were on phone it launched our app behind and when you hid your phone our app came to the fore. 
-
-Note that this is all changing with the change of notifications that I am currently working on. If app is not foreground you will get a notification rather than auto launching the app in all cases. If phone screen is locked or off you will get a notification on your lock (keyguard screen). In all cases you will get a notification in your notification pane. Notifications will be removed when you enter the app.
-
-Regarding the old message appearing as new. You are probably right that had to do with the server switch. I saw a few of those due to the server switch between my test phones. However I also saw some of these with before the server switch. Sever is completely changing as is the API that our app will use for it so probably not worth debugging until we tear all that up and redo.
-
-Regarding camera not working. I will try to reproduce that in the context of fixing the bug where you hold record through a phone call and release. I believe it is in the same category. I.e. weirdness when our app comes back to the foreground after being overlayed by a window of TYPE_PHONE including getting touch events during and after the period we are overlayed.
----
 
 
 
@@ -87,42 +55,3 @@ Regarding camera not working. I will try to reproduce that in the context of fix
 
   
    
-Architecture change to properly save instance state:
-====================================================
-Hey Farhad thinking outloud here to get some feedback from you...
-
-On IOS
-- There are no services
-- The app is the only process it is either running, background or terminated and all initiating actions go through the app_delegate
-- I use cocoa managed object facility to save and restore instance state when moving in and out of terminated.
-- The app requests and is given background time to handle background downloads and uploads with retry.
-- The app is woken in a background state to pre handle notifications. 
-- But the necessary objects are always there and there are no IPC issues vis a vis their state as all these actions are initiated through the app delegate which automatically and consistently saves and restores instance state.
-- Cocoa managed objects ensures multiple threads can access common objects cleanly.
-
-On Android
-- I was new to the environment so I did not make use of the saved instance state bundle. I thought I needed services to deal with the app objects even if the app was destroyed (android version of ios-terminated). I couldnt see a way to do that with saved instance state bundle so I rolled my own active_model like facility to separately save and restore instance state. This active model and its factory are subclassed to the objects I need to persist.
-- I allow separate services that run on processes and threads completely independently of the app to access app models. These are for actions like, handling notifications, background uploads and downloads. 
-- I need to deal with the Inter Process Coordination aspects of this architecture. It gets to the point I think where not only all writes need to go to file but all reads need to as well since independent asynchronous processes can change the models. And there may be spurious file lock conflicts.
-- This is giving me a big headache and it looks like a mixup in this is causing at least one of the crash scenarios Kons phone reported although I dont fully understand it yet. In one of the crash scenarios a notification intent gets null for a model that should exist. Hard to understand how this could happen (perhaps 2 processes trying to access the same file at the same time). But my architecture is a bitch to debug and test.
-
-
-Some thoughts. 
- - Rolling my own active model and not making use of the frameworks ability to save and restore instance state is a lot of work that I dont need to do and is probably asking for trouble.
- - Having multiple process asynchronously access common models is also an architecture that is difficult to debug and maintain. 
-
-Proposed rearchitecture.
- - Go to an architecture that is much more like IOS.
- - Use the framework to save and restore instance state via the bundle. Tear out all my own active model stuff.
- - All actions on the models read or write are done through only one process: the app activity.
- - Asynchronous services running on other processes are always passed what they need explicitly to perform their tasks. 
- - Asynchronous services running on other processes that feel they need to write the models wake up the app activity through intents and the app activity takes care of the updates.
- - Actions on the models may still be taken on multiple threads but always in the same single app Activity process.
-
-Problem is that it is a huge rewrite. Probably 2 weeks to redo and test.
-
-RESOLUTION: after looking into savedInstanceState it really does not do what I want. So we should:
-  - Stick with the active model scheme and save to file. 
-  - Never load the access the models from a service running on another thread.
-  - Always write to file when changing an attribute (in case of crash before chance to save).
-  - 

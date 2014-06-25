@@ -74,7 +74,8 @@ public class VideoRecorder {
 			try {
 				mediaRecorder.stop();
 				Log.i(TAG, String.format("Recorded file %s : %d",Config.recordingFilePath(context), Config.recordingFile(context).length()));
-				moveRecordingToFriend(friend);
+				if (friend != null)
+					moveRecordingToFriend(friend);
 			} catch (IllegalStateException e) {
 				Log.e(TAG, "stopRecording: IllegalStateException: " + e.toString());
  				rval = false;
@@ -102,6 +103,10 @@ public class VideoRecorder {
 			mediaRecorder.start();	
 		} catch (IllegalStateException e) {
 			Log.e(TAG, "startRecording: called in illegal state.");
+			releaseMediaRecorder();
+			return false;
+		} catch (RuntimeException e){
+			Log.e(TAG, "ERROR: RuntimeException: this should never happen according to google. But I have seen it. " + e.toString());
 			releaseMediaRecorder();
 			return false;
 		}
@@ -315,4 +320,6 @@ public class VideoRecorder {
 		};
 		activity.runOnUiThread(hri);
 	}
+
+
 }

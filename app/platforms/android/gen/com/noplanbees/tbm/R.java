@@ -511,7 +511,6 @@ containing a value of this type.
         public static final int thumbImage=0x7f050046;
         public static final int titleTextView=0x7f050047;
         public static final int top=0x7f050009;
-        public static final int tt=0x7f05004e;
         public static final int vertical=0x7f050006;
     }
     public static final class integer {
@@ -522,7 +521,6 @@ containing a value of this type.
         public static final int home=0x7f030001;
         public static final int lock_screen_alert=0x7f030002;
         public static final int register=0x7f030003;
-        public static final int touch_test=0x7f030004;
     }
     public static final class string {
         public static final int app_name=0x7f06001a;

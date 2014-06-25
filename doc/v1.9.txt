@@ -1,0 +1,28 @@
+v1.9 -   6/25/2014
+
+
+Bug Fixes
+=========
+FIXED: Touching with multiple fingers especially when recording is started causes anomalous behavior. You should be able to mack on the screen as much as you want now with all your fingers and it should work fine: If you are recording and you put down another finger it will abort and let you know.
+
+FIXED: Screen disappearing while you are recording causes anomalous behavior and camera/media recorder sometimes getting wedged causing. Screen can disappear due many causes including:
+  - clicking home, back, or task manager button.
+  - pulling down the titleBar overlay (where your status and notifications are)
+  - getting a phone call.
+If any of these happens while you are recording now it will abort the recording and let you know. Not that if you pull the titlebar down it will continue recording and finish when you release your finger since the os does not take us out of resumed state in that case.
+
+REWROTE: LongpressTouchHandler.
+
+FIXED: Catch RuntimeException on mediaRecorer.start as well as mediaRecorder.stop even though the documentation does not specify a runtime exception is possible on start. We have seen these with Kons shenanigans.
+
+FIXED: Kon Crasher in homeActivity.onRecordStop()
+
+
+Features
+========
+ - Screen stays on while the app is in the foreground. Jill was complaining that the screen would go into power save while recording.
+ 
+COMING SOON: Polling | Append to video | minor features and bug fixes then we are done with Android!
+
+
+

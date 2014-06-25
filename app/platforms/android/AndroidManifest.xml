@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.noplanbees.tbm"
     android:versionCode="20"
-    android:versionName="1.82" >
+    android:versionName="1.9" >
 
     <uses-sdk
         android:minSdkVersion="11"

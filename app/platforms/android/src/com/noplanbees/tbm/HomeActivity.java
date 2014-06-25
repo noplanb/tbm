@@ -33,9 +33,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	public static HomeActivity instance;
 	public Boolean isForeground = false;
+	public LongpressTouchHandler longpressTouchHandler;
 	public VideoRecorder videoRecorder;
 	public GcmHandler gcmHandler;
-	
+
 	private FriendFactory friendFactory;
 	private UserFactory userFactory;
 
@@ -58,7 +59,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	public void onCreate(Bundle savedInstanceState) {
 		Log.e(TAG, "onCreate state");
 		super.onCreate(savedInstanceState);
-		
+
 		//Note Boot.boot must complete successfully before we continue the home activity. 
 		//Boot will start the registrationActivity and return false if needed. 
 		if (!Boot.boot(this)){
@@ -77,18 +78,18 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			Log.e(TAG, "onCreate: marking activity as foreground.");
 			isForeground = true;
 		}
-		
+
 		Boot.initGCM(this);
 
 		setupWindow();
 		setContentView(R.layout.home);
 		lastState = "onCreate";
 	}
-	
+
 	@Override
 	protected void onStart() {
 		super.onStart();
-		
+
 		Log.e(TAG, "onStart: state");
 		if (isForeground){
 			ensureModels();
@@ -104,12 +105,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		return !pm.isScreenOn();
 	}
-	
+
 	@Override
 	protected void onRestart() {
 		super.onRestart();
 		Log.e(TAG, "onRestart: state");
-		
+
 		// To handle the fucked up Android (bug in my view) that when we are launched from the task manager 
 		// as opposed to from any other vector we dont go through new onNewIntent. We transition directly 
 		// from onStop() to onRestart(). In this case we need to set isForeground explicitly here.
@@ -121,7 +122,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			IntentHandler.handleUserLaunchIntent(this);
 			isForeground = true;
 		}
-		
+
 		if (isForeground && videoRecorder != null)
 			videoRecorder.restore();
 		lastState = "onRestart";
@@ -141,6 +142,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	protected void onPause() {
 		super.onPause();
 		Log.e(TAG, "onPause: state");
+		abortAnyRecording();
+		longpressTouchHandler.disable(true);
 		ActiveModelsHandler.saveAll(this);
 		lastState = "onPause";
 	}
@@ -167,6 +170,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		Log.e(TAG, "onResume: state");
 		if (gcmHandler != null)
 			gcmHandler.checkPlayServices();
+		longpressTouchHandler.enable();
 	}
 
 	@Override
@@ -175,11 +179,14 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		super.onDestroy();
 	}
 	
+	
+
 	//---------------
 	// Initialization
 	//---------------
 	private void setupWindow(){
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
 	private void initModels() {
@@ -191,21 +198,24 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		friendFactory = FriendFactory.getFactoryInstance();
 		userFactory = UserFactory.getFactoryInstance();
 		getVideoViewsAndPlayers();
+		setupLongPressTouchHandler();
 	}
+
 
 	private void ensureModels() {
 		if ( instance == null ||
 				videoRecorder == null ||
 				gcmHandler == null ||
 				friendFactory == null ||
-				userFactory == null
+				userFactory == null || 
+				longpressTouchHandler == null
 				){
 			initModels();
 		}
 	}
 
 	private void runTests() {
- 		// Log.e(TAG, getFilesDir().getAbsolutePath());
+		// Log.e(TAG, getFilesDir().getAbsolutePath());
 		// Convenience.printOurTaskInfo(this);
 		// NotificationAlertManager.alert(this, (Friend) FriendFactory.getFactoryInstance().find("3")); 
 		// new CamcorderHelper();
@@ -217,7 +227,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// Friend f = (Friend) friendFactory.findWhere(Friend.Attributes.FIRST_NAME, "Farhad");
 		// new FileDownloadDeprecated.BgDownloadFromFriendId().execute(f.getId());
 	}
-	
+
 	private void getVideoViewsAndPlayers() {
 		videoViews.add((VideoView) findViewById(R.id.VideoView0));
 		videoViews.add((VideoView) findViewById(R.id.VideoView1));
@@ -288,11 +298,11 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			videoPlayers.put(f.get(Friend.Attributes.ID), new VideoPlayer( this, f.getId() ));
 		}
 	}
-	
+
 	public VideoPlayer getVideoPlayerForFriend(Friend friend) {
 		return videoPlayers.get(friend.getId());
 	}
-	
+
 	private void setupVideoStatusChangedCallbacks(){
 		for (Friend f : friendFactory.all()){
 			f.addVideoStatusChangedCallbackDelegate(this);
@@ -311,7 +321,43 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		for (FrameLayout f: frames)
 			f.setLayoutParams(lp);
 	}
-	
+
+	private void setupLongPressTouchHandler() {
+		longpressTouchHandler = new LongpressTouchHandler(this, findViewById(R.id.homeTable)) {
+			@Override
+			public void startLongpress(View v) {	
+				onRecordStart(v);
+			}
+			@Override
+			public void endLongpress(View v) {	
+				onRecordStop(v);
+			}
+			@Override
+			public void click(View v) {
+				onPlayClick(v);
+			}
+			@Override
+			public void bigMove(View v) {
+				onRecordCancel();
+			}
+			@Override
+			public void abort(View v) {	
+				abortAnyRecording();
+			}
+		};
+
+		// Add friend boxes as valid targets.
+		for (ActiveModel am : FriendFactory.getFactoryInstance().instances){
+			Friend friend = (Friend) am;
+
+			Integer frameId = Integer.parseInt( friend.get(Friend.Attributes.FRAME_ID) );
+			Log.i(TAG, "Adding LongPressTouchHandler for frame" + frameId.toString());
+			FrameLayout frame = (FrameLayout) findViewById(frameId);
+			longpressTouchHandler.addTargetView(frame);
+		};
+	}
+
+
 	//-------
 	// Events
 	//-------
@@ -322,7 +368,14 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			Log.i(TAG, "onRecordStart: START RECORDING. view = " +f.get(Friend.Attributes.FIRST_NAME));
 		} else {
 			Log.e(TAG, "onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
+			longpressTouchHandler.cancelGesture(true);
 		}	
+	}
+
+	private void onRecordCancel(){
+		// Different from abortAnyRecording becuase we always toast here.
+		videoRecorder.stopRecording(null);
+		toast("Recording aborted. Not sent.");	
 	}
 
 	private void onRecordStop(View v){
@@ -336,25 +389,26 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		}
 	}
 
-	private void onRecordCancel(View v){
-		Friend f = FriendFactory.getFriendFromFrame(v);
-		Log.i(TAG, "onRecordCancel: CANCEL RECORDING." + f.get(Friend.Attributes.FIRST_NAME));
-		videoRecorder.stopRecording(f);
-		toast("Not Sent");
-	}
-
 	private void onPlayClick(View v) {
 		Friend f = FriendFactory.getFriendFromFrame(v);
 		Log.i(TAG, "onPlayClick" + f.get(Friend.Attributes.FIRST_NAME));
 		getVideoPlayerForFriend(f).click();
 	}
-	
+
 	@Override
 	public void onVideoStatusChanged(Friend friend) {
 		TextView tv = (TextView) findViewById(Integer.parseInt(friend.get(Friend.Attributes.NAME_TEXT_ID)));
 		tv.setText(friend.getStatusString());
 	}
-	
+
+	private void abortAnyRecording() {
+		Log.i(TAG, "abortAnyRecording");
+		if(videoRecorder == null)
+			return;
+		if (videoRecorder.stopRecording(null))
+			toast("Recording aborted. Not sent.");
+	}
+
 	//----------------
 	// Setup Listeners
 	//----------------
@@ -387,44 +441,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			public void onClick(View v) {
 				Camera c = null;
 				c.cancelAutoFocus();
-//				IntentHandler.handleUserLaunchIntent(instance);
+				//				IntentHandler.handleUserLaunchIntent(instance);
 			}
 		});
-
-		// Friend box clicks.
-		for (ActiveModel am : FriendFactory.getFactoryInstance().instances){
-			Friend friend = (Friend) am;
-
-			Integer frameId = Integer.parseInt( friend.get(Friend.Attributes.FRAME_ID) );
-			Log.i(TAG, "Adding LongPressTouchHandler for frame" + frameId.toString());
-			FrameLayout frame = (FrameLayout) findViewById(frameId);
-			new LongpressTouchHandler(this, frame) {
-
-				@Override
-				public void click(View v) {
-					super.click(v);
-					onPlayClick(v);
-				}
-
-				@Override
-				public void startLongpress(View v) {
-					super.startLongpress(v);
-					onRecordStart(v);
-				}
-
-				@Override
-				public void endLongpress(View v) {
-					super.endLongpress(v);
-					onRecordStop(v);
-				}
-
-				@Override
-				public void bigMove(View v) {
-					super.bigMove(v);
-					onRecordCancel(v);
-				}
-			};
-		};
 	}
 
 	private class ViewSizeGetter extends View{

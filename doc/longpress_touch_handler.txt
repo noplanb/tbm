@@ -1,0 +1,101 @@
+
+PROBLEMS With the current architecture: (a different instance of longpress touch handler for each view).
+  - If you put down a second finger then the two LPTHs each send a startLongpress singal making recording start twice for two different views.
+  - If our screen goes away, for example a phone call comes in while recording we need to be able to abort the gesture due to an external event. 
+  
+NEW ARCHITECTURE
+  x A single instance of LongPressTouch handler.
+  x The ability to add views to monitor to that instance.
+  x We place touch handlers on each of the views as well as on the backing window
+  x Instantiate with the context and the view of the backing window
+  x Add the separate target views on top
+  x We save the first down event that happens on one of those target views but do not handle the event so it bubbles down to the backing view.
+  x We handle the events on the backing view.
+    x Multiple touches aborts the gesture calls aborted.
+    x BigMove aborts the gesture
+  x Handle inconsistent events
+    x ACTION_DOWN before receiving ACTION_UP for the prior gesture.
+    x ACTION_CANCEL.
+  x States
+    x IDLE
+    x DOWN
+    x LONGPRESS
+  x Abstract action methods to be overridden by instantiator
+    x click(v)
+    x startLongpress(v)
+    x endLongpress(v)
+    x bigMove(v)
+    x abort(v)
+  x External cancelGesture(silent)
+  x External enable and disable(silent)
+  
+  
+State machine:
+  x IDLE
+    x action_down -> DOWN
+      x start longpressTimer
+      x save view
+      x save initial xy
+    x action_move -> IDLE (Should never happen)
+    x action_pointer_down (should never happen in IDLE state) - IDLE
+    x action_cancel -> IDLE
+    x action_up -> IDLE
+  x DOWN
+    x action_down (should never happen) -> IDLE
+    x longpressTimer fires -> LONGPRESS
+      x startLongpress(v)
+    x action_move
+      x if bigMove -> IDLE
+    x action_pointer_down -> IDLE
+    x action_cancel - IDLE
+    x action_up -> IDLE
+      x click(v)
+  x LONGPRESS
+    x action_down (should never happen) -> IDLE
+      x abort(v)
+    x action_move
+      x if bigMove -> IDLE
+        bigMove(v)
+    x action_pointer_down -> IDLE
+      x abort(v)
+    x action_cancel -> IDLE
+      x abort(v)
+    x action_up -> IDLE
+      x endLongpress(v)
+      
+      
+TODO:
+ x Copy back into tbm
+ x Add catch runntime exception for MediaRecorder.start
+ x Fold into home activity
+   x Create a field to hold longPressTouchHandler
+   x Add a method to setup.
+   x Instantiate once using ensure
+     x Add test in ensure_models
+     x Add initialization to init_models
+   x Add the targetViews
+   x Implement the abstract methods
+   x disableSilent in case of
+     x pause while recording and we have to abort the recording Make sure we explicitly call stopRecording on dispose here.
+   x enable on
+     x resume
+   x cancelGesture(silent)
+     x If videoRecorder.start fails
+   
+
+ VideoRecorder dispose and restore due to activity lifecycle
+   x onPause
+     x call abortAnyRecording test if stop succeeding in making a recording and toast only if it did.
+     x LongpressTouchHandler disable(silent) silent because we will have already called stopRecording explicitly above.
+   x onResume
+     x LongpressTouchHandler enable()
+   x onStop
+     x VideoRecorder.dispose()
+   x onRestart
+     x videoRecorder.restore()
+     
+
+      
+NOTES FROM ANDROID:
+
+While the framework tries to deliver consistent streams of motion events to views, it cannot guarantee it. Some events may be dropped or modified by containing views in the application before they are delivered thereby making the stream of events inconsistent. Views should always be prepared to handle ACTION_CANCEL and should tolerate anomalous situations such as receiving a new ACTION_DOWN without first having received an ACTION_UP for the prior gesture.
