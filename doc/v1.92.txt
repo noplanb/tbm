@@ -1,0 +1,6 @@
+v1.92 - 23 6/25/2014
+
+Bug Fixes
+---------
+FIXED: Was notifying Flashing recording canceled everytime you quit the app. Now it shows recording canceled only if the view disappears while you were recording.
+

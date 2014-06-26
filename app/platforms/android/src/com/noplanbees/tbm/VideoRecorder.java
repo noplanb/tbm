@@ -29,6 +29,7 @@ import android.widget.TextView;
 interface VideoRecorderExceptionHandler{
 	public void unableToSetPrievew();
 	public void unableToPrepareMediaRecorder();
+	public void recordingAborted();
 }
 
 public class VideoRecorder {
@@ -44,7 +45,7 @@ public class VideoRecorder {
 	private SurfaceView overlaySurface;
 	private TextView previewText;
 
-	public VideoRecorder(Activity a) {
+	public VideoRecorder(HomeActivity a) {
 		activity = a;
 		context = activity.getApplicationContext();
 		previewSurface = (SurfaceView) activity.findViewById(R.id.camera_preview_surface);
@@ -58,13 +59,13 @@ public class VideoRecorder {
 	
 	// Allow registration of a single delegate to handle exceptions.
 	private static VideoRecorderExceptionHandler videoRecorderExceptionHandler;
-	public static void addCameraExceptionHandlerDelegate(VideoRecorderExceptionHandler handler){
+	public static void addExceptionHandlerDelegate(VideoRecorderExceptionHandler handler){
 		videoRecorderExceptionHandler = handler;
 	}
 	
 	public boolean stopRecording(Friend friend) {
 		Log.i(TAG, "stopRecording");
-		boolean rval = true;
+		boolean rval = false;
 		if (mediaRecorder !=null){
 			// hideRecordingIndicator is in the if statement because if VideoRecorder was disposed due to an external event such as a 
 			// phone call while the user was still pressing record when he releases his finger
@@ -116,15 +117,20 @@ public class VideoRecorder {
 	
 	public void release() {
 		Log.i(TAG, "dispose");
+		Boolean abortedRecording = false;
 		if (mediaRecorder !=null){
 			try {
 				mediaRecorder.stop();
+				abortedRecording = true;
 			} catch (IllegalStateException e) {
 			} catch (RuntimeException e) {
 			}
 		}
 		CameraManager.releaseCamera();
 		releaseMediaRecorder();
+		if (abortedRecording && videoRecorderExceptionHandler != null)
+			videoRecorderExceptionHandler.recordingAborted();
+			
 	}
 	
 	public void dispose(){

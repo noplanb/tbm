@@ -26,7 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback{
+public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback, VideoRecorderExceptionHandler{
 
 	final String TAG = this.getClass().getSimpleName();
 	final Float ASPECT = 240F/320F;
@@ -132,7 +132,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		super.onStop();
 		Log.e(TAG, "onStop: state");
 		isForeground = false;
-		abortAnyRecording();
+		abortAnyRecording(); // really as no effect when called here since the surfaces will have been destroyed and the recording already stopped.
 		longpressTouchHandler.disable(true);
 		if (videoRecorder != null)
 			videoRecorder.dispose(); // Probably redundant since the preview surface will have been destroyed by the time we get here.
@@ -191,7 +191,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private void initModels() {
 		Log.i(TAG, "initModels");
 		instance = this;
-		CameraManager.addCameraExceptionHandlerDelegate(this);
+		CameraManager.addExceptionHandlerDelegate(this);
+		VideoRecorder.addExceptionHandlerDelegate(this);
 		videoRecorder = new VideoRecorder(this);
 		gcmHandler = new GcmHandler(this);
 		friendFactory = FriendFactory.getFactoryInstance();
@@ -340,7 +341,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			}
 			@Override
 			public void abort(View v) {	
-				abortAnyRecording();
+				onRecordCancel();
 			}
 		};
 
@@ -398,7 +399,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		TextView tv = (TextView) findViewById(Integer.parseInt(friend.get(Friend.Attributes.NAME_TEXT_ID)));
 		tv.setText(friend.getStatusString());
 	}
-
+    
+	// Since the call for this had to be moved from onPause to onStop this really never has any effect since
+	// the surfaces disappear by that time and the mediaRecorder in videoRecorder is disposed.
 	private void abortAnyRecording() {
 		Log.i(TAG, "abortAnyRecording");
 		if(videoRecorder == null)
@@ -439,7 +442,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			public void onClick(View v) {
 				Camera c = null;
 				c.cancelAutoFocus();
-				//				IntentHandler.handleUserLaunchIntent(instance);
+				// IntentHandler.handleUserLaunchIntent(instance);
 			}
 		});
 	}
@@ -515,8 +518,23 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		})
 		.create().show();
 	}
-	
-	
 
+
+	
+	// ---------------------------------------
+	// Video Recorder ExceptionHandler delegate
+	// ----------------------------------------
+	@Override
+	public void unableToSetPrievew() {
+	}
+
+	@Override
+	public void unableToPrepareMediaRecorder() {
+	}
+
+	@Override
+	public void recordingAborted() {
+		toast("Recording Aborted");
+	}
 
 };

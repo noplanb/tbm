@@ -30,7 +30,7 @@ public class CameraManager {
 
 	// Allow registration of a single delegate to handle exceptions.
 	private static CameraExceptionHandler cameraExceptionHandler;
-	public static void addCameraExceptionHandlerDelegate(CameraExceptionHandler handler){
+	public static void addExceptionHandlerDelegate(CameraExceptionHandler handler){
 		cameraExceptionHandler = handler;
 	}
 	
