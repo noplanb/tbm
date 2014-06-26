@@ -208,18 +208,18 @@ public class VideoRecorder {
 		// Set sources
 		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA));
+		// mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA));
 
 		// Set format and encoder see tbm-ios/docs/video_recorder.txt for the research that lead to these settings for compatability with IOS.
-//		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-//		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very tinny but plays on ios
-//		mediaRecorder.setAudioChannels(2);
-//		mediaRecorder.setAudioEncodingBitRate(96000);
-//		mediaRecorder.setAudioSamplingRate(48000);
-//
-//		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-//		mediaRecorder.setVideoEncodingBitRate(150000);
-//		mediaRecorder.setVideoFrameRate(15);
+		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very tinny but plays on ios
+		mediaRecorder.setAudioChannels(2);
+		mediaRecorder.setAudioEncodingBitRate(96000);
+		mediaRecorder.setAudioSamplingRate(48000);
+
+		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+		mediaRecorder.setVideoEncodingBitRate(150000);
+		mediaRecorder.setVideoFrameRate(15);
 		
 		Camera.Size size = CameraManager.getPreviewSize();
 		if (size == null){

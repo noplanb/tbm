@@ -1,57 +1,24 @@
-Misc
- - Only send viewed event once.
- - Differentiate on the server between a request that cant be fulfilled now and one that will never be fulfilled because for example the device is asking for a video that will never exist.
- - Fix Kons video problem and dim recording screen on farhads and kons phones.
- - Handle no connection on register.
- - Delay in starting to record.
- - First upload to the server seems to fail every time now and we go to R1.
- - Fix flicker to black when starting to play. Try putting thumb on top. Try waiting till prepared to show player.
- - LocalBroadcastManager ? in homeActivity?
- - Make sure application and activity settings are correct for all our activities
- - Move models and videos to a private directory.
- - Screen should stay on while app is in foreground Jill has it go black while recording.
- - Check from unrecoverable errors like 404.
+Features
+ - Polling
  - Put app icon on the home screen
  - Make the last frame the poster frame.
  - Custom notification tone for our app
  - Make it work with headphones and blue tooth.
+ - Autoplay on clicking notification? (ask jill first).
  
  Bugs
- x We loose active models somehow.
- - Uploading shows stuck on phone for android p but no retry.
- - In some cases crash when download fails:
-   06-12 21:30:33.199: E/FileDownload(27057): download2: IOException: null
-   06-12 16:49:22.736: E/AndroidRuntime(12688): java.lang.NullPointerException
-   06-12 16:49:22.736: E/AndroidRuntime(12688): 	at com.noplanbees.tbm.FileDownload.createThumb(FileDownload.java:64)
-   thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
- - Interruptions while recording
-   - phone call while recording...
-   - Shut down screen when recording causes problems. 
- - Catch runtime exception on MediaRecorder.start and stop.
- - Catch out low memory errors.
- - Limit the size of the recording.
- - Crash log from kons app in a wedged state.
  - FileUploadService - after handling interrupt immediately put in queue so that it can call stop self in turn when its turn in the intent queue comes up.
+ - Only send viewed event once.
+ - Handle no connection on register.
+
+ Deferred
+ - Dimming video record screen on MotoG
+ - Problem with MotoG and setRecordingHint(true);
  
- Make sure our application and activity settings are correct
-   - http://developer.android.com/guide/topics/manifest/application-element.html#allowbackup
-   - http://developer.android.com/guide/topics/manifest/activity-element.html#aff
-   - android:alwaysRetainTaskState
-    
-  
  
  
- Polling   
+ Rodja says: From activities lifecycle point of view it's therefore needed to call onPause() before onNewIntent()
 
-Notification unreliability.
-   This is not as big a problem but definitely one that has come up in many cases for Kon and some cases with Jill. Often you are connected to wifi but the port for notifications is not allowed by router policy, tcp socket not allowed, or you dont get notification for some other reason. In this case messages are stuck on the server even if you check your app when you think you have good coverage. This is the case for Kon right now with a message stuck on server.
-   This can significantly improved with some simple polling on startup. And periodic smart polling when running and you are in a state that is expecting a reply might be even better with a trade off on expense.
-
-
-
-
-
-
-
-  
-   
+ Android didn't NEED to design it this way. Your activity has already gone through its lifecycle to resume(). If the app is resumed the os could simply call onNewIntent() and stay in the resumed state.
+ 
+The problem with Android's sequence is that it makes it impossible to distinguish between onPause due to user action vs onPause due to a background intent. If you want to act onPause only in the case of user action you are screwed because you wont know till the future why you go the onPause().

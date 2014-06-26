@@ -41,7 +41,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private UserFactory userFactory;
 
 	private FrameLayout cameraPreviewFrame;
-	public LocalBroadcastManager localBroadcastManger;
 	private String lastState;
 
 	private ArrayList<VideoView> videoViews = new ArrayList<VideoView>(8);
@@ -133,6 +132,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		super.onStop();
 		Log.e(TAG, "onStop: state");
 		isForeground = false;
+		abortAnyRecording();
+		longpressTouchHandler.disable(true);
 		if (videoRecorder != null)
 			videoRecorder.dispose(); // Probably redundant since the preview surface will have been destroyed by the time we get here.
 		lastState = "onStop";
@@ -142,12 +143,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	protected void onPause() {
 		super.onPause();
 		Log.e(TAG, "onPause: state");
-		abortAnyRecording();
-		longpressTouchHandler.disable(true);
 		ActiveModelsHandler.saveAll(this);
 		lastState = "onPause";
 	}
-
+	
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
@@ -178,8 +177,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		Log.e(TAG, "onDestroy: state");
 		super.onDestroy();
 	}
-	
-	
+
+
 
 	//---------------
 	// Initialization
@@ -200,7 +199,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		getVideoViewsAndPlayers();
 		setupLongPressTouchHandler();
 	}
-
 
 	private void ensureModels() {
 		if ( instance == null ||
@@ -375,7 +373,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private void onRecordCancel(){
 		// Different from abortAnyRecording becuase we always toast here.
 		videoRecorder.stopRecording(null);
-		toast("Recording aborted. Not sent.");	
+		toast("Not sent.");	
 	}
 
 	private void onRecordStop(View v){
@@ -406,7 +404,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		if(videoRecorder == null)
 			return;
 		if (videoRecorder.stopRecording(null))
-			toast("Recording aborted. Not sent.");
+			toast("Recording aborted.");
 	}
 
 	//----------------
@@ -517,4 +515,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		})
 		.create().show();
 	}
+	
+	
+
+
 };

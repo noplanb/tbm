@@ -1,0 +1,7 @@
+v1.91 - 22 6/25/2014
+
+Bug Fixes
+---------
+FIXED: Recording rapid fire back to back causes problems because intents coming in due to the previous recording would abort the next recording in on pause. Had to move abortRecording to onStop. This is not ideal as there still may be cases where a phone call comes in and we are not stopped and we get anomalous recording behavior. But in my experience so far this is rare and we usually get stopped pretty soon after the user does something to take away our screen.
+
+FIXED: Video recorder was left in a debug state which would create videos that are not playable on iphone5c. The change back to the correct state has the effect of making videos much darker on Nexus and MotoG although they are still ok on HTC. Will have to save that one for later.
