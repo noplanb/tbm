@@ -88,6 +88,7 @@ public class NotificationAlertManager {
 		i.putExtra(TITLE_KEY, title(friend));
 		i.putExtra(SUB_TITLE_KEY, subTitle);
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+		i.addFlags(Intent.FLAG_FROM_BACKGROUND);
 		//i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK); // This is probably not necessary since the activity has launch mode singleInstance.
 		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		homeActivity.startActivity(i);

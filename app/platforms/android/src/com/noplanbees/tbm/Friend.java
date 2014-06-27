@@ -206,6 +206,7 @@ public class Friend extends ActiveModel{
 		Bundle params = new Bundle();
 		params.putString("video_id", get(Attributes.OUTGOING_VIDEO_ID));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
+		i.addFlags(Intent.FLAG_FROM_BACKGROUND);
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); 	// See doc/task_manager_bug.txt for the reason for this flag.
 		context.startService(i);
 	}
@@ -224,6 +225,7 @@ public class Friend extends ActiveModel{
 		Bundle params = new Bundle();
 		params.putString("video_id", videoId);
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
+		i.addFlags(Intent.FLAG_FROM_BACKGROUND);
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); 	// See doc/task_manager_bug.txt for the reason for this flag.
 		context.startService(i);
 	}

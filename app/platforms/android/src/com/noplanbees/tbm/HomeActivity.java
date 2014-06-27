@@ -383,8 +383,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		if ( videoRecorder.stopRecording(f) ){
 			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
 			f.uploadVideo();
-		} else {
-			toast("Not sent. Too short.");
 		}
 	}
 
@@ -404,10 +402,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	// the surfaces disappear by that time and the mediaRecorder in videoRecorder is disposed.
 	private void abortAnyRecording() {
 		Log.i(TAG, "abortAnyRecording");
-		if(videoRecorder == null)
-			return;
-		if (videoRecorder.stopRecording(null))
-			toast("Recording aborted.");
+		if(videoRecorder != null)
+			videoRecorder.stopRecording(null);
 	}
 
 	//----------------
@@ -526,15 +522,33 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	// ----------------------------------------
 	@Override
 	public void unableToSetPrievew() {
+		toast("unable to set preview");
 	}
 
 	@Override
 	public void unableToPrepareMediaRecorder() {
+		toast("Unable to prepare MediaRecorder");
 	}
 
 	@Override
 	public void recordingAborted() {
-		toast("Recording Aborted");
+		toast("Recording Aborted due to Release before Stop.");
+	}
+
+	@Override
+	public void recordingTooShort() {
+		toast("Not sent. Too short.");
+	}
+
+	@Override
+	public void illegalStateOnStart() {
+		toast("Runntime exception on MediaRecorder.start. Quitting app.");	
+		finish();
+	}
+
+	@Override
+	public void runntimeErrorOnStart() {
+		toast("Unable to start recording. Try again.");
 	}
 
 };

@@ -1,19 +1,28 @@
 Features
  - Polling
+ - Append
  - Put app icon on the home screen
  - Make the last frame the poster frame.
  - Custom notification tone for our app
  - Make it work with headphones and blue tooth.
  - Autoplay on clicking notification? (ask jill first).
+ - Send it to yourself
  
  Bugs
- - FileUploadService - after handling interrupt immediately put in queue so that it can call stop self in turn when its turn in the intent queue comes up.
  - Only send viewed event once.
  - Handle no connection on register.
-
+ - Try adding backgroundFlag to our intents to see if it helps prevent the app from popping into the foreground and whether it keeps the app in the task manager. 
+ - Flashing screen
+ - Not sent 
+ - Alarm indicator
+ - Camera stopped working.
+  
+ 
  Deferred
  - Dimming video record screen on MotoG
  - Problem with MotoG and setRecordingHint(true);
+ 
+866-203-0975
  
  
  

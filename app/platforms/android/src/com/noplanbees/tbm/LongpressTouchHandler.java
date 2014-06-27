@@ -39,7 +39,7 @@ public abstract class LongpressTouchHandler {
 	private View targetView;
 	private Double[] downPosition = new Double[2];
 	private Timer longPressTimer;
-	private Boolean enabled = true;
+	private Boolean enabled = false;
 
 	// -------------------
 	// Constructor related

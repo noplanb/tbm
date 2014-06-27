@@ -30,6 +30,9 @@ interface VideoRecorderExceptionHandler{
 	public void unableToSetPrievew();
 	public void unableToPrepareMediaRecorder();
 	public void recordingAborted();
+	public void recordingTooShort();
+	public void illegalStateOnStart();
+	public void runntimeErrorOnStart();
 }
 
 public class VideoRecorder {
@@ -66,14 +69,15 @@ public class VideoRecorder {
 	public boolean stopRecording(Friend friend) {
 		Log.i(TAG, "stopRecording");
 		boolean rval = false;
+		hideRecordingIndicator(); // It should be safe to call this even if the sufraces have already been destroyed.
 		if (mediaRecorder !=null){
 			// hideRecordingIndicator is in the if statement because if VideoRecorder was disposed due to an external event such as a 
 			// phone call while the user was still pressing record when he releases his finger
 			// we will get a stopRecording even though our app has been paused. If we try to hideRecordingIndicator at this point the surface
 			// will have already been disposed of and app will crash. 
-			hideRecordingIndicator();
 			try {
 				mediaRecorder.stop();
+				rval = true;
 				Log.i(TAG, String.format("Recorded file %s : %d",Config.recordingFilePath(context), Config.recordingFile(context).length()));
 				if (friend != null)
 					moveRecordingToFriend(friend);
@@ -83,6 +87,9 @@ public class VideoRecorder {
 				releaseMediaRecorder();
 			} catch (RuntimeException e) {
 				Log.e(TAG, "stopRecording: Recording to short. No output file " + e.toString());
+				if (videoRecorderExceptionHandler != null){
+					videoRecorderExceptionHandler.recordingTooShort();
+				}
 				rval = false;
 				releaseMediaRecorder();
 			}
@@ -105,10 +112,15 @@ public class VideoRecorder {
 		} catch (IllegalStateException e) {
 			Log.e(TAG, "startRecording: called in illegal state.");
 			releaseMediaRecorder();
+			if (videoRecorderExceptionHandler != null)
+				videoRecorderExceptionHandler.illegalStateOnStart();
 			return false;
 		} catch (RuntimeException e){
+			// Since this seems to get the media recorder into a wedged state I will just finish the app here.
 			Log.e(TAG, "ERROR: RuntimeException: this should never happen according to google. But I have seen it. " + e.toString());
 			releaseMediaRecorder();
+			if (videoRecorderExceptionHandler != null)
+				videoRecorderExceptionHandler.runntimeErrorOnStart();
 			return false;
 		}
 		showRecordingIndicator();
@@ -317,11 +329,18 @@ public class VideoRecorder {
 			@Override
 			public void run() {
 				Log.i(TAG, "hideRecordingIndicator");
+				// Catch runntime exceptions here because I want to be able to call this 
+				// and not worry that the surfaces may have already been destroyed because the 
+				// user hid our app for example.
+				try{
 				previewText.setVisibility(View.INVISIBLE);
 				Canvas c = overlaySurfaceHolder.lockCanvas();
 				c.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 				overlaySurfaceHolder.unlockCanvasAndPost(c);
 				overlaySurface.invalidate();
+				} catch (RuntimeException e){
+					Log.e(TAG, "hideRecordingIndicator: ERROR. Perhaps the surfaces have been destroyed");
+				}
 			}
 		};
 		activity.runOnUiThread(hri);

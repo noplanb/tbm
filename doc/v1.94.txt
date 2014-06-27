@@ -1,0 +1,19 @@
+v1.94 - 25 6/27/2014
+
+Bug Fixes
+=========
+
+FIXED: On HTC messages hang in uploading. FIX: FileUploadService - after handling interrupt intent out of turn when you get it put it in queue so that it can call stopSelf in turn when its turn in the intent queue comes up. That way the os doesnt get confused for the purposes of START_REDELIVER_INTENT.
+
+FIXED: Sometimes if the recording is aborted due to the phone taking away our screen (Alarm goes off. Phone call. etc) while you are recording coming back to the app shows the recording indicator still on. FIX: Always hideRecordingIndicator on stop. Catch and ignore any errors that may occur if we try to hide it after the surfaces have been destroyed.
+
+FIXED: Kon was able to get the app into the state where we get a repeated runtime exception on MediaRecorder.start. The only way to get out of that state was to restart the app. FIX: Catch that error. Report to the user in a message. Finish the app gracefully releasing camera and media recorder.
+
+HOPEFULLY FIXED: "Not sent" appears spuriously on startup. I am not sure exactly what is causing this problem. However LongpressTouchHandler is initialized in an enabled state on onStart. It may be that touches while the app is started but showing the screen from the previous app are sent to us between the time the app moves us from onStart to onResume. TRY FIX: init LongpressTouchHandler in disabled state in onStart. Only enable in onResume when our UI is contracted to be displayed.
+
+KINDA FIXED MAYBE A LITTLE: App is recently put in the background by the user. A new message comes in. The app briefly flashes the screen then shows a notification. FIX: add the following flag to all background intents: FLAG_FROM_BACKGROUND
+
+
+
+
+ 

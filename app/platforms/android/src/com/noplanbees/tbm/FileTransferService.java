@@ -44,6 +44,15 @@ public abstract class FileTransferService extends NonStopIntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent, int startId) {
+		if (intent.getAction() != null && intent.getAction().equals("INTERRUPT")){
+			// Non stop intent service has already acted on the interrupt when it got it possibly out of order.
+			// Our only job here is to stopSelf for this intent as it has come up in the queue so we are calling 
+			// stop self for this intent in the same order that it came in.
+			Log.i(TAG, "Calling stopSelf for an interrupt intent.");
+			stopSelf(startId);
+			return;
+		}
+		
 		try {
 			Log.i(TAG, "onHandleIntent");
 			setInstanceVariables(intent);
@@ -86,6 +95,7 @@ public abstract class FileTransferService extends NonStopIntentService {
 		intent.setClass(getApplicationContext(), HomeActivity.class);
 		intent.putExtra(IntentFields.STATUS_KEY, status);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
 		intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); // See doc/task_manager_bug.txt for the reason for this flag.
 		intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // This is probably not necessary but on a test bed I needed it to make sure onNewIntent is called in the activity.
 		getApplicationContext().startActivity(intent);

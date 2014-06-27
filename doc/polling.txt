@@ -1,0 +1,19 @@
+
+Sender creates
+Sender uploads directly to s3
+Sender notifies Notification server
+
+
+Receiver gets notification
+Receiver pulls video directly from s3
+
+Receiver views
+Receiver notifies notification server
+
+Receiver polls what? How?
+
+
+GOAL - Have both clients know about a key that is shared between them. 
+     - Make the key obfuscated so that the universe of possible keys is infinite relative to the actual keys.
+     - Make it impossible for someone to pull all the keys.
+     
