@@ -16,6 +16,7 @@ Features
  - Not sent 
  - Alarm indicator
  - Camera stopped working.
+ - Update from store should not have to uninstall.
   
  
  Deferred

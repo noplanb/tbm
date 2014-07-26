@@ -118,6 +118,7 @@ int id alignMargins 0x7f050008
 int id bottom 0x7f05000a
 int id btnCrash 0x7f050045
 int id btnDismiss 0x7f05004a
+int id btnEnter 0x7f05004f
 int id btnReset 0x7f050044
 int id btnView 0x7f05004b
 int id camera_overlay_surface 0x7f05002c
@@ -147,6 +148,7 @@ int id nameText6 0x7f050025
 int id nameText7 0x7f050024
 int id none 0x7f050000
 int id normal 0x7f050001
+int id phoneNumber 0x7f05004e
 int id previewText 0x7f050033
 int id register 0x7f05004c
 int id right 0x7f05000c
@@ -164,6 +166,7 @@ int layout drawable_test 0x7f030000
 int layout home 0x7f030001
 int layout lock_screen_alert 0x7f030002
 int layout register 0x7f030003
+int layout register_deprecated 0x7f030004
 int string app_name 0x7f06001a
 int string auth_client_needs_enabling_title 0x7f060015
 int string auth_client_needs_installation_title 0x7f060016

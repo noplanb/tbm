@@ -6,6 +6,8 @@ public class User extends ActiveModel{
     
 	public static class Attributes{
 		public static final String ID = "id";
+		public static final String AUTH = "auth";
+		public static final String MKEY = "mkey";
 		public static final String FIRST_NAME = "firstName";
 		public static final String LAST_NAME = "lastName";
 		public static final String REGISTERED = "registered";
@@ -15,6 +17,8 @@ public class User extends ActiveModel{
 	public String[] attributeList() {
       final String[] a = {
     		  Attributes.ID, 
+    		  Attributes.AUTH, 
+    		  Attributes.MKEY,
     		  Attributes.FIRST_NAME,
     		  Attributes.LAST_NAME,
     		  Attributes.REGISTERED};

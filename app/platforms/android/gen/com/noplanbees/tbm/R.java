@@ -471,6 +471,7 @@ containing a value of this type.
         public static final int bottom=0x7f05000a;
         public static final int btnCrash=0x7f050045;
         public static final int btnDismiss=0x7f05004a;
+        public static final int btnEnter=0x7f05004f;
         public static final int btnReset=0x7f050044;
         public static final int btnView=0x7f05004b;
         public static final int camera_overlay_surface=0x7f05002c;
@@ -500,6 +501,7 @@ containing a value of this type.
         public static final int nameText7=0x7f050024;
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
+        public static final int phoneNumber=0x7f05004e;
         public static final int previewText=0x7f050033;
         public static final int register=0x7f05004c;
         public static final int right=0x7f05000c;
@@ -521,6 +523,7 @@ containing a value of this type.
         public static final int home=0x7f030001;
         public static final int lock_screen_alert=0x7f030002;
         public static final int register=0x7f030003;
+        public static final int register_deprecated=0x7f030004;
     }
     public static final class string {
         public static final int app_name=0x7f06001a;

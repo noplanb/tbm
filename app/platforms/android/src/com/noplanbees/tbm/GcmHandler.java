@@ -157,11 +157,10 @@ public class GcmHandler {
 	
 	private void sendRegistrationIdToBackend() {
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		User current_user = UserFactory.current_user();
-		params.put("user_id", current_user.getId());
+		params.put("mkey", UserFactory.current_user().get(User.Attributes.MKEY));
 		params.put("push_token", regid);
 		params.put("device_platform", "android");
-	    new GCMPostPushToken("reg/push_token", params, "POST");
+	    new GCMPostPushToken("notification/set_push_token", params, "POST");
 	}
 	
 	class GCMPostPushToken extends Server{
@@ -169,8 +168,12 @@ public class GcmHandler {
 			super(uri, params, method);
 		}
 		@Override
-		public void callback(String response) {	
+		public void success(String response) {	
 			Log.i(TAG, "postPushToken: got response = " + response);
+		}
+		@Override
+		public void error(String errorString) {
+			Log.e(TAG, "ERROR: postPushToken: " + errorString);
 		}
 	}
 	

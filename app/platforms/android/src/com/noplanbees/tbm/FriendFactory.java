@@ -29,6 +29,10 @@ public class FriendFactory extends ActiveModelFactory{
 		Integer viewId = v.getId();
 		return (Friend) getFactoryInstance().findWhere(Friend.Attributes.FRAME_ID, viewId.toString());
 	}
+	
+	public static Friend getFriendFromMkey(String mkey){
+		return (Friend) getFactoryInstance().findWhere(Friend.Attributes.MKEY, mkey);
+	}
 
 	public Friend getFriendFromIntent(Intent intent) {
 		Friend f = null;
@@ -36,6 +40,10 @@ public class FriendFactory extends ActiveModelFactory{
 		if (extras != null){
 			if ( extras.get("friendId") != null ){
 				f = (Friend) find(extras.getString("friendId"));
+			} else if ( extras.get("to_mkey") != null ){
+				f = getFriendFromMkey(extras.getString("to_mkey"));
+			} else if ( extras.get("from_mkey") != null ){
+				f = getFriendFromMkey(extras.getString("from_mkey"));
 			} else if ( extras.get("receiverId") != null ){
 				f = (Friend) find(extras.getString("receiverId"));
 			} else if ( extras.get("from_id") != null ){

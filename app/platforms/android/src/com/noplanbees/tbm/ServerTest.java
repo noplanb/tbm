@@ -32,8 +32,13 @@ public class ServerTest {
 			super(uri, params, method);
 		}
 		@Override
-		public void callback(String response) {
+		public void success(String response) {
 			Log.i(TAG, "callback");
+		}
+		@Override
+		public void error(String errorString) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	
@@ -42,8 +47,13 @@ public class ServerTest {
 			super(uri, params);
 		}
 		@Override
-		public void callback(String response) {
+		public void success(String response) {
 			Log.i(TAG, "callback");
+		}
+		@Override
+		public void error(String errorString) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	
@@ -52,9 +62,14 @@ public class ServerTest {
 			super(uri);
 		}
 		@Override
-		public void callback(String response) {
+		public void success(String response) {
 			Log.i(TAG, "callback");
 
+		}
+		@Override
+		public void error(String errorString) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 }

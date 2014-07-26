@@ -3,15 +3,16 @@ package com.noplanbees.tbm;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.EditText;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
@@ -21,17 +22,19 @@ public class RegisterActivity extends Activity{
 	private UserFactory userFactory;
 	private User user;
 	private FriendFactory friendFactory;
+	private ProgressDialog progress;
 
-	private ArrayList<LinkedTreeMap<String, String>> userList = new ArrayList<LinkedTreeMap<String,String>>();
 	private ArrayList<LinkedTreeMap<String, String>> friendList = new ArrayList<LinkedTreeMap<String,String>>();
-
+	private LinkedTreeMap<String, String> userParams = new LinkedTreeMap<String, String>();
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
 		init();
 		setContentView(R.layout.register);
-		new GetUserList("reg/user_list");
+		setupListeners();
+		setupProgressDialog();
 	}
 
 	private void init(){
@@ -41,91 +44,129 @@ public class RegisterActivity extends Activity{
 		friendFactory = FriendFactory.getFactoryInstance();
 	}
 
-	class GetUserList extends Server{
-
-		public GetUserList(String uri) {
-			super(uri);
-		}
-
-		@Override
-		public void callback(String response) {
-			gotUserList(response);
-		}
+	private void getUser() {	
+		EditText phoneView = (EditText) findViewById(R.id.phoneNumber);
+		String phoneNumber = phoneView.getText().toString().replaceAll(" ", "");
+		new GetUser("/reg/get_user?mobile_number=" + phoneNumber);
 	}
 
-	private void gotUserList(String ulj){
-		Log.i(TAG, "gotUserList: " + ulj); 
+	class GetUser extends Server{
+		public GetUser(String uri) {
+			super(uri);
+			progress.show();
+		}
+		@Override
+		public void success(String response) {	
+			progress.dismiss();
+			gotUser(response);
+		}
+		@Override
+		public void error(String errorString) {
+			progress.dismiss();
+			serverError();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void gotUser(String r){
+		Log.i(TAG, "gotUser: " + r);
 		Gson g = new Gson();
-		userList =  g.fromJson(ulj, userList.getClass());
-		Log.i(TAG, "userlist = " + userList.toString());
-		render();
-	}
-
-	private void render(){
-		ViewGroup r = (ViewGroup) findViewById(R.id.register);
-		int index = 0;
-		for(LinkedTreeMap<String, String> u : userList){
-			Log.d(TAG, "Adding button for " + u.get("first_name"));
-			Button b = new Button(this);
-			b.setText(u.get("first_name") + " " + u.get("last_name"));			
-			b.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-			b.setId(index);
-			b.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {	
-					userSelected(v);
-				}
-			});
-			r.addView(b);
-			index ++;
+		userParams = g.fromJson(r, userParams.getClass());
+		Log.i(TAG, "gotUser: " + userParams.toString());
+		if (userParams.isEmpty()){
+			badPhoneError();
+			return;
 		}
+		user.set(User.Attributes.FIRST_NAME, userParams.get("first_name"));
+		user.set(User.Attributes.LAST_NAME, userParams.get("last_name"));
+		user.set(User.Attributes.ID, userParams.get("id"));
+		user.set(User.Attributes.MKEY, userParams.get("mkey"));
+		user.set(User.Attributes.AUTH, userParams.get("auth"));
+		new GetFriends("/reg/get_friends?mkey=" + user.get(User.Attributes.MKEY));
 	}
+	
+	class GetFriends extends Server{
 
-	protected void userSelected(View v) {	
-		int index = v.getId();
-		LinkedTreeMap<String, String> u = userList.get(index);	
-		Log.i(TAG, "userSelected: " + u.toString());
-		user.set(User.Attributes.FIRST_NAME, u.get("first_name"));
-		user.set(User.Attributes.LAST_NAME, u.get("last_name"));
-		user.set(User.Attributes.ID, u.get("id"));
-		Log.i(TAG, "User set to: " + user.attributes.toString());
-		new RegisterUser("/reg/register/" + user.getId());
-	}
-
-	class RegisterUser extends Server{
-
-		public RegisterUser(String uri) {
+		public GetFriends(String uri) {
 			super(uri);
+			progress.show();
 		}
 
 		@Override
-		public void callback(String response) {	
-			gotRegResponse(response);
+		public void success(String response) {	
+			progress.dismiss();
+			gotFriends(response);
+		}
+
+		@Override
+		public void error(String errorString) {
+			progress.dismiss();
+			serverError();
 		}
 	}
 
-	public void gotRegResponse(String r) {
+	@SuppressWarnings("unchecked")
+	public void gotFriends(String r) {
 		Gson g = new Gson();
 		friendList = g.fromJson(r, friendList.getClass());
 		Log.i(TAG, "gotRegResponse: " + friendList.toString());
 		friendFactory.destroyAll(this);
 		Integer i = 0;
+		
 		for (LinkedTreeMap<String, String> fm : friendList){
 			Friend f = friendFactory.makeInstance(this);
 			f.set(Friend.Attributes.FIRST_NAME, fm.get("first_name"));
 			f.set(Friend.Attributes.LAST_NAME, fm.get("last_name"));
 			f.set(Friend.Attributes.ID, fm.get("id"));
+			f.set(Friend.Attributes.MKEY, fm.get("mkey"));
 			f.set(Friend.Attributes.VIEW_INDEX, i.toString());
 			i ++;
 		}
 		user.set(User.Attributes.REGISTERED, "true");
 		regComplete();
 	}
+	
+	private void setupListeners(){
+		Button enterBtn = (Button) findViewById(R.id.btnEnter);
+		enterBtn.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				getUser();
+			}
+		});
+	}
 
+	private void setupProgressDialog(){
+		progress = new ProgressDialog(this);
+		progress.setTitle("Checking");
+	}
+	
 	private void regComplete() {
 		ActiveModelsHandler.saveAll(this);
 		Intent i = new Intent(this, HomeActivity.class);
 		startActivity(i);
 		finish();
 	}
-}
+	
+	// -------------
+	// Error dialogs
+	//--------------
+	private void badPhoneError(){
+		showErrorDialog("No user found with that phone number. Check the number or contact Sani for assistance.\n\n   Sani Elfishawy\n   ph: 650-245-3537\n   e: sani@sbcglobal.net");
+	}
+	
+	private void serverError(){
+		showErrorDialog("Can't reach ThreeByMe.\n\nCheck your connectivity and try again.");
+	}
+	
+	private void showErrorDialog(String message){
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Error")
+		.setMessage(message)
+		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+			}
+		})
+		.create().show();
+	}}

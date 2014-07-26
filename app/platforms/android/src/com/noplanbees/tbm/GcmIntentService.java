@@ -44,7 +44,8 @@ public class GcmIntentService extends IntentService {
 				Log.i(TAG, "onHandleIntent: extras = " + extras.toString());
 				if (extras.getString("type").equalsIgnoreCase("video_received")) {
 					handleVideoReceived(intent);
-				} else if (extras.getString("type").equalsIgnoreCase("video_status_update")) {
+				} else if (extras.getString("type").equalsIgnoreCase(
+						"video_status_update")) {
 					handleVideoStatusUpdate(intent);
 				}
 			}
@@ -57,14 +58,16 @@ public class GcmIntentService extends IntentService {
 	// Handle video status update
 	// ---------
 	private void handleVideoStatusUpdate(Intent intent) {
-		String status = intent.getStringExtra("status");
+		String status = intent.getStringExtra(NotificationHandler.DataKeys.STATUS);
 		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
-		if (status.equalsIgnoreCase("downloaded")) {
+		
+		// Normalize from notification naming convention to internal.
+		if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.DOWNLOADED)) {
 			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.OutgoingVideoStatus.DOWNLOADED);
-		} else if (status.equalsIgnoreCase("viewed")) {
+		} else if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.VIEWED)) {
 			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.OutgoingVideoStatus.VIEWED);
 		} else {
-			Log.e(TAG,"handleVideoStatusUpdate: ERROR got unknow sent video status");
+			Log.e(TAG, "handleVideoStatusUpdate: ERROR got unknow sent video status");
 		}
 		startHomeActivity(intent);
 	}
@@ -76,11 +79,12 @@ public class GcmIntentService extends IntentService {
 		Log.i(TAG, "handleVideoReceived:");
 		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
 		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.IncomingVideoStatus.NEW);
-		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra("video_id")); // Normalize from server naming convention to internal.
+		// Normalize from notification naming convention to internal.
+		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID)); 
 		startHomeActivity(intent);
 	}
 
-	private void startHomeActivity(Intent intent){
+	private void startHomeActivity(Intent intent) {
 		intent.setClass(getApplicationContext(), HomeActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.addFlags(Intent.FLAG_FROM_BACKGROUND);

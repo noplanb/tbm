@@ -6,10 +6,10 @@ import android.content.Intent;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
-import android.widget.TextView;
+
+import com.google.gson.internal.LinkedTreeMap;
 
 public class IntentHandler {
 	private final String TAG = this.getClass().getSimpleName();
@@ -23,6 +23,8 @@ public class IntentHandler {
 	private Intent intent;
 	private Friend friend;
 	private String transferType;
+	private String videoId;
+	private RemoteStorageSetter remoteStorageSetter;
 	private int status;
 
 	public IntentHandler(HomeActivity a, Intent i){
@@ -31,8 +33,22 @@ public class IntentHandler {
 		intent = i;
 		friend = FriendFactory.getFactoryInstance().getFriendFromIntent(intent);
 		transferType = intent.getStringExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY);
+		videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
 		status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
+		remoteStorageSetter = new RemoteStorageSetter();
 		Log.e(TAG, status + "");
+	}
+	
+	private class RemoteStorageSetter extends RemoteStorageHandler{
+		public RemoteStorageSetter() {
+			super();
+		}
+		@Override
+		public void success(LinkedTreeMap<String, String>data) {			
+		}
+		@Override
+		public void error(LinkedTreeMap<String, String>data) {			
+		}
 	}
 	
 	public Integer handle(){
@@ -119,6 +135,13 @@ public class IntentHandler {
 	private void handleUploadIntent() {
 		Log.i(TAG, "handleUploadIntent");
 		friend.updateStatus(intent);
+		if (status == Friend.OutgoingVideoStatus.UPLOADED){
+            // Set remote videoIdKV	
+			remoteStorageSetter.setRemoteOutgoingVideoId(friend, friend.get(Friend.Attributes.OUTGOING_VIDEO_ID));
+			
+			// Send outgoing notification
+			NotificationHandler.sendForVideoReceived(friend);
+		}
 	}
 	
 
@@ -127,9 +150,16 @@ public class IntentHandler {
 	//-------------------------
 	private void handleDownloadIntent(){
 		Log.i(TAG, "handleDownloadIntent");
+		
+		if (VideoIdUtils.isOlderThanLastIncomingVideo(friend, videoId)){
+			Log.e(TAG, "handleDownloadIntent: Ignoring intent for video id that is older than the current incoming video.");
+			return;
+		}
+		
 		friend.updateStatus(intent);
 		if (status == Friend.IncomingVideoStatus.NEW){
-			friend.downloadVideo(intent);
+			// Do not rely on VideoId we got notification as definitive as it may be stale check the remote store and use that if it is newer.
+			new GetRemoteVideoId().getRemoteKV(RemoteStorageHandler.incomingVideoIdRemoteKVKey(friend));
 		}
 		
 		if (status == Friend.IncomingVideoStatus.DOWNLOADED){
@@ -141,6 +171,36 @@ public class IntentHandler {
 				playNotificationTone();
 			}
 		}
+		
+		// Update RemoteStorage status as downloaded.
+		remoteStorageSetter.setRemoteIncomingVideoStatus(friend, videoId, RemoteStorageHandler.STATUS_ENUM.DOWNLOADED);
+		
+		// Send outgoing notification
+		NotificationHandler.sendForVideoStatusUpdate(friend, NotificationHandler.StatusEnum.DOWNLOADED);
+	}
+	
+	private class GetRemoteVideoId extends RemoteStorageHandler{
+		public GetRemoteVideoId() {
+			super();
+		}
+		@Override
+		public void success(LinkedTreeMap<String, String>data) {
+			gotRemoteVideoId(data);
+		}
+		@Override
+		public void error(LinkedTreeMap<String, String>data) {
+			Log.e(TAG, "GetRemoteVideoId: Error failed to get remote videoId returning 0");
+			data.put(RemoteStorageHandler.DataKeys.VIDEO_ID, "0");
+			gotRemoteVideoId(data);
+		}
+	}
+	
+	private void gotRemoteVideoId(LinkedTreeMap<String, String> data) {
+		String remoteVideoId = data.get(RemoteStorageHandler.DataKeys.VIDEO_ID);
+		String newerVideoId = VideoIdUtils.newerVideoId(videoId, remoteVideoId);
+		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, newerVideoId);
+		Log.e(TAG, "calling download for videoId=" + intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY));
+		friend.downloadVideo(intent);
 	}
 	
 	private void playNotificationTone(){

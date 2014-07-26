@@ -51,6 +51,7 @@ public class Friend extends ActiveModel{
 
 	public static class Attributes{
 		public static final String ID  = "id";
+		public static final String MKEY  = "mkey";
 		public static final String VIEW_INDEX  = "viewIndex";
 		public static final String FRAME_ID  = "frameId";
 		public static final String VIEW_ID  = "viewId";
@@ -62,6 +63,7 @@ public class Friend extends ActiveModel{
 		public static final String OUTGOING_VIDEO_ID = "outgoingVideoId";
 		public static final String LAST_OUTGOING_VIDEO_ID = "lastOutgoingVideoId";
 		public static final String OUTGOING_VIDEO_STATUS  = "outgoingVideoStatus";
+		public static final String DOWNLOADING_VIDEO_ID = "downloadingVideoId";
 		public static final String INCOMING_VIDEO_ID = "incomingVideoId";
 		public static final String INCOMING_VIDEO_STATUS  = "incomingVideoStatus";
 		public static final String UPLOAD_RETRY_COUNT  = "uploadRetryCount";
@@ -76,7 +78,9 @@ public class Friend extends ActiveModel{
 
 	@Override
 	public String[] attributeList() {
-		final String[] a = {	Attributes.ID, 
+		final String[] a = {	
+				Attributes.ID, 
+				Attributes.MKEY,
 				Attributes.VIEW_INDEX, 
 				Attributes.FRAME_ID, 
 				Attributes.VIEW_ID, 
@@ -108,8 +112,7 @@ public class Friend extends ActiveModel{
 		setUploadRetryCount(0);
 	}
 
-
-
+	
 	//-------------------------
 	// Video and thumb
 	//-------------------------
@@ -190,7 +193,7 @@ public class Friend extends ActiveModel{
 	//--------------------------
 	private void setOutGoingVideoId(){
 		Log.i(TAG, "setOutGoingVideoId.");
-		set(Attributes.OUTGOING_VIDEO_ID, VideoIdUtils.OutgoingVideoId(this, UserFactory.current_user()));
+		set(Attributes.OUTGOING_VIDEO_ID, VideoIdUtils.generateId());
 	}
 
 	public void uploadVideo(){
@@ -204,7 +207,7 @@ public class Friend extends ActiveModel{
 		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath());
 		i.putExtra(FileTransferService.IntentFields.URL_KEY, Config.fileUploadUrl());
 		Bundle params = new Bundle();
-		params.putString("video_id", get(Attributes.OUTGOING_VIDEO_ID));
+		params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
 		i.addFlags(Intent.FLAG_FROM_BACKGROUND);
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); 	// See doc/task_manager_bug.txt for the reason for this flag.
@@ -212,18 +215,19 @@ public class Friend extends ActiveModel{
 	}
 	
 	public void downloadVideo(Intent intent){
-		Log.i(TAG, "downloadVideo. For friend=" + get(Attributes.FIRST_NAME));
-		
 		String videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
+		Log.i(TAG, "downloadVideo. friend=" + get(Attributes.FIRST_NAME) + " videoId=" + videoId);
+
 		set(Attributes.INCOMING_VIDEO_ID, videoId);
 		setAndNotifyIncomingVideoStatus(IncomingVideoStatus.QUEUED);
 		
 		Intent i = new Intent(context, FileDownloadService.class);
 		i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
+		i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
 		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath());
 		i.putExtra(FileTransferService.IntentFields.URL_KEY, Config.fileDownloadUrl());
 		Bundle params = new Bundle();
-		params.putString("video_id", videoId);
+		params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
 		i.addFlags(Intent.FLAG_FROM_BACKGROUND);
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); 	// See doc/task_manager_bug.txt for the reason for this flag.
@@ -246,7 +250,7 @@ public class Friend extends ActiveModel{
 	//=============
 	// Video Status 
 	//=============
-
+	
 	//-----------------------------------------
 	// Changes to status and local notification.
 	//------------------------------------------
@@ -380,20 +384,9 @@ public class Friend extends ActiveModel{
 	//-------------------------------
 	private void notifyServerVideoViewed() {
 		Log.i(TAG, "notifyServerVideoViewed");
-		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-		params.put("from_id", getId());
-		params.put("to_id", User.userId(context));
-		new SGet("videos/update_viewed", params);
-	}
-
-	private class SGet extends Server{
-		public SGet(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params);
-		}
-		@Override
-		public void callback(String response) {
-			Log.i(TAG, "callback: " + response);
-		}
+		// Update kv store
+		// Send notification
+		NotificationHandler.sendForVideoStatusUpdate(this, NotificationHandler.StatusEnum.VIEWED);
 	}
 
 

@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -41,7 +42,8 @@ public abstract class Server {
 		new BgHttpReq().execute();
 	}
 
-	public abstract void callback(String response);
+	public abstract void success(String response);
+	public abstract void error(String errorString);
 
 	public String paramsToString(LinkedTreeMap<String, String> params){
 		String s = "";
@@ -58,68 +60,69 @@ public abstract class Server {
 		return method.startsWith("POST") || method.startsWith("post");
 	}
 
-	public String httpReq(){
+	public String httpReq() throws IOException, MalformedURLException{
 		String sUrl = Config.fullUrl(uri);
 		if ( !isPost() && sParams.length() > 0)
 			sUrl += ( "?" + sParams );
 
 		Log.i(TAG, "httpReq " + method + " url=" + sUrl +"  params=" + sParams);
 		String result = "";
-		try {
-			URL url = new URL(sUrl);
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();	
-			con.setDoInput(true);
-			con.setInstanceFollowRedirects(false); 
-			con.setUseCaches (false);
-			con.setRequestMethod(method);
-			con.setRequestProperty("Accept-Charset", "UTF-8");
 
-			if ( isPost() ){
-				con.setDoOutput(true);
-				con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); 
-				con.setRequestProperty("Content-Length", "" + Integer.toString(sParams.getBytes().length));
-			} else {
-				con.setRequestProperty("Content-Length", "0");
-			}
+		URL url = new URL(sUrl);
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();	
+		con.setDoInput(true);
+		con.setInstanceFollowRedirects(false); 
+		con.setUseCaches (false);
+		con.setRequestMethod(method);
+		con.setRequestProperty("Accept-Charset", "UTF-8");
 
-			if ( isPost() ){
-				DataOutputStream wr = new DataOutputStream(con.getOutputStream ());
-				wr.writeBytes(sParams);
-				wr.flush();
-				wr.close();
-			}
-
-			BufferedReader br = new BufferedReader( new InputStreamReader(con.getInputStream()) );
-			String l;
-			while ( (l = br.readLine()) != null ){
-				result += l;
-			}
-			br.close();
-			con.disconnect();
-		} catch (MalformedURLException e) {
-			Log.e(TAG, "httpReq: MalformedURLException " + e.getMessage());
-			result = null;
-		} catch (IOException e) {
-			Log.e(TAG, "httpReq: IOException " + e.getMessage());
-			result = null;
+		if ( isPost() ){
+			con.setDoOutput(true);
+			con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); 
+			con.setRequestProperty("Content-Length", "" + Integer.toString(sParams.getBytes().length));
+		} else {
+			con.setRequestProperty("Content-Length", "0");
 		}
+
+		if ( isPost() ){
+			DataOutputStream wr = new DataOutputStream(con.getOutputStream ());
+			wr.writeBytes(sParams);
+			wr.flush();
+			wr.close();
+		}
+
+		BufferedReader br = new BufferedReader( new InputStreamReader(con.getInputStream()) );
+		String l;
+		while ( (l = br.readLine()) != null ){
+			result += l;
+		}
+		br.close();
+		con.disconnect();
+
 		return result;
 	}
 
-	private class BgHttpReq extends AsyncTask<Void, Void, String>{
+	private class BgHttpReq extends AsyncTask<Void, Void, HashMap<String, String>>{
 		@Override
-		protected String doInBackground(Void... params) {
-			return httpReq();
+		protected HashMap<String, String> doInBackground(Void... params) {
+			HashMap<String, String> r = new HashMap<String, String>();
+			try {
+				r.put("success", httpReq());
+			} catch (MalformedURLException e) {
+				r.put("error", e.toString());
+			} catch (IOException e) {
+				r.put("error", e.toString());
+			}
+			return r;
 		}
 
 		@Override
-		protected void onPostExecute(String result) {
-			String r = result;
-			if (result == null)
-				r = "";
-
-			Log.i(TAG, "response: " + r);
-			callback(result);
+		protected void onPostExecute(HashMap<String, String> result) {
+			if ( result.get("success") != null){
+				success(result.get("success"));
+			} else {
+				error(result.get("error"));
+			}
 		}
 
 	}

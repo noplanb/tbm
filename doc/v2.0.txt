@@ -1,0 +1,72 @@
+v2.0 
+
+Android client release to work with SystemRelease v1.1. (See tmb-server v1.1.txt)
+
+ x Registration
+   x User enters phone number rather than pic from list
+   x Spinner while checking
+   x Server checks if user is present in db
+     x If yes then return user and friends
+	 x If no then alert Error: check phone number or contact Sani
+	 x If no connectivity then alert Error: check connectivity and try again
+   x Ability to enter text as well as numbers.
+   x Test
+     x Good number
+	 x Bad number
+	 x No connectivity
+ 
+ x Accomodate new notification scheme on server
+   x Explicitly request a notification to be sent to an MailboxKey
+     x After upload
+	 x After download
+	 x After viewed
+   x Register token using notification controller.
+   - Change keynames - add _KEY
+ 
+ x RemoteStorageHandler
+   x setRemoteKV
+     x Takes a LinkedTreeMap
+	 x Converts to json
+	 x Stores
+   x getRemoteKV
+     x Returns a LinkedTreeMap
+   - Change keynames - add _KEY
+   
+ x Accomodate the v1.1 messaging scheme
+   x User
+     x Add fields  
+	   x AuthKey
+	   x mkey
+   x Registration
+     x Set the new fields
+   x Friend
+     x Add fields
+	   x change id to mkey
+	   x DownloadingVideoId (id of the video that is currently downloading but has not finished downloading)
+   x Upload
+     x Generate static VideoFilename from sender mkey and receiver mkeys
+	 x Explicitly upload to VideoFilename
+	 x Generate VideoId using a timestamp
+     x Generate static LatestVideoIdKVKey from sender and receiver mkeys
+	 x After upload completes successfully eplicitly write LatestVideoIdKV with VideoId
+	 x Explicitly call notification server
+   x Download
+	 x See list step by step list in tbm-server/system_architecture.txt for the punchlist here.
+   x Viewed
+     x Generate static VideoStatusKVKey from sender and receiver mkeys
+	 x Explicitly write VideoStatusKV
+	 x Explicitly call notification server
+   x Notification received
+  
+Version Compatibility Checking
+  - VersionHandler class
+	  - Send version check request
+	  - 
+	  
+	- Client passes its platform and version to the server
+	- Server responds 
+	  - Current
+	  - UpdateOptional
+	  - UpdateRequired
+	  - UpdateSchemaRequired - i.e. client db schema has changed. App and schema must be updated.
+	- Client alerts the user as appropriate.

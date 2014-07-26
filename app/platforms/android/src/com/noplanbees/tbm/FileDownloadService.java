@@ -36,7 +36,7 @@ public class FileDownloadService extends FileTransferService {
 	}
 	
 	private Boolean download(Intent intent) throws InterruptedException{
-		Log.e(TAG, "download " + params.toString());
+		Log.e(TAG, "download videoId=" + intent.getStringExtra(IntentFields.VIDEO_ID_KEY) + " params=" + params.toString());
 		File f = FileUtils.getFile(Config.downloadingFilePath(getApplicationContext()));
 		try {
 			URL url = new URL(urlWithParams);

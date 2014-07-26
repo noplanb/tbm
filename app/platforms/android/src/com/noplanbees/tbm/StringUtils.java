@@ -30,7 +30,7 @@ public class StringUtils {
 	    return (char)(start + offset);
 	}
 	
-	public static void test(){
-		
+	public static void stripSpaces(String s){
+		s.replaceAll(" ", "");
 	}
 }
