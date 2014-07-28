@@ -22,8 +22,8 @@ public abstract class RemoteStorageHandler {
 	// Data structures keys and values
 	//--------------------------------
 	public static class DataKeys{
-		public static String VIDEO_ID = "videoId";
-		public static String STATUS = "status";
+		public static String VIDEO_ID_KEY = "videoId";
+		public static String STATUS_KEY = "status";
 	}
 	
 	public static class STATUS_ENUM{
@@ -103,14 +103,14 @@ public abstract class RemoteStorageHandler {
 	// Convenience setters
 	public void setRemoteOutgoingVideoId(Friend friend, String videoId){
 		LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-		data.put(RemoteStorageHandler.DataKeys.VIDEO_ID, videoId);
+		data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, videoId);
 		setRemoteKV(RemoteStorageHandler.outgoingVideoIdRemoteKVKey(friend), data);
 	}
 	
 	public void setRemoteIncomingVideoStatus(Friend friend, String videoId, String status){
 		LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-		data.put(RemoteStorageHandler.DataKeys.VIDEO_ID, videoId);
-		data.put(RemoteStorageHandler.DataKeys.STATUS, status);
+		data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, videoId);
+		data.put(RemoteStorageHandler.DataKeys.STATUS_KEY, status);
 		setRemoteKV(RemoteStorageHandler.outgoingVideoIdRemoteKVKey(friend), data);
 	}
 	

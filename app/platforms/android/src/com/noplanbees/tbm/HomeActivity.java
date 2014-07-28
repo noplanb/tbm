@@ -26,7 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback, VideoRecorderExceptionHandler{
+public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback, VideoRecorderExceptionHandler, VersionHandlerInterface{
 
 	final String TAG = this.getClass().getSimpleName();
 	final Float ASPECT = 240F/320F;
@@ -36,6 +36,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	public LongpressTouchHandler longpressTouchHandler;
 	public VideoRecorder videoRecorder;
 	public GcmHandler gcmHandler;
+	public VersionHandler versionHandler;
 
 	private FriendFactory friendFactory;
 	private UserFactory userFactory;
@@ -97,7 +98,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			ensureListeners();
 			runTests();
 		}
-		lastState = "onStart";
+		lastState = "onStart";		
 	}
 
 	private Boolean screenIsOff(){
@@ -167,6 +168,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	protected void onResume() {
 		super.onResume();
 		Log.e(TAG, "onResume: state");
+		// setupVersionHandler onResume because  may cause a dialog which would crash the app before onResume.
+		setupVersionHandler();
 		if (gcmHandler != null)
 			gcmHandler.checkPlayServices();
 		longpressTouchHandler.enable();
@@ -425,8 +428,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		btnReset.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				friendFactory.destroyAll(instance);
-				userFactory.destroyAll(instance);
+				ActiveModelsHandler.destroyAll(instance);
 				finish();
 			}
 		});
@@ -511,11 +513,11 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 				videoRecorder.dispose();
 				videoRecorder.restore();
 			}
-		})
-		.create().show();
+		});
+		AlertDialog alertDialog = builder.create();
+		alertDialog.setCanceledOnTouchOutside(false);
+		alertDialog.show();
 	}
-
-
 	
 	// ---------------------------------------
 	// Video Recorder ExceptionHandler delegate
@@ -551,4 +553,48 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		toast("Unable to start recording. Try again.");
 	}
 
+
+	//-----------------
+	// Version Handling
+	//-----------------
+	private void setupVersionHandler(){
+		//Only check the version when the app is started fresh. 
+		if (versionHandler == null)
+		  versionHandler = new VersionHandler(this);
+	}
+	
+	@Override
+	public void compatibilityCheckCallback(String result) {
+		Log.i(TAG, "compatibilityCheckCallback: " + result);
+		if (VersionHandler.update_schema_required(result)) {
+			ActiveModelsHandler.destroyAll(this);
+			showVersionHandlerDialog("Your " + Config.appName + " app is obsolete. Please update.", false);
+		} else if (VersionHandler.update_required(result)) {
+			showVersionHandlerDialog("Your " + Config.appName + " app is obsolete. Please update.", false);
+		} else if (VersionHandler.update_optional(result)) {
+			showVersionHandlerDialog("Your " + Config.appName + " app is out of date. Please update.", true);
+		}
+	}
+	
+	private void showVersionHandlerDialog(String message, Boolean negativeButton){
+		AlertDialog.Builder builder = new AlertDialog.Builder(instance);
+		builder.setTitle("Update Available")
+		.setMessage(message)
+		.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				VersionHandler.goToPlayStore(instance);
+				finish();
+			}
+		});
+		
+		if (negativeButton){
+			builder.setNegativeButton("Later", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+				}
+			});
+		}
+		AlertDialog alertDialog = builder.create();
+		alertDialog.setCanceledOnTouchOutside(false);
+		alertDialog.show();
+	}
 };

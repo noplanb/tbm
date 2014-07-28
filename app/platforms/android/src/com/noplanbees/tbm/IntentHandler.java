@@ -190,13 +190,13 @@ public class IntentHandler {
 		@Override
 		public void error(LinkedTreeMap<String, String>data) {
 			Log.e(TAG, "GetRemoteVideoId: Error failed to get remote videoId returning 0");
-			data.put(RemoteStorageHandler.DataKeys.VIDEO_ID, "0");
+			data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, "0");
 			gotRemoteVideoId(data);
 		}
 	}
 	
 	private void gotRemoteVideoId(LinkedTreeMap<String, String> data) {
-		String remoteVideoId = data.get(RemoteStorageHandler.DataKeys.VIDEO_ID);
+		String remoteVideoId = data.get(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY);
 		String newerVideoId = VideoIdUtils.newerVideoId(videoId, remoteVideoId);
 		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, newerVideoId);
 		Log.e(TAG, "calling download for videoId=" + intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY));

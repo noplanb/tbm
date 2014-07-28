@@ -21,6 +21,11 @@ public class ActiveModelsHandler {
 		retrieveFriend(context);
 	}
 	
+	public static void destroyAll(Context context){
+		UserFactory.getFactoryInstance().destroyAll(context);
+		FriendFactory.getFactoryInstance().destroyAll(context);
+	}
+	
 	public static UserFactory ensureUser(Context context){
 		UserFactory uf = UserFactory.getFactoryInstance();
 		if (uf.hasInstances()){
