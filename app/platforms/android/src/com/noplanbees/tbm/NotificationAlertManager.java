@@ -28,12 +28,12 @@ public class NotificationAlertManager {
 	private static int smallIcon = R.drawable.ic_stat_gcm;
 	private static Uri alertSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
-	private static Bitmap largeImage(Friend friend){
-		return friend.sqThumbBitmap();
+	private static Bitmap largeImage(Friend friend, String videoId){
+		return friend.sqThumbBitmap(videoId);
 	}
 
-	private static String largeImagePath(Friend friend){
-		return friend.thumbPath();
+	private static String largeImagePath(Friend friend, String videoId){
+		return friend.thumbPath(videoId);
 	}
 
 	private static String title(Friend friend){
@@ -45,13 +45,13 @@ public class NotificationAlertManager {
 	// -------------------
 	
 	// Public methods
-	public static void alert(HomeActivity homeActivity, Friend friend){
+	public static void alert(HomeActivity homeActivity, Friend friend, String videoId){
 		Log.i(STAG, "alert");
 		
 		if ( screenIsLocked(homeActivity) || screenIsOff(homeActivity))
-			postLockScreenAlert(homeActivity, friend);
+			postLockScreenAlert(homeActivity, friend, videoId);
 		
-		postNativeAlert(homeActivity, friend);
+		postNativeAlert(homeActivity, friend, videoId);
 	}
 	
 	public static void cancelNativeAlerts(HomeActivity homeActivity){
@@ -61,7 +61,7 @@ public class NotificationAlertManager {
 	}
 	
 	// Private 
-	private static void postNativeAlert(HomeActivity homeActivity, Friend friend) {
+	private static void postNativeAlert(HomeActivity homeActivity, Friend friend, String videoId) {
 		Log.i(STAG, "postNativeAlert");
 		final int NOTIFICATION_ID = 1;
 		NotificationManager notificationManager = (NotificationManager) homeActivity.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -69,7 +69,7 @@ public class NotificationAlertManager {
 		PendingIntent contentIntent = PendingIntent.getActivity(homeActivity, 0, intent, 0);
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(homeActivity)
 		.setSound(alertSound)
-		.setLargeIcon(largeImage(friend))
+		.setLargeIcon(largeImage(friend, videoId))
 		.setSmallIcon(smallIcon)
 		.setContentTitle(title(friend))
 		.setStyle(new NotificationCompat.BigTextStyle().bigText(title(friend)))
@@ -80,10 +80,10 @@ public class NotificationAlertManager {
 		notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 	}
 
-	private static void postLockScreenAlert(HomeActivity homeActivity, Friend friend) {
+	private static void postLockScreenAlert(HomeActivity homeActivity, Friend friend, String videoId) {
 		Log.i(STAG, "postLockScreenAlert");
 		Intent i = new Intent(homeActivity, LockScreenAlertActivity.class);
-		i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend));
+		i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend, videoId));
 		i.putExtra(SMALL_ICON_KEY, smallIcon);
 		i.putExtra(TITLE_KEY, title(friend));
 		i.putExtra(SUB_TITLE_KEY, subTitle);

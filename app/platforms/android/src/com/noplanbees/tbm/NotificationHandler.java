@@ -30,12 +30,12 @@ public class NotificationHandler {
 		new SendNotification("notification/send_video_received", params, "POST");
 	}
 	
-	public static void sendForVideoStatusUpdate(Friend friend, String status){
+	public static void sendForVideoStatusUpdate(Friend friend, String videoId, String status){
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
 		params.put(NotificationHandler.DataKeys.TARGET_MKEY, friend.get(Friend.Attributes.MKEY));
 		params.put(NotificationHandler.DataKeys.TO_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
 		params.put(NotificationHandler.DataKeys.STATUS, status);
-		params.put("video_id", friend.get(Friend.Attributes.INCOMING_VIDEO_ID));
+		params.put("video_id", videoId);
 		new SendNotification("notification/send_video_status_update", params, "POST");
 	}
 

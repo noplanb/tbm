@@ -9,18 +9,19 @@ public class VideoIdUtils {
 		return System.currentTimeMillis() + "";
 	}
 	
-	public static Boolean isNewerThanLastIncomingVideo(Friend friend, String videoId){
-		Log.e(STAG, "NotificationVideoId=" + videoId + " currentVideoId=" + incomingVideoTimeStamp(friend));
-		return timeStampFromVideoId(videoId) > incomingVideoTimeStamp(friend);
+	public static Boolean isNewerThanOldestIncomingVideo(Friend friend, String videoId){
+		Video oldest = friend.oldestIncomingVideo();
+		return (oldest != null && timeStampFromVideoId(videoId) > timeStampFromVideoId(oldest.getId()));
 	}
 	
-	public static Boolean isOlderThanLastIncomingVideo(Friend friend, String videoId){
-		return timeStampFromVideoId(videoId) < incomingVideoTimeStamp(friend);
+	public static Boolean isOlderThanOldestIncomingVideo(Friend friend, String videoId){
+		Video oldest = friend.oldestIncomingVideo();
+		return (oldest != null && timeStampFromVideoId(videoId) < timeStampFromVideoId(oldest.getId()));		
 	}
 	
-	public static long incomingVideoTimeStamp(Friend friend){
-		return timeStampFromVideoId(friend.get(Friend.Attributes.INCOMING_VIDEO_ID));
-	}
+//	public static long incomingVideoTimeStamp(Friend friend){
+//		return timeStampFromVideoId(friend.get(Friend.Attributes.INCOMING_VIDEO_ID));
+//	}
 	
 	public static Long timeStampFromVideoId(String videoId){
 		if (videoId == null || videoId.equalsIgnoreCase(""))

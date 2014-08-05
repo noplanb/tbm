@@ -19,9 +19,10 @@ public class VideoPlayer implements OnCompletionListener{
 	Friend friend;
 	VideoView videoView;
 	ImageView thumbView;
+	String videoId;
 	
 	private static ArrayList <VideoView> allVideoViews;
-	private static HashMap <Integer, VideoPlayer> allVideoPlayers = new HashMap <Integer, VideoPlayer>();
+	private static HashMap <String, VideoPlayer> allVideoPlayers = new HashMap <String, VideoPlayer>();
 	
 	public static void setAllVideoViews(ArrayList<VideoView> videoViews){
 		VideoPlayer.allVideoViews = videoViews;
@@ -42,9 +43,17 @@ public class VideoPlayer implements OnCompletionListener{
 	}
 	
 	private static void showAllThumbs(){
-		for (Integer key : VideoPlayer.allVideoPlayers.keySet()){
+		for (String key : VideoPlayer.allVideoPlayers.keySet()){
 			allVideoPlayers.get(key).showThumb();
 		}
+	}
+	
+	public static Boolean isPlaying(String friendId){
+		Boolean r = false;
+		VideoPlayer vp = allVideoPlayers.get(friendId);
+		if (vp != null)
+			r = vp.videoView.isPlaying();
+		return r;
 	}
 	
 	public VideoPlayer(Activity a, String friendId) {
@@ -54,16 +63,13 @@ public class VideoPlayer implements OnCompletionListener{
 		friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
 		videoView = friend.videoView(activity);
 		videoView.setOnCompletionListener(this);
-		VideoPlayer.allVideoPlayers.put(videoView.getId(), this);
+		VideoPlayer.allVideoPlayers.put(friend.getId(), this);
 		thumbView = friend.thumbView(activity);
 		showThumb();
 	}
 
 
 	public void click(){
-		
-		if (friend.videoFromFile().length() < 100)
-			return;
 		
 		if (videoView.isPlaying()){
 			stop();
@@ -75,10 +81,23 @@ public class VideoPlayer implements OnCompletionListener{
 	public void start(){
 		Log.i(TAG, "start");
 		VideoPlayer.stopAll();
-		videoView.setVideoPath(friend.videoFromPath());
+	    videoId = friend.firstPlayableVideoId();
+		
+		if (videoId == null)
+			return;
+		
+		if (friend.videoFromFile(videoId).length() > 100){
+			play();
+		} else {
+			onCompletion(null);
+		}
+		
+	}
+	
+	public void play(){
+		videoView.setVideoPath(friend.videoFromPath(videoId));
 		hideThumb();
 		videoView.start();
-		friend.setAndNotifyIncomingVideoViewed();
 	}
 	
 	public void stop(){
@@ -113,7 +132,7 @@ public class VideoPlayer implements OnCompletionListener{
 			thumbView.setImageResource(R.drawable.head);
 		}else{
 			Log.i(TAG, "loadThumb: Loading bitmap for friend=" + friend.get(Friend.Attributes.FIRST_NAME));
-			thumbView.setImageBitmap(friend.thumbBitmap());
+			thumbView.setImageBitmap(friend.lastThumbBitmap());
 		}
 	}
 
@@ -131,6 +150,12 @@ public class VideoPlayer implements OnCompletionListener{
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.i(TAG, "play complete.");
-		stop();
+		friend.setAndNotifyIncomingVideoViewed(videoId);
+		videoId = friend.nextPlayableVideoId(videoId);
+		if (videoId != null){
+			play();
+		} else {
+			stop();
+		}
 	}
 }

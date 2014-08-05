@@ -1,7 +1,6 @@
 package com.noplanbees.tbm;
 
 import android.app.IntentService;
-import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -59,9 +58,11 @@ public class GcmIntentService extends IntentService {
 	// ---------
 	private void handleVideoStatusUpdate(Intent intent) {
 		String status = intent.getStringExtra(NotificationHandler.DataKeys.STATUS);
+		String videoId = intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID);
 		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
 		
 		// Normalize from notification naming convention to internal.
+		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
 		if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.DOWNLOADED)) {
 			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.OutgoingVideoStatus.DOWNLOADED);
 		} else if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.VIEWED)) {
@@ -78,7 +79,7 @@ public class GcmIntentService extends IntentService {
 	private void handleVideoReceived(Intent intent) {
 		Log.i(TAG, "handleVideoReceived:");
 		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
-		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.IncomingVideoStatus.NEW);
+		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Video.IncomingVideoStatus.NEW);
 		// Normalize from notification naming convention to internal.
 		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID)); 
 		startHomeActivity(intent);

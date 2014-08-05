@@ -1,8 +1,8 @@
 package com.noplanbees.tbm;
 
-import com.google.gson.internal.LinkedTreeMap;
-
 import android.util.Log;
+
+import com.google.gson.internal.LinkedTreeMap;
 
 public class ServerTest {
 	private final String TAG = this.getClass().getSimpleName();

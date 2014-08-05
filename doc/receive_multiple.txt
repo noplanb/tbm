@@ -1,0 +1,114 @@
+Receiving Multiple Messages Before Viewing
+
+UI
+==
+UI Option 1 - Treat them as one long message for the purposes of playback. 
+Benefits - Simplest UI (I prefer Option 1 with choice d)
+ - Three messages have come in from the same person when you visit the app. 
+ - It shows blue just like now with no indication that you have multiple messages.
+ - When you hit play it just plays them in series as if they are one message.
+ - As each message is played to the end it is marked as viewed.
+ - When you click to stop in the middle then click to play again it goes to the begining of the first one like going to the beginning of one long message.
+ - If you have played to the end of the last message and stopped and a new message comes in it overwrites all of them and show the unviewed indicator.
+ - What happens if you dont play to the end of the last message and a new message comes in?
+   a. Keep all of them tack the new one to the end then show unviewed indicator again?
+     - PROBLEM - you get an unviewed indicator but when you play it shows messages you have already seen before getting to the new stuff.
+   b. If you have viewed any portion of a set of incoming messages and stopped viewing then a new incoming message will overwrite.
+     - PROBLEM - in some infrequent cases you may lose messages or parts of a message.
+   c. Keep all of them tack the new one to the front show the unviewed indicator
+     - PROBLEM - Messages will seem out of order.
+   d. Remove the viewed messages. Keep the unviewed messages. Tack this one on the end. Set the unviewed indicator.
+ - What happens if a new message comes in WHILE you are playing the sequence of 3?
+   - It just coninues playing this 4th one after it is done playing the 3rd one.
+   - The unviewed indicator is not re added in this case
+ - If you have played any part of the series of 3 messages the unviewed indicator is removed.
+ 
+UI Option 2 - Treat them as one long message for the purpose of playback control but show some indication that they are separate messages
+Benfit - I dont see a real benifit with this over Option 1. Unecessary ui providing information of little value. 
+  - A small circle with the number in the list and the number you are on.
+    - PROBLEM - The number will act funny in the case where a new message comes in while you are playing back.
+  - A segue between the messages as you are playing back.
+    - One will naturally happen as you will see a jump and perhaps a change of scene when one message switches to the other this is probably just the right amount of indication of what is going on.
+	
+UI Option 3 - Treat them as distinct messages that the user has to dismiss one by one to see the next one.
+Thoughts - I dont like this as it requires too much interaction for the base case of "I just want to see all the messages I missed from this person in one go".
+  - Clone of TapTalk sort of.
+  - Three messages have come in from the same person when you visit the app. 
+  - Number shows 3
+  - If you click on Thumbnail it plays the first message.
+  - To move to the second message you have to take some action swipe away the message or click a check where the number was.
+  - If you click to stop and click to start again while you are playing a message it goes to the beginning of that message.
+  - When you have gotten to the last message the number goes away.
+  - If you click to play after that it just plays this last message.
+  - What happens if you dont play to the end of the last message and a new message comes in?
+    - Number indicator jumps by 1 and unviewed indicator is shown.
+
+UI Implemented option:
+---------------------
+  x Three messages have come in from the same person when you visit the app.
+  x It shows an unviewed indicator on the person.
+  x When you hit play it starts playing them in series as if they are they are one message.
+  x Unviewed indicator is removed as soon as you hit play.
+  x As each message is played to completion it is marked as viewed.
+  x When you click to stop in the middle then click to play again it goes to the begining of the first one like going to the beginning of one long message.
+  - Corner cases:
+    x New message comes in WHILE play is ongoing
+	  x Message is added to the end. Unviewed indicator is not set again. Message is played at the end of the sequence as if it had been there all along.
+	x New message comes in when play is stopped. 
+	  x All messages marked as viewed are deleted. 
+	  x Message is added to the end.
+	  x Unviewed indicator is shown.
+  
+
+IMPLEMENTATION
+==============
+
+Videos active model
+-------------------
+  x Add an active model for Video
+    x Video
+	  x Add attrbutes
+	  x Add status
+	  x Add allWithFriendId
+  x Add to active models handler
+
+Remote KV
+---------
+  x Client
+    x key1 and key2
+	x Add videoId
+	x Delete videoId
+  - Server 
+    - to handle key1 and key2
+	- delete
+
+Video Player
+------------
+  - Add methods to friend
+	  x firstPlayableVideoId
+	  x nextPlayableVideoId(videoId)
+	  
+  x start()
+    x if firstPlayableVideoId 
+	  x setViewed
+	  x if not too short
+	    x play()
+	  x else
+	    x call onCompletion
+  
+  x play(videoId)
+    x Move the current code from start
+	
+  x onCompletion()
+    x if nextPlayableVideoId(videoId)
+	  x play next
+	x else
+	  x stop
+  
+Flow
+----
+  - Record a video
+  x Upload a video
+	  x Filename includes videoId
+  
+  

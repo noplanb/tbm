@@ -35,7 +35,7 @@ Android client release to work with SystemRelease v1.1. (See tmb-server v1.1.txt
  x Accomodate the v1.1 messaging scheme
    x User
      x Add fields  
-	   x AuthKey
+	   x auth
 	   x mkey
    x Registration
      x Set the new fields

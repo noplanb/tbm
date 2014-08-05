@@ -26,7 +26,7 @@ public abstract class RemoteStorageHandler {
 		public static String STATUS_KEY = "status";
 	}
 	
-	public static class STATUS_ENUM{
+	public static class StatusEnum{
 		public static String DOWNLOADED = "downloaded";
 		public static String VIEWED = "viewed";
 	}
@@ -34,19 +34,19 @@ public abstract class RemoteStorageHandler {
 	//------------------------
 	// Keys for remote storage
 	//------------------------
-	public static String incomingVideoRemoteFilename(Friend friend) {
-		return incomingConnectionKey(friend) + "-filename";
-	}
-
 	public static String outgoingVideoRemoteFilename(Friend friend) {
-		return outgoingConnectionKey(friend) + "-filename";
+		return outgoingConnectionKey(friend) + "_" + friend.get(Friend.Attributes.OUTGOING_VIDEO_ID) + "-filename";
 	}
 
-	public static String outgoingVideoIdRemoteKVKey(Friend friend) {
+	public static String incomingVideoRemoteFilename(Friend friend, String videoId) {
+		return incomingConnectionKey(friend) + "_" + videoId + "-filename";
+	}
+
+	public static String outgoingVideoIdsRemoteKVKey(Friend friend) {
 		return outgoingConnectionKey(friend) + "-VideoIdKVKey";
 	}
 
-	public static String incomingVideoIdRemoteKVKey(Friend friend) {
+	public static String incomingVideoIdsRemoteKVKey(Friend friend) {
 		return incomingConnectionKey(friend) + "-VideoIdKVKey";
 	}
 
@@ -67,33 +67,48 @@ public abstract class RemoteStorageHandler {
 	}
 	
 
-	//------------
-	// SetRemoteKV
-	//------------
+	//--------------------
+	// SetOrDeleteRemote
+	//--------------------
 	public void setRemoteKV(String key, LinkedTreeMap<String, String>data){
+		String key2 = null;
+		setRemoteKV(key, key2, data);
+	}
+	
+	public void setRemoteKV(String key1, String key2, LinkedTreeMap<String, String>data){
 		Gson g = new Gson();
 		String value = g.toJson(data, data.getClass());
 		
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		params.put("key", key);
+		params.put("key1", key1);
+		if (key2 != null)
+			params.put("key2", key2);
 		params.put("value", value);
-		new SetRemoteKV("kvstore/set", params, "POST");
+		new SetOrDeleteRemote("kvstore/set", params, "POST");
 	}
 	
-	private class SetRemoteKV extends Server{
-		SetRemoteKV (String uri, LinkedTreeMap<String, String> params, String method){		
+	public void deleteRemoteKV(String key1, String key2){
+		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+		params.put("key1", key1);
+		if (key2 != null)
+			params.put("key2", key2);
+		new SetOrDeleteRemote("kvstore/delete", params, "GET");
+	}
+	
+	private class SetOrDeleteRemote extends Server{
+		SetOrDeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){		
 			super(uri, params, method);
 		}
 		@Override
 		public void success(String response) {	
-			Log.i(STAG, "SetRemoteKV: success");
+			Log.i(STAG, "SetOrDeleteRemote: success");
 			LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
 			data.put("success", response);
 			rshInstance.success(data);
 		}
 		@Override
 		public void error(String errorString) {
-			Log.e(STAG, "SetRemoteKV: ERROR: " + errorString);
+			Log.e(STAG, "SetOrDeleteRemote: ERROR: " + errorString);
 			LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
 			data.put("success", errorString);
 			rshInstance.error(data);
@@ -101,29 +116,39 @@ public abstract class RemoteStorageHandler {
 	}
 	
 	// Convenience setters
-	public void setRemoteOutgoingVideoId(Friend friend, String videoId){
+	public void addRemoteOutgoingVideoId(Friend friend, String videoId){
 		LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
 		data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, videoId);
-		setRemoteKV(RemoteStorageHandler.outgoingVideoIdRemoteKVKey(friend), data);
+		setRemoteKV(RemoteStorageHandler.outgoingVideoIdsRemoteKVKey(friend), videoId, data);
+	}
+	
+	public void deleteRemoteIncomingVideoId(Friend friend, String videoId){
+		deleteRemoteKV(RemoteStorageHandler.incomingVideoIdsRemoteKVKey(friend), videoId);
 	}
 	
 	public void setRemoteIncomingVideoStatus(Friend friend, String videoId, String status){
 		LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
 		data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, videoId);
 		data.put(RemoteStorageHandler.DataKeys.STATUS_KEY, status);
-		setRemoteKV(RemoteStorageHandler.outgoingVideoIdRemoteKVKey(friend), data);
+		setRemoteKV(RemoteStorageHandler.incomingVideoStatusRemoteKVKey(friend), data);
 	}
+	
 	
 	//------------
 	// GetRemoteKV
 	//------------
-	public void getRemoteKV(String key){
-		new GetRemoteKV("kvstore/get?key=" + key);
+	public void getRemoteKV(String key1, String key2){
+		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+		params.put("key1", key1);
+		if (key2 != null)
+			params.put("key2", key2);
+		new GetRemoteKV("kvstore/get", params, "GET");
 	}
 	
 	private class GetRemoteKV extends Server{
-		public GetRemoteKV(String uri) {
-			super(uri);
+	
+		public GetRemoteKV(String uri, LinkedTreeMap<String, String> params, String method) {
+			super(uri, params, method);
 		}
 		@SuppressWarnings("unchecked")
 		@Override
@@ -143,20 +168,18 @@ public abstract class RemoteStorageHandler {
 		}
 	}
 	
+	//----------------
+	// DeleteRemotFile
+	//----------------
+	public void deleteRemoteFile(String filename){
+		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+		params.put("filename", filename);
+		new SetOrDeleteRemote("videos/delete", params, "GET");
+	}
 	
-//	public static HashMap<String, String> senderAndReceiverIdsWithVideoId(String videoId){
-//	HashMap <String, String> r = new HashMap<String, String>();
-//	Pattern pattern = Pattern.compile("^(\\d+)-(\\d+)-");
-//	Matcher matcher = pattern.matcher(videoId);
-//	matcher.find();
-//	
-//	if (matcher.groupCount() != 2){
-//		System.out.println("senderAndReceiverIdsWithVideoId: ERROR: Did not get 2 matches when searching for and reciever ids from video id. This should never happen.");
-//		return null;
-//	}
-//	r.put("senderId", matcher.group(1));
-//	r.put("receiverId", matcher.group(2));
-//	return r;
-//}
+	// Convenience
+	public void deleteRemoteVideoFile(Friend friend, String videoId){
+		deleteRemoteFile(RemoteStorageHandler.incomingVideoRemoteFilename(friend, videoId));
+	}
 
 }

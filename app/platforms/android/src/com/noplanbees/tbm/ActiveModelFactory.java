@@ -142,9 +142,33 @@ public class ActiveModelFactory {
 		}
 		return found;
 	}
+	
+	public ArrayList<ActiveModel> findAllWhere(String a, String v){
+		ArrayList<ActiveModel> result = new ArrayList<ActiveModel>();
+		for (ActiveModel i: instances) {
+			if ( i.get(a).equals(v) ){
+				result.add(i);
+			}
+		}
+		return result;
+	}
 
 	public ActiveModel find(String id){
 		return findWhere("id", id);
+	}
+	
+	public void delete(String id){
+		Integer found = null;
+		Integer index = 0;
+		for (ActiveModel am : instances){
+			if (am.getId().equals(id)){
+				found = index;
+				break;
+			}
+			index ++;
+		}
+		if (found != null)
+			instances.remove(found);	
 	}
 	
 	public int count(){

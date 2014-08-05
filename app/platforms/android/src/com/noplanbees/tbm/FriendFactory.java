@@ -23,7 +23,8 @@ public class FriendFactory extends ActiveModelFactory{
 		Friend i = new Friend();
 		i.init(context);
 		instances.add(i);
-		return i;	}
+		return i;	
+	}
 
 	public static Friend getFriendFromFrame(View v){
 		Integer viewId = v.getId();

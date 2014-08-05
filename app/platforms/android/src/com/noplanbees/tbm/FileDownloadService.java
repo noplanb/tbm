@@ -8,8 +8,6 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 
-import com.noplanbees.tbm.FileTransferService.IntentFields;
-
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -31,7 +29,7 @@ public class FileDownloadService extends FileTransferService {
 	@Override
 	protected Boolean doTransfer(Intent intent) throws InterruptedException{
 		intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_DOWNLOAD);
-		reportStatus(intent, Friend.IncomingVideoStatus.DOWNLOADING);
+		reportStatus(intent, Video.IncomingVideoStatus.DOWNLOADING);
 		return download(intent);
 	}
 	
@@ -47,7 +45,7 @@ public class FileDownloadService extends FileTransferService {
 		} catch (IOException e) {
 			Log.e(TAG, "download: IOException: e.tostring " +  e.toString() );
 			if (e.getClass().equals(FileNotFoundException.class)){
-				reportStatus(intent, Friend.IncomingVideoStatus.FAILED_PERMANENTLY);
+				reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
 				return true;
 			} else {
 				return false;
@@ -55,13 +53,13 @@ public class FileDownloadService extends FileTransferService {
 		}
 		f.renameTo(FileUtils.getFile(filePath));
 		Log.e(TAG, "download SUCCESS" + params.toString());
-		reportStatus(intent, Friend.IncomingVideoStatus.DOWNLOADED);
+		reportStatus(intent, Video.IncomingVideoStatus.DOWNLOADED);
 		return true;
 	}
 
 	@Override
 	protected void maxRetriesReached(Intent intent) throws InterruptedException{
-		reportStatus(intent, Friend.IncomingVideoStatus.FAILED_PERMANENTLY);
+		reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
 	}
 	
 }
