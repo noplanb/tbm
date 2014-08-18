@@ -1,3 +1,9 @@
+v2.0 - 26
+
+RELEASE NOTES:
+--------------
+
+
 Receiving Multiple Messages Before Viewing
 
 UI
@@ -45,19 +51,19 @@ Thoughts - I dont like this as it requires too much interaction for the base cas
 
 UI Implemented option:
 ---------------------
-  x Three messages have come in from the same person when you visit the app.
-  x It shows an unviewed indicator on the person.
-  x When you hit play it starts playing them in series as if they are they are one message.
-  x Unviewed indicator is removed as soon as you hit play.
-  x As each message is played to completion it is marked as viewed.
-  x When you click to stop in the middle then click to play again it goes to the begining of the first one like going to the beginning of one long message.
+  - Three messages have come in from the same person when you visit the app.
+  - It shows an unviewed indicator on the person.
+  - When you hit play it starts playing them in series as if they are they are one message.
+  - Unviewed indicator is removed as soon as you hit play.
+  - As each message is played to completion it is marked as viewed.
+  - When you click to stop in the middle then click to play again it goes to the begining of the first one like going to the beginning of one long message.
   - Corner cases:
-    x New message comes in WHILE play is ongoing
-	  x Message is added to the end. Unviewed indicator is not set again. Message is played at the end of the sequence as if it had been there all along.
-	x New message comes in when play is stopped. 
-	  x All messages marked as viewed are deleted. 
-	  x Message is added to the end.
-	  x Unviewed indicator is shown.
+    - New message comes in WHILE play is ongoing
+	  - Message is added to the end. Unviewed indicator is not set again. Message is played at the end of the sequence as if it had been there all along.
+	- New message comes in when play is stopped. 
+	  - All messages marked as viewed are deleted. 
+	  - Message is added to the end.
+	  - Unviewed indicator is shown.
   
 
 IMPLEMENTATION
@@ -78,9 +84,9 @@ Remote KV
     x key1 and key2
 	x Add videoId
 	x Delete videoId
-  - Server 
-    - to handle key1 and key2
-	- delete
+  x Server 
+    x to handle key1 and key2
+	x delete
 
 Video Player
 ------------

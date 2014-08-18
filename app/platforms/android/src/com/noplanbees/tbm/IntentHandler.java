@@ -137,10 +137,10 @@ public class IntentHandler {
 		friend.updateStatus(intent);
 		if (status == Friend.OutgoingVideoStatus.UPLOADED){
             // Set remote videoIdKV	
-			rSHandler.addRemoteOutgoingVideoId(friend, friend.get(Friend.Attributes.OUTGOING_VIDEO_ID));
+			rSHandler.addRemoteOutgoingVideoId(friend, videoId);
 			
 			// Send outgoing notification
-			NotificationHandler.sendForVideoReceived(friend);
+			NotificationHandler.sendForVideoReceived(friend, videoId);
 		}
 	}
 	

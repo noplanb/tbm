@@ -41,11 +41,12 @@ public class GcmIntentService extends IntentService {
 				// Not used
 			} else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
 				Log.i(TAG, "onHandleIntent: extras = " + extras.toString());
-				if (extras.getString("type").equalsIgnoreCase("video_received")) {
+				if (extras.getString(NotificationHandler.DataKeys.TYPE).equalsIgnoreCase(NotificationHandler.TypeEnum.VIDEO_RECEIVED)) {
 					handleVideoReceived(intent);
-				} else if (extras.getString("type").equalsIgnoreCase(
-						"video_status_update")) {
+				} else if (extras.getString(NotificationHandler.DataKeys.TYPE).equalsIgnoreCase(NotificationHandler.TypeEnum.VIDEO_STATUS_UPDATE)) {
 					handleVideoStatusUpdate(intent);
+				} else {
+					Log.e(TAG, "onHandleIntent: ERROR: unknown intent type in notification payload.");
 				}
 			}
 		}

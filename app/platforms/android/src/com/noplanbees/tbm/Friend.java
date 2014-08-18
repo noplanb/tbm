@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
 
@@ -110,7 +109,7 @@ public class Friend extends ActiveModel{
 		return sortedIncomingVideos().get(0);
 	}
 	
-	public Video latestIncomingVideo(){
+	public Video newestIncomingVideo(){
 		ArrayList <Video> vids = sortedIncomingVideos();
 		Video v = null;
 		if (!vids.isEmpty())
@@ -119,14 +118,11 @@ public class Friend extends ActiveModel{
 	}
 	
 	public Boolean hasIncomingVideoId(String videoId){
-		Boolean r = false;
 		for (Video v : incomingVideos()){
-			if (v.getId().equals(videoId)){
-				r = true;
-				break;
-			}
+			if (v.getId().equals(videoId))
+				return true;
 		}
-		return r;
+		return false;
 	}
 	
 	public void createIncomingVideo(Context context, String videoId){
@@ -413,14 +409,6 @@ public class Friend extends ActiveModel{
 	}
 
 	// Incoming video status
-//	private void setIncomingVideoStatus(int status){
-//		set(Attributes.INCOMING_VIDEO_STATUS, ((Integer) status).toString());
-//	}
-
-//	public int getIncomingVideoStatus(){
-//		return Integer.parseInt(get(Attributes.INCOMING_VIDEO_STATUS));
-//	}
-
 	public void setAndNotifyIncomingVideoViewed(String videoId) {
 		setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
 	}
@@ -438,7 +426,7 @@ public class Friend extends ActiveModel{
 				notifyServerVideoViewed(videoId);
 			
 			// Only notify the UI of changes in status to the last incoming video.
-			if (latestIncomingVideo().getId().equals(videoId)){
+			if (newestIncomingVideo().getId().equals(videoId)){
 			  setLastEventTypeIncoming();
 			  notifyStatusChanged();
 			}
@@ -465,7 +453,7 @@ public class Friend extends ActiveModel{
 			v.setDownloadRetryCount(retryCount);
 			
 			// Only notify the UI of changes in retry count of the last incoming video.
-			if (latestIncomingVideo().getId().equals(videoId)){
+			if (newestIncomingVideo().getId().equals(videoId)){
 				setLastEventTypeIncoming();
 				notifyStatusChanged();
 			}
@@ -557,7 +545,7 @@ public class Friend extends ActiveModel{
 	}
 
 	private String incomingStatusStr() {
-		Video v = latestIncomingVideo();
+		Video v = newestIncomingVideo();
 		if (v == null)
 			return get(Attributes.FIRST_NAME);
 		

@@ -35,11 +35,11 @@ public abstract class RemoteStorageHandler {
 	// Keys for remote storage
 	//------------------------
 	public static String outgoingVideoRemoteFilename(Friend friend) {
-		return outgoingConnectionKey(friend) + "_" + friend.get(Friend.Attributes.OUTGOING_VIDEO_ID) + "-filename";
+		return outgoingConnectionKey(friend) + "-" + friend.get(Friend.Attributes.OUTGOING_VIDEO_ID) + "-filename";
 	}
 
 	public static String incomingVideoRemoteFilename(Friend friend, String videoId) {
-		return incomingConnectionKey(friend) + "_" + videoId + "-filename";
+		return incomingConnectionKey(friend) + "-" + videoId + "-filename";
 	}
 
 	public static String outgoingVideoIdsRemoteKVKey(Friend friend) {
@@ -168,9 +168,9 @@ public abstract class RemoteStorageHandler {
 		}
 	}
 	
-	//----------------
-	// DeleteRemotFile
-	//----------------
+	//-----------------
+	// DeleteRemoteFile
+	//-----------------
 	public void deleteRemoteFile(String filename){
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
 		params.put("filename", filename);

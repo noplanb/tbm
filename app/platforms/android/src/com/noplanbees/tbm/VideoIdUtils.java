@@ -19,10 +19,6 @@ public class VideoIdUtils {
 		return (oldest != null && timeStampFromVideoId(videoId) < timeStampFromVideoId(oldest.getId()));		
 	}
 	
-//	public static long incomingVideoTimeStamp(Friend friend){
-//		return timeStampFromVideoId(friend.get(Friend.Attributes.INCOMING_VIDEO_ID));
-//	}
-	
 	public static Long timeStampFromVideoId(String videoId){
 		if (videoId == null || videoId.equalsIgnoreCase(""))
 			return 0L;

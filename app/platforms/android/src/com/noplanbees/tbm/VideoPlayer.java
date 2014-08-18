@@ -86,18 +86,17 @@ public class VideoPlayer implements OnCompletionListener{
 		if (videoId == null)
 			return;
 		
-		if (friend.videoFromFile(videoId).length() > 100){
-			play();
-		} else {
-			onCompletion(null);
-		}
-		
+		play();
 	}
 	
 	public void play(){
-		videoView.setVideoPath(friend.videoFromPath(videoId));
-		hideThumb();
-		videoView.start();
+		if (friend.videoFromFile(videoId).length() > 100){
+			videoView.setVideoPath(friend.videoFromPath(videoId));
+			hideThumb();
+			videoView.start();		
+		} else {
+			onCompletion(null);
+		}
 	}
 	
 	public void stop(){

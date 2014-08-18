@@ -14,19 +14,25 @@ public class NotificationHandler {
 	    public static String VIDEO_ID = "video_id";
 	    public static String TO_MKEY = "to_mkey";
 	    public static String STATUS = "status";
+	    public static String TYPE = "type";
 	}
 	
 	public static class StatusEnum{
 		public static String DOWNLOADED = "downloaded";
 		public static String VIEWED = "viewed";
 	}
+	
+	public static class TypeEnum{
+		public static String VIDEO_RECEIVED = "video_received";
+		public static String VIDEO_STATUS_UPDATE = "video_status_update";
+	}
 
-	public static void sendForVideoReceived(Friend friend) {
+	public static void sendForVideoReceived(Friend friend, String videoId) {
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
 		params.put(NotificationHandler.DataKeys.TARGET_MKEY, friend.get(Friend.Attributes.MKEY));
 		params.put(NotificationHandler.DataKeys.FROM_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
 		params.put(NotificationHandler.DataKeys.SENDER_NAME, UserFactory.current_user().get(User.Attributes.FIRST_NAME));
-		params.put(NotificationHandler.DataKeys.VIDEO_ID, friend.get(Friend.Attributes.OUTGOING_VIDEO_ID));
+		params.put(NotificationHandler.DataKeys.VIDEO_ID, videoId);
 		new SendNotification("notification/send_video_received", params, "POST");
 	}
 	
