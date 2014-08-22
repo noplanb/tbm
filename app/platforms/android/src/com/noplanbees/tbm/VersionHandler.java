@@ -24,6 +24,10 @@ public class VersionHandler {
 	private Activity activity;
 	private VersionHandlerInterface vciDelegate;
 	
+	public static class ParamKeys{
+		public static final String RESULT_KEY = "result";
+	}
+	
 	public static class Responses{
 		public static final String UPDATE_SCHEMA_REQUIRED = "update_schema_required";
 		public static final String UPDATE_REQUIRED = "update_required";
@@ -31,15 +35,15 @@ public class VersionHandler {
 		public static final String CURRENT = "current";
 	}
 	
-	public static boolean update_schema_required(String result) {
+	public static boolean updateSchemaRequired(String result) {
 		return result.equalsIgnoreCase(VersionHandler.Responses.UPDATE_SCHEMA_REQUIRED);
 	}
 
-	public static boolean update_required(String result) {
+	public static boolean updateRequired(String result) {
 		return result.equalsIgnoreCase(VersionHandler.Responses.UPDATE_REQUIRED);
 	}
 
-	public static boolean update_optional(String result) {
+	public static boolean updateOptional(String result) {
 		return result.equalsIgnoreCase(VersionHandler.Responses.UPDATE_OPTIONAL);
 	}
 	
@@ -89,7 +93,8 @@ public class VersionHandler {
 		}
 		@Override
 		public void success(String response) {
-			vciDelegate.compatibilityCheckCallback(response);
+			String result = StringUtils.linkedTreeMapWithJson(response).get(ParamKeys.RESULT_KEY);
+			vciDelegate.compatibilityCheckCallback(result);
 		}
 		@Override
 		public void error(String errorString) {	

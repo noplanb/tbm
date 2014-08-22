@@ -1,0 +1,46 @@
+RELEASE NOTES
+=============
+
+v2.01 - 27 8/19/2014
+
+BUG FIXES
+---------
+FIXED:  When you kill the app completely and restart it it loses the current video.
+
+
+FEATURES
+--------
+FEATURE: Clicking plus sign takes you to alpha testing invite path: sending us an email.
+FEATURE: Video starts playing automatically when clicking notification.
+FEATURE: Thumb is now last frame in the video rather than the last keyframe.
+
+
+
+RELEASE DETAILS:
+================
+
+- Autoplay on clicking notification.
+  - NotificationAlertManager
+    x LockScreenAlert
+      x Pass friendId
+	x Native Alert
+	  x Pass action
+	  x Pass FriendId
+	x LockScreenAlertActivity 
+	  x Intent to launch home activity
+		  x action playVideo
+		  x friendId 
+    x HomeActivity
+	  x OnResume
+	    x AutoPlay if necessary
+		  x Check intent for action playVideo
+		  x Clear the action and play
+
+x Test autoplay
+  x App stopped notification
+  x App destroyed notification
+  x Screen locked notification
+  x Screen locked securely notification
+  x Screen locked destroyed.		  
+		  
+action, data, type, class, and categories

@@ -1,26 +1,16 @@
 Features
  - Polling
  - Put app icon on the home screen
- - Make the last frame the poster frame.
  - Custom notification tone for our app
- - Make it work with headphones and blue tooth.
- - Autoplay on clicking notification.
+ 
 
- Bugs
+Bugs
+ - Kon sees video too short notification. Has to reboot the phone to make it stop happening. Then it comes back sometime later.
  - Try adding backgroundFlag to our intents to see if it helps prevent the app from popping into the foreground and whether it keeps the app in the task manager. 
- - Flashing screen
+ - Our app flashes on the screen when video comes in even if app is in the background.
  - Alarm indicator
  - Camera stopped working.
-  
- 
- Deferred
+ - the first part of the audio is cut off. Wait for beep, start recording right away, try "1, 2, 3" right after the beep. On playback it will start with 2 or 3.
  - Dimming video record screen on MotoG
  - Problem with MotoG and setRecordingHint(true);
-  
  
- 
- Rodja says: From activities lifecycle point of view it's therefore needed to call onPause() before onNewIntent()
-
- Android didn't NEED to design it this way. Your activity has already gone through its lifecycle to resume(). If the app is resumed the os could simply call onNewIntent() and stay in the resumed state.
- 
-The problem with Android's sequence is that it makes it impossible to distinguish between onPause due to user action vs onPause due to a background intent. If you want to act onPause only in the case of user action you are screwed because you wont know till the future why you go the onPause().

@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
@@ -40,7 +41,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private UserFactory userFactory;
 
 	private FrameLayout cameraPreviewFrame;
+	
 	private String lastState;
+	private Intent currentIntent;
 
 	private ArrayList<VideoView> videoViews = new ArrayList<VideoView>(8);
 	private ArrayList<ImageView> thumbViews = new ArrayList<ImageView>(8);
@@ -81,6 +84,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		setupWindow();
 		setContentView(R.layout.home);
+		currentIntent = getIntent();
 		lastState = "onCreate";
 	}
 
@@ -135,6 +139,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		longpressTouchHandler.disable(true);
 		if (videoRecorder != null)
 			videoRecorder.dispose(); // Probably redundant since the preview surface will have been destroyed by the time we get here.
+		VideoPlayer.release(this);
 		lastState = "onStop";
 	}
 
@@ -149,7 +154,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-		Log.e(TAG, "onNewIntent state");
+		Log.e(TAG, "onNewIntent state" + (currentIntent.getExtras() == null ? "no extras" : currentIntent.getExtras().toString()));
 		Integer intentResult = new IntentHandler(this, intent).handle();
 		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
 			Log.e(TAG, "onNewIntent: moving activity to background.");
@@ -159,6 +164,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			Log.e(TAG, "onNewIntent: moving activity to foreground.");
 			isForeground = true;
 		}
+		currentIntent = intent;
 		lastState = "onNewIntent";
 	}
 
@@ -168,6 +174,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		Log.e(TAG, "onResume: state");
 		// setupVersionHandler onResume because  may cause a dialog which would crash the app before onResume.
 		setupVersionHandler();
+		handleIntentAction();
 		if (gcmHandler != null)
 			gcmHandler.checkPlayServices();
 		longpressTouchHandler.enable();
@@ -179,8 +186,36 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		super.onDestroy();
 	}
 
-
-
+	//-------------------
+    // HandleIntentAction
+	//-------------------
+	private void handleIntentAction(){
+		// Right now the only action is to automatically start playing the appropriate video if the user got here by clicking a notification.
+		Log.i(TAG, "handleIntentAction: " + currentIntent.toString());
+		if (currentIntent == null){
+			Log.i(TAG, "handleIntentAction: no intent. Exiting.");
+			return;
+		}
+		String action = currentIntent.getAction();
+		Uri data = currentIntent.getData();
+		if (action == null || data == null){
+			Log.i(TAG, "handleIntentAction: no ation or data. Exiting.");
+			return;
+		}
+		
+		String friendId = currentIntent.getData().getQueryParameter(NotificationAlertManager.ParamKeys.FRIEND_ID);
+		if (action == null || friendId == null){
+			Log.i(TAG, "handleIntentAction: no friendId or action. Exiting." + currentIntent.toString());
+			return;
+		}
+		
+		if (action.equals(NotificationAlertManager.Actions.PLAY_VIDEO) && !NotificationAlertManager.screenIsLocked(instance)){
+			currentIntent.setAction(NotificationAlertManager.Actions.NONE);
+			Friend f = (Friend) friendFactory.find(friendId);
+			getVideoPlayerForFriend(f).start();
+		}
+	}
+	
 	//---------------
 	// Initialization
 	//---------------
@@ -441,6 +476,15 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 				// IntentHandler.handleUserLaunchIntent(instance);
 			}
 		});
+		
+		for (TextView p : plusTexts){
+			p.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					new Invite(instance);
+				}
+			});
+		}
 	}
 
 	private class ViewSizeGetter extends View{
@@ -564,13 +608,15 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	@Override
 	public void compatibilityCheckCallback(String result) {
 		Log.i(TAG, "compatibilityCheckCallback: " + result);
-		if (VersionHandler.update_schema_required(result)) {
+		if (VersionHandler.updateSchemaRequired(result)) {
 			ActiveModelsHandler.destroyAll(this);
 			showVersionHandlerDialog("Your " + Config.appName + " app is obsolete. Please update.", false);
-		} else if (VersionHandler.update_required(result)) {
+		} else if (VersionHandler.updateRequired(result)) {
 			showVersionHandlerDialog("Your " + Config.appName + " app is obsolete. Please update.", false);
-		} else if (VersionHandler.update_optional(result)) {
+		} else if (VersionHandler.updateOptional(result)) {
 			showVersionHandlerDialog("Your " + Config.appName + " app is out of date. Please update.", true);
+		} else if (!VersionHandler.current(result)){
+			Log.e(TAG, "Version compatibilityCheckCallback: Unknow result: " + result.toString());
 		}
 	}
 	

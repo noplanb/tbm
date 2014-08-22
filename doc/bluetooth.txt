@@ -1,0 +1,102 @@
+PROBLEM: in jills car when connected to bluetooth you cant hear TBM either on phone or car speakers.
+
+EXPERIMENT:
+  - Create an app called audio test.
+    - Indicators for
+	  - isBluetoothA2dpOn()
+	  - isBluetoothScoAvailableOffCall()
+	  - isBluetoothScoOn()
+	  - isMicrophoneMute()
+	  - isMusicActive()
+	  - isSpeakerphoneOn()
+	  - isWiredHeadsetOn()
+    - Buttons for
+	  - setSpeakerphoneOn off
+	  - setBluetoothScoOn off
+	  - setWiredHeadsetOn off
+	  - startBluetoothSCO
+	  - stop BluetoothSCO
+
+- Listeners for buttons
+
+- RESULTS: (Using VideoView as player)
+  CASE: Bluetooth not on
+	- setSpeakerPhone
+	  - On - Plays from phone speakers.
+	  - Off - Plays from phone speakers.
+	- setBluetoothSco
+	  - On - Plays from phone speakers.
+	  - Off - Plays from phone speakers.
+
+  CASE: Bluetooth on and connected in BMW 
+	- setSpeakerPhone
+	  - On - Silent 
+	  - Off - Silent
+	- setBluetoothSco
+	  - On - Plays from phone speakers.
+	  - Off - Silent
+	  
+- TRY:
+  - Get the mediaplayer from the VideoView using setOnPreparedListener
+  - mp.setAudioStreamType(AudioManager.STREAM_MUSIC)
+  PROBLEM - VideoView seems to override the settings of its MediaPlayer.
+  
+- TRY: (Using MediaPlayer directly as the player)
+  - Use a SurfaceView and a MediaPlayer
+  - mp.setAudioStreamType(AudioManager.STREAM_MUSIC)
+  RESULT:
+  CASE: Bluetooth off - works same as base case no bluetooth
+  CASE: Bluetooth on - music player playing in background through car speakers
+  - isSpeakerPhoneOn - false | isBTScoOn - false
+	  - plays from the car speakers same volume as background music.
+  - setSpeakerPhone
+    - On - Plays from the car along with background music
+	- Off - Plays from the car along with background music
+  - setBlueToothSco 
+    - On - Plays from the phone along with background music
+	- Off - Plays from car along with backgound music
+  CASE: Bluetooth on - NO music player on.
+  - Silent except when setScoOn plays from phone like Case 2 above.
+  
+- TRY
+  - mp.setAudioStreamType(AudioManager.PHONE_CALL)
+  CASE: No BlueTooth
+  - setSpeakerPhone
+    - on - plays from phone speaker
+	- off - plays from phone earpiece
+  - setBTSco
+    - on - plays from phone earpiece dim
+	- off - plays from phone earpiece louder
+	
+  CASE: Bluetooth | Music playing in background
+  - setSpeakerPhone
+    - on - Plays from phone speakers
+	- off - Plays from car speakers with us louder.
+  - setBTSco
+    - on - Plays music to phone speakers | us dim 
+	- off - Plays music and us to car speakers.
+
+ CASE: Bluetooth | no music in the background
+ - setSpeakerPhone
+   - on - plays from phone speaker
+   - off - silent
+ - setBTSco
+   - on - silent
+   - off - silent
+
+- TRY 
+  - IN TBM setBTScoOn in videoPlayer before play 
+  - !!!!REMEMBER Put check version back!
+  - Bluetooth connected and playing music.
+    - RESULT: Play video in tbm stops the music from the car speakers completely and plays the sound from the phone.
+	- PROBLEM: Now you cannot play music again to the car speakers unless you reboot.
+
+  - TRY: On videoPlayer.StopAll setBTScoOff
+    - RESULT: Works great. When I stop it kills the song that was playing. But when I restart the song it plays from the car speakers.
+	- PROBLEM: If I kill the app before stopping video player it does not allow me to play music via car speakers after that.
+  
+  - TRY: On videoPlayer.StopAll setBTScoOff. Call videoPlayer.StopAll in the onStop method of home activity.
+!!!SOLUTION!!!
+  - This works well. You can almost always restart the music to the car speakers after you kill tbm while it is playing a video. There are some cases if you go directly to the recent apps and very quickly swipe the app dead then bluetooth connection to the car is hung and you need to restart the phone.
+  
+  

@@ -2,7 +2,7 @@ v2.0 - 26
 
 RELEASE NOTES:
 --------------
-
+ - 
 
 Receiving Multiple Messages Before Viewing
 

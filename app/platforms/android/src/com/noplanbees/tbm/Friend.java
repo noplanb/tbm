@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -279,7 +280,10 @@ public class Friend extends ActiveModel{
 		}
 		
 		String vidPath = videoFromPath(videoId);
-		Bitmap thumb = ThumbnailUtils.createVideoThumbnail(vidPath, MediaStore.Images.Thumbnails.MINI_KIND);
+		MediaMetadataRetriever r = new MediaMetadataRetriever();
+		r.setDataSource(vidPath);
+		// Get the last frame.
+		Bitmap thumb = r.getFrameAtTime(240*1000000, MediaMetadataRetriever.OPTION_CLOSEST);
 		File thumbFile = thumbFile(videoId);
 		try {
 			FileOutputStream fos = FileUtils.openOutputStream(thumbFile);

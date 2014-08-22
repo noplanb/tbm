@@ -2,6 +2,9 @@ package com.noplanbees.tbm;
 
 import java.util.Random;
 
+import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
+
 public class StringUtils {
 
 	public static String randomString(int length) {
@@ -32,5 +35,13 @@ public class StringUtils {
 	
 	public static void stripSpaces(String s){
 		s.replaceAll(" ", "");
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static LinkedTreeMap<String, String> linkedTreeMapWithJson(String json){
+		Gson g = new Gson();
+		LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
+		data = g.fromJson(json, data.getClass());
+		return data;
 	}
 }

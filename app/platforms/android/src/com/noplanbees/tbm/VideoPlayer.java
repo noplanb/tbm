@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import android.app.Activity;
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.util.Log;
@@ -31,6 +32,19 @@ public class VideoPlayer implements OnCompletionListener{
 	public static void stopAll(){
 		VideoPlayer.showAllThumbs();
 		VideoPlayer.suspendAll();
+	}
+	
+	public static void release(Context context){
+		restoreExistingBluetooth(context);
+		stopAll();
+	}
+	
+	public static void bypassExistingBluetooth(Context context){
+		((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(true);
+	}
+	
+	public static void restoreExistingBluetooth(Context context){
+		((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(false);
 	}
 	
 	private static void suspendAll(){
@@ -93,6 +107,8 @@ public class VideoPlayer implements OnCompletionListener{
 		if (friend.videoFromFile(videoId).length() > 100){
 			videoView.setVideoPath(friend.videoFromPath(videoId));
 			hideThumb();
+			AudioManager am = (AudioManager) activity.getSystemService(Activity.AUDIO_SERVICE);
+			am.setBluetoothScoOn(true);
 			videoView.start();		
 		} else {
 			onCompletion(null);
@@ -101,6 +117,7 @@ public class VideoPlayer implements OnCompletionListener{
 	
 	public void stop(){
 		Log.i(TAG, "stop");
+		VideoPlayer.restoreExistingBluetooth(activity);
 		VideoPlayer.stopAll();
 	}
 

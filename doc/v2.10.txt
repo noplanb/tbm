@@ -1,0 +1,26 @@
+RELEASE NOTES
+=============
+
+v2.10 - 28 8/22/2014
+
+
+BUG FIXES
+---------
+FIX: Made version handler compatible with the changes in Server v1.12. Server now returns a JSON rather than text to be compatible with IOS v1.20.
+
+BUG: Bluetooth. When connected to bluetooth on Jills BMW playing a TBM video neither plays on the car speakers nor the phone speakers.
+FIX: See bluetooth.txt for details on the science experiment.
+     Expected Behavior:
+	   - Playing music through bluetooth on the car speakers.
+		   - Launch tbm
+		   - Music continues.
+		   - Play tbm video.
+		   - Music stops on car speakers. TBM plays on phone speakers.
+		   - Stop TBM video or shut down the app.
+		   - You must restart music either using car control or phone control. 
+		   
+KNOWN BUG: In certain cases if while playing a TBM video you pull up recent apps in the task manager and immediately kill TBM by swiping the task away you will not be able to play music through the car speakers again. To resolve you need to startup TBM again and exit more gracefully. The same situation may occur in the case of a TBM crash.
+	   
+	   
+	   
+	  

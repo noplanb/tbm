@@ -15,6 +15,7 @@ public class ActiveModelsHandler {
 	public static void saveAll(Context context){
 		saveUser(context);
 		saveFriend(context);
+		Log.i(TAG, "saveAll: saving " + VideoFactory.getFactoryInstance().count() + "videos");
 		saveVideo(context);
 	}
 	
@@ -22,6 +23,7 @@ public class ActiveModelsHandler {
 		retrieveUser(context);
 		retrieveFriend(context);
 		retrieveVideo(context);
+		Log.i(TAG, "retreiveAll: retrieved " + VideoFactory.getFactoryInstance().count() + "videos");
 	}
 	
 	public static void destroyAll(Context context){

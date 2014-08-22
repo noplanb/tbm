@@ -27,9 +27,9 @@ public class Boot {
 		}
 		
 		//--------------------------
-        // Try to retrieve Friend model from local storage
+        // Try to retrieve all models from local storage
 		//--------------------------
-		ActiveModelsHandler.ensureFriend(homeActivity);
+		ActiveModelsHandler.ensureAll(homeActivity);
 
 		return true;
 	}

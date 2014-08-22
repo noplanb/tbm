@@ -101,6 +101,9 @@ public class LockScreenAlertActivity extends Activity {
 
 	private void startHomeActivity(){
 		Intent i = new Intent(this, HomeActivity.class);
+		i.setAction(getIntent().getAction());
+		i.setData(getIntent().getData());
+		Log.i(TAG, "startHomeActivity: ");
 		// FLAG_DISMISS_KEYGUARD is put here rather than in setupWindow becuase of an Android bug I found and reported: 
 		// SingleInstance type activity with layoutParams FLAG_DISMISS_KEYGUARD does not receive onNewIntent callback.
 		// https://code.google.com/p/android/issues/detail?id=72242&thanks=72242&ts=1403540783

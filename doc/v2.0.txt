@@ -1,12 +1,15 @@
-v2.0 - 26
+v2.0 - 26 8/18/2014
+
+RELEASE NOTES
+=============
 
 NEW FEATURES
-============
+------------
  - Works with infinitely scalable Messaging server v1.1.
- - Send and recieve multiple vidoes without overwriting.
+ - Send and receive multiple videos without overwriting.
    - Send multiple videos without overwriting unviewed videos. 
-   - Playback muliple vidoes sent by a friend.
- - Send vidoes to yourself for testing purposes.
+   - Playback multiple videos sent by a friend.
+ - Send videos to yourself for testing purposes.
  - Version management. 
    - Notify user if client if version is out of date.
    - Handle all cases:
@@ -14,16 +17,32 @@ NEW FEATURES
 	  - UpdateOptional
 	  - UpdateRequired
 	  - UpdateSchemaRequired - i.e. client db schema has changed. App and schema must be updated.
-
+ - Registration (alpha)
+   - Enter phone number rather than picking from list
+   - Handle no connection
+   - Handle wrong number
+ 
 
 BUG FIXES
-=========
+---------
  - Only send viewed event once.
 
-KNOWN BUGS AND REQUESTED FEATURES
-=================================
+FUTURE RELEASES
+---------------
+Bugs
+ - Kon sees video too short notification. Has to reboot the phone to make it stop happening. Then it comes back sometime later.
+
+Features
+ - Polling
+ - Put app icon on the home screen
+ - Make the last frame the poster frame.
+ - Custom notification tone for our app
+ - Make it work with headphones and blue tooth.
+ - Autoplay on clicking notification.
 
 
+RELEASE DETAILS
+===============
 Android client release to work with SystemRelease v1.1. (See tmb-server v1.1.txt)
 
  x Registration

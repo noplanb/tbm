@@ -42,5 +42,16 @@ public class User extends ActiveModel{
     public String getId(){
     	return get(User.Attributes.ID);
     }
+    
+    public String getFirstName(){
+    	return get(User.Attributes.FIRST_NAME);
+    }
+    
+    public String getLastName(){
+    	return get(User.Attributes.LAST_NAME);
+    }
 	
+    public String getFullName(){
+    	return getFirstName() + " " + getLastName();
+    }
 }
