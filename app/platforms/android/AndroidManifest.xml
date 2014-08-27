@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.noplanbees.tbm"
-    android:versionCode="28"
-    android:versionName="2.10" >
+    android:versionCode="29"
+    android:versionName="2.20" >
 
     <uses-sdk
         android:minSdkVersion="11"
@@ -28,7 +28,8 @@
     <uses-permission android:name="com.noplanbees.tbm.permission.C2D_MESSAGE" />
     <uses-permission android:name="com.google.android.c2dm.SEND" />
     <uses-permission android:name="android.permission.GET_TASKS" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
 
     <application
         android:allowBackup="true"
@@ -62,15 +63,17 @@
 
         <service
             android:name="FileUploadService"
-            android:process=":FileUploadService"/>
-            <!-- I had upload and download services running in a different process so that termination of 
+            android:process=":FileUploadService" />
+        <!--
+                 I had upload and download services running in a different process so that termination of 
                  HomeActivity would not interfere but that made it difficult to reach the class method
-                 restartTransfersPendingRetry in FileTransferService from the HomeActivity. -->
-            <!-- android:process=":FileUploadService"  -->
+                 restartTransfersPendingRetry in FileTransferService from the HomeActivity.
+        -->
+        <!-- android:process=":FileUploadService" -->
         <service
-            android:name=".FileDownloadService" 
-            android:process=":FileDownloadService"/>
-            <!-- android:process=":FileDownloadService" -->
+            android:name=".FileDownloadService"
+            android:process=":FileDownloadService" />
+        <!-- android:process=":FileDownloadService" -->
 
         <receiver
             android:name=".GcmBroadcastReceiver"

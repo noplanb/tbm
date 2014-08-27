@@ -17,6 +17,12 @@
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
+    
+    <style name="NoDisplayTheme" parent="android:Theme.NoDisplay">
+    </style>
+    
+    <style name="ThemeLightNoTitleBar" parent="android:Theme.Light.NoTitleBar">
+    </style>
 
     <style name="plusText">
         <item name="android:layout_width">match_parent</item>

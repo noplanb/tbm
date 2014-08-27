@@ -651,15 +651,17 @@ containing a value of this type.
  All customizations that are NOT specific to a particular API-level can go here. 
          */
         public static final int AppTheme=0x7f090001;
-        public static final int ButtonBar=0x7f090007;
-        public static final int ButtonBarButton=0x7f090008;
-        public static final int FullscreenActionBarStyle=0x7f09000a;
-        public static final int FullscreenTheme=0x7f090006;
-        public static final int darkButton=0x7f090009;
-        public static final int nameText=0x7f090005;
-        public static final int plusText=0x7f090002;
-        public static final int vFrame=0x7f090004;
-        public static final int videoView=0x7f090003;
+        public static final int ButtonBar=0x7f090009;
+        public static final int ButtonBarButton=0x7f09000a;
+        public static final int FullscreenActionBarStyle=0x7f09000c;
+        public static final int FullscreenTheme=0x7f090008;
+        public static final int NoDisplayTheme=0x7f090002;
+        public static final int ThemeLightNoTitleBar=0x7f090003;
+        public static final int darkButton=0x7f09000b;
+        public static final int nameText=0x7f090007;
+        public static final int plusText=0x7f090004;
+        public static final int vFrame=0x7f090006;
+        public static final int videoView=0x7f090005;
     }
     public static final class styleable {
         /** Attributes that can be used with a AdsAttrs.

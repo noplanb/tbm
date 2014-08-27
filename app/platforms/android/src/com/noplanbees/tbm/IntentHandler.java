@@ -24,7 +24,7 @@ public class IntentHandler {
 	private Friend friend;
 	private String transferType;
 	private String videoId;
-	private RSHandler rSHandler;
+	private RemoteStorageHandler rSHandler;
 	private int status;
 
 	public IntentHandler(HomeActivity a, Intent i){
@@ -35,20 +35,8 @@ public class IntentHandler {
 		transferType = intent.getStringExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY);
 		videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
 		status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
-		rSHandler = new RSHandler();
+		rSHandler = new RemoteStorageHandler();
 		Log.e(TAG, status + "");
-	}
-	
-	private class RSHandler extends RemoteStorageHandler{
-		public RSHandler() {
-			super();
-		}
-		@Override
-		public void success(LinkedTreeMap<String, String>data) {			
-		}
-		@Override
-		public void error(LinkedTreeMap<String, String>data) {			
-		}
 	}
 	
 	public Integer handle(){
@@ -127,6 +115,7 @@ public class IntentHandler {
 		FileUploadService.restartTransfersPendingRetry(homeActivity);
 		FileDownloadService.restartTransfersPendingRetry(homeActivity);
 		NotificationAlertManager.cancelNativeAlerts(homeActivity);
+		(new Poller(homeActivity)).pollAll();
 	}
 	
 	//---------------------
@@ -148,15 +137,21 @@ public class IntentHandler {
 	//-------------------------
 	// Handle Download Intent
 	//-------------------------
-	private void handleDownloadIntent(){
+	private synchronized void handleDownloadIntent(){
 		Log.i(TAG, "handleDownloadIntent");
 		
 		if (VideoIdUtils.isOlderThanOldestIncomingVideo(friend, videoId)){
-			Log.e(TAG, "handleDownloadIntent: Ignoring download intent for video id that is older than the current incoming video.");
+			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that is older than the current incoming video.");
+			rSHandler.deleteRemoteVideoIdAndFile(friend, videoId);
 			return;
 		}
 		
-		if (status == Video.IncomingVideoStatus.NEW && !friend.hasIncomingVideoId(videoId)){
+		if (friend.hasIncomingVideoId(videoId) && status == Video.IncomingVideoStatus.NEW){
+			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");
+			return;
+		}
+		
+		if (status == Video.IncomingVideoStatus.NEW){
 			// Create the video
 			friend.createIncomingVideo(homeActivity, videoId);	
 			// Download only if we did not have this videoId before this intent.
@@ -180,10 +175,7 @@ public class IntentHandler {
 				}
 			}
 			
-			// GARF: TODO: We should delete the remoteVideoId from remoteVideoIds only if file deletion is successful so we dont leave hanging
-			// files.
-			rSHandler.deleteRemoteVideoFile(friend, videoId);
-			rSHandler.deleteRemoteIncomingVideoId(friend, videoId);
+			rSHandler.deleteRemoteVideoIdAndFile(friend, videoId);
 			// Update RemoteStorage status as downloaded.
 			rSHandler.setRemoteIncomingVideoStatus(friend, videoId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
 			

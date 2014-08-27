@@ -198,15 +198,17 @@ int string dummy_button 0x7f06001b
 int string dummy_content 0x7f06001c
 int style AppBaseTheme 0x7f090000
 int style AppTheme 0x7f090001
-int style ButtonBar 0x7f090007
-int style ButtonBarButton 0x7f090008
-int style FullscreenActionBarStyle 0x7f09000a
-int style FullscreenTheme 0x7f090006
-int style darkButton 0x7f090009
-int style nameText 0x7f090005
-int style plusText 0x7f090002
-int style vFrame 0x7f090004
-int style videoView 0x7f090003
+int style ButtonBar 0x7f090009
+int style ButtonBarButton 0x7f09000a
+int style FullscreenActionBarStyle 0x7f09000c
+int style FullscreenTheme 0x7f090008
+int style NoDisplayTheme 0x7f090002
+int style ThemeLightNoTitleBar 0x7f090003
+int style darkButton 0x7f09000b
+int style nameText 0x7f090007
+int style plusText 0x7f090004
+int style vFrame 0x7f090006
+int style videoView 0x7f090005
 int[] styleable AdsAttrs { 0x7f010000, 0x7f010001, 0x7f010002 }
 int styleable AdsAttrs_adSize 0
 int styleable AdsAttrs_adSizes 1

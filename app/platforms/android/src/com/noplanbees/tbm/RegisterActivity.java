@@ -35,6 +35,7 @@ public class RegisterActivity extends Activity{
 		setContentView(R.layout.register);
 		setupListeners();
 		setupProgressDialog();
+		AddShortcutIcon();
 	}
 
 	private void init(){
@@ -169,4 +170,24 @@ public class RegisterActivity extends Activity{
 			}
 		})
 		.create().show();
-	}}
+	}
+
+	//-------------
+	// Add shortcut
+	//-------------
+	private void AddShortcutIcon(){
+
+	    Intent shortcutIntent = new Intent(getApplicationContext(), HomeActivity.class);
+//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+	    
+
+	    Intent addIntent = new Intent();
+	    addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+	    addIntent.putExtra("duplicate", false);
+	    addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, Config.appName);
+	    addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(getApplicationContext(), R.drawable.ic_launcher));
+	    addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+	    getApplicationContext().sendBroadcast(addIntent);
+	}
+}

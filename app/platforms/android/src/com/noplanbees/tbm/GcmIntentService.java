@@ -79,9 +79,9 @@ public class GcmIntentService extends IntentService {
 	// ---------
 	private void handleVideoReceived(Intent intent) {
 		Log.i(TAG, "handleVideoReceived:");
+		// Normalize from notification naming convention to internal.
 		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
 		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Video.IncomingVideoStatus.NEW);
-		// Normalize from notification naming convention to internal.
 		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID)); 
 		startHomeActivity(intent);
 	}

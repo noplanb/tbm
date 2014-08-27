@@ -8,6 +8,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources.Theme;
 import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.net.Uri;
@@ -79,13 +80,18 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			Log.e(TAG, "onCreate: marking activity as foreground.");
 			isForeground = true;
 		}
-
 		Boot.initGCM(this);
 
 		setupWindow();
 		setContentView(R.layout.home);
 		currentIntent = getIntent();
 		lastState = "onCreate";
+	}
+
+	@Override
+	protected void onApplyThemeResource(Theme theme, int resid, boolean first) {
+		Log.i(TAG, "onApplyThemeResource" + theme.toString() + " resid=" + resid);
+		super.onApplyThemeResource(theme, resid, first);
 	}
 
 	@Override
@@ -154,7 +160,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-		Log.e(TAG, "onNewIntent state" + (currentIntent.getExtras() == null ? "no extras" : currentIntent.getExtras().toString()));
+		Log.e(TAG, "onNewIntent state" + ((currentIntent == null || currentIntent.getExtras() == null) ? "no extras" : currentIntent.getExtras().toString()));
 		Integer intentResult = new IntentHandler(this, intent).handle();
 		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
 			Log.e(TAG, "onNewIntent: moving activity to background.");
@@ -473,7 +479,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			public void onClick(View v) {
 				Camera c = null;
 				c.cancelAutoFocus();
-				// IntentHandler.handleUserLaunchIntent(instance);
 			}
 		});
 		

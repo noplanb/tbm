@@ -1,0 +1,83 @@
+RELEASE NOTES
+=============
+
+v2.20 - 29 8/27/2004
+
+NEW FEATURES
+------------
+
+FEATURE: Polling
+On startup by user action the app polls for new videos. This is handy in case the phone is in a coverage area where it can do http request but is not able to receive notifications, or missed a notification that was not resent when it was out of coverage.
+
+FEATURE: Icon installed on the home screen the first time you register.
+
+
+BUG FIXES
+---------
+
+PUNTED BUG FIX: App flashing when intents that should run in the background come in. The work around for android bug: https://code.google.com/p/android/issues/detail?id=4394 would require a very invasive change to the architecture. Cant seem to find another fix so punting on this for the time being.
+
+
+
+RELEASE DETAILS
+===============
+
+Polling
+-------
+- For each friend
+	- Read VideoIdsKV
+	- Process VideoIds from oldest to newest
+	- If older than the earliest videoId in IncomingVideos then delete videoFile and videoId
+	- If same as any videoId in IncomingVideos then skip
+	- Start download same as for notification.
+- Test
+  x Test deletion of older than oldest
+	  x Send 3 using nexus black.
+	  x Change the videoIds for all 3 to 0 on the server
+	  x Start up test phone.
+	  x It should delete all 3.
+  x Test ignore existing
+      x Send 1 using nb. 
+	  x On the server make the videoId the same as one of the videos already on the test phone
+	  x Start up test phone.
+	  x It should ignore that videoId
+
+App flashes
+-----------
+App flashes into the foreground when handling intents that should be handled in the background.
+OnNewIntent currently calls moveTaskToBack(true). This does move the task to the back but it also flashes the screen for a second first.
+
+TRY: Call finish() instead of moveTaskToBack. RESULT: Still flashes.
+
+TEST: Destroy the app and see if it still flashes. RESULT: Yes it does.
+
+TRY: Move super.OnCreate() below where we would finish() in the case of background. RESULT: App crashes because OnCreate never calls super.OnCreate.
+
+TRY: In the manifest set the theme to @android:style/Theme.NoDisplay. RESULT: The app has no ui at all and it does not flash when receiving a message.
+
+TRY: 
+  - Set the application theme=@android:style/Theme.NoDisplay
+  - Set the HomeActivity theme= @android:style/Theme.Light.NoTitleBar
+  - Set the RegistrationActivity theme= @android:style/Theme.Light.NoTitleBar
+  - Make the app finish() onStop.
+  - In OnCreate 
+    - Check intent to see if we need to stay in the background before calling super.onCreate()
+	- If we need to stay in the background setTheme to R.style.applicationTheme
+	- Then call onCreate and finish().
+  RESULT: Still flashes but doesnt show a ui.
+  
+TRY: 
+  - Create a style called LightNoTitleBar with parent @android:style/Theme.Light.NoTitleBar
+  - Set the HomeActivity theme=@android:style/Theme.NoDisplay
+  - in OnCreate Set the theme to LightNoTitleBar only if we are going into foreground.
+  RESULT: The LightNoTitleBar theme has no effect if it is set when the manifest calls for a theme of NoDisplay.
+ 
+TRY: 
+  - Set no theme in the manifest. (Defaults to one having title bar)
+  - Dont setTheme in onCreate - RESULT: You get the default theme dark with a title bar.
+  - setTheme noDisplay in onCreate RESULT: You get a default theme but none of our view. Which eventually disappears and goes to a black screen.
+  - setTheme LightNoTitleBar in onCreate RESULT: You get the correct theme on launch.
+
+CONCLUSION: setTheme is broken on android. See the following bug report: https://code.google.com/p/android/issues/detail?id=4394
+We cant really use setTheme to solve the problem. DECIDED TO TABLE THIS PROBLEM FOR NOW.
+

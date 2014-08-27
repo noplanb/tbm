@@ -1,6 +1,4 @@
 Features
- - Polling
- - Put app icon on the home screen
  - Custom notification tone for our app
  
 
