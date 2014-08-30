@@ -1,0 +1,7 @@
+RELEASE NOTES
+=============
+
+v2.22 - 30 8/30/2004
+
+
+ARCH CHANGE: ARCH CHANGE: When polling or handling a notification download even if video is older than oldest.

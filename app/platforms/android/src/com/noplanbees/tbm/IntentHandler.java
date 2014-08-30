@@ -140,11 +140,11 @@ public class IntentHandler {
 	private synchronized void handleDownloadIntent(){
 		Log.i(TAG, "handleDownloadIntent");
 		
-		if (VideoIdUtils.isOlderThanOldestIncomingVideo(friend, videoId)){
-			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that is older than the current incoming video.");
-			rSHandler.deleteRemoteVideoIdAndFile(friend, videoId);
-			return;
-		}
+//		if (VideoIdUtils.isOlderThanOldestIncomingVideo(friend, videoId)){
+//			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that is older than the current incoming video.");
+//			rSHandler.deleteRemoteVideoIdAndFile(friend, videoId);
+//			return;
+//		}
 		
 		if (friend.hasIncomingVideoId(videoId) && status == Video.IncomingVideoStatus.NEW){
 			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");

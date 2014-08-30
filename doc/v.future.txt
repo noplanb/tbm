@@ -1,14 +1,30 @@
 Features
- - Custom notification tone for our app
- 
+- Custom notification tone for our app
+- Make viewed occur if you have seen any part of a video not through to the end.
+- When polling download even if video is older than oldest.
+  - Appears to try to delete video file twice in case it is older than the oldest
+- Add polling for status
+
 
 Bugs
- - Kon sees video too short notification. Has to reboot the phone to make it stop happening. Then it comes back sometime later.
- - Try adding backgroundFlag to our intents to see if it helps prevent the app from popping into the foreground and whether it keeps the app in the task manager. 
- - Our app flashes on the screen when video comes in even if app is in the background.
- - Alarm indicator
- - Camera stopped working.
- - the first part of the audio is cut off. Wait for beep, start recording right away, try "1, 2, 3" right after the beep. On playback it will start with 2 or 3.
- - Dimming video record screen on MotoG
- - Problem with MotoG and setRecordingHint(true);
+- FileTransfer cache the file.
+- Some indication that the file will fail permanently Upload and download.
+- Make bluetooth duck work for record as well as playback.
+- Try setting audioManager to voice call.
+- Launch icon says tbm instead of three by me
+
+- Flashing screen when app should be in background.
+- Kon sees video too short notification. Has to reboot the phone to make it stop happening. Then it comes back sometime later.
+- Try adding backgroundFlag to our intents to see if it helps prevent the app from popping into the foreground and whether it keeps the app in the task manager. 
+- Our app flashes on the screen when video comes in even if app is in the background.
+- Alarm indicator
+- Camera stopped working.
+- the first part of the audio is cut off. Wait for beep, start recording right away, try "1, 2, 3" right after the beep. On playback it will start with 2 or 3.
+- Dimming video record screen on MotoG
+- Problem with MotoG and setRecordingHint(true);
+ 
+ 
+ FUTURE
+- When we work with S3 directly we need a concept of permanent failure for download mainly but also upload and a way to indicate it to the client.
+ 
  
