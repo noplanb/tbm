@@ -33,6 +33,7 @@ public class Config {
 	}
 	
 	public static String homeDirPath(Context context){
+//		return getPublicDir().getAbsolutePath();
 		return context.getFilesDir().getAbsolutePath();
 	}
 

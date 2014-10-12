@@ -59,9 +59,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	//--------------
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		Log.e(TAG, "onCreate state");
+		Log.e(TAG, "onCreate state " + getFilesDir().getAbsolutePath());
 		super.onCreate(savedInstanceState);
-
+	
 		//Note Boot.boot must complete successfully before we continue the home activity. 
 		//Boot will start the registrationActivity and return false if needed. 
 		if (!Boot.boot(this)){

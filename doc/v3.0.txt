@@ -1,0 +1,33 @@
+ADD A BENCH
+===========
+
+Current design.
+--------------
+- Friend currently has
+  VIEW_INDEX
+  FRAME_ID
+  VIEW_ID
+  THUMB_VIEW_ID
+  NAME_TEXT_ID
+  - The VIEW_INDEX is set on registration.
+  - FRAME_ID, VIEW_ID, THUMB_VIEW_ID, NAME_TEXT_ID are assigned by the HomeActivity round robin based on the VIEW_INDEX.
+
+- VideoPlayers 
+  - A video player is currently created for each friend.
+  - It gets the video view and the thumb view from the friend.
+  - VideoPlayer.allVideoPlayers get the thumb
+  
+  
+New Architecture
+----------------
+ 
+
+
+- Video record
+  - FriendFactory.getFriendFromFrame is used to get the friend from the frame h
+- Video download
+- Video play
+
+- Friend.VIEW_INDEX is set once and for all in registration.
+
+

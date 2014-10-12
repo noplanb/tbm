@@ -82,7 +82,6 @@ public class VideoPlayer implements OnCompletionListener{
 		showThumb();
 	}
 
-
 	public void click(){
 		
 		if (videoView.isPlaying()){

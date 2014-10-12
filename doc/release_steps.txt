@@ -2,10 +2,10 @@ x Create a vn.n.txt in doc describing the release.
 x Update android manifest with the release versionName and versionCode.
 x Update version_controller.rb on the server appropriately for the release.
 x Make sure Config is point to the remote server
- - Export apk.
-   - If there is an error exporting then product/clean first.
- - Push to gitHub and tag.
- - Put in store. 
+x Export apk.
+  - If there is an error exporting then product/clean first.
+x Push to gitHub and tag.
+x Put in store. 
  - When it goes live deploy the server
    - ./bin/deploy.sh
    - rake assets/precompile
