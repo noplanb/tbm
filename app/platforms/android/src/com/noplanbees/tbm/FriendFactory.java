@@ -25,11 +25,6 @@ public class FriendFactory extends ActiveModelFactory{
 		instances.add(i);
 		return i;	
 	}
-
-	public static Friend getFriendFromFrame(View v){
-		Integer viewId = v.getId();
-		return (Friend) getFactoryInstance().findWhere(Friend.Attributes.FRAME_ID, viewId.toString());
-	}
 	
 	public static Friend getFriendFromMkey(String mkey){
 		return (Friend) getFactoryInstance().findWhere(Friend.Attributes.MKEY, mkey);

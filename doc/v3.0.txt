@@ -1,8 +1,8 @@
 ADD A BENCH
 ===========
 
-Current design.
---------------
+Current Architecture.
+====================
 - Friend currently has
   VIEW_INDEX
   FRAME_ID
@@ -15,19 +15,206 @@ Current design.
 - VideoPlayers 
   - A video player is currently created for each friend.
   - It gets the video view and the thumb view from the friend.
-  - VideoPlayer.allVideoPlayers get the thumb
+  - VideoPlayer.allVideoPlayers is keyed by friendId  
   
   
 New Architecture
-----------------
+================
+
+Scenarios:
+----------
+- Click on friend already on the grid plays video for friend
+- Click friend on the bench moves friend to the grid
+- Video comes in for friend on the grid. Highlights and shows thumb.
+- Video comes in for friend not on the grid. Moves friend to the grid and highlights and shows thumb.
+
+GridElement 
+-----------
+- Role: 
+  - manages the 8 boxes  
+  - tracks which friend is currently associated with which one.
+  - tracks which views are associated with each one.
+  - tracks which videoPlayer is associate with each one.
+
+- Instantiation:
+  - Via factory ala friend
+
+- Persistence:
+  - State needs to be persisted ala friends.
+  
+- Data structure:
+  - Each instance is a hash containing: FRIEND_ID, FRAME_ID, VIEW_ID, THUMB_VIEW_ID, NAME_TEXT_ID, VIDEO_PLAYER_ID
+    
+- Setup:
+  - HomeActivity instantiates videoplayers and adds their ids in the GridElement
+  - HomeActivity discovers all the views, frames, etc and adds their ids in the GridElement
+  - HomeActivity assigns initial positions for friends. 
+
+- Methods
+  - Add a FRAME_ID, VIEW_ID, THUMB_VIEW_ID, NAME_TEXT_ID, VIDEO_PLAYER_ID for a particular box
+  - Associate a FriendId with a particular box (setup and swap from bench)
+  - Get a FriendId from a Frame id (play or record clicked on a frame)
+  - Get list of friendIds on the grid. (help determine who is on the bench)
+  - Get VideoView for FrameId (play)
+
+- Implications for VideoPlayer
+  Current Architecture:
+  - VideoPlayer is instantiated with friendId from which it gets friend
+  - It gets videoView and thumbView from friendId
+  New Architecture
+  - VideoPlayer is instantiated with grid element from which it gets everything it needs.
+
+- Usage
+  - Play a video
+  - Record a video
+
+TODO:
+ x Create the GridElement active model
+ x Setup the GridElements in homeview on init.
+ x Add the friends to the GridElements if they could no be retrieved.
+ x Add the view ids to the GridElements
+ x Add the videoPlayer Ids to the grid elements.
+ x Move the relevant methods from friend to GridElementFactory
  
+ 
+GridManager
+-----------
+- Role:
+  - Manages moving friends between the bench and the grid.
+  - Ranks friends for removal
+    - TIME_OF_LAST_ACTION field in Friend keeps timestamp of last action.
+    - Actions tracked:
+      x PlayStart
+      x RecordStart
+      x VideoReceived (happens because moveFriendToGrid is called)
+      x Moved to grid
+    - Friends are ranked by a sort on TIME_OF_LAST_ACTION with most recent first
+
+- Instantiation
+  - None static
+  
+- Methods
+  x friendsOnGrid
+  x friendsOnBench
+  x rankingActionOccurred
+  x rankedFriendsOnGrid
+  x lowestRankedFriendOnGrid
+  x moveFriendToGrid
+  
+- Callbacks
+  - gridDidChange
+  
+Usage and Scenarios:
+- Click friend on the bench moves friend to the grid
+- Video comes in for friend not on the grid. Moves friend to the grid and highlights and shows thumb.
+
+TODO:
+ x Create GridManager
+ x Add TIME_OF_LAST_ACTION field to friend
+ x Add methods
+ x Add calls for actions tracked
+ x Add moves to grid
+   x Video downloaded
+ x Add a callback interface on GridManager
+ x Set the delegate
+ 
+TEST:
+- Grid and location of friends are restored from file.
 
 
-- Video record
-  - FriendFactory.getFriendFromFrame is used to get the friend from the frame h
-- Video download
-- Video play
+BenchController
+---------------
+- Role:
+  - Shows and hides the bench
+  - Populates the bench
+  - Actions when contacts on the bench are clicked
 
-- Friend.VIEW_INDEX is set once and for all in registration.
+- Instantiation
+  - Singleton
+
+- Methods
+  - Show / hide bench
+  - Populate bench
+
+x Populate 
+  x Display
+    x Overflow from grid
+    x Followed by rankedPhoneData
+    - Followed by link to all contacts
+  x Algorithm
+    x Dedupe grid overflow by phone number
+    x Friend gets phone number from server
+    x Array of Overflow + deduped ranked phoneData
+      x DisplayName
+      x FriendId
+      x MobileNumber
+
+- Sub in and out of bench 
+  - When a friend on the bench is clicked sub him in.
+  
+  
+TODO:
+x Get it to build
+x Adjust the layout
+  x Add action bar
+  x Move reset and crash to action bar and wire them up.
+  x Make a parent relativeLayout for homeView
+  x Add a frameLayout for the bench
+  x Create BenchController
+x Make it singleton instance
+x Instantiate SmsManager && set delegate
+x Populate bench
+- Set mobile number in friend
+  - Pass it from the server
+  - Load it on registration
+  - Test the deduping
 
 
+SmsManager
+----------
+- Role:
+  - Only pull the address column in the cursor
+  - Gets the contacts you text the most
+  - Sends sms on your behalf.
+  
+- Methodology
+  - Reads your entire smsInbox
+  - Ranks phone numbers by frequency of messages
+
+TODO:
+- IMPORTANT: 
+  - HANDLE the case of no messages.
+  - Dont use strings for column names.
+  
+  
+
+ContactsManager
+---------------
+- Role:
+  - Queries contacts
+    - By phone number
+    - By person
+  - Returns first and last names.
+
+
+InviteManager
+-------------
+- Role
+  - Manages invites for person not currently a friend
+  - Allows Tickle of friend where !hasApp
+  
+- Scenario:
+  - Invite a person who is not currently a friend.
+  - Sends the info to the server and gets back the friend.
+    - HasApp field for friend.
+  - Adds the friend.
+    - Add object
+    - Add to grid
+  - Send text message to the friend.
+  - Tickle friend when !hasApp
+  - Set hasApp when receive first message
+  
+- Instantiation: none
+
+
+  

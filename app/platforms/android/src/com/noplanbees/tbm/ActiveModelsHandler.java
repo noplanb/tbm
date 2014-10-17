@@ -10,6 +10,7 @@ public class ActiveModelsHandler {
 		ensureUser(context);
 		ensureFriend(context);
 		ensureVideo(context);
+		ensureGridElement(context);
 	}
 	
 	public static void saveAll(Context context){
@@ -17,6 +18,7 @@ public class ActiveModelsHandler {
 		saveFriend(context);
 		Log.i(TAG, "saveAll: saving " + VideoFactory.getFactoryInstance().count() + "videos");
 		saveVideo(context);
+		saveGridElement(context);
 	}
 	
 	public static void retreiveAll(Context context){
@@ -24,12 +26,14 @@ public class ActiveModelsHandler {
 		retrieveFriend(context);
 		retrieveVideo(context);
 		Log.i(TAG, "retreiveAll: retrieved " + VideoFactory.getFactoryInstance().count() + "videos");
+		retrieveGridElement(context);
 	}
 	
 	public static void destroyAll(Context context){
 		UserFactory.getFactoryInstance().destroyAll(context);
 		FriendFactory.getFactoryInstance().destroyAll(context);
 		VideoFactory.getFactoryInstance().destroyAll(context);
+		GridElementFactory.getFactoryInstance().destroyAll(context);
 	}
 	
 	public static UserFactory ensureUser(Context context){
@@ -77,6 +81,22 @@ public class ActiveModelsHandler {
 		return r;
 	}
 	
+	public static GridElementFactory ensureGridElement(Context context){
+		GridElementFactory gf = GridElementFactory.getFactoryInstance();
+		GridElementFactory r;
+		if (gf.hasInstances()){
+			Log.i(TAG, "GridElement present in memory");
+	        r = gf;
+		} else if (gf.retrieve(context)){
+			Log.i(TAG, "Retrieved GrideElement from local storage.");
+			r = gf;
+		} else {
+			Log.e(TAG, "GridElement not retrievable from local storage");
+			r = null;
+		}
+		return r;
+	}
+	
 	public static FriendFactory retrieveFriend(Context context){
 		FriendFactory ff = FriendFactory.getFactoryInstance();
         ff.retrieve(context);
@@ -95,6 +115,12 @@ public class ActiveModelsHandler {
 		return vf;
 	}
 	
+	public static GridElementFactory retrieveGridElement(Context context){
+		GridElementFactory gf = GridElementFactory.getFactoryInstance();
+		gf.retrieve(context);
+		return gf;
+	}
+	
 	public static void saveUser(Context context){
 		UserFactory uf = UserFactory.getFactoryInstance();
 		if (uf.hasInstances()){
@@ -108,7 +134,7 @@ public class ActiveModelsHandler {
 	public static void saveFriend(Context context){
 		FriendFactory ff = FriendFactory.getFactoryInstance();
 		if (ff.hasInstances()){
-			Log.i(TAG, "Saving Friend to local storage");
+			Log.i(TAG, "Saving Friend to local storage: " + ff.instances.size());
 			ff.save(context);
 		} else {
 			Log.i(TAG, "Not Saving Friend. No instances found");
@@ -125,4 +151,13 @@ public class ActiveModelsHandler {
 		}
 	}
 
+	public static void saveGridElement(Context context){
+		GridElementFactory gf = GridElementFactory.getFactoryInstance();
+		if (gf.hasInstances()){
+			Log.i(TAG, "Saving Video to local storage");
+			gf.save(context);
+		} else {
+			Log.i(TAG, "Not saving Video. No instances found.");
+		}
+	}
 }

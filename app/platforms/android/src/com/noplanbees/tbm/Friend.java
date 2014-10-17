@@ -41,17 +41,14 @@ public class Friend extends ActiveModel{
 	public static class Attributes{
 		public static final String ID  = "id";
 		public static final String MKEY  = "mkey";
-		public static final String VIEW_INDEX  = "viewIndex";
-		public static final String FRAME_ID  = "frameId";
-		public static final String VIEW_ID  = "viewId";
-		public static final String THUMB_VIEW_ID  = "thumbViewId";
-		public static final String NAME_TEXT_ID  = "nameTextId";
 		public static final String FIRST_NAME  = "firstName";
 		public static final String LAST_NAME  = "lastName";
 		public static final String OUTGOING_VIDEO_ID = "outgoingVideoId";
 		public static final String OUTGOING_VIDEO_STATUS  = "outgoingVideoStatus";
 		public static final String UPLOAD_RETRY_COUNT  = "uploadRetryCount";
 		public static final String LAST_VIDEO_STATUS_EVENT_TYPE = "lastVideoStatusEventType";
+		public static final String TIME_OF_LAST_ACTION = "timeOfLastAction";
+		public static final String MOBILE_NUMBER = "mobileNumber";
 	}
 
 	public static class VideoStatusEventType{
@@ -64,21 +61,16 @@ public class Friend extends ActiveModel{
 		final String[] a = {	
 				Attributes.ID, 
 				Attributes.MKEY,
-				Attributes.VIEW_INDEX, 
-				Attributes.FRAME_ID, 
-				Attributes.VIEW_ID, 
-				Attributes.THUMB_VIEW_ID,
-				Attributes.NAME_TEXT_ID,
 				Attributes.FIRST_NAME, 
 				Attributes.LAST_NAME, 
 				Attributes.OUTGOING_VIDEO_ID,
 				Attributes.OUTGOING_VIDEO_STATUS,
 				Attributes.UPLOAD_RETRY_COUNT,
-				Attributes.LAST_VIDEO_STATUS_EVENT_TYPE};
+				Attributes.LAST_VIDEO_STATUS_EVENT_TYPE,
+				Attributes.TIME_OF_LAST_ACTION,
+				Attributes.MOBILE_NUMBER};
 		return a;
 	}
-	
-	
 
 	@Override
 	public void init(Context context) {
@@ -339,18 +331,6 @@ public class Friend extends ActiveModel{
 		context.startService(i);
 	}
 
-	//-------------------------
-	// Display stuff
-	//-------------------------
-	public VideoView videoView(Activity activity){
-		Integer id = Integer.parseInt(get(Attributes.VIEW_ID));
-		return (VideoView) activity.findViewById(id);
-	}
-
-	public ImageView thumbView(Activity activity){
-		Integer id = Integer.parseInt(get(Attributes.THUMB_VIEW_ID));
-		return (ImageView) activity.findViewById(id);
-	}
 
 	//=============
 	// Video Status 
@@ -581,6 +561,12 @@ public class Friend extends ActiveModel{
 		String fn = get(Attributes.FIRST_NAME);
 		int shortLen = Math.min(7, fn.length());
 		return fn.substring(0, shortLen);	
+	}
+
+
+
+	public String fullName() {
+		return get(Attributes.FIRST_NAME) + " " + get(Attributes.LAST_NAME);
 	}
 
 }

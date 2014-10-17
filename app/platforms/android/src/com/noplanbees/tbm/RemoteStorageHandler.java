@@ -127,7 +127,7 @@ public class RemoteStorageHandler {
 		setRemoteKV(RemoteStorageHandler.incomingVideoStatusRemoteKVKey(friend), data);
 	}
 	
-	// Convenienc getters
+	// Convenience getters
 	public abstract class GetRemoteIncomingVideoIds extends GetRemoteKVs{
 		protected Friend friend;
 		

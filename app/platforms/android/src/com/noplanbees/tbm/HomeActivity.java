@@ -1,7 +1,6 @@
 package com.noplanbees.tbm;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,17 +15,22 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback, VideoRecorderExceptionHandler, VersionHandlerInterface{
+import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
+
+public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback, VideoRecorderExceptionHandler, VersionHandlerInterface, GridEventNotificationDelegate{
 
 	final String TAG = this.getClass().getSimpleName();
 	final Float ASPECT = 240F/320F;
@@ -37,9 +41,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	public VideoRecorder videoRecorder;
 	public GcmHandler gcmHandler;
 	public VersionHandler versionHandler;
+	private BenchController benchController;
+	private SmsManager smsManager;
 
 	private FriendFactory friendFactory;
 	private UserFactory userFactory;
+	private GridElementFactory gridElementFactory;
 
 	private FrameLayout cameraPreviewFrame;
 	
@@ -51,8 +58,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private ArrayList<TextView> plusTexts = new ArrayList<TextView>(8);
 	private ArrayList<FrameLayout> frames = new ArrayList<FrameLayout>(8);
 	private ArrayList<TextView> nameTexts = new ArrayList<TextView>(8);
-
-	public HashMap<String, VideoPlayer> videoPlayers = new HashMap<String, VideoPlayer>(8);
+	public ArrayList<VideoPlayer> videoPlayers = new ArrayList<VideoPlayer>(8);
 
 	//--------------
 	// App lifecycle
@@ -217,8 +223,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		
 		if (action.equals(NotificationAlertManager.Actions.PLAY_VIDEO) && !NotificationAlertManager.screenIsLocked(instance)){
 			currentIntent.setAction(NotificationAlertManager.Actions.NONE);
-			Friend f = (Friend) friendFactory.find(friendId);
-			getVideoPlayerForFriend(f).start();
+			gridElementFactory.findWithFriendId(friendId).videoPlayer.start();
 		}
 	}
 	
@@ -226,6 +231,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	// Initialization
 	//---------------
 	private void setupWindow(){
+		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
@@ -239,6 +245,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		gcmHandler = new GcmHandler(this);
 		friendFactory = FriendFactory.getFactoryInstance();
 		userFactory = UserFactory.getFactoryInstance();
+		gridElementFactory = GridElementFactory.getFactoryInstance();
+		benchController = new BenchController(this);
+		setupGrid();
 		getVideoViewsAndPlayers();
 		setupLongPressTouchHandler();
 	}
@@ -249,12 +258,31 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 				gcmHandler == null ||
 				friendFactory == null ||
 				userFactory == null || 
-				longpressTouchHandler == null
+				gridElementFactory == null ||
+				longpressTouchHandler == null || 
+				benchController == null
 				){
 			initModels();
 		}
 	}
 
+	private void setupGrid(){
+		GridManager.setGridEventNotificationDelegate(this);
+		
+		if (gridElementFactory.all().size() == 8)
+			return;
+		
+		gridElementFactory.destroyAll(this);
+		ArrayList<Friend> allFriends = friendFactory.all();
+		for (Integer i=0; i<8; i++){
+			GridElement g = gridElementFactory.makeInstance(this);
+			if (i < allFriends.size()){
+				Friend f = allFriends.get(i);
+				g.set(GridElement.Attributes.FRIEND_ID, f.getId());
+			}
+		}
+	}
+	
 	private void runTests() {
 		// Log.e(TAG, getFilesDir().getAbsolutePath());
 		// Convenience.printOurTaskInfo(this);
@@ -278,8 +306,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		videoViews.add((VideoView) findViewById(R.id.VideoView5));
 		videoViews.add((VideoView) findViewById(R.id.VideoView6));
 		videoViews.add((VideoView) findViewById(R.id.VideoView7));
-		VideoPlayer.setAllVideoViews(videoViews);
-
+		
 		plusTexts.add((TextView) findViewById(R.id.PlusText0));
 		plusTexts.add((TextView) findViewById(R.id.PlusText1));
 		plusTexts.add((TextView) findViewById(R.id.PlusText2));
@@ -315,33 +342,36 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView5));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView6));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView7));
-
-		for (Integer i=0; i<friendFactory.count(); i++){
-			Friend f = (Friend) friendFactory.findWhere(Friend.Attributes.VIEW_INDEX, i.toString());
-
-			Integer frameId = frames.get(i).getId();
-			f.set(Friend.Attributes.FRAME_ID, frameId.toString());
-			Integer viewId = videoViews.get(i).getId();
-			f.set(Friend.Attributes.VIEW_ID, viewId.toString());
-			Integer thumbViewId = thumbViews.get(i).getId();
-			f.set(Friend.Attributes.THUMB_VIEW_ID, thumbViewId.toString());
-			Integer nameTextId = nameTexts.get(i).getId();
-			f.set(Friend.Attributes.NAME_TEXT_ID, nameTextId.toString());
+		
+		Integer i=0;
+		for (GridElement ge : gridElementFactory.all()){
+			ge.frame = frames.get(i);
+			ge.videoView = videoViews.get(i);
+			ge.thumbView = thumbViews.get(i);
+			ge.nameText = nameTexts.get(i);
+			ge.videoPlayer = new VideoPlayer(ge);
+			i++;
 		}
 	}
 
 	private void initViews(){
-		for (Integer i=0; i<friendFactory.count(); i++){
-			Friend f = (Friend) friendFactory.findWhere(Friend.Attributes.VIEW_INDEX, i.toString());
-			plusTexts.get(i).setVisibility(View.INVISIBLE);
-			videoViews.get(i).setVisibility(View.VISIBLE);
-			nameTexts.get(i).setText(f.getStatusString());
-			videoPlayers.put(f.get(Friend.Attributes.ID), new VideoPlayer( this, f.getId() ));
+		Integer i = 0;
+		for (GridElement ge : gridElementFactory.all()){
+			Friend f = ge.friend();
+			if (f != null){
+				plusTexts.get(i).setVisibility(View.INVISIBLE);
+				Log.i(TAG, plusTexts.get(i).getText().toString());
+				Log.i(TAG, plusTexts.get(i).toString());
+				videoViews.get(i).setVisibility(View.VISIBLE);
+				nameTexts.get(i).setText(f.getStatusString());
+			} else {
+				plusTexts.get(i).setVisibility(View.VISIBLE);
+				videoViews.get(i).setVisibility(View.INVISIBLE);
+				nameTexts.get(i).setText("");
+			}
+			i++;
 		}
-	}
-
-	public VideoPlayer getVideoPlayerForFriend(Friend friend) {
-		return videoPlayers.get(friend.getId());
+		VideoPlayer.showAllThumbs();
 	}
 
 	private void setupVideoStatusChangedCallbacks(){
@@ -387,14 +417,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			}
 		};
 
-		// Add friend boxes as valid targets.
-		for (ActiveModel am : FriendFactory.getFactoryInstance().instances){
-			Friend friend = (Friend) am;
-
-			Integer frameId = Integer.parseInt( friend.get(Friend.Attributes.FRAME_ID) );
-			Log.i(TAG, "Adding LongPressTouchHandler for frame" + frameId.toString());
-			FrameLayout frame = (FrameLayout) findViewById(frameId);
-			longpressTouchHandler.addTargetView(frame);
+		// Add gridElement boxes as valid targets.
+		for (GridElement ge : gridElementFactory.all()){
+			longpressTouchHandler.addTargetView(ge.frame);
 		};
 	}
 
@@ -403,10 +428,15 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	// Events
 	//-------
 	private void onRecordStart(View v){
-		Friend f = FriendFactory.getFriendFromFrame((View) v);
 		VideoPlayer.stopAll();
+		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
+		if (!ge.hasFriend())
+			return;
+		
+		Friend f = ge.friend();
+		GridManager.rankingActionOccurred(f);
 		if (videoRecorder.startRecording()) {
-			Log.i(TAG, "onRecordStart: START RECORDING. view = " +f.get(Friend.Attributes.FIRST_NAME));
+			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
 		} else {
 			Log.e(TAG, "onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
 			longpressTouchHandler.cancelGesture(true);
@@ -420,7 +450,11 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void onRecordStop(View v){
-		Friend f = FriendFactory.getFriendFromFrame(v);
+		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
+		if (!ge.hasFriend())
+			return;
+		
+		Friend f = ge.friend();
 		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
 		if ( videoRecorder.stopRecording(f) ){
 			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
@@ -429,15 +463,21 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void onPlayClick(View v) {
-		Friend f = FriendFactory.getFriendFromFrame(v);
+		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
+		if (!ge.hasFriend())
+			return;
+		
+		Friend f = ge.friend();
 		Log.i(TAG, "onPlayClick" + f.get(Friend.Attributes.FIRST_NAME));
-		getVideoPlayerForFriend(f).click();
+		GridManager.rankingActionOccurred(f);
+		ge.videoPlayer.click();
 	}
 
 	@Override
 	public void onVideoStatusChanged(Friend friend) {
-		TextView tv = (TextView) findViewById(Integer.parseInt(friend.get(Friend.Attributes.NAME_TEXT_ID)));
-		tv.setText(friend.getStatusString());
+		GridElement ge = gridElementFactory.findWithFriendId(friend.getId());
+		if (ge != null)
+			ge.nameText.setText(ge.friend().getStatusString());
 	}
     
 	// Since the call for this had to be moved from onPause to onStop this really never has any effect since
@@ -461,26 +501,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// Attache ViewSizeGetter
 		cameraPreviewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
 		cameraPreviewFrame.addView(new ViewSizeGetter(this));
-
-		// Reset button
-		Button btnReset = (Button) findViewById(R.id.btnReset);
-		btnReset.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				ActiveModelsHandler.destroyAll(instance);
-				finish();
-			}
-		});
-
-		Button btnCrash = (Button) findViewById(R.id.btnCrash);
-		btnCrash.setOnClickListener(new View.OnClickListener() {
-			@SuppressWarnings("null")
-			@Override
-			public void onClick(View v) {
-				Camera c = null;
-				c.cancelAutoFocus();
-			}
-		});
 		
 		for (TextView p : plusTexts){
 			p.setOnClickListener(new View.OnClickListener() {
@@ -646,4 +666,54 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		alertDialog.setCanceledOnTouchOutside(false);
 		alertDialog.show();
 	}
+
+	//------------
+	// Grid Events
+	//------------
+	@Override
+	public void gridDidChange() {
+		initViews();
+	}
+	
+	
+	//----------
+	// ActionBar
+	//----------
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    // Inflate the menu items for use in the action bar
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.home_menu, menu);
+	    return super.onCreateOptionsMenu(menu);
+	}
+	
+	@SuppressWarnings("null")
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle presses on the action bar items
+	    switch (item.getItemId()) {
+	        case R.id.action_bench:
+	        	benchController.toggle();
+	            return true;
+	        case R.id.action_get_contacts:
+	            return true;
+	        case R.id.action_get_sms:
+	        	String a = "asd  asdff+1(123) - 456-7890x";
+	        	String b = "a1234567890";
+	        	Log.i(TAG, "" + Convenience.mobileNumbersMatch(a, b));
+	            return true;
+	        case R.id.action_reset:
+				ActiveModelsHandler.destroyAll(instance);
+				finish();
+	            return true;
+	        case R.id.action_crash:
+				Camera c = null;
+				c.cancelAutoFocus();
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
+	}
+
 };

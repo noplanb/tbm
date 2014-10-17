@@ -162,7 +162,9 @@ public class IntentHandler {
 
 		if (status == Video.IncomingVideoStatus.DOWNLOADED){
 			friend.createThumb(videoId);
-
+			
+			GridManager.moveFriendToGrid(friend);
+			
 			if (!VideoPlayer.isPlaying(friend.getId()))
 				friend.deleteAllViewedVideos();
 			
@@ -170,7 +172,7 @@ public class IntentHandler {
 				NotificationAlertManager.alert(homeActivity, friend, videoId);
 			} else {
 				if (!VideoPlayer.isPlaying(friend.getId())){
-					homeActivity.getVideoPlayerForFriend(friend).refreshThumb();
+					VideoPlayer.refreshThumbWithFriendId(friend.getId());
 					playNotificationTone();
 				}
 			}

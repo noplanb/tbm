@@ -14,20 +14,15 @@ import android.widget.VideoView;
 
 public class VideoPlayer implements OnCompletionListener{
 	String TAG = this.getClass().getSimpleName();
+	
+	GridElement gridElement;
 	Activity activity;
-	Context context;	
-	String friendId;
-	Friend friend;
 	VideoView videoView;
 	ImageView thumbView;
 	String videoId;
 	
-	private static ArrayList <VideoView> allVideoViews;
-	private static HashMap <String, VideoPlayer> allVideoPlayers = new HashMap <String, VideoPlayer>();
-	
-	public static void setAllVideoViews(ArrayList<VideoView> videoViews){
-		VideoPlayer.allVideoViews = videoViews;
-	}
+	private static ArrayList <VideoView> allVideoViews = new ArrayList <VideoView>();
+	private static ArrayList <VideoPlayer> allVideoPlayers = new ArrayList <VideoPlayer>();
 	
 	public static void stopAll(){
 		VideoPlayer.showAllThumbs();
@@ -56,32 +51,46 @@ public class VideoPlayer implements OnCompletionListener{
 		}
 	}
 	
-	private static void showAllThumbs(){
-		for (String key : VideoPlayer.allVideoPlayers.keySet()){
-			allVideoPlayers.get(key).showThumb();
+	public static void showAllThumbs(){
+		for (VideoPlayer vp : VideoPlayer.allVideoPlayers){
+			if (vp.gridElement.hasFriend())
+				vp.showThumb();
 		}
 	}
 	
 	public static Boolean isPlaying(String friendId){
 		Boolean r = false;
-		VideoPlayer vp = allVideoPlayers.get(friendId);
-		if (vp != null)
-			r = vp.videoView.isPlaying();
+		GridElement ge = GridElementFactory.instance.findWithFriendId(friendId);
+		if (ge != null)
+			r = ge.videoView.isPlaying();
 		return r;
 	}
 	
-	public VideoPlayer(Activity a, String friendId) {
-		activity = a;
-		context = activity.getApplicationContext();
-		this.friendId = friendId;
-		friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
-		videoView = friend.videoView(activity);
+	public static void refreshThumbWithFriendId(String friendId) {
+		GridElement ge = GridElementFactory.instance.findWithFriendId(friendId);
+		if (ge != null)
+			ge.videoPlayer.refreshThumb();
+	}
+	
+	public VideoPlayer(GridElement ge) {
+		gridElement = ge;
+		activity = gridElement.activity;
+		videoView = gridElement.videoView;
 		videoView.setOnCompletionListener(this);
-		VideoPlayer.allVideoPlayers.put(friend.getId(), this);
-		thumbView = friend.thumbView(activity);
+		
+		if (!VideoPlayer.allVideoViews.contains(videoView))
+			VideoPlayer.allVideoViews.add(videoView);
+		
+		VideoPlayer.allVideoPlayers.add(this);
+		
+		thumbView = gridElement.thumbView;
 		showThumb();
 	}
-
+	
+	private Friend friend(){
+		return gridElement.friend();
+	}
+	
 	public void click(){
 		
 		if (videoView.isPlaying()){
@@ -94,7 +103,7 @@ public class VideoPlayer implements OnCompletionListener{
 	public void start(){
 		Log.i(TAG, "start");
 		VideoPlayer.stopAll();
-	    videoId = friend.firstPlayableVideoId();
+	    videoId = friend().firstPlayableVideoId();
 		
 		if (videoId == null)
 			return;
@@ -103,8 +112,8 @@ public class VideoPlayer implements OnCompletionListener{
 	}
 	
 	public void play(){
-		if (friend.videoFromFile(videoId).length() > 100){
-			videoView.setVideoPath(friend.videoFromPath(videoId));
+		if (friend().videoFromFile(videoId).length() > 100){
+			videoView.setVideoPath(friend().videoFromPath(videoId));
 			hideThumb();
 			AudioManager am = (AudioManager) activity.getSystemService(Activity.AUDIO_SERVICE);
 			am.setBluetoothScoOn(true);
@@ -131,9 +140,12 @@ public class VideoPlayer implements OnCompletionListener{
 	public void showThumb(){
 		setThumbBorder();
 		loadThumb();
-		thumbView.invalidate();
-		thumbView.setVisibility(View.VISIBLE);
-		videoView.setVisibility(View.INVISIBLE);
+		
+		if (!videoView.isPlaying()){
+			thumbView.invalidate();
+			thumbView.setVisibility(View.VISIBLE);
+			videoView.setVisibility(View.INVISIBLE);
+		}
 	}
 	
 	public void hideThumb(){
@@ -142,17 +154,23 @@ public class VideoPlayer implements OnCompletionListener{
 	}
 
 	private void loadThumb(){
-		if (!friend.thumbExists() ){
-			Log.i(TAG, "loadThumb: Loading icon for thumb for friend=" + friend.get(Friend.Attributes.FIRST_NAME));
+		if (!gridElement.hasFriend())
+			return;
+		
+		if (!friend().thumbExists() ){
+			Log.i(TAG, "loadThumb: Loading icon for thumb for friend=" + friend().get(Friend.Attributes.FIRST_NAME));
 			thumbView.setImageResource(R.drawable.head);
 		}else{
-			Log.i(TAG, "loadThumb: Loading bitmap for friend=" + friend.get(Friend.Attributes.FIRST_NAME));
-			thumbView.setImageBitmap(friend.lastThumbBitmap());
+			Log.i(TAG, "loadThumb: Loading bitmap for friend=" + friend().get(Friend.Attributes.FIRST_NAME));
+			thumbView.setImageBitmap(friend().lastThumbBitmap());
 		}
 	}
 
 	private void setThumbBorder(){
-		if (friend.incomingVideoNotViewed()){
+		if (!gridElement.hasFriend())
+			return;
+		
+		if (friend().incomingVideoNotViewed()){
 			Log.i(TAG, "setThumbBorder: setting thumb background to unviewed_shape");
 			thumbView.setBackgroundResource(R.drawable.blue_border_shape);
 
@@ -165,12 +183,14 @@ public class VideoPlayer implements OnCompletionListener{
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.i(TAG, "play complete.");
-		friend.setAndNotifyIncomingVideoViewed(videoId);
-		videoId = friend.nextPlayableVideoId(videoId);
+		friend().setAndNotifyIncomingVideoViewed(videoId);
+		videoId = friend().nextPlayableVideoId(videoId);
 		if (videoId != null){
 			play();
 		} else {
 			stop();
 		}
 	}
+
+
 }

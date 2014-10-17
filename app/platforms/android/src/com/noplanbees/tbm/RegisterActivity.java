@@ -80,7 +80,8 @@ public class RegisterActivity extends Activity{
 		}
 		user.set(User.Attributes.FIRST_NAME, userParams.get("first_name"));
 		user.set(User.Attributes.LAST_NAME, userParams.get("last_name"));
-		user.set(User.Attributes.ID, userParams.get("id"));
+		user.set(User.Attributes.MOBILE_NUMBER, userParams.get("mobile_number"));
+		user.set(User.Attributes.ID, userParams.get("id").toString());
 		user.set(User.Attributes.MKEY, userParams.get("mkey"));
 		user.set(User.Attributes.AUTH, userParams.get("auth"));
 		new GetFriends("/reg/get_friends?mkey=" + user.get(User.Attributes.MKEY));
@@ -120,7 +121,7 @@ public class RegisterActivity extends Activity{
 			f.set(Friend.Attributes.LAST_NAME, fm.get("last_name"));
 			f.set(Friend.Attributes.ID, fm.get("id"));
 			f.set(Friend.Attributes.MKEY, fm.get("mkey"));
-			f.set(Friend.Attributes.VIEW_INDEX, i.toString());
+			f.set(Friend.Attributes.MOBILE_NUMBER, fm.get("mobile_number"));
 			i ++;
 		}
 		user.set(User.Attributes.REGISTERED, "true");

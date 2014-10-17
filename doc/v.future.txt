@@ -7,11 +7,12 @@ Features
 
 
 Bugs
-- FileTransfer cache the file.
+- When laying out the grid make sure we have enough vertical space as well as setting the horizontal space.
 - Some indication that the file will fail permanently Upload and download.
 - Make bluetooth duck work for record as well as playback.
 - Try setting audioManager to voice call.
 - Launch icon says tbm instead of three by me
+- First name should have last initial if there are more than one of the same. Work to distinguish them Mike Sample and Mike Smedberg.
 
 - Flashing screen when app should be in background.
 - Kon sees video too short notification. Has to reboot the phone to make it stop happening. Then it comes back sometime later.

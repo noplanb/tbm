@@ -11,6 +11,7 @@ public class User extends ActiveModel{
 		public static final String FIRST_NAME = "firstName";
 		public static final String LAST_NAME = "lastName";
 		public static final String REGISTERED = "registered";
+		public static final String MOBILE_NUMBER = "mobileNumber";
 	}
 	
 	@Override
@@ -21,7 +22,8 @@ public class User extends ActiveModel{
     		  Attributes.MKEY,
     		  Attributes.FIRST_NAME,
     		  Attributes.LAST_NAME,
-    		  Attributes.REGISTERED};
+    		  Attributes.REGISTERED,
+    		  Attributes.MOBILE_NUMBER};
       return a;
 	}
 	

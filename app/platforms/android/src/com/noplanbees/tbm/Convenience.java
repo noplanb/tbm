@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -106,5 +107,42 @@ public class Convenience {
 			}
 		}
 	}
+	
+	public static void printCursor(Cursor c){
+		c.moveToFirst();
+		do {
+			String msgData = "";
+			for(int i=0; i<c.getColumnCount(); i++){
+				msgData += " " + c.getColumnName(i) + ":" + c.getString(i) + "\n";
+			}
+			msgData += "=============\n";
+			Log.i(STAG, msgData);
+		} while (c.moveToNext());
+	}
 
+	//---------------------
+	// Phone number helpers
+	//---------------------
+	
+	// Match by matching the last 6 digits.
+	public static boolean mobileNumbersMatch(String m1, String m2) {
+		if (m1==null || m1.equals("") || m2==null || m2.equals(""))
+			return false;
+		
+		m1 = cleanPhone(m1);
+		m2 = cleanPhone(m2);
+		return lastNCharacters(m1, 6).equals(lastNCharacters(m2,6));
+	}
+
+	public static String cleanPhone(String m) {
+		return m.replaceAll("\\D+", "");
+	}
+	
+	public static String lastNCharacters(String s, int n){
+		int l = s.length();
+		if (l < n)
+			return s;
+		return s.substring(l-n, l);
+	}
+	
 }
