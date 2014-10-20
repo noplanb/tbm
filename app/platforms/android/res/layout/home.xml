@@ -225,10 +225,24 @@
         android:layout_height="match_parent"
         android:background="@color/charcoal" >
 
+        <com.noplanbees.tbm.ContactsAutoCompleteTextView
+            android:textColor="@color/white"
+            android:hint="Search"
+            android:completionThreshold="1"
+            android:id="@+id/contacts_auto_complete_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10" />
+
         <ListView
             android:id="@+id/bench_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@id/contacts_auto_complete_text_view" >
+
+            <requestFocus />
+        </ListView>
     </RelativeLayout>
 
 </RelativeLayout>

@@ -49,6 +49,7 @@ public class Friend extends ActiveModel{
 		public static final String LAST_VIDEO_STATUS_EVENT_TYPE = "lastVideoStatusEventType";
 		public static final String TIME_OF_LAST_ACTION = "timeOfLastAction";
 		public static final String MOBILE_NUMBER = "mobileNumber";
+		public static final String HAS_APP = "hasApp";
 	}
 
 	public static class VideoStatusEventType{
@@ -68,7 +69,8 @@ public class Friend extends ActiveModel{
 				Attributes.UPLOAD_RETRY_COUNT,
 				Attributes.LAST_VIDEO_STATUS_EVENT_TYPE,
 				Attributes.TIME_OF_LAST_ACTION,
-				Attributes.MOBILE_NUMBER};
+				Attributes.MOBILE_NUMBER,
+				Attributes.HAS_APP};
 		return a;
 	}
 
@@ -80,6 +82,20 @@ public class Friend extends ActiveModel{
 		setUploadRetryCount(0);
 	}
 
+	//-------
+	// HasApp
+	//-------
+	public boolean hasApp() {
+		if (get(Attributes.HAS_APP).equals("true"))
+			return true;
+		else
+			return false;
+	}
+
+	public void setHasApp(){
+		set(Attributes.HAS_APP, "true");
+	}
+
 	//----------------
 	// Incoming Videos
 	//----------------
@@ -87,13 +103,13 @@ public class Friend extends ActiveModel{
 		VideoFactory vf = VideoFactory.getFactoryInstance();
 		return vf.allWithFriendId(getId());
 	}
-	
+
 	public ArrayList<Video>sortedIncomingVideos(){
 		ArrayList<Video> vids = incomingVideos();
 		Collections.sort(vids, new Video.VideoTimestampComparator());
 		return vids;
 	}
-	
+
 	public Video oldestIncomingVideo(){
 		ArrayList<Video> vids = sortedIncomingVideos();
 		if (vids.isEmpty()){
@@ -101,15 +117,15 @@ public class Friend extends ActiveModel{
 		} 
 		return sortedIncomingVideos().get(0);
 	}
-	
+
 	public Video newestIncomingVideo(){
 		ArrayList <Video> vids = sortedIncomingVideos();
 		Video v = null;
 		if (!vids.isEmpty())
-		  v = vids.get(vids.size() -1);
+			v = vids.get(vids.size() -1);
 		return v;
 	}
-	
+
 	public Boolean hasIncomingVideoId(String videoId){
 		for (Video v : incomingVideos()){
 			if (v.getId().equals(videoId))
@@ -117,7 +133,7 @@ public class Friend extends ActiveModel{
 		}
 		return false;
 	}
-	
+
 	public void createIncomingVideo(Context context, String videoId){
 		if (hasIncomingVideoId(videoId))
 			return;
@@ -126,7 +142,7 @@ public class Friend extends ActiveModel{
 		v.set(Video.Attributes.FRIEND_ID, getId());
 		v.set(Video.Attributes.ID, videoId);
 	}
-	
+
 	public void deleteVideo(String videoId){
 		// Delete videoFile
 		videoFromFile(videoId).delete();
@@ -136,15 +152,15 @@ public class Friend extends ActiveModel{
 		VideoFactory vf = VideoFactory.getFactoryInstance();
 		vf.delete(videoId);
 	}
-	
+
 	public void deleteAllViewedVideos(){
 		for (Video v : incomingVideos()){
 			if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.VIEWED)
 				deleteVideo(v.getId());
 		}
 	}
-	
-	
+
+
 	//----------------
 	// Video and thumb
 	//----------------
@@ -155,7 +171,7 @@ public class Friend extends ActiveModel{
 	public File videoFromFile(String videoId){
 		return new File(videoFromPath(videoId));
 	}
-	
+
 	public String firstPlayableVideoId(){
 		String vid = null;
 		for (Video v : sortedIncomingVideos()){
@@ -166,7 +182,7 @@ public class Friend extends ActiveModel{
 		}
 		return vid;
 	}
-	
+
 	public String nextPlayableVideoId(String videoId){
 		Boolean found = false;
 		for (Video v : sortedIncomingVideos()){
@@ -194,7 +210,7 @@ public class Friend extends ActiveModel{
 	public File thumbFile(String videoId){
 		return new File(thumbPath(videoId));		
 	}
-	
+
 	public File lastThumbFile(){
 		File f = null;
 		for (Video v: sortedIncomingVideos()){
@@ -216,7 +232,7 @@ public class Friend extends ActiveModel{
 			b = Convenience.bitmapWithFile(f);
 		return b; 
 	}
-	
+
 	@SuppressLint("NewApi")
 	public Bitmap sqThumbBitmap(String videoId){
 		Bitmap sq = null;
@@ -237,7 +253,7 @@ public class Friend extends ActiveModel{
 		}
 		return r;
 	}
-	
+
 	public Boolean incomingVideoNotViewed(){
 		// Return true if any of the incoming videos are status DOWNLOADED
 		Boolean r = false;
@@ -249,28 +265,28 @@ public class Friend extends ActiveModel{
 		}
 		return r;
 	}
-	
+
 	public void setIncomingVideoViewed(String videoId){
 		if (!hasIncomingVideoId(videoId)){
 			Log.e(TAG, "setIncomingVideoViewed: ERROR: incoming video doesnt exist");
 			return;
 		}
-		
+
 		Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
 		v.setIncomingVideoStatus(Video.IncomingVideoStatus.VIEWED);
 	}
-	
+
 	//-------------
 	// Create Thumb
 	//-------------
 	public synchronized void createThumb(String videoId){
 		Log.i(TAG, "createThumb for friend=" + get(Attributes.FIRST_NAME));
-		
+
 		if( !videoFromFile(videoId).exists() || videoFromFile(videoId).length() == 0 ){
 			Log.e(TAG, "createThumb: no video file found for friend=" + get(Attributes.FIRST_NAME));
 			return;
 		}
-		
+
 		String vidPath = videoFromPath(videoId);
 		MediaMetadataRetriever r = new MediaMetadataRetriever();
 		r.setDataSource(vidPath);
@@ -284,7 +300,7 @@ public class Friend extends ActiveModel{
 			Log.e(TAG, "createThumb: IOException " + e.getMessage() + e.toString());
 		}
 	}
-	
+
 	//--------------------------
 	// Video upload and download
 	//--------------------------
@@ -311,13 +327,13 @@ public class Friend extends ActiveModel{
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); 	// See doc/task_manager_bug.txt for the reason for this flag.
 		context.startService(i);
 	}
-	
+
 	public void downloadVideo(Intent intent){
 		String videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
 		Log.i(TAG, "downloadVideo. friend=" + get(Attributes.FIRST_NAME) + " videoId=" + videoId);
 
 		setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.QUEUED);
-		
+
 		Intent i = new Intent(context, FileDownloadService.class);
 		i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
 		i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
@@ -335,7 +351,7 @@ public class Friend extends ActiveModel{
 	//=============
 	// Video Status 
 	//=============
-	
+
 	//-----------------------------------------
 	// Changes to status and local notification.
 	//------------------------------------------
@@ -396,35 +412,36 @@ public class Friend extends ActiveModel{
 	public void setAndNotifyIncomingVideoViewed(String videoId) {
 		setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
 	}
-	
+
 	public void setAndNotifyIncomingVideoStatus(String videoId, int status){
+		setHasApp(); // If we have gotten a video from a friend then he has the app.
 		Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
 		if (v == null){
 			Log.e(TAG, "setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
 			return;
 		}
-		
+
 		if (v.getIncomingVideoStatus() != status){
 			v.setIncomingVideoStatus(status);
 			if (status == Video.IncomingVideoStatus.VIEWED)
 				notifyServerVideoViewed(videoId);
-			
+
 			// Only notify the UI of changes in status to the last incoming video.
 			if (newestIncomingVideo().getId().equals(videoId)){
-			  setLastEventTypeIncoming();
-			  notifyStatusChanged();
+				setLastEventTypeIncoming();
+				notifyStatusChanged();
 			}
 		}
 	}
 
 	// Download retryCount
-//	private void setDownloadRetryCount(int retryCount){
-//		set(Attributes.DOWNLOAD_RETRY_COUNT, ((Integer) retryCount).toString());
-//	}
-//
-//	private int getDownloadRetryCount(){
-//		return Integer.parseInt(get(Attributes.DOWNLOAD_RETRY_COUNT));
-//	}
+	//	private void setDownloadRetryCount(int retryCount){
+	//		set(Attributes.DOWNLOAD_RETRY_COUNT, ((Integer) retryCount).toString());
+	//	}
+	//
+	//	private int getDownloadRetryCount(){
+	//		return Integer.parseInt(get(Attributes.DOWNLOAD_RETRY_COUNT));
+	//	}
 
 	private void setAndNotifyDownloadRetryCount(String videoId, int retryCount){
 		Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
@@ -432,10 +449,10 @@ public class Friend extends ActiveModel{
 			Log.e(TAG, "setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
 			return;
 		}
-		
+
 		if (v.getDownloadRetryCount() != retryCount){
 			v.setDownloadRetryCount(retryCount);
-			
+
 			// Only notify the UI of changes in retry count of the last incoming video.
 			if (newestIncomingVideo().getId().equals(videoId)){
 				setLastEventTypeIncoming();
@@ -499,7 +516,7 @@ public class Friend extends ActiveModel{
 			return outgoingStatusString();
 		}
 	}
-	
+
 	private String outgoingStatusString(){
 		int status = getOutgoingVideoStatus();
 		int count = getUploadRetryCount();
@@ -532,7 +549,7 @@ public class Friend extends ActiveModel{
 		Video v = newestIncomingVideo();
 		if (v == null)
 			return get(Attributes.FIRST_NAME);
-		
+
 		int status = v.getIncomingVideoStatus();
 		int count = v.getDownloadRetryCount();
 
@@ -568,5 +585,7 @@ public class Friend extends ActiveModel{
 	public String fullName() {
 		return get(Attributes.FIRST_NAME) + " " + get(Attributes.LAST_NAME);
 	}
+
+
 
 }

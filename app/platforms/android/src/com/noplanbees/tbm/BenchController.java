@@ -10,12 +10,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import com.google.gson.internal.LinkedTreeMap;
 
-public class BenchController implements SmsManager.SmsManagerCallback, OnItemClickListener{
+public class BenchController implements SmsManager.SmsManagerCallback, OnItemClickListener, ContactsManager.ContactSelected{
 	
 	public static final float PERCENT_OF_WINDOW = 0.75f;
 	public static final int ANIMATION_DURATION = 100;
@@ -29,8 +30,9 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 	private ListView listView;
 	private FriendFactory friendFactory;
 	private SmsManager smsManager;
-	private ArrayList<LinkedTreeMap<String, String>> smsContacts;
-	private ArrayList<LinkedTreeMap<String, String>> currentAllOnBench;
+	private ArrayList<BenchObject> smsBenchObjects;
+	private ArrayList<BenchObject> currentAllOnBench;
+	private ContactsManager contactsManager;
 
 	//----------------------
 	// Constructor and setup
@@ -39,6 +41,8 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 		activity = a;
 		friendFactory = FriendFactory.getFactoryInstance();
 		smsManager = SmsManager.getInstance(activity, this);
+		contactsManager = new ContactsManager(activity);
+		contactsManager.setContactSelectedDelegate(this);
 		
 		setupFrame();
 		setupAnimator();
@@ -65,14 +69,13 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		LinkedTreeMap<String, String> target = currentAllOnBench.get(position);
-    	Log.i(TAG, "Postion:" + position + " " + target.get(SmsManager.Keys.DISPLAY_NAME));
-    	String fid = target.get(Friend.Attributes.ID);
-    	if (fid != null){
-    		Friend f = (Friend) FriendFactory.getFactoryInstance().find(fid);
+		BenchObject target = currentAllOnBench.get(position);
+    	Log.i(TAG, "Postion:" + position + " " + target.displayName);
+    	if (target.friendId != null){
+    		Friend f = (Friend) FriendFactory.getFactoryInstance().find(target.friendId);
     		GridManager.moveFriendToGrid(f);
     	} else {
-    		
+    		new InviteManager(activity, target);
     	}
     	hide();
 	}
@@ -85,17 +88,17 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 		listView.setAdapter(ad);
 	}
 	
-	private ArrayList<LinkedTreeMap<String, String>> allOnBench(){
+	private ArrayList<BenchObject> allOnBench(){
 		currentAllOnBench = benchFriendsAsBenchObjects();
-		currentAllOnBench.addAll(dedupedSmsFriends());
+		currentAllOnBench.addAll(dedupedSmsBenchObjects());
 		return currentAllOnBench;
 	}
 	
 	private String[] nameArray(){
-		ArrayList<LinkedTreeMap<String, String>> all = allOnBench();
+		ArrayList<BenchObject> all = allOnBench();
 		String[] na = new String[all.size()];
 		for (int i=0; i<all.size(); i++){
-			na[i] = all.get(i).get(SmsManager.Keys.DISPLAY_NAME);
+			na[i] = all.get(i).displayName;
 		}
 		return na;
 	}
@@ -103,14 +106,14 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 	//--------------------------
 	// Friend overflow from grid
 	//--------------------------
-	private ArrayList<LinkedTreeMap<String, String>> benchFriendsAsBenchObjects(){
-		ArrayList<LinkedTreeMap<String, String>> r = new ArrayList<LinkedTreeMap<String, String>>();
+	private ArrayList<BenchObject> benchFriendsAsBenchObjects(){
+		ArrayList<BenchObject> r = new ArrayList<BenchObject>();
 		for (Friend f : GridManager.friendsOnBench()){
 			LinkedTreeMap<String, String> e = new LinkedTreeMap<String, String>();
-			e.put(Friend.Attributes.ID, f.getId());
-			e.put(Friend.Attributes.MOBILE_NUMBER, f.get(Friend.Attributes.MOBILE_NUMBER));
-			e.put(SmsManager.Keys.DISPLAY_NAME, f.fullName());
-			r.add(e);
+			e.put(BenchObject.Keys.FRIEND_ID, f.getId());
+			e.put(BenchObject.Keys.MOBILE_NUMBER, f.get(Friend.Attributes.MOBILE_NUMBER));
+			e.put(BenchObject.Keys.DISPLAY_NAME, f.fullName());
+			r.add(new BenchObject(e));
 		}
 		return r;
 	}
@@ -120,27 +123,45 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 	//-------------
 	@Override
 	public void didRecieveRankedPhoneData(ArrayList<LinkedTreeMap<String, String>> rankedPhoneData) {
-		smsContacts = rankedPhoneData;
+		smsBenchObjects = new ArrayList<BenchObject>();
+		for(LinkedTreeMap<String, String> e : rankedPhoneData){
+			LinkedTreeMap<String, String> b = new LinkedTreeMap<String, String>();
+			b.put(BenchObject.Keys.FIRST_NAME, e.get(SmsManager.Keys.FIRST_NAME));
+			b.put(BenchObject.Keys.LAST_NAME, e.get(SmsManager.Keys.LAST_NAME));
+			b.put(BenchObject.Keys.DISPLAY_NAME, e.get(SmsManager.Keys.DISPLAY_NAME));
+			b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(SmsManager.Keys.MOBILE_NUMBER));
+			smsBenchObjects.add(new BenchObject(b));
+		}
 	}
 	
-	private ArrayList<LinkedTreeMap<String, String>> dedupedSmsFriends(){
-		ArrayList<LinkedTreeMap<String, String>> r = new ArrayList<LinkedTreeMap<String, String>>();
-		if (smsContacts == null)
+	private ArrayList<BenchObject> dedupedSmsBenchObjects(){
+		ArrayList<BenchObject> r = new ArrayList<BenchObject>();
+		if (smsBenchObjects == null)
 			return r;
 		
-		for (LinkedTreeMap<String, String> e: smsContacts){
-			if (!smsFriendIsBenchFriend(e))
-				r.add(e);
+		for (BenchObject b: smsBenchObjects){
+			if (!isBenchObjectAFriend(b))
+				r.add(b);
 		}
 		return r;
 	}
 	
-	private boolean smsFriendIsBenchFriend(LinkedTreeMap<String, String> smsFriend) {
+	private boolean isBenchObjectAFriend(BenchObject bo) {
 		for (Friend f : FriendFactory.getFactoryInstance().all()){
-			if (Convenience.mobileNumbersMatch(f.get(Friend.Attributes.MOBILE_NUMBER), smsFriend.get(SmsManager.Keys.MOBILE_NUMBER)))
+			if (Convenience.mobileNumbersMatch(f.get(Friend.Attributes.MOBILE_NUMBER), bo.mobileNumber))
 				return true;
 		}
 		return false;
+	}
+	
+	
+	//---------------------
+	// Contact List Contact
+	//---------------------
+	
+	@Override
+	public void contactSelected(LinkedTreeMap<String, String> contact) {	
+		Log.i(TAG, contact.toString());
 	}
 	
 
@@ -158,6 +179,7 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 		if (isShowing)
 			return;
 		populate();
+		contactsManager.setupAutoComplete((AutoCompleteTextView) activity.findViewById(R.id.contacts_auto_complete_text_view));
 		anim.setFloatValues((float)hiddenX(), (float)shownX());
 		anim.start();
 		isShowing = true;
@@ -194,13 +216,6 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 		activity.getWindowManager().getDefaultDisplay().getSize(p);
 		return p;
 	}
-
-
-
-
-
-
-
 
 
 

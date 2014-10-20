@@ -4,9 +4,15 @@ Features
 - When polling download even if video is older than oldest.
   - Appears to try to delete video file twice in case it is older than the oldest
 - Add polling for status
+- Get the users profile for filling in name and phone number in reg. see http://developer.android.com/guide/topics/providers/contacts-provider.html
 
 
 Bugs
+- IntentHandler:  PowerManager pm = (PowerManager) homeActivity.getSystemService(Context.POWER_SERVICE);
+		return !pm.isScreenOn(); isScreenOn has been deprecated.
+
+
+    
 - When laying out the grid make sure we have enough vertical space as well as setting the horizontal space.
 - Some indication that the file will fail permanently Upload and download.
 - Make bluetooth duck work for record as well as playback.

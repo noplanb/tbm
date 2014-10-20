@@ -13,6 +13,7 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -231,6 +232,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	// Initialization
 	//---------------
 	private void setupWindow(){
+		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -697,11 +699,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	        	benchController.toggle();
 	            return true;
 	        case R.id.action_get_contacts:
+	        	new ContactsManager(this);
 	            return true;
 	        case R.id.action_get_sms:
-	        	String a = "asd  asdff+1(123) - 456-7890x";
-	        	String b = "a1234567890";
-	        	Log.i(TAG, "" + Convenience.mobileNumbersMatch(a, b));
+	    		Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
 	            return true;
 	        case R.id.action_reset:
 				ActiveModelsHandler.destroyAll(instance);

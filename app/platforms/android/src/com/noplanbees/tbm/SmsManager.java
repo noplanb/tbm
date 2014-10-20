@@ -17,6 +17,7 @@ import com.google.gson.internal.LinkedTreeMap;
 public class SmsManager {
 
 	public static class Keys{
+		// Conform ot BenchObject keys results of sms manager are typically passed to bench
 		public static final String FIRST_NAME = "firstName";
 		public static final String LAST_NAME = "lastName";
 		public static final String DISPLAY_NAME = "displayName";

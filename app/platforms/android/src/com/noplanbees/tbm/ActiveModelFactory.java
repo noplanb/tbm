@@ -18,9 +18,9 @@ import com.google.gson.internal.LinkedTreeMap;
 
 public class ActiveModelFactory {
 	private String TAG = this.getClass().getSimpleName();
-    
+
 	public ArrayList<ActiveModel> instances = new ArrayList<ActiveModel>();
-	
+
 	//--------------------
 	// Factory
 	//--------------------
@@ -104,7 +104,7 @@ public class ActiveModelFactory {
 		all = g.fromJson(json, all.getClass());
 
 		Log.i(TAG, "class of attr: " + all.get(0).getClass().getSimpleName());
-		
+
 		for (LinkedTreeMap<String, String> ats : all){
 			ActiveModel i = makeInstance(context);
 			i.attributes.clear();
@@ -112,11 +112,11 @@ public class ActiveModelFactory {
 		}
 		return true;
 	}
-	
+
 	public String getSaveFilePath(Context context){
 		return Config.homeDirPath(context) + "/" + this.getClass().getSimpleName() + "_saved_instances.json";
 	}
-	
+
 	public void deleteSaveFile(Context context){
 		File f = new File(getSaveFilePath(context));
 		f.delete();
@@ -130,7 +130,7 @@ public class ActiveModelFactory {
 	public boolean hasInstances(){
 		return !instances.isEmpty();
 	}
-	
+
 
 	public ActiveModel findWhere(String a, String v){
 		ActiveModel found = null;
@@ -142,7 +142,7 @@ public class ActiveModelFactory {
 		}
 		return found;
 	}
-	
+
 	public ArrayList<ActiveModel> findAllWhere(String a, String v){
 		ArrayList<ActiveModel> result = new ArrayList<ActiveModel>();
 		for (ActiveModel i: instances) {
@@ -156,7 +156,14 @@ public class ActiveModelFactory {
 	public ActiveModel find(String id){
 		return findWhere("id", id);
 	}
-	
+
+	public boolean existsWithId(String id){
+		if (find(id) == null)
+			return false;
+		else
+			return true;
+	}
+
 	public void delete(String id){
 		Integer found = null;
 		Integer index = 0;
@@ -170,9 +177,9 @@ public class ActiveModelFactory {
 		if (found != null)
 			instances.remove(found);	
 	}
-	
+
 	public int count(){
 		return instances.size();
 	}
-	
+
 }

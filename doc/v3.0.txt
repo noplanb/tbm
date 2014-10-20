@@ -122,6 +122,18 @@ TEST:
 - Grid and location of friends are restored from file.
 
 
+BenchObject
+-----------
+- Role:
+  - Object that is on the bench
+
+- Attributes:
+  - friendId
+  - firstName
+  - lastName
+  - displayName
+  
+  
 BenchController
 ---------------
 - Role:
@@ -191,10 +203,27 @@ TODO:
 ContactsManager
 ---------------
 - Role:
-  - Queries contacts
+  - Queries contacts for first and last name
     - By phone number
     - By person
-  - Returns first and last names.
+    - Returns first and last names.
+  - Manages autocomplete search on all contacts
+
+- Autocomplete contacts search and select
+  - Queries contacts by hasPhoneNumber returning lookupKey, displayName
+    - Lazy query once when contactsManager is first instantiated.
+    - String[] autocomplete consists of name.
+  - BenchController gets list of valid phone numbers for contact with lookupKey
+    - Tests to make sure it isnt an existing friend
+    - Asks the user which is the mobile number
+    - Continues same as for sms
+
+TODO:
+- Create AutoCompleteContactsView 
+- Add it to the layout of the bench
+- Call to set it up in bench controller when showing the view
+- Item picked get the 
+
 
 
 InviteManager
@@ -210,11 +239,24 @@ InviteManager
   - Adds the friend.
     - Add object
     - Add to grid
-  - Send text message to the friend.
+  - Send text message to the friend if !hasApp.
   - Tickle friend when !hasApp
   - Set hasApp when receive first message
   
-- Instantiation: none
+- Instantiation: 
+  - multiple
+  
+IMPORTANT: Add a flag in connection to say whether Target is a new recruit for statistics purposes.
+
+
+Handling phone numbers.
+----------------------
+- Before a phone number is sent off the phone we should make sure it has country code and is in a good format. 
+- Test pull all numbers from contact list and put them country code format. 
+
+IMPORTANT: Handle phone numbers and phone number comparison in ruby properly when doing invites.
+  
+
 
 
   

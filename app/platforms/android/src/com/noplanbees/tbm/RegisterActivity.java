@@ -116,12 +116,7 @@ public class RegisterActivity extends Activity{
 		Integer i = 0;
 		
 		for (LinkedTreeMap<String, String> fm : friendList){
-			Friend f = friendFactory.makeInstance(this);
-			f.set(Friend.Attributes.FIRST_NAME, fm.get("first_name"));
-			f.set(Friend.Attributes.LAST_NAME, fm.get("last_name"));
-			f.set(Friend.Attributes.ID, fm.get("id"));
-			f.set(Friend.Attributes.MKEY, fm.get("mkey"));
-			f.set(Friend.Attributes.MOBILE_NUMBER, fm.get("mobile_number"));
+			FriendFactory.addFriendFromServerParams(this, fm);
 			i ++;
 		}
 		user.set(User.Attributes.REGISTERED, "true");

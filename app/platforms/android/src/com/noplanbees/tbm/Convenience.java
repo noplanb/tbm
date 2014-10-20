@@ -145,4 +145,8 @@ public class Convenience {
 		return s.substring(l-n, l);
 	}
 	
+	//------------
+	// URI helpers
+	//------------
+	
 }
