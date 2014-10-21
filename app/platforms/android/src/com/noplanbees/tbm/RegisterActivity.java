@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -48,7 +49,7 @@ public class RegisterActivity extends Activity{
 	private void getUser() {	
 		EditText phoneView = (EditText) findViewById(R.id.phoneNumber);
 		String phoneNumber = phoneView.getText().toString().replaceAll(" ", "");
-		new GetUser("/reg/get_user?mobile_number=" + phoneNumber);
+		new GetUser("/reg/get_user?mobile_number=" + Uri.encode(phoneNumber));
 	}
 
 	class GetUser extends Server{

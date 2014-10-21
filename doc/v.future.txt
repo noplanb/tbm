@@ -5,7 +5,7 @@ Features
   - Appears to try to delete video file twice in case it is older than the oldest
 - Add polling for status
 - Get the users profile for filling in name and phone number in reg. see http://developer.android.com/guide/topics/providers/contacts-provider.html
-
+- Registration pre populate first last phone using ContactsContract.Profile.
 
 Bugs
 - IntentHandler:  PowerManager pm = (PowerManager) homeActivity.getSystemService(Context.POWER_SERVICE);

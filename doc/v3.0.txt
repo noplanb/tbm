@@ -215,7 +215,8 @@ ContactsManager
     - String[] autocomplete consists of name.
   - BenchController gets list of valid phone numbers for contact with lookupKey
     - Tests to make sure it isnt an existing friend
-    - Asks the user which is the mobile number
+      - If it is an existing friend just select the friend
+    - Dialog asks the user which is the mobile number
     - Continues same as for sms
 
 TODO:

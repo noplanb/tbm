@@ -1,6 +1,11 @@
 package com.noplanbees.tbm;
 
 import android.content.Context;
+import android.util.Log;
+
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 public class User extends ActiveModel{
     
@@ -56,4 +61,43 @@ public class User extends ActiveModel{
     public String getFullName(){
     	return getFirstName() + " " + getLastName();
     }
+    
+    public PhoneNumber getPhoneNumberObj(){
+    	PhoneNumber r = null;
+    	try {
+    		r = PhoneNumberUtil.getInstance().parse(get(Attributes.MOBILE_NUMBER), "US");
+    	} catch (NumberParseException e) {
+			Log.e(TAG, "ERROR: " + get(Attributes.MOBILE_NUMBER) + ":  NumberParseException was thrown: " + e.toString());
+    	}
+    	return r;
+    }
+    
+    public Integer getCountryCode(){
+    	if (getPhoneNumberObj() == null)
+    		return null;
+    	return getPhoneNumberObj().getCountryCode();
+    }
+    
+    public String getRegion(){
+    	if (getCountryCode() == null)
+    		return null;
+    	return PhoneNumberUtil.getInstance().getRegionCodeForCountryCode(getCountryCode());
+    }
+    
+    public String getAreaCode(){
+    	PhoneNumber pn = getPhoneNumberObj();
+    	if (pn == null)
+    		return "";
+    	
+    	PhoneNumberUtil pu = PhoneNumberUtil.getInstance();    	
+    	String nsn = pu.getNationalSignificantNumber(pn);
+    	int length =    pu.getLengthOfNationalDestinationCode(pn);
+
+    	if (length > 0) {
+    	  return nsn.substring(0,  length);
+    	} else {
+    		return "";
+    	}
+    }
+    
 }

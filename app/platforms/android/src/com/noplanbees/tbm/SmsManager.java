@@ -9,7 +9,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.Telephony.Sms;
 import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
@@ -24,6 +23,14 @@ public class SmsManager {
 		public static final String MOBILE_NUMBER = "mobileNumber";
 		public static final String NUM_MESSAGES = "numMessages";
 		public static final String RAW_CONTACT_ID = "rawContactId";
+	}
+	
+	public static class SmsColumnNames{
+		
+//		public static final String person = Sms.Inbox.PERSON;
+//	    public static final String address = Sms.Inbox.ADDRESS;
+		public static final String PERSON = "person";
+	    public static final String ADDRESS = "address";
 	}
 
 	public static SmsManager instance;
@@ -114,8 +121,8 @@ public class SmsManager {
 			return;
 
 		numMessages = new LinkedTreeMap<String, Integer>();
-		int addrCol = messagesCursor.getColumnIndex(Sms.Inbox.ADDRESS);
-		int personCol = messagesCursor.getColumnIndex(Sms.Inbox.PERSON);
+		int addrCol = messagesCursor.getColumnIndex(SmsColumnNames.ADDRESS);
+		int personCol = messagesCursor.getColumnIndex(SmsColumnNames.PERSON);
 
 		messagesCursor.moveToFirst();
 		do {
@@ -139,8 +146,8 @@ public class SmsManager {
 
 		rawContactIdByPhone = new LinkedTreeMap<String, String>();
 
-		int addrCol = messagesCursor.getColumnIndex(Sms.Inbox.ADDRESS);
-		int persCol = messagesCursor.getColumnIndex(Sms.Inbox.PERSON);
+		int addrCol = messagesCursor.getColumnIndex(SmsColumnNames.ADDRESS);
+		int persCol = messagesCursor.getColumnIndex(SmsColumnNames.PERSON);
 
 		messagesCursor.moveToFirst();
 		do {
@@ -180,9 +187,9 @@ public class SmsManager {
 			// This is more effective on my phone than using the RawContactId in person. It caught amit where the former did not.
 			Map<String, String> firstLast = ContactsManager.getFirstLastWithPhone(context, mobileNumber);
 
-			entry.put(Keys.FIRST_NAME, firstLast.get(ContactsManager.Keys.FIRST_NAME));
-			entry.put(Keys.LAST_NAME, firstLast.get(ContactsManager.Keys.LAST_NAME));
-			entry.put(Keys.DISPLAY_NAME, firstLast.get(ContactsManager.Keys.DISPLAY_NAME));
+			entry.put(Keys.FIRST_NAME, firstLast.get(Contact.ContactKeys.FIRST_NAME));
+			entry.put(Keys.LAST_NAME, firstLast.get(Contact.ContactKeys.LAST_NAME));
+			entry.put(Keys.DISPLAY_NAME, firstLast.get(Contact.ContactKeys.DISPLAY_NAME));
 			rankedPhoneData.add(entry);
 		}
 	}

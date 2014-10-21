@@ -120,30 +120,7 @@ public class Convenience {
 		} while (c.moveToNext());
 	}
 
-	//---------------------
-	// Phone number helpers
-	//---------------------
-	
-	// Match by matching the last 6 digits.
-	public static boolean mobileNumbersMatch(String m1, String m2) {
-		if (m1==null || m1.equals("") || m2==null || m2.equals(""))
-			return false;
-		
-		m1 = cleanPhone(m1);
-		m2 = cleanPhone(m2);
-		return lastNCharacters(m1, 6).equals(lastNCharacters(m2,6));
-	}
 
-	public static String cleanPhone(String m) {
-		return m.replaceAll("\\D+", "");
-	}
-	
-	public static String lastNCharacters(String s, int n){
-		int l = s.length();
-		if (l < n)
-			return s;
-		return s.substring(l-n, l);
-	}
 	
 	//------------
 	// URI helpers

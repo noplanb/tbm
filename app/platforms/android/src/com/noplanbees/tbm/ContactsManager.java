@@ -6,16 +6,18 @@ import java.util.Map;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.PhoneLookup;
 import android.provider.ContactsContract.RawContacts;
+import android.text.method.TextKeyListener;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -25,44 +27,36 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
-import com.google.i18n.phonenumbers.Phonenumber;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 public class ContactsManager implements OnItemClickListener{
 
 	private final static String STAG = ContactsManager.class.getSimpleName();
 	private final String TAG = getClass().getSimpleName();
-	
+
 	public static interface ContactSelected{
-		public void contactSelected(LinkedTreeMap<String, String> contact);
+		public void contactSelected(Contact contact);
 	}
-	
-	public static class Keys{
-		public static final String FIRST_NAME = "firstName";
-		public static final String LAST_NAME = "lastName";
-		public static final String DISPLAY_NAME = "displayName";
-		public static final String LOOKUP_KEY = "lookupKey";
-		public static final String PHONE_TYPE = "phoneType";
-		public static final String PHONE_NUMBER = "phoneNumber";
-	}
-		
+
+
+
 	private Context context;
 	private String[] autoCompleteNames;
 	private ArrayAdapter<String> autoCompleteAdapter;
 	private ContactSelected contactSelectedDelegate;
 	private AutoCompleteTextView autoCompleteTextView;
-	
+
 	public ContactsManager(Context c){
 		context = c;
 	}
-	
+
 	//-------------------------
 	// AutocompleteContactsView
 	//-------------------------
 	public void setupAutoComplete(AutoCompleteTextView view){
 		new setupAutoCompleteAsync().execute(view);
 	}
-	
+
 	public class setupAutoCompleteAsync extends AsyncTask<AutoCompleteTextView,Void,AutoCompleteTextView>{
 		@Override
 		protected AutoCompleteTextView doInBackground(AutoCompleteTextView... textViews) {
@@ -76,16 +70,19 @@ public class ContactsManager implements OnItemClickListener{
 			setupContactsAutoCompleteView(textView);
 		}
 	}
-	
+
 	private void setAutoCompleteNames(){
 		String[] projection = new String[]{Contacts.DISPLAY_NAME};
-		String selection = Contacts.HAS_PHONE_NUMBER + "=1";
-		Cursor c = context.getContentResolver().query(Contacts.CONTENT_URI, projection, selection, null , null);
+        // Get all contacts whether they have a phone or not. We will prompt the user if no phone later.		
+		// String selection = Contacts.HAS_PHONE_NUMBER + "=1";
+		Cursor c = context.getContentResolver().query(Contacts.CONTENT_URI, projection, null, null , null);
 		if (c == null || c.getCount() == 0){
 			Log.e(TAG, "ERROR: setAutoCompleteData: got null cursor from contacs query");
+			if (c != null)
+				c.close();
 			return;
 		}
-		
+
 		autoCompleteNames = new String[c.getCount()];
 		int di = c.getColumnIndex(Contacts.DISPLAY_NAME);
 		c.moveToFirst();
@@ -95,8 +92,9 @@ public class ContactsManager implements OnItemClickListener{
 			i++;
 		} while (c.moveToNext());
 		c.close();
-		
+
 		Log.i(STAG, "count = " + autoCompleteNames.length);
+		// printAllPhoneNumberObjectForNames(autoCompleteNames);
 	}
 
 	public void setupContactsAutoCompleteView(AutoCompleteTextView atv) {
@@ -105,23 +103,38 @@ public class ContactsManager implements OnItemClickListener{
 		autoCompleteTextView.setAdapter(autoCompleteAdapter);
 		autoCompleteTextView.setOnItemClickListener(this);
 	}
-	
+
+	//-----------------------
+	// AutoComplete itemClick
+	//-----------------------
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		String name = autoCompleteTextView.getText().toString();
-		Log.i(TAG, "onItemClick:" + name);	
-		Log.i(TAG, "validPhones:" +validPhonesWithDisplayName(name));
+		String displayName = autoCompleteTextView.getText().toString();
+		LinkedTreeMap<String, String> c = getFirstLastWithDisplayName(displayName);
+		c.put(Contact.ContactKeys.DISPLAY_NAME, displayName);
+		ArrayList<LinkedTreeMap<String, String>> vpos = validPhoneObjectsWithDisplayName(displayName);
+		Contact contact = new Contact(c, vpos);
+		
+		hideKeyboard();
+		notifyContactSelected(contact);
+		// autoCompleteTextView.getText().clear();
+		TextKeyListener.clear(autoCompleteTextView.getEditableText());
 	}
 
 	public void setContactSelectedDelegate(ContactSelected csd){
 		contactSelectedDelegate = csd;
 	}
-	
-	private void notifyContactSelected (LinkedTreeMap<String, String> contact){
+
+	private void notifyContactSelected (Contact contact){
 		if (contactSelectedDelegate != null)
 			contactSelectedDelegate.contactSelected(contact);
 	}
 	
+	public void hideKeyboard(){
+		InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(autoCompleteTextView.getWindowToken(), 0);
+	}
+
 	//----------------
 	// Contact look up
 	//----------------
@@ -134,109 +147,170 @@ public class ContactsManager implements OnItemClickListener{
 		Map<String, String> result = new HashMap<String, String>();
 		if (c != null && c.getCount() != 0) {
 			c.moveToFirst();
-			result.put(Keys.FIRST_NAME, c.getString(c.getColumnIndex(CommonDataKinds.StructuredName.GIVEN_NAME)));
-			result.put(Keys.LAST_NAME, c.getString(c.getColumnIndex(CommonDataKinds.StructuredName.FAMILY_NAME)));
-			result.put(Keys.DISPLAY_NAME, c.getString(c.getColumnIndex(CommonDataKinds.StructuredName.DISPLAY_NAME)));
-			c.close();
+			result.put(Contact.ContactKeys.FIRST_NAME, c.getString(c.getColumnIndex(CommonDataKinds.StructuredName.GIVEN_NAME)));
+			result.put(Contact.ContactKeys.LAST_NAME, c.getString(c.getColumnIndex(CommonDataKinds.StructuredName.FAMILY_NAME)));
+			result.put(Contact.ContactKeys.DISPLAY_NAME, c.getString(c.getColumnIndex(CommonDataKinds.StructuredName.DISPLAY_NAME)));
 		}
+		if (c != null)
+			c.close();
 		return result;
 	}
 
-	public static Map<String, String> getFirstLastWithPhone(Context context, String phoneNumber){
+	public static LinkedTreeMap<String, String> getFirstLastWithPhone(Context context, String phoneNumber){
 		Uri uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
 		Cursor c = context.getContentResolver().query(uri,null,null,null,null);
 
-		Map<String, String> r = new HashMap<String, String>();
 		String displayName = null;
 		if (c != null && c.getCount() != 0){
 			c.moveToFirst();
 			displayName = c.getString(c.getColumnIndex(PhoneLookup.DISPLAY_NAME));
 		}
-		c.close();
+		if (c != null)
+			c.close();
 		return getFirstLastWithDisplayName(displayName);
 	}
-	
-	private static Map<String,String> getFirstLastWithDisplayName(String displayName){
-		Map<String, String> r = new HashMap<String, String>();
+
+	private static LinkedTreeMap<String,String> getFirstLastWithDisplayName(String displayName){
+		LinkedTreeMap<String, String> r = new LinkedTreeMap<String, String>();
 		if (displayName != null){
-			r.put(Keys.DISPLAY_NAME, displayName);
+			r.put(Contact.ContactKeys.DISPLAY_NAME, displayName);
 
 			int spaceI = displayName.indexOf(' ');
 			if (spaceI == -1){
-				r.put(Keys.FIRST_NAME, displayName);
+				r.put(Contact.ContactKeys.FIRST_NAME, displayName);
 			} else {
-				r.put(Keys.FIRST_NAME, displayName.substring(0, spaceI));
-				r.put(Keys.LAST_NAME, displayName.substring(spaceI+1, displayName.length()));
+				r.put(Contact.ContactKeys.FIRST_NAME, displayName.substring(0, spaceI));
+				r.put(Contact.ContactKeys.LAST_NAME, displayName.substring(spaceI+1, displayName.length()));
 			}
 		}
 		return r;
 	}
-	
-	private ArrayList<LinkedTreeMap<String,String>> validPhonesWithDisplayName(String displayName){
+
+	//--------------------------
+	// Phone numbers for contact
+	//--------------------------
+	private ArrayList<LinkedTreeMap<String,String>> validPhoneObjectsWithDisplayName(String displayName){
 		String cId = contactIdWithDisplayName(displayName);
 		if (cId == null)
 			return null;
-		
+
 		ArrayList<String>rcIds = rawContactIdsWithContactId(cId);
-		return phoneNumbersWithRawContactIds(rcIds);
+		ArrayList<LinkedTreeMap<String, String>> pnos =  phoneNumberObjectsWithRawContactIds(rcIds);
+		return validPhoneNumberObjectsWithPhoneNumbers(pnos);
 	}
-	
+
 	private String contactIdWithDisplayName(String displayName){
-		String selection = Contacts.DISPLAY_NAME + "='" + displayName + "'";
+		String selection = Contacts.DISPLAY_NAME + "=" + DatabaseUtils.sqlEscapeString(displayName);
 		String[] projection = {Contacts._ID};
 		Cursor c = context.getContentResolver().query(Contacts.CONTENT_URI, projection, selection, null, null);
-		if (c.getCount() == 0)
-			return null;
-		
-		c.moveToFirst();
-		return c.getString(c.getColumnIndex(Contacts._ID));
+		String r = null;
+
+		if (c != null && c.getCount() != 0){
+			c.moveToFirst();
+			r = c.getString(c.getColumnIndex(Contacts._ID));
+		}
+
+		if (c != null)
+			c.close();
+		return r;
 	}
-	
+
 	private ArrayList<String> rawContactIdsWithContactId(String contactId){
 		ArrayList<String> r = new ArrayList<String>();
 		String selection = RawContacts.CONTACT_ID + "='" + contactId + "'";
 		String[] projection = {RawContacts._ID};
 		Cursor c = context.getContentResolver().query(RawContacts.CONTENT_URI, projection, selection, null, null);
-		Log.i(TAG, "rawContactIds count: " + c.getCount());
-		c.moveToFirst();
-		do {
-			r.add(c.getString(c.getColumnIndex(RawContacts._ID)));
-		} while (c.moveToNext());
-		Log.i(TAG, "rawContactIds: " + r);
+		if (c != null && c.getCount() != 0){
+			// Log.i(TAG, "rawContactIds count: " + c.getCount());
+			c.moveToFirst();
+			do {
+				r.add(c.getString(c.getColumnIndex(RawContacts._ID)));
+			} while (c.moveToNext());
+		}
+		if (c != null)
+			c.close();
+		// Log.i(TAG, "rawContactIds: " + r);
 		return r;
 	}
-	
-	private ArrayList<LinkedTreeMap<String, String>> phoneNumbersWithRawContactIds(ArrayList<String>rawContactIds){
+
+	private ArrayList<LinkedTreeMap<String, String>> phoneNumberObjectsWithRawContactIds(ArrayList<String>rawContactIds){
 		ArrayList <LinkedTreeMap<String, String>> r = new ArrayList <LinkedTreeMap<String,String>>();
 		String[] projection = {CommonDataKinds.Phone.NUMBER, CommonDataKinds.Phone.TYPE};
 		String selection = Data.RAW_CONTACT_ID + "=? AND " + Data.MIMETYPE +"= '"+ CommonDataKinds.Phone.CONTENT_ITEM_TYPE + "'";
 		for (String rcId : rawContactIds){
-//			allDataWithRawContactId(rcId);
+			//			allDataWithRawContactId(rcId);
 			Cursor c = context.getContentResolver().query(Data.CONTENT_URI, projection, selection, new String[]{rcId}, null);
-			if (c == null || c.getCount() == 0)
+			if (c == null)
 				continue;
 			
+			if (c.getCount() == 0){
+				c.close();
+				continue;
+			}
+
 			Log.i(TAG, "rawCId:" + rcId + " dataCount:" + c.getCount());
 			c.moveToFirst();
 			do {
 				LinkedTreeMap<String, String>e = new LinkedTreeMap<String,String>();
 				int pt = c.getInt(c.getColumnIndex(CommonDataKinds.Phone.TYPE));
 				String phoneType = (String) CommonDataKinds.Phone.getTypeLabel(context.getResources(), pt, "");
-				e.put(Keys.PHONE_TYPE, phoneType);
-				e.put(Keys.PHONE_NUMBER, c.getString(c.getColumnIndex(CommonDataKinds.Phone.NUMBER)));
+				e.put(Contact.PhoneNumberKeys.PHONE_TYPE, phoneType);
+				e.put(Contact.PhoneNumberKeys.PHONE_NUMBER, c.getString(c.getColumnIndex(CommonDataKinds.Phone.NUMBER)));
 				r.add(e);
 			} while (c.moveToNext());
+			c.close();
 		}
 		return r;
 	}
-	
-	private ArrayList<PhoneNumber> validPhoneNumbersWithPhoneNumbers(ArrayList<String> phoneNumbers){
-		ArrayList<PhoneNumber> r = new ArrayList<PhoneNumber>();
+
+	private ArrayList<LinkedTreeMap<String, String>> validPhoneNumberObjectsWithPhoneNumbers(ArrayList<LinkedTreeMap<String,String>> phoneNumbers){
+		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
+		ArrayList<LinkedTreeMap<String,String>> r = new ArrayList<LinkedTreeMap<String,String>>();
+		for (LinkedTreeMap<String, String> phoneHash : phoneNumbers){
+			String ps = phoneHash.get(Contact.PhoneNumberKeys.PHONE_NUMBER);
+			PhoneNumber pn = getPhoneObject(ps, UserFactory.current_user().getRegion(), UserFactory.current_user().getAreaCode());
+			if (pn != null && pu.isValidNumber(pn)){
+				phoneHash.put(Contact.PhoneNumberKeys.INTERNATIONAL, pu.format(pn, PhoneNumberFormat.INTERNATIONAL));
+				phoneHash.put(Contact.PhoneNumberKeys.NATIONAL, pu.format(pn, PhoneNumberFormat.NATIONAL));
+				phoneHash.put(Contact.PhoneNumberKeys.E164, pu.format(pn, PhoneNumberFormat.E164));
+				r.add(phoneHash);
+			}
+		}
 		return r;
 	}
-	
 
+	// Tries to prepend a default AreaCode in order to make a valid number.
+	private static PhoneNumber getPhoneObject(String phone, String defaultRegion, String defaultAreaCode){
+		// Log.i(STAG, "getPhoneObject:" +  phone + " defaultRegion:" + defaultRegion + " defaultAreaCode:" + defaultAreaCode);
+		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
+		PhoneNumber pn = null;
+		try {
+			pn = pu.parse(phone, defaultRegion);
+			if (!pu.isValidNumber(pn)){
+				pn = pu.parse(defaultAreaCode + phone, defaultRegion);
+			}
+		} catch (NumberParseException e) {
+			try {
+				pn = pu.parse(defaultAreaCode + phone, defaultRegion);
+			} catch (NumberParseException e1) {
+				Log.e(STAG, phone + ":  NumberParseException was thrown: " + e.toString());
+			}
+		}
+		return pn;
+	}
 	
+	//----------------------
+	// Phone Number Matching
+	//----------------------
+	public static boolean isPhoneNumberMatch(String p1, String p2){
+		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
+		PhoneNumberUtil.MatchType mt = pu.isNumberMatch(p1, p2);
+		if (mt == PhoneNumberUtil.MatchType.SHORT_NSN_MATCH || mt == PhoneNumberUtil.MatchType.EXACT_MATCH)
+			return true;
+		else
+			return false;
+	}
+
 	//----------------
 	// Tests and debug
 	//----------------
@@ -244,6 +318,15 @@ public class ContactsManager implements OnItemClickListener{
 		String where = Data.MIMETYPE + "='" + CommonDataKinds.Phone.CONTENT_ITEM_TYPE + "'";
 		String[] projection = new String[] {CommonDataKinds.Phone.NUMBER};
 		Cursor c = context.getContentResolver().query(Data.CONTENT_URI, projection, where, null, null);
+		
+		if (c == null)
+			return;
+		
+		if (c.getCount() == 0){
+			c.close();
+			return;
+		}
+		
 		Log.i(STAG, "count = " + c.getCount());
 		c.moveToFirst();
 		do {
@@ -258,8 +341,9 @@ public class ContactsManager implements OnItemClickListener{
 				Log.e(STAG, phone + ":  NumberParseException was thrown: " + e.toString());
 			}
 		} while (c.moveToNext());
+		c.close();
 	}
-	
+
 	private void printAutoCompleteNames(){
 		for (String n : autoCompleteNames){
 			Log.i(TAG, n);
@@ -276,5 +360,12 @@ public class ContactsManager implements OnItemClickListener{
 				Log.i(TAG, c.getColumnName(i) +":" + c.getString(i));
 			}
 		} while (c.moveToNext());
+		c.close();
+	}
+
+	private void printAllPhoneNumberObjectForNames(String[] names){
+		for (String name : names){
+			Log.i(TAG, name + " "  +validPhoneObjectsWithDisplayName(name).toString());
+		}
 	}
 }

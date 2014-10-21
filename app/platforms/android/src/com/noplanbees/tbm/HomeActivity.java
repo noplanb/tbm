@@ -699,10 +699,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	        	benchController.toggle();
 	            return true;
 	        case R.id.action_get_contacts:
-	        	new ContactsManager(this);
+	        	ContactsManager.allPhones(this);
 	            return true;
 	        case R.id.action_get_sms:
-	    		Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+	        	Log.i(TAG, "Region:" + UserFactory.current_user().getRegion() + " CountryCode:" + UserFactory.current_user().getCountryCode());
 	            return true;
 	        case R.id.action_reset:
 				ActiveModelsHandler.destroyAll(instance);

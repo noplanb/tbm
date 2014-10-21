@@ -8,6 +8,10 @@ import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
 
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -94,6 +98,20 @@ public class Friend extends ActiveModel{
 
 	public void setHasApp(){
 		set(Attributes.HAS_APP, "true");
+	}
+	
+	//------------
+	// PhoneNumber
+	//------------
+	public PhoneNumber getPhoneNumber() {
+		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
+		PhoneNumber pn = null;
+		try {
+			pn = pu.parse(get(Attributes.MOBILE_NUMBER), UserFactory.current_user().getRegion());
+		} catch (NumberParseException e) {
+			Log.e(TAG, "ERROR: Could not get phone nubmer object for friends phone this should never happen.");
+		}
+		return pn;
 	}
 
 	//----------------
@@ -585,6 +603,8 @@ public class Friend extends ActiveModel{
 	public String fullName() {
 		return get(Attributes.FIRST_NAME) + " " + get(Attributes.LAST_NAME);
 	}
+
+
 
 
 
