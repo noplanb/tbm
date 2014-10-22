@@ -4,11 +4,14 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.Friend.Attributes;
 
 public class InviteManager {
 
@@ -19,9 +22,10 @@ public class InviteManager {
 	private Friend friend;
 	private ProgressDialog progress;
 
-	public InviteManager(Context c, BenchObject b){
+	public InviteManager(Context c, BenchObject bo){
+		Log.i(TAG, "InviteManager: " + bo.displayName +" "+ bo.mobileNumber);
 		context = c;
-		benchObject = b;
+		benchObject = bo;
 		setupProgressDialog();
 		invite();
 	}
@@ -36,7 +40,7 @@ public class InviteManager {
 		Uri.Builder builder = new Uri.Builder();
 		builder.appendPath("invitation")
 		.appendPath("invite")
-		.appendQueryParameter(FriendFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY))
+		.appendQueryParameter(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH))
 		.appendQueryParameter(FriendFactory.ServerParamKeys.MOBILE_NUMBER, benchObject.mobileNumber)
 		.appendQueryParameter(FriendFactory.ServerParamKeys.FIRST_NAME, benchObject.firstName)
 		.appendQueryParameter(FriendFactory.ServerParamKeys.LAST_NAME, benchObject.lastName);
@@ -59,12 +63,14 @@ public class InviteManager {
 		@Override
 		public void error(String errorString) {
 			Log.e(TAG, "Error: " + errorString);
+			progress.hide();
 			serverError();
 		}	
 	}
 
 	private void gotFriend(String response) {
 		addFriend(response);
+		GridManager.moveFriendToGrid(friend);
 		sendSmsIfNecessary();
 	}
 	
@@ -77,10 +83,12 @@ public class InviteManager {
 	}
 	
 	private void sendSmsIfNecessary() {
-		if (friend != null && !friend.hasApp())
-			Log.i(TAG, "User sending sms");
-		else
+		if (friend != null && !friend.hasApp()){
+			Log.i(TAG, "Friend and no app sending sms");
+			showSmsDialog();
+		} else {
 			Log.i(TAG, "Friend has app or doesnt exit. Not sending sms.");
+		}
 	}
 	
 
@@ -109,5 +117,38 @@ public class InviteManager {
 	}
 
 
+	//----------------------------
+	// Send Sms with download link
+	//----------------------------
 
+	private void showSmsDialog(){
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setTitle("Invite")
+		.setMessage(friend.get(Friend.Attributes.FIRST_NAME) + " has not installed " + Config.appName + " yet.\n\nSend them a link!")
+		.setPositiveButton("Send", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				showSms();
+			}
+		}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+			}
+	    });
+		AlertDialog alertDialog = builder.create();
+		alertDialog.show();
+	}
+	
+	private void showSms(){
+		String mn = "+16502453537";
+		Intent i = new Intent(Intent.ACTION_SEND);
+		i.setData(Uri.parse("smsto:" + mn)).
+		putExtra("address", mn).
+		putExtra("sms_body", "I sent you a message on " + Config.appName + ". Get it. Its great. http://asdf");
+
+		try {
+		    context.startActivity(Intent.createChooser(i, "Send sms..."));
+		} catch (android.content.ActivityNotFoundException ex) {
+		    Toast.makeText(context, "There are no sms clients installed.", Toast.LENGTH_SHORT).show();
+		}
+
+	}
 }

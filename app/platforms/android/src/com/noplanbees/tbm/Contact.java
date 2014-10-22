@@ -39,4 +39,8 @@ public class Contact {
 	public String getLastName() {
 		return contact.get(ContactKeys.LAST_NAME);
 	}
+	
+	public String toString(){
+		return "contact: " + contact.toString() + "\n" + "phoneObjects: " + phoneObjects.toString();
+	}
 }

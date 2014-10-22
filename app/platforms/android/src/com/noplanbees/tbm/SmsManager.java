@@ -12,6 +12,9 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 public class SmsManager {
 
@@ -132,12 +135,30 @@ public class SmsManager {
 				continue;
 
 			String mobileNumber = messagesCursor.getString(addrCol);
+			mobileNumber = getValidE164ForNumber(mobileNumber);
+			// Ignore if not valid number. Should always be a valid number though since it has received sms.
+			if (mobileNumber == null)
+				continue;
+			
 			Integer n = numMessages.get(mobileNumber);
 			if (n == null)
 				numMessages.put(mobileNumber, 1);
 			else
 				numMessages.put(mobileNumber, n+1);				
 		} while (messagesCursor.moveToNext());
+	}
+	
+	private String getValidE164ForNumber(String phone){
+		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
+		String r = null;
+		try {
+			PhoneNumber pn = pu.parse(phone, UserFactory.current_user().getRegion());
+			if (pu.isValidNumber(pn))
+				r = pu.format(pn, PhoneNumberUtil.PhoneNumberFormat.E164);
+		} catch (NumberParseException e) {
+			Log.e(TAG, "ERROR: found sms number not valid. Not expected to ever happen.");
+		}
+		return r;
 	}
 
 	private void rawContactIdByPhone(){

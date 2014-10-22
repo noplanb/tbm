@@ -1,91 +1,117 @@
 package com.noplanbees.tbm;
 
 import android.app.Activity;
-import android.graphics.Point;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 
-import com.google.gson.internal.LinkedTreeMap;
+public class SelectPhoneNumberDialog implements OnItemClickListener{
+	private final String TAG = getClass().getSimpleName();
 
-public class SelectPhoneNumberDialog {
+	public interface SelectPhoneNumberDelegate{
+		public void phoneSelected(Contact contact, int phoneIndex);
+	}
 
-	public static final float PERCENT_OF_WINDOW = 0.75f;
+	public static final float PERCENT_OF_WINDOW_WIDTH = 0.75f;
+	public static final float PERCENT_OF_WINDOW_HEIGHT = 0.4f;
 
 	private Activity activity;
 	private Contact contact;
-	private RelativeLayout frame;
+	private SelectPhoneNumberDelegate delegate;
+	private AlertDialog dialog;
 	private ListView listView;
-	private TextView titleText;
-	private String[] phoneNumbers;
+	private PhoneNumberListAdapter pnla;
 
-	public SelectPhoneNumberDialog(Activity a, Contact contact){
+	public SelectPhoneNumberDialog(Activity a, Contact c, SelectPhoneNumberDelegate delegate){
 		activity = a;
-		this.contact = contact;
-		frame = (RelativeLayout) activity.findViewById(R.id.select_phone_number_frame);
-		titleText = (TextView) frame.findViewById(R.id.select_phone_number_title);
-		listView = (ListView) frame.findViewById(R.id.select_phone_number_list_view);
+		contact = c;
+		this.delegate = delegate;
+		setupDialogAndShow();
+	}
 
-		setupFrame();
-		setupTitle();
-		setupList();
+	private void setupDialogAndShow(){
+		AlertDialog.Builder db = new AlertDialog.Builder(activity);
+		db.setTitle(contact.getFirstName() + "'s mobile?").
+		setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+			}
+		});
+		
+		LayoutInflater inflater = activity.getLayoutInflater();
+		listView = (ListView) inflater.inflate(R.layout.dialog_list_view, null);
+		listView.setOnItemClickListener(this);
+		db.setView(listView);
+
+		pnla = new PhoneNumberListAdapter(activity, contact);
+		listView.setAdapter(pnla);
+
+		dialog = db.show();
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		hide();
+		if (delegate != null)
+			delegate.phoneSelected(contact, position);
+	}
+
+	public void hide(){
+		if (dialog != null)
+			dialog.dismiss();
 	}
 
 
-	//------------
-	// Setup views
-	//------------
-	private void setupFrame(){
-		LayoutParams lp = new LayoutParams(dialogWidth(), dialogHeight());
-		frame.setLayoutParams(lp);
-		frame.setX(xPos());
-		frame.setY(yPos());
-	}
+	//-----------------------
+	// PhoneNumberListAdapter
+	//-----------------------
+	public class PhoneNumberListAdapter extends BaseAdapter{
 
-	private void setupTitle(){
-		titleText.setText(contact.getDisplayName());
-	}
+		private Activity activity;
+		private Contact contact;
 
-	private void setupList(){
-		phoneNumbers = new String[contact.phoneObjects.size()];
-		int i = 0;
-		for(LinkedTreeMap<String, String> po : contact.phoneObjects){
-			i++;	
+		public PhoneNumberListAdapter(Activity activity, Contact contact){
+			super();
+			this.activity = activity;
+			this.contact = contact;
 		}
+
+		@Override
+		public int getCount() {
+			return contact.phoneObjects.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return contact.phoneObjects.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			if (convertView == null){
+				LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				convertView = inflater.inflate(R.layout.phone_list_item, parent, false);
+			}
+
+			TextView leftText = (TextView)convertView.findViewById(R.id.left_text);
+			TextView rightText = (TextView)convertView.findViewById(R.id.right_text);
+			leftText.setText(contact.phoneObjects.get(position).get(Contact.PhoneNumberKeys.NATIONAL));
+			rightText.setText(contact.phoneObjects.get(position).get(Contact.PhoneNumberKeys.PHONE_TYPE));
+			return convertView;
+		}
+
 	}
 
-	//----------
-	// Show hide
-	//----------
-	private void show(){
-		frame.setVisibility(View.VISIBLE);
-	}
-
-	private void hide(){
-		frame.setVisibility(View.INVISIBLE);
-	}
-
-	private int dialogWidth(){
-		return (int) (PERCENT_OF_WINDOW * windowSize().x);
-	}
-
-	private int dialogHeight(){
-		return (int) (PERCENT_OF_WINDOW * windowSize().y);
-	}
-
-	private int xPos(){
-		return (windowSize().x - dialogWidth())/2;
-	}
-
-	private int yPos(){
-		return (windowSize().y - dialogWidth())/2;
-	}
-
-	private Point windowSize(){
-		Point p = new Point();
-		activity.getWindowManager().getDefaultDisplay().getSize(p);
-		return p;
-	}
 }

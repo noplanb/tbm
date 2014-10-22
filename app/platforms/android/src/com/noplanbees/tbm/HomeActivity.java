@@ -398,7 +398,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private void setupLongPressTouchHandler() {
 		longpressTouchHandler = new LongpressTouchHandler(this, findViewById(R.id.homeTable)) {
 			@Override
-			public void startLongpress(View v) {	
+			public void startLongpress(View v) {
 				onRecordStart(v);
 			}
 			@Override
@@ -431,6 +431,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	//-------
 	private void onRecordStart(View v){
 		VideoPlayer.stopAll();
+		hideAllCoveringViews();
 		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
 		if (!ge.hasFriend())
 			return;
@@ -465,6 +466,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void onPlayClick(View v) {
+		hideAllCoveringViews();
 		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
 		if (!ge.hasFriend())
 			return;
@@ -508,7 +510,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			p.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					new Invite(instance);
+					benchController.show();
 				}
 			});
 		}
@@ -716,5 +718,13 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
+	
+	//-----------------------------------------
+	// Views that may be covering the home page
+	//-----------------------------------------
+	private void hideAllCoveringViews() {
+		benchController.hideAllViews();
+	}
+
 
 };

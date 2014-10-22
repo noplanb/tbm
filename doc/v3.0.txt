@@ -213,17 +213,23 @@ ContactsManager
   - Queries contacts by hasPhoneNumber returning lookupKey, displayName
     - Lazy query once when contactsManager is first instantiated.
     - String[] autocomplete consists of name.
-  - BenchController gets list of valid phone numbers for contact with lookupKey
+  - BenchController gets list of valid phone numbers for contact
     - Tests to make sure it isnt an existing friend
       - If it is an existing friend just select the friend
     - Dialog asks the user which is the mobile number
     - Continues same as for sms
 
 TODO:
-- Create AutoCompleteContactsView 
-- Add it to the layout of the bench
-- Call to set it up in bench controller when showing the view
-- Item picked get the 
+x Create AutoCompleteContactsView 
+x Add it to the layout of the bench
+x Call to set it up in bench controller when showing the view
+x Item picked get the contact
+
+
+SelectPhoneNumberDialog
+-----------------------
+- Add kind of phone number field
+  - Create a phoneNumberSelect itemView
 
 
 
@@ -258,6 +264,20 @@ Handling phone numbers.
 IMPORTANT: Handle phone numbers and phone number comparison in ruby properly when doing invites.
   
 
-
+GENERAL TODO:
+-------------
+ x Change find contact_id with name and all other queries to use the ? notation.
+ x Check that Liz O'Donnel doesn't break in this case.
+ 
+ x Add setContactAndShow() to selectPhoneNumberDialog
+ x Instantiate selectPhoneNumberDialog in Bench Controller at the beginning.
+ x Add hideAllViews to BenchController
+ x Call benchController.HideAllViews on any click or start recording in homeActivity
+ x Call benchController.HideAllViews on show bench
+ 
+ x Make sure ranked sms have valid and properly formatted phone number.
+ 
+ - Add a swipe gesture to open and close the bench.
+ 
 
   

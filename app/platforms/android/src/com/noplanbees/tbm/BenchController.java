@@ -19,7 +19,7 @@ import android.widget.RelativeLayout;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Friend.Attributes;
 
-public class BenchController implements SmsManager.SmsManagerCallback, OnItemClickListener, ContactsManager.ContactSelected{
+public class BenchController implements SmsManager.SmsManagerCallback, OnItemClickListener, ContactsManager.ContactSelected, SelectPhoneNumberDialog.SelectPhoneNumberDelegate{
 
 	public static final float PERCENT_OF_WINDOW = 0.75f;
 	public static final int ANIMATION_DURATION = 100;
@@ -177,7 +177,10 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 
 	@Override
 	public void contactSelected(Contact contact) {
+		Log.i(TAG, contact.toString());
+		
 		hide();
+
 		Friend f = friendMatchingContact(contact);
 		if (f != null){
 			GridManager.moveFriendToGrid(f);
@@ -191,24 +194,26 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 
 		if (contact.phoneObjects.size() == 1){
 			invite(contact, contact.phoneObjects.get(0));
+			return;
 		} 
 		
-		showSelectPhoneDialog(contact);
+		new SelectPhoneNumberDialog(activity, contact, this);
 	}
 
+	@Override
+	public void phoneSelected(Contact contact, int phoneIndex) {
+		invite(contact, contact.phoneObjects.get(phoneIndex));
+	}
+	
 	private void showNoValidPhonesDialog(Contact contact) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 		builder.setTitle("No Mobile Number")
-		.setMessage("I could not find a valid mobile number for " + contact.getDisplayName() + " Please add a complete mobile number for " + contact.getFirstName() + " in your contacts list and try again.")
+		.setMessage("I could not find a valid mobile number for " + contact.getDisplayName() + ".\n\nPlease add a mobile number for " + contact.getFirstName() + " in your device contacts and try again.")
 		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
 			}
 		})
 		.create().show();
-	}
-	
-	private void showSelectPhoneDialog(Contact contact) {
-		
 	}
 	
 	private void invite(Contact contact, LinkedTreeMap<String,String> mobileNumber) {
@@ -222,7 +227,7 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 		boParams.put(BenchObject.Keys.FIRST_NAME, contact.getFirstName());
 		boParams.put(BenchObject.Keys.LAST_NAME, contact.getLastName());
 		boParams.put(BenchObject.Keys.MOBILE_NUMBER, mobileNumber.get(Contact.PhoneNumberKeys.E164));
-		return null;
+		return new BenchObject(boParams);
 	}
 
 	//--------------
@@ -238,6 +243,8 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 	public void show(){
 		if (isShowing)
 			return;
+		
+		hideAllViews();
 		populate();
 		contactsManager.setupAutoComplete((AutoCompleteTextView) activity.findViewById(R.id.contacts_auto_complete_text_view));
 		anim.setFloatValues((float)hiddenX(), (float)shownX());
@@ -249,11 +256,16 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 		if (!isShowing)
 			return;
 
+		contactsManager.resetViews();
 		anim.setFloatValues((float)shownX(), (float)hiddenX());
 		anim.start();	
 		isShowing = false;
 	}
 
+	public void hideAllViews(){
+		hide();
+		contactsManager.resetViews();
+	}
 
 
 
@@ -277,6 +289,8 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 		activity.getWindowManager().getDefaultDisplay().getSize(p);
 		return p;
 	}
+
+
 
 
 

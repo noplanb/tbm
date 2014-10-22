@@ -18,7 +18,7 @@ public class FriendFactory extends ActiveModelFactory{
 		public static final String FIRST_NAME = "first_name";
 		public static final String LAST_NAME = "last_name";
 		public static final String MKEY = "mkey";
-		public static final String MOBILE_NUMBER = "mobileNumber";
+		public static final String MOBILE_NUMBER = "mobile_number";
 		public static final String HAS_APP = "has_app";
 
 	}
@@ -40,14 +40,15 @@ public class FriendFactory extends ActiveModelFactory{
 	}
 	
 	public static Friend addFriendFromServerParams(Context context, LinkedTreeMap<String,String>params){
-		if (getFactoryInstance().existsWithId(params.get("id"))){
+		Log.i(STAG, "addFriendFromServerParams: " + params);
+		if (getFactoryInstance().existsWithId(params.get(ServerParamKeys.ID).toString())){
 			Log.e(STAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
 			return null;
 		}
 			Friend f = getFactoryInstance().makeInstance(context);
 			f.set(Friend.Attributes.FIRST_NAME, params.get(ServerParamKeys.FIRST_NAME));
 			f.set(Friend.Attributes.LAST_NAME, params.get(ServerParamKeys.LAST_NAME));
-			f.set(Friend.Attributes.ID, params.get(ServerParamKeys.ID));
+			f.set(Friend.Attributes.ID, params.get(ServerParamKeys.ID).toString());
 			f.set(Friend.Attributes.MKEY, params.get(ServerParamKeys.MKEY));
 			f.set(Friend.Attributes.MOBILE_NUMBER, params.get(ServerParamKeys.MOBILE_NUMBER));
 			f.set(Friend.Attributes.HAS_APP, params.get(ServerParamKeys.HAS_APP));

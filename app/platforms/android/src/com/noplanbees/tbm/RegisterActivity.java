@@ -79,13 +79,13 @@ public class RegisterActivity extends Activity{
 			badPhoneError();
 			return;
 		}
-		user.set(User.Attributes.FIRST_NAME, userParams.get("first_name"));
-		user.set(User.Attributes.LAST_NAME, userParams.get("last_name"));
-		user.set(User.Attributes.MOBILE_NUMBER, userParams.get("mobile_number"));
-		user.set(User.Attributes.ID, userParams.get("id").toString());
-		user.set(User.Attributes.MKEY, userParams.get("mkey"));
-		user.set(User.Attributes.AUTH, userParams.get("auth"));
-		new GetFriends("/reg/get_friends?mkey=" + user.get(User.Attributes.MKEY));
+		user.set(User.Attributes.FIRST_NAME, userParams.get(UserFactory.ServerParamKeys.FIRST_NAME));
+		user.set(User.Attributes.LAST_NAME, userParams.get(UserFactory.ServerParamKeys.LAST_NAME));
+		user.set(User.Attributes.MOBILE_NUMBER, userParams.get(UserFactory.ServerParamKeys.MOBILE_NUMBER));
+		user.set(User.Attributes.ID, userParams.get(UserFactory.ServerParamKeys.ID)).toString();
+		user.set(User.Attributes.MKEY, userParams.get(UserFactory.ServerParamKeys.MKEY));
+		user.set(User.Attributes.AUTH, userParams.get(UserFactory.ServerParamKeys.AUTH));
+		new GetFriends("/reg/get_friends?auth=" + user.get(User.Attributes.AUTH));
 	}
 	
 	class GetFriends extends Server{
