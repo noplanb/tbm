@@ -154,6 +154,8 @@ public class ActiveModelFactory {
 	}
 
 	public ActiveModel find(String id){
+		if (id == null)
+			return null;
 		return findWhere("id", id);
 	}
 

@@ -43,7 +43,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	public GcmHandler gcmHandler;
 	public VersionHandler versionHandler;
 	private BenchController benchController;
-	private SmsManager smsManager;
+	private SmsStatsHandler smsStatsHandler;
 
 	private FriendFactory friendFactory;
 	private UserFactory userFactory;
@@ -203,7 +203,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
     // HandleIntentAction
 	//-------------------
 	private void handleIntentAction(){
-		// Right now the only action is to automatically start playing the appropriate video if the user got here by clicking a notification.
+		// Right now the only actions are 
+		// 1) to automatically start playing the appropriate video if the user got here by clicking a notification.
+		// 2) to notify the user if there was a problem sending Sms invite to a friend. (Not used as decided this is unnecessarily disruptive)
 		Log.i(TAG, "handleIntentAction: " + currentIntent.toString());
 		if (currentIntent == null){
 			Log.i(TAG, "handleIntentAction: no intent. Exiting.");
@@ -216,15 +218,22 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			return;
 		}
 		
-		String friendId = currentIntent.getData().getQueryParameter(NotificationAlertManager.ParamKeys.FRIEND_ID);
+		String friendId = currentIntent.getData().getQueryParameter(IntentHandler.IntentParamKeys.FRIEND_ID);
 		if (action == null || friendId == null){
 			Log.i(TAG, "handleIntentAction: no friendId or action. Exiting." + currentIntent.toString());
 			return;
 		}
 		
-		if (action.equals(NotificationAlertManager.Actions.PLAY_VIDEO) && !NotificationAlertManager.screenIsLocked(instance)){
-			currentIntent.setAction(NotificationAlertManager.Actions.NONE);
+		if (action.equals(IntentHandler.IntentActions.PLAY_VIDEO) && !NotificationAlertManager.screenIsLocked(instance)){
+			currentIntent.setAction(IntentHandler.IntentActions.NONE);
 			gridElementFactory.findWithFriendId(friendId).videoPlayer.start();
+		}
+		
+		// Not used as I decided pending intent coming back from sending sms is to disruptive. Just assume
+		// sms's sent go through.
+		if (action.equals(IntentHandler.IntentActions.SMS_RESULT) && !NotificationAlertManager.screenIsLocked(instance)){
+			currentIntent.setAction(IntentHandler.IntentActions.NONE);
+			Log.i(TAG, currentIntent.toString());
 		}
 	}
 	
@@ -416,6 +425,22 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			@Override
 			public void abort(View v) {	
 				onRecordCancel();
+			}
+			@Override
+			public void flingRight() {	
+				benchController.hide();
+			}
+			@Override
+			public void flingLeft() {	
+				benchController.show();
+			}
+			@Override
+			public void flingUp() {	
+				Log.i(TAG, "flingUp");
+			}
+			@Override
+			public void flingDown() {	
+				Log.i(TAG, "flingDown");
 			}
 		};
 

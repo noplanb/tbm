@@ -19,7 +19,7 @@ import android.widget.RelativeLayout;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Friend.Attributes;
 
-public class BenchController implements SmsManager.SmsManagerCallback, OnItemClickListener, ContactsManager.ContactSelected, SelectPhoneNumberDialog.SelectPhoneNumberDelegate{
+public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnItemClickListener, ContactsManager.ContactSelected, SelectPhoneNumberDialog.SelectPhoneNumberDelegate{
 
 	public static final float PERCENT_OF_WINDOW = 0.75f;
 	public static final int ANIMATION_DURATION = 100;
@@ -32,7 +32,7 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 	private ObjectAnimator anim;
 	private ListView listView;
 	private FriendFactory friendFactory;
-	private SmsManager smsManager;
+	private SmsStatsHandler smsStatsHandler;
 	private ArrayList<BenchObject> smsBenchObjects;
 	private ArrayList<BenchObject> currentAllOnBench;
 	private ContactsManager contactsManager;
@@ -43,13 +43,13 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 	public BenchController(Activity a){
 		activity = a;
 		friendFactory = FriendFactory.getFactoryInstance();
-		smsManager = SmsManager.getInstance(activity, this);
-		contactsManager = new ContactsManager(activity);
-		contactsManager.setContactSelectedDelegate(this);
+		smsStatsHandler = SmsStatsHandler.getInstance(activity, this);
+		contactsManager = new ContactsManager(activity, this);
 
 		setupFrame();
 		setupAnimator();
 		setupListView();
+		setupSwipeTouchListener();
 	}
 
 	private void setupFrame() {
@@ -70,17 +70,29 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 		listView.setOnItemClickListener(this);		
 	}
 
+	private void setupSwipeTouchListener() {	
+		listView.setOnTouchListener(new SwipeTouchListener(activity){
+			public void onSwipeRight() {
+				hide();
+			}
+		});
+	}
+	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		hide();
+
 		BenchObject bo = currentAllOnBench.get(position);
 		Log.i(TAG, "Postion:" + position + " " + bo.displayName);
-		if (bo.friendId != null){
-			Friend f = (Friend) friendFactory.find(bo.friendId);
-			GridManager.moveFriendToGrid(f);
-		} else {
+		
+		Friend friend = (Friend) friendFactory.find(bo.friendId);
+		
+		if (friend == null || !friend.hasApp()){
 			new InviteManager(activity, bo);
+			return;
 		}
-		hide();
+		
+		GridManager.moveFriendToGrid(activity, friend);
 	}
 
 	//---------
@@ -116,6 +128,8 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 			e.put(BenchObject.Keys.FRIEND_ID, f.getId());
 			e.put(BenchObject.Keys.MOBILE_NUMBER, f.get(Friend.Attributes.MOBILE_NUMBER));
 			e.put(BenchObject.Keys.DISPLAY_NAME, f.fullName());
+			e.put(BenchObject.Keys.FIRST_NAME, f.get(Friend.Attributes.FIRST_NAME));
+			e.put(BenchObject.Keys.LAST_NAME, f.get(Friend.Attributes.LAST_NAME));
 			r.add(new BenchObject(e));
 		}
 		return r;
@@ -129,10 +143,10 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 		smsBenchObjects = new ArrayList<BenchObject>();
 		for(LinkedTreeMap<String, String> e : rankedPhoneData){
 			LinkedTreeMap<String, String> b = new LinkedTreeMap<String, String>();
-			b.put(BenchObject.Keys.FIRST_NAME, e.get(SmsManager.Keys.FIRST_NAME));
-			b.put(BenchObject.Keys.LAST_NAME, e.get(SmsManager.Keys.LAST_NAME));
-			b.put(BenchObject.Keys.DISPLAY_NAME, e.get(SmsManager.Keys.DISPLAY_NAME));
-			b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(SmsManager.Keys.MOBILE_NUMBER));
+			b.put(BenchObject.Keys.FIRST_NAME, e.get(SmsStatsHandler.Keys.FIRST_NAME));
+			b.put(BenchObject.Keys.LAST_NAME, e.get(SmsStatsHandler.Keys.LAST_NAME));
+			b.put(BenchObject.Keys.DISPLAY_NAME, e.get(SmsStatsHandler.Keys.DISPLAY_NAME));
+			b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(SmsStatsHandler.Keys.MOBILE_NUMBER));
 			smsBenchObjects.add(new BenchObject(b));
 		}
 	}
@@ -183,7 +197,7 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 
 		Friend f = friendMatchingContact(contact);
 		if (f != null){
-			GridManager.moveFriendToGrid(f);
+			GridManager.moveFriendToGrid(activity, f);
 			return;
 		}
 
@@ -289,9 +303,4 @@ public class BenchController implements SmsManager.SmsManagerCallback, OnItemCli
 		activity.getWindowManager().getDefaultDisplay().getSize(p);
 		return p;
 	}
-
-
-
-
-
 }

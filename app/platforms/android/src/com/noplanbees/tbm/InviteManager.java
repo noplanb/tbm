@@ -1,19 +1,27 @@
 package com.noplanbees.tbm;
 
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.telephony.SmsManager;
+import android.text.InputType;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.EditText;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import com.noplanbees.tbm.Friend.Attributes;
 
-public class InviteManager {
+public class InviteManager implements DialogInterface.OnClickListener{
+	
+	private static class IntentActions{
+		public static final String SMS_RESULT = "smsResult";
+	}
 
 	private final String TAG = getClass().getSimpleName();
 
@@ -21,19 +29,23 @@ public class InviteManager {
 	private BenchObject benchObject;
 	private Friend friend;
 	private ProgressDialog progress;
+	private EditText smsBody;
 
 	public InviteManager(Context c, BenchObject bo){
-		Log.i(TAG, "InviteManager: " + bo.displayName +" "+ bo.mobileNumber);
 		context = c;
 		benchObject = bo;
+		Log.i(TAG, "InviteManager: " + benchObject.displayName +" "+ benchObject.firstName +" "+ benchObject.lastName+" "+ benchObject.mobileNumber);
+		friend = (Friend) FriendFactory.getFactoryInstance().find(bo.friendId);
 		setupProgressDialog();
 		invite();
 	}
 
 	public void invite(){
-		if (benchObject.friendId != null)
-			Log.e(TAG, "invite: ERROR: cant invite bench object that already has a friendId");
-		setFriendFromServer();
+		Log.i(TAG, "invite: friend=" + friend);
+		if (friend == null)
+			setFriendFromServer();
+		else if (!friend.hasApp())
+			showPreSmsDialog();
 	}
 
 	private void setFriendFromServer() {
@@ -70,7 +82,6 @@ public class InviteManager {
 
 	private void gotFriend(String response) {
 		addFriend(response);
-		GridManager.moveFriendToGrid(friend);
 		sendSmsIfNecessary();
 	}
 	
@@ -85,7 +96,7 @@ public class InviteManager {
 	private void sendSmsIfNecessary() {
 		if (friend != null && !friend.hasApp()){
 			Log.i(TAG, "Friend and no app sending sms");
-			showSmsDialog();
+			showPreSmsDialog();
 		} else {
 			Log.i(TAG, "Friend has app or doesnt exit. Not sending sms.");
 		}
@@ -102,12 +113,12 @@ public class InviteManager {
 	}
 	
 	private void serverError(){
-		showErrorDialog("Can't reach ThreeByMe.\n\nCheck your connectivity and try again.");
+		showErrorDialog("Can't reach ThreeByMe.\n\nCheck your connection and try again.");
 	}
 	
 	private void showErrorDialog(String message){
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
-		builder.setTitle("Error")
+		builder.setTitle("No Connection")
 		.setMessage(message)
 		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
@@ -120,35 +131,70 @@ public class InviteManager {
 	//----------------------------
 	// Send Sms with download link
 	//----------------------------
-
-	private void showSmsDialog(){
-		AlertDialog.Builder builder = new AlertDialog.Builder(context);
-		builder.setTitle("Invite")
+	
+	private void showPreSmsDialog(){
+		new AlertDialog.Builder(context)
+		.setTitle("Invite")
 		.setMessage(friend.get(Friend.Attributes.FIRST_NAME) + " has not installed " + Config.appName + " yet.\n\nSend them a link!")
 		.setPositiveButton("Send", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
 				showSms();
 			}
-		}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int id) {
-			}
-	    });
-		AlertDialog alertDialog = builder.create();
-		alertDialog.show();
+		}).setNegativeButton("Cancel", this)
+		.show();
 	}
 	
 	private void showSms(){
-		String mn = "+16502453537";
-		Intent i = new Intent(Intent.ACTION_SEND);
-		i.setData(Uri.parse("smsto:" + mn)).
-		putExtra("address", mn).
-		putExtra("sms_body", "I sent you a message on " + Config.appName + ". Get it. Its great. http://asdf");
+		smsBody = new EditText(context);
+		LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+		smsBody.setLayoutParams(lp);
+		smsBody.setText("I sent you a message on " + Config.appName + ". Get the app - it is really great. http://www.zazoapp.com.");
+		smsBody.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_CLASS_TEXT);
+		
+		new AlertDialog.Builder(context)
+		.setTitle("Send Link")
+		.setView(smsBody)
+		.setPositiveButton("Send", this)
+		.setNegativeButton("Cancel", this)
+		.show();
+	}
+	
+	private void showPostSms(){
+		String msg = "You and "+ benchObject.firstName +" are connected.\n\nRecord a welcome " + Config.appName + " to " + benchObject.firstName + " now.";
+		new AlertDialog.Builder(context)
+		.setTitle("You are Connected")
+		.setMessage(msg)
+		.setPositiveButton("Ok", new DialogInterface.OnClickListener(){
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				GridManager.moveFriendToGrid(context, friend);
+			}
+		})
+		.show();
+	}
 
-		try {
-		    context.startActivity(Intent.createChooser(i, "Send sms..."));
-		} catch (android.content.ActivityNotFoundException ex) {
-		    Toast.makeText(context, "There are no sms clients installed.", Toast.LENGTH_SHORT).show();
-		}
 
+	@Override
+	public void onClick(DialogInterface dialog, int which) {
+		Log.i(TAG, "onClick:" + which);
+		if (which == -1)
+			sendSms(smsBody.getText().toString());
+		showPostSms();
+	}
+	
+	private void sendSms(String body){
+		String addr = benchObject.mobileNumber;
+		addr = "+16502453537";
+		Log.i(TAG, "sendSms: " + addr + ": " + body);
+		SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);;
+	}
+	
+	// Not used as the intent coming back into home activity is unnecessarily disruptive.
+	private PendingIntent makeSmsResultPendingIntent(){
+		Intent i = new Intent(context, HomeActivity.class);
+		i.setAction(IntentActions.SMS_RESULT);
+		Uri uri = new Uri.Builder().appendPath(IntentHandler.IntentActions.SMS_RESULT).appendQueryParameter(IntentHandler.IntentParamKeys.FRIEND_ID, friend.getId()).build();
+		i.setData(uri);
+		return PendingIntent.getActivity(context, 0, i, 0);		
 	}
 }

@@ -4,7 +4,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class GridManager {
+import android.animation.Animator;
+import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.content.Context;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+
+public class GridManager{
+	private static final String STAG = GridManager.class.getSimpleName();
+	
 	public static interface GridEventNotificationDelegate{
 		public void gridDidChange();
 	}
@@ -32,12 +44,13 @@ public class GridManager {
 		return allFriends;
 	}
 	
-	public static void moveFriendToGrid(Friend f){
+	public static void moveFriendToGrid(Context c, Friend f){
 		rankingActionOccurred(f);
 		if (!GridElementFactory.getFactoryInstance().friendIsOnGrid(f)){
 			nextAvailableGridElement().setFriend(f);
 			if (gridEventDelegate != null)
 				gridEventDelegate.gridDidChange();
+			GridManager.highLightElementForFriend(c, f);
 		}
 	}
 	
@@ -81,6 +94,42 @@ public class GridManager {
 		return GridElementFactory.getFactoryInstance().findWithFriendId(f.getId());
 	}
 	
-	
+	//----------------------
+	// Highlight grid change
+	//----------------------
+	public static void highLightElementForFriend(Context c, Friend f){
+		final GridElement ge = GridElementFactory.getFactoryInstance().findWithFriend(f);
+		if (ge == null)
+			return;
+		
+		final View v = new View(c);
+		LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+		v.setLayoutParams(lp);
+		v.setBackgroundColor(c.getResources().getColor(R.color.yellow));
+		v.setAlpha(0f);
+		
+		ObjectAnimator a1 = ObjectAnimator.ofFloat(v, "Alpha", 0f, 1f);
+		a1.setDuration(400);
+		ObjectAnimator a2 = ObjectAnimator.ofFloat(v, "Alpha", 1f, 0f);
+		a2.setDuration(400);
+		a2.addListener(new AnimatorListener(){
+			@Override
+			public void onAnimationEnd(Animator animation) {
+				Log.i(STAG, "onAnimationEnd");
+				ge.frame.removeView(v);
+			}
+			@Override
+			public void onAnimationStart(Animator animation) {}
+			@Override
+			public void onAnimationCancel(Animator animation) {}
+			@Override
+			public void onAnimationRepeat(Animator animation) {}
+		});
+		
+		AnimatorSet as = new AnimatorSet();
+		as.play(a1).before(a2);
+		ge.frame.addView(v);
+		as.start();
+	}
 }
 

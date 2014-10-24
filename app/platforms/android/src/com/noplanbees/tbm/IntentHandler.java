@@ -12,6 +12,18 @@ import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 
 public class IntentHandler {
+	
+	public class IntentParamKeys{
+		public static final String FRIEND_ID = "friendId";
+		public static final String ACTION = "action";
+	}
+	
+	public class IntentActions{
+		public static final String NONE = "none";
+		public static final String PLAY_VIDEO = "playVideo";
+		public static final String SMS_RESULT = "smsResult";
+	}
+	
 	private final String TAG = this.getClass().getSimpleName();
 	private final static String STAG = IntentHandler.class.getSimpleName();
 	
@@ -163,7 +175,7 @@ public class IntentHandler {
 		if (status == Video.IncomingVideoStatus.DOWNLOADED){
 			friend.createThumb(videoId);
 			
-			GridManager.moveFriendToGrid(friend);
+			GridManager.moveFriendToGrid(homeActivity,friend);
 			
 			if (!VideoPlayer.isPlaying(friend.getId()))
 				friend.deleteAllViewedVideos();

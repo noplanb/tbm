@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
@@ -40,19 +42,14 @@ public class SelectPhoneNumberDialog implements OnItemClickListener{
 	private void setupDialogAndShow(){
 		AlertDialog.Builder db = new AlertDialog.Builder(activity);
 		db.setTitle(contact.getFirstName() + "'s mobile?").
-		setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
-			}
-		});
-		
-		LayoutInflater inflater = activity.getLayoutInflater();
-		listView = (ListView) inflater.inflate(R.layout.dialog_list_view, null);
+		setNegativeButton("Cancel", null);
+		listView =  new ListView(activity);
+		LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+		listView.setLayoutParams(lp);
 		listView.setOnItemClickListener(this);
 		db.setView(listView);
-
 		pnla = new PhoneNumberListAdapter(activity, contact);
 		listView.setAdapter(pnla);
-
 		dialog = db.show();
 	}
 

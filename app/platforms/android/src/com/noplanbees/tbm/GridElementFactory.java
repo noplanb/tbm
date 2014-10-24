@@ -39,6 +39,13 @@ public class GridElementFactory extends ActiveModelFactory {
 		}
 		return null;
 	}
+	
+	public GridElement findWithFriend(Friend f){
+		if (f==null)
+			return null;
+		
+		return findWithFriendId(f.getId());
+	}
 
 	public GridElement findWithFriendId(String friendId) {
 		return (GridElement) findWhere(GridElement.Attributes.FRIEND_ID, friendId);

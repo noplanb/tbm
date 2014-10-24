@@ -1211,7 +1211,7 @@ containing a value of this type.
         public static final int abc_split_action_bar_is_narrow=0x7f060002;
     }
     public static final class color {
-        public static final int abc_search_url_text_holo=0x7f070014;
+        public static final int abc_search_url_text_holo=0x7f070015;
         public static final int abc_search_url_text_normal=0x7f070000;
         public static final int abc_search_url_text_pressed=0x7f070002;
         public static final int abc_search_url_text_selected=0x7f070001;
@@ -1231,11 +1231,12 @@ containing a value of this type.
         public static final int common_signin_btn_light_text_disabled=0x7f070009;
         public static final int common_signin_btn_light_text_focused=0x7f07000a;
         public static final int common_signin_btn_light_text_pressed=0x7f070008;
-        public static final int common_signin_btn_text_dark=0x7f070015;
-        public static final int common_signin_btn_text_light=0x7f070016;
+        public static final int common_signin_btn_text_dark=0x7f070016;
+        public static final int common_signin_btn_text_light=0x7f070017;
         public static final int dark_grey=0x7f070012;
         public static final int grey_background=0x7f070010;
         public static final int white=0x7f07000d;
+        public static final int yellow=0x7f070014;
     }
     public static final class dimen {
         /**  Default height of an action bar. 
@@ -1555,7 +1556,6 @@ containing a value of this type.
         public static final int contacts_auto_complete_text_view=0x7f05007f;
         public static final int default_activity_button=0x7f05003c;
         public static final int dialog=0x7f05000e;
-        public static final int dialog_list_view=0x7f050050;
         public static final int disableHome=0x7f050008;
         public static final int dropdown=0x7f05000f;
         public static final int edit_query=0x7f050044;
@@ -1568,6 +1568,7 @@ containing a value of this type.
         public static final int home=0x7f050014;
         public static final int homeAsUp=0x7f050005;
         public static final int homeTable=0x7f050051;
+        public static final int home_view=0x7f050050;
         public static final int horizontal=0x7f05001d;
         public static final int hybrid=0x7f05001c;
         public static final int icon=0x7f05003e;
@@ -1685,14 +1686,12 @@ containing a value of this type.
         public static final int abc_search_view=0x7f030016;
         public static final int abc_simple_decor=0x7f030017;
         public static final int bench_list_item=0x7f030018;
-        public static final int dialog_list_view=0x7f030019;
-        public static final int drawable_test=0x7f03001a;
-        public static final int home=0x7f03001b;
-        public static final int lock_screen_alert=0x7f03001c;
-        public static final int phone_list_item=0x7f03001d;
-        public static final int register=0x7f03001e;
-        public static final int register_deprecated=0x7f03001f;
-        public static final int support_simple_spinner_dropdown_item=0x7f030020;
+        public static final int drawable_test=0x7f030019;
+        public static final int home=0x7f03001a;
+        public static final int lock_screen_alert=0x7f03001b;
+        public static final int phone_list_item=0x7f03001c;
+        public static final int register=0x7f03001d;
+        public static final int support_simple_spinner_dropdown_item=0x7f03001e;
     }
     public static final class menu {
         public static final int home_menu=0x7f0c0000;

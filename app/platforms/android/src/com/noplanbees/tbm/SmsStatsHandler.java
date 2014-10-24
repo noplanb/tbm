@@ -16,7 +16,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
-public class SmsManager {
+public class SmsStatsHandler {
 
 	public static class Keys{
 		// Conform ot BenchObject keys results of sms manager are typically passed to bench
@@ -36,14 +36,14 @@ public class SmsManager {
 	    public static final String ADDRESS = "address";
 	}
 
-	public static SmsManager instance;
+	public static SmsStatsHandler instance;
 	
 	public static interface SmsManagerCallback{
 		public void didRecieveRankedPhoneData(ArrayList<LinkedTreeMap<String, String>> rankedPhoneData);
 	}
 
 	private final String TAG = getClass().getSimpleName();
-	private static final String STAG = SmsManager.class.getSimpleName();
+	private static final String STAG = SmsStatsHandler.class.getSimpleName();
 
 	private Context context;
 	private Cursor messagesCursor;
@@ -59,7 +59,7 @@ public class SmsManager {
 	//------------
 	// Constructor
 	//------------
-	public SmsManager(Context c, SmsManagerCallback d){
+	public SmsStatsHandler(Context c, SmsManagerCallback d){
 		instance = this;
 		context = c;
 		setDelegate(d);
@@ -67,9 +67,9 @@ public class SmsManager {
 	}
     
 	// Singleton instance.
-	public static SmsManager getInstance(Context c, SmsManagerCallback d){
+	public static SmsStatsHandler getInstance(Context c, SmsManagerCallback d){
 		if (instance == null)
-			instance = new SmsManager(c,d);
+			instance = new SmsStatsHandler(c,d);
         
 		instance.setDelegate(d);
 		return instance;		
@@ -219,7 +219,7 @@ public class SmsManager {
 	// Debug
 	//------
 	public void printRankedPhoneData(){
-		SmsManager.printRankedPhoneData(rankedPhoneData);
+		SmsStatsHandler.printRankedPhoneData(rankedPhoneData);
 	}
 	
 	public static void printRankedPhoneData(ArrayList<LinkedTreeMap<String, String>> rankedPhoneData){

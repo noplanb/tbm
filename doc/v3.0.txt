@@ -266,18 +266,37 @@ IMPORTANT: Handle phone numbers and phone number comparison in ruby properly whe
 
 GENERAL TODO:
 -------------
- x Change find contact_id with name and all other queries to use the ? notation.
- x Check that Liz O'Donnel doesn't break in this case.
- 
- x Add setContactAndShow() to selectPhoneNumberDialog
- x Instantiate selectPhoneNumberDialog in Bench Controller at the beginning.
- x Add hideAllViews to BenchController
- x Call benchController.HideAllViews on any click or start recording in homeActivity
- x Call benchController.HideAllViews on show bench
- 
- x Make sure ranked sms have valid and properly formatted phone number.
- 
- - Add a swipe gesture to open and close the bench.
+x Change find contact_id with name and all other queries to use the ? notation.
+x Check that Liz O'Donnel doesn't break in this case.
+
+x Add setContactAndShow() to selectPhoneNumberDialog
+x Instantiate selectPhoneNumberDialog in Bench Controller at the beginning.
+x Add hideAllViews to BenchController
+x Call benchController.HideAllViews on any click or start recording in homeActivity
+x Call benchController.HideAllViews on show bench
+
+x Make sure ranked sms have valid and properly formatted phone number.
+
+- Add a swipe gesture to open and close the bench.
+- Highlight person when he lands on the bench.
+x Change selectPhoneNumber to dialog
+x Add dialog for send sms. 
+
+- Sms manager takes to long to bring in ranked sms so should show with overflow first then add the ranked sms later.
+- Use custom adapter for bench fields.
+- Test autovideo play.
+- Test setting has app when first video comes in from friend.
+x Remove code that does check of sms
+x Hint to send a welcome message to the prerson after he sends the sms.
+x Check about bailing out.
+
+- Server static landing page for zazoapp.com get the app on android and ios.
+
+
+
+
+
+
  
 
   

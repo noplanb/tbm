@@ -46,8 +46,9 @@ public class ContactsManager implements OnItemClickListener{
 	private ContactSelected contactSelectedDelegate;
 	private AutoCompleteTextView autoCompleteTextView;
 
-	public ContactsManager(Context c){
+	public ContactsManager(Context c, ContactSelected delegate){
 		context = c;
+		contactSelectedDelegate = delegate;
 	}
 
 	//-------------------------
@@ -118,10 +119,6 @@ public class ContactsManager implements OnItemClickListener{
 		hideKeyboard();
 		notifyContactSelected(contact);
 		resetViews();
-	}
-
-	public void setContactSelectedDelegate(ContactSelected csd){
-		contactSelectedDelegate = csd;
 	}
 
 	private void notifyContactSelected (Contact contact){

@@ -2,6 +2,7 @@ package com.noplanbees.tbm;
 
 import java.net.URI;
 
+import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -16,16 +17,6 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 public class NotificationAlertManager {
-	
-	public class ParamKeys{
-		public static final String FRIEND_ID = "friendId";
-		public static final String ACTION = "action";
-	}
-	
-	public class Actions{
-		public static final String NONE = "none";
-		public static final String PLAY_VIDEO = "playVideo";
-	}
 	
 	private final String TAG = this.getClass().getSimpleName();
 	private final static String STAG = NotificationAlertManager.class.getSimpleName();
@@ -98,7 +89,7 @@ public class NotificationAlertManager {
 		Log.i(STAG, "postLockScreenAlert");
 		Intent ri = new Intent(homeActivity, LockScreenAlertActivity.class);
 		Intent i = makePlayVideoIntent(ri, homeActivity, friend);
-		i.putExtra(ParamKeys.FRIEND_ID, friend.getId());
+		i.putExtra(IntentHandler.IntentParamKeys.FRIEND_ID, friend.getId());
 		i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend, videoId));
 		i.putExtra(SMALL_ICON_KEY, smallIcon);
 		i.putExtra(TITLE_KEY, title(friend));
@@ -111,8 +102,8 @@ public class NotificationAlertManager {
 	}
 	
 	public static Intent makePlayVideoIntent(Intent intent, HomeActivity homeActivity, Friend friend){
-		intent.setAction(Actions.PLAY_VIDEO);
-		Uri uri = new Uri.Builder().appendPath(Actions.PLAY_VIDEO).appendQueryParameter(ParamKeys.FRIEND_ID, friend.getId()).build();
+		intent.setAction(IntentHandler.IntentActions.PLAY_VIDEO);
+		Uri uri = new Uri.Builder().appendPath(IntentHandler.IntentActions.PLAY_VIDEO).appendQueryParameter(IntentHandler.IntentParamKeys.FRIEND_ID, friend.getId()).build();
 		intent.setData(uri);
 		return intent;
 	}
@@ -122,9 +113,14 @@ public class NotificationAlertManager {
 		return (Boolean) km.inKeyguardRestrictedInputMode();
 	}
 	
+	@SuppressWarnings("deprecation")
+	@SuppressLint("NewApi")
 	private static Boolean screenIsOff(Context context){
 		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-		return (Boolean) !pm.isScreenOn();
+		if (android.os.Build.VERSION.SDK_INT < 20)
+			return (Boolean) !pm.isScreenOn();
+		else
+			return (Boolean) !pm.isInteractive();
 	}
 
 }

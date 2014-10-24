@@ -6,6 +6,8 @@ import java.util.TimerTask;
 
 import android.app.Activity;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -38,6 +40,7 @@ public abstract class LongpressTouchHandler {
 	private Double[] downPosition = new Double[2];
 	private Timer longPressTimer;
 	private Boolean enabled = false;
+	private GestureDetector flingDetector;
 
 	// -------------------
 	// Constructor related
@@ -46,13 +49,14 @@ public abstract class LongpressTouchHandler {
 		this.activity = activity;
 		this.backgroundView = backgroundView;
 		addListener(backgroundView);
+		flingDetector = new GestureDetector(activity, new FlingListener());
 	}
 
 	public void addTargetView(View target){
 		if (targetViews.contains(target))
 			return;
 
-		targetViews .add(target);
+		targetViews.add(target);
 		addListener(target);
 	}
 
@@ -62,7 +66,7 @@ public abstract class LongpressTouchHandler {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				handleTouchEvent(v, event);
-				// Let other targets pass events through. backgroundView is the backstop that handles them.
+				flingDetector.onTouchEvent(event);
 				return v == backgroundView;
 			}
 		});
@@ -154,9 +158,7 @@ public abstract class LongpressTouchHandler {
 		if (state == State.LONGPRESS){
 			switch (action){
 			case MotionEvent.ACTION_DOWN:
-				// This should never happen since we should always get ACTION_UP first but if it does treat it as a cancel abort.
-				state = State.IDLE;
-				runAbort(targetView);
+				// Happens when the backing window view gets the down event. Just ignore.
 				return;
 			case MotionEvent.ACTION_MOVE:
 				if (isBigMove(event)){
@@ -201,7 +203,50 @@ public abstract class LongpressTouchHandler {
 		}
 	}
 
+	//---------------
+	// Fling detector
+	//---------------
+	private final class FlingListener extends SimpleOnGestureListener{
+        private static final int SWIPE_THRESHOLD = 100;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+
+		@Override
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            boolean result = false;
+            try {
+                float diffY = e2.getY() - e1.getY();
+                float diffX = e2.getX() - e1.getX();
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX > 0) {
+                            runFlingRight();
+                        } else {
+                            runFlingLeft();
+                        }
+                    }
+                    result = true;
+                } 
+                else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffY > 0) {
+                            runFlingDown();
+                        } else {
+                            runFlingUp();
+                        }
+                    }
+                    result = true;
+
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+            return result;
+		}
+	}
+	
 	// ---------------------------
 	// Public events we broadcast:
 	// ---------------------------
@@ -213,6 +258,10 @@ public abstract class LongpressTouchHandler {
 	public abstract void endLongpress(View v);
 	public abstract void bigMove(View v);
 	public abstract void abort(View v);	
+	public abstract void flingRight();
+	public abstract void flingLeft();
+	public abstract void flingUp();
+	public abstract void flingDown();
 
 	private void runClick(final View v){
 		activity.runOnUiThread(new Runnable(){
@@ -255,6 +304,42 @@ public abstract class LongpressTouchHandler {
 			@Override
 			public void run() {
 				abort(v);
+			}
+		});
+	}
+	
+	private void runFlingRight(){
+		activity.runOnUiThread(new Runnable(){
+			@Override
+			public void run() {
+				flingRight();
+			}
+		});
+	}
+	
+	private void runFlingLeft(){
+		activity.runOnUiThread(new Runnable(){
+			@Override
+			public void run() {
+				flingLeft();
+			}
+		});
+	}
+	
+	private void runFlingUp(){
+		activity.runOnUiThread(new Runnable(){
+			@Override
+			public void run() {
+				flingUp();
+			}
+		});
+	}
+	
+	private void runFlingDown(){
+		activity.runOnUiThread(new Runnable(){
+			@Override
+			public void run() {
+				flingDown();
 			}
 		});
 	}

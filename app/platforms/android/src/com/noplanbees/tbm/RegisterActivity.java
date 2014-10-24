@@ -151,21 +151,18 @@ public class RegisterActivity extends Activity{
 	// Error dialogs
 	//--------------
 	private void badPhoneError(){
-		showErrorDialog("No user found with that phone number. Check the number or contact Sani for assistance.\n\n   Sani Elfishawy\n   ph: 650-245-3537\n   e: sani@sbcglobal.net");
+		showErrorDialog("Not Found", "No user found with that phone number. Check the number or contact Sani for assistance.\n\n   Sani Elfishawy\n   ph: 650-245-3537\n   e: sani@sbcglobal.net");
 	}
 	
 	private void serverError(){
-		showErrorDialog("Can't reach ThreeByMe.\n\nCheck your connectivity and try again.");
+		showErrorDialog("No Connection", "Can't reach ThreeByMe.\n\nCheck your connection and try again.");
 	}
 	
-	private void showErrorDialog(String message){
+	private void showErrorDialog(String title, String message){
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("Error")
+		builder.setTitle(title)
 		.setMessage(message)
-		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
-			}
-		})
+		.setPositiveButton("Ok", null)
 		.create().show();
 	}
 
