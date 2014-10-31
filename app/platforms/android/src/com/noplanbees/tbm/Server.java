@@ -16,6 +16,33 @@ import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 
 public abstract class Server {
+	private static String STAG = Server.class.getSimpleName();
+
+	public static class ParamKeys{
+		public static final String RESPONSE_STATUS = "status";
+		public static final String ERROR_TITLE = "title";
+		public static final String ERROR_MSG = "msg";
+	}
+
+	public static class StatusValues{
+		public static final String STATUS_SUCCESS = "success";
+		public static final String STATUS_FAILURE = "failure";
+	}
+
+	public static boolean isSuccess(String status){
+		Log.i(STAG, "is isSuccess:" + status);
+		if (status == null)
+			return false;
+		if (status.equals(StatusValues.STATUS_SUCCESS))
+			return true;
+		else
+			return false;
+	}
+
+	public static boolean isFailure(String status){
+		return !isSuccess(status);
+	}
+
 	private String TAG = this.getClass().getSimpleName();
 	private String uri;
 	private String method;

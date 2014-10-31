@@ -49,7 +49,7 @@
             android:layout_below="@+id/titleTextView"
             android:layout_marginLeft="5dp"
             android:layout_toRightOf="@+id/logoImage"
-            android:text="Three By Me"
+            android:text="@string/app_name"
             android:textSize="12sp" />
 
         <Button

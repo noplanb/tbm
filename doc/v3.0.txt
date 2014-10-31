@@ -198,6 +198,9 @@ TODO:
   - HANDLE the case of no messages.
   - Dont use strings for column names.
   
+PROBLEM: On jills phone person field is null for all messages.
+SOLUTION: Do not use the person field only use the address field look for a contact even if they dont have the person field.
+  
   
 
 ContactsManager
@@ -264,6 +267,69 @@ Handling phone numbers.
 IMPORTANT: Handle phone numbers and phone number comparison in ruby properly when doing invites.
   
 
+Registration with SMS loopback
+------------------------------
+x Reg screen
+  x First
+  x Last
+  x Country Code 
+  x Mobile Phone Number
+x Prepopulate
+  x Grab the first last and phone from the User Profile on android
+x Verify phone
+x Send to server
+  x Checks phone number again
+    x If wrong 
+      x send "status: error, title: Bad Number, msg: Enter a valid phone number"
+    x If right
+      x Send sms with code.
+  x Finds or 
+x Create user in initialized state with time dated sms code
+x Let user know that he is getting a verification code
+  x We sent you a code via text message to phone.
+    Enter the code:
+
+
+User Model Changes
+x Status
+  x initialized
+  x verified
+x verification_code
+x verification _time_stamp
+
+TODO:
+x Get gem for phoneNumberUtils
+x Update database and remigrate
+x Add phone number check in reg
+x Add handle error response in phone
+x Add dialog for entering verification code
+
+TEST:
+x Bad firstname, lastname, phone
+x code
+  - expired
+  x incorrect
+  x null
+  x correct
+x version 
+  x Obsolete
+
+
+Server SmsHandler
+-----------------
+- send_verification_code(user)
+  - Checks timestamp on users code
+  - If 5 minutes or more remaining sends the same code.
+  - Otherwise generates a new code and sends that.
+
+
+Message from user who is not friend yet
+---------------------------------------
+- GetFriends
+- PollallFriends
+
+
+
 GENERAL TODO:
 -------------
 x Change find contact_id with name and all other queries to use the ? notation.
@@ -277,13 +343,13 @@ x Call benchController.HideAllViews on show bench
 
 x Make sure ranked sms have valid and properly formatted phone number.
 
-- Add a swipe gesture to open and close the bench.
-- Highlight person when he lands on the bench.
+x Add a swipe gesture to open and close the bench.
+x Highlight person when he lands on the bench.
 x Change selectPhoneNumber to dialog
 x Add dialog for send sms. 
 
-- Sms manager takes to long to bring in ranked sms so should show with overflow first then add the ranked sms later.
-- Use custom adapter for bench fields.
+o Sms manager takes to long to bring in ranked sms so should show with overflow first then add the ranked sms later.
+o Use custom adapter for bench fields.
 - Test autovideo play.
 - Test setting has app when first video comes in from friend.
 x Remove code that does check of sms

@@ -1,0 +1,22 @@
+Background of the Problem
+-------------------------
+The Zazo app has a couple services that run in the background. 
+  - File Transfer (Upload and Download)
+  - Broadcast receiver for notification intents.
+  
+The for models that require persistence the app saves it state in the file system. 
+  - I want only an activity - the main activity to 
+  
+  
+App Service/Activity project.
+-----------------------------
+- Create a sample project that has and Activity with a ui as well as a background service.
+- Background service should send intents to the Activity.
+- If the activity is in the background it should handle the intents without coming to the foreground or flashing the screen.
+- If the activity is in the foreground it should handle the intents while continuing to display its ui.
+
+Video record dimming in low light
+---------------------------------
+- Create a sample project with cameraPreview media recorder to record a 320x240 size video. 
+- Figure out why in dim light conditions the preview and recording darkens considerably when you start recording.
+

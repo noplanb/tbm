@@ -12,7 +12,7 @@ public class Config {
 	public final static String serverUri = "http://192.168.1.82:3000";
 //	public final static String serverUri = "http:s//www.threebyme.com";
 	
-	public final static String appName = "Three By Me";
+	public final static String appName = "Zazo";
 	
 	private static File publicDir = null;
 

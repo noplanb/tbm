@@ -5,12 +5,14 @@ import android.content.Context;
 public class UserFactory extends ActiveModelFactory {
 
 	public static class ServerParamKeys{
-		public static final String FIRST_NAME = "firstName";
+		public static final String FIRST_NAME = "first_name";
 		public static final String LAST_NAME = "last_name";
 		public static final String MOBILE_NUMBER = "mobile_number";
 		public static final String ID = "id";
 		public static final String MKEY = "mkey";
 		public static final String AUTH = "auth";
+		public static final String DEVICE_PLATFORM = "device_platform";
+		public static final String VERIFICATION_CODE = "verification_code";
 	}
 	
 	public static UserFactory instance = null;

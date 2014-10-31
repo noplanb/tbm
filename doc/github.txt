@@ -1,3 +1,61 @@
-Create a local repo. 
+The integration repo for tbm_ios is at https://github.com/noplanb/tbm_ios
+I have created another private repo called tbm_ios_ted at https://github.com/noplanb/tbm_ios_ted
 
-Push to github.
+ - Ted should fetch out of tbm_ios and never push into tbm_ios
+ - Ted should push into tbm_ios_ted and never fetch out of tbm_ios_ted
+ 
+Development branch - bench
+--------------------------
+- On tbm_ios there is currently on branch -master. This is the code that is currently in beta. 
+- When I begin developing I will create a long lived branch called "bench" same name I used on android (probably not a great name).
+- Bench will be our dev branch for all the code that will finally be released in production.
+- I will retain master as it is in case I need to push any changes to the currently running beta.
+
+
+Ted Workflow
+------------
+Note you need to wait till I create the bench branch before doing this.
+
+> git clone https://github.com/noplanb/tbm_ios ted-local
+- This will create a remote origin for you which you can see with git remote -v
+
+> git remote add ted-remote https://github.com/noplanb/tbm_ios_ted 
+- This will add a short cut to your remote repo for pushing.
+
+> git checkout origin/bench
+- This will allow you to look at the remote bench branch in a detached head state.
+
+> git checkout -b bench
+- This will create a local branch same as the remote bench branch.
+
+> git checkout -b bench-ted_topic
+- A local branch off of your local bench branch for you to do some work in. 
+
+... do some work ...
+
+!! before merging and pushing make sure I have not moved bench forward:
+
+> git checkout bench  # to switch to local bench branch
+> git fetch origin    # to get the latest from the integration repo
+> git log bench..origin/bench # to show what has changed on the origin bench branch since you last fetched it
+> git merge origin/bench  # should do a fast forward merge of your bench branch to the latest of the origin.
+
+!! now rebase your bench-ted_topic before you merge it back and push
+
+> git checkout bench-ted_topic
+> git rebase bench   # puts the new base of your work at the head of the latest origin bench
+- if there are any conflicts you will need to RESOLVE and ADD then continue the rebase.
+
+!! now merge back into bench
+> git checkout bench
+> git merge bench-ted_topic     # This should be a fast forward merge that puts you ahead of the origin.
+> git branch -d bench-ted_topic # Delete your working branch since its been merged back in.
+> git push ted-remote bench     # Push to your github repo.
+
+Let me know by email that I should fetch your work, review, test and merge...
+
+
+
+
+
+

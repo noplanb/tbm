@@ -113,7 +113,7 @@ public class InviteManager implements DialogInterface.OnClickListener{
 	}
 	
 	private void serverError(){
-		showErrorDialog("Can't reach ThreeByMe.\n\nCheck your connection and try again.");
+		showErrorDialog("Can't reach " + Config.appName + ".\n\nCheck your connection and try again.");
 	}
 	
 	private void showErrorDialog(String message){

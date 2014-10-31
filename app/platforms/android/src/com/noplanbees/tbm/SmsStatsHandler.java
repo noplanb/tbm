@@ -90,13 +90,17 @@ public class SmsStatsHandler {
 	//-------------------------------------------------
 	// Ranking phone data by frequency of text messages
 	//-------------------------------------------------
+	public void getRankedPhoneData(){
+		(new GetRankedPhoneDataAsync()).execute();
+	}
+	
 	private class GetRankedPhoneDataAsync extends AsyncTask<Void, Void, Void>{
 		@Override
 		protected Void doInBackground(Void... params) {
+			Log.i(TAG, "GetRankedPhoneDataAsync");
 			setMessagesCursor();
 			rankPhoneData();
-//			printRankedPhoneData();
-			notifyDelegate();
+			printRankedPhoneData();
 			return null;
 		}
 		
@@ -110,30 +114,34 @@ public class SmsStatsHandler {
 
 	private void setMessagesCursor(){
 		messagesCursor = context.getContentResolver().query(Uri.parse("content://sms/inbox"), null, null, null, null);
+		Log.i(TAG, "setMessagesCursor: count=" + messagesCursor.getCount());
 	}
 
 	private void rankPhoneData(){
 		setNumMessages();
-		rawContactIdByPhone();
+		Log.i(TAG, "numMessages: " + numMessages);
+		printColumnNames(messagesCursor);
+//		rawContactIdByPhone();
+		Log.i(TAG, "rawContactIdByPhone: " + rawContactIdByPhone );
 		setRankedPhones();
+		Log.i(TAG, "rankedPhones: " + rankedPhones);
 		setRankedPhoneData();
+		Log.i(TAG, "rankedPhoneData: " + rankedPhoneData);
 	}
 
+
+
 	private void setNumMessages(){
-		if (messagesCursor == null || messagesCursor.getCount() == 0)
+		if (messagesCursor == null || messagesCursor.getCount() == 0){
+			Log.e(TAG, "setNumMessages: Got no SMS messages");
 			return;
+		}
 
 		numMessages = new LinkedTreeMap<String, Integer>();
 		int addrCol = messagesCursor.getColumnIndex(SmsColumnNames.ADDRESS);
-		int personCol = messagesCursor.getColumnIndex(SmsColumnNames.PERSON);
 
 		messagesCursor.moveToFirst();
 		do {
-			String rawContactId = messagesCursor.getString(personCol);
-			// Ignore if the phone number isn't associated with a contact.
-			if (rawContactId == null)
-				continue;
-
 			String mobileNumber = messagesCursor.getString(addrCol);
 			mobileNumber = getValidE164ForNumber(mobileNumber);
 			// Ignore if not valid number. Should always be a valid number though since it has received sms.
@@ -161,6 +169,8 @@ public class SmsStatsHandler {
 		return r;
 	}
 
+	// Not used we get the contact from the phone number as the person field is not always filled
+	// on jills samsung the person field is never filled.
 	private void rawContactIdByPhone(){
 		if (messagesCursor == null || messagesCursor.getCount() == 0)
 			return;
@@ -201,12 +211,13 @@ public class SmsStatsHandler {
 			LinkedTreeMap<String, String> entry = new LinkedTreeMap<String, String>();
 			entry.put(Keys.MOBILE_NUMBER, mobileNumber);
 			entry.put(Keys.NUM_MESSAGES, numMessages.get(mobileNumber).toString());
-			String rawContactId = rawContactIdByPhone.get(mobileNumber);
-			entry.put(Keys.RAW_CONTACT_ID, rawContactId);
 
 			// Map<String, String> firstLast = ContactsManager.getFirstLastWithRawContactId(context, rawContactId);
 			// This is more effective on my phone than using the RawContactId in person. It caught amit where the former did not.
 			Map<String, String> firstLast = ContactsManager.getFirstLastWithPhone(context, mobileNumber);
+			
+			if (firstLast == null)
+				continue;
 
 			entry.put(Keys.FIRST_NAME, firstLast.get(Contact.ContactKeys.FIRST_NAME));
 			entry.put(Keys.LAST_NAME, firstLast.get(Contact.ContactKeys.LAST_NAME));
@@ -229,5 +240,19 @@ public class SmsStatsHandler {
 		}
 	}
 
+	private void printColumnNames(Cursor c) {
+		Log.i(TAG, "printColumnNames: ");
+		if (c == null){
+			Log.i(TAG, "printColumnNames: got null cursor");
+			return;
+		}
+		
+		String s = "";
+		for (int i=0; i< c.getColumnCount(); i++){
+			s += c.getColumnName(i) + " ";
+		}
+		Log.i(TAG, s);
+		return;
+	}
 
 }

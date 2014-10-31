@@ -158,6 +158,13 @@ public class IntentHandler {
 //			return;
 //		}
 		
+		// We may be getting a message from someone who is not a friend yet. 
+		if (friend == null){
+			FriendFactory.getFriendsFromServer();
+			new Poller(homeActivity).pollAll();
+			return;
+		}
+		
 		if (friend.hasIncomingVideoId(videoId) && status == Video.IncomingVideoStatus.NEW){
 			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");
 			return;

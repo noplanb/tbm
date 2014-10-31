@@ -1,7 +1,9 @@
 package com.noplanbees.tbm;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -10,9 +12,7 @@ import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
 
-interface VersionHandlerInterface{
-	public void compatibilityCheckCallback(String result);
-}
+
 
 // GARF: note that since the register activity is called in HomeActivity onCreate (boot) it is out of the loop of versionHandler which is
 // currently setup in onResume in HomeActivity. If we have an obsolete version of registerActivity that prevents us from getting to onResume in the HomeActivity then 
@@ -22,9 +22,8 @@ public class VersionHandler {
 	private final String TAG = getClass().getSimpleName();
 	
 	private Activity activity;
-	private VersionHandlerInterface vciDelegate;
 	
-	public static class ParamKeys{
+	private static class ParamKeys{
 		public static final String RESULT_KEY = "result";
 	}
 	
@@ -51,14 +50,6 @@ public class VersionHandler {
 		return result.equalsIgnoreCase(VersionHandler.Responses.CURRENT);
 	}
 	
-	public static void goToPlayStore(Context context){
-		try {
-		    context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + context.getPackageName())));
-		} catch (android.content.ActivityNotFoundException anfe) {
-		    context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + context.getPackageName())));
-		}
-	}
-	
 	// Not used
 	public static void uninstallApp(Context context){
 		Uri packageURI = Uri.parse("package:" + context.getPackageName());
@@ -68,7 +59,6 @@ public class VersionHandler {
 	
 	public VersionHandler(Activity a){
 		activity = a;
-		vciDelegate = (VersionHandlerInterface) a;
 		checkVersionCompatibility();
 	}
 	
@@ -93,8 +83,8 @@ public class VersionHandler {
 		}
 		@Override
 		public void success(String response) {
-			String result = StringUtils.linkedTreeMapWithJson(response).get(ParamKeys.RESULT_KEY);
-			vciDelegate.compatibilityCheckCallback(result);
+			String result = StringUtils.linkedTreeMapWithJson(response).get(VersionHandler.ParamKeys.RESULT_KEY);
+		    handleCompatibilityResult(result);
 		}
 		@Override
 		public void error(String errorString) {	
@@ -110,5 +100,52 @@ public class VersionHandler {
 			Log.e(TAG, "version: ERROR: " + e.toString());
 		}
 		return info;
+	}
+	
+	//---
+	// UI
+	//---
+	public void handleCompatibilityResult(String result) {
+		Log.i(TAG, "compatibilityCheckCallback: " + result);
+		if (VersionHandler.updateSchemaRequired(result)) {
+			ActiveModelsHandler.destroyAll(activity);
+			showVersionHandlerDialog("Your " + Config.appName + " app is obsolete. Please update.", false);
+		} else if (VersionHandler.updateRequired(result)) {
+			showVersionHandlerDialog("Your " + Config.appName + " app is obsolete. Please update.", false);
+		} else if (VersionHandler.updateOptional(result)) {
+			showVersionHandlerDialog("Your " + Config.appName + " app is out of date. Please update.", true);
+		} else if (!VersionHandler.current(result)){
+			Log.e(TAG, "Version compatibilityCheckCallback: Unknow result: " + result.toString());
+		}
+	}
+	
+	private void showVersionHandlerDialog(String message, Boolean negativeButton){
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+		builder.setTitle("Update Available")
+		.setMessage(message)
+		.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				goToPlayStore();
+				activity.finish();
+			}
+		});
+		
+		if (negativeButton){
+			builder.setNegativeButton("Later", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+				}
+			});
+		}
+		AlertDialog alertDialog = builder.create();
+		alertDialog.setCanceledOnTouchOutside(false);
+		alertDialog.show();
+	}
+	
+	private void goToPlayStore(){
+		try {
+		    activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + activity.getPackageName())));
+		} catch (android.content.ActivityNotFoundException anfe) {
+		    activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + activity.getPackageName())));
+		}
 	}
 }

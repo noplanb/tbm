@@ -20,7 +20,6 @@ public class FriendFactory extends ActiveModelFactory{
 		public static final String MKEY = "mkey";
 		public static final String MOBILE_NUMBER = "mobile_number";
 		public static final String HAS_APP = "has_app";
-
 	}
 	
 	public static FriendFactory instance = null;

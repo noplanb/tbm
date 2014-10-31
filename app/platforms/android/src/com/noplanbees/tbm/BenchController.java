@@ -51,6 +51,10 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		setupListView();
 		setupSwipeTouchListener();
 	}
+	
+	public void callSms(){
+		smsStatsHandler.getRankedPhoneData();
+	}
 
 	private void setupFrame() {
 		benchLayout = (RelativeLayout) activity.findViewById(R.id.bench_frame);

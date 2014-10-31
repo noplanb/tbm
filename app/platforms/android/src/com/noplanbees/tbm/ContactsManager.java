@@ -2,7 +2,9 @@ package com.noplanbees.tbm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -13,6 +15,7 @@ import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.PhoneLookup;
+import android.provider.ContactsContract.Profile;
 import android.provider.ContactsContract.RawContacts;
 import android.text.method.TextKeyListener;
 import android.util.Log;
@@ -22,6 +25,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.SimpleAdapter;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -39,9 +43,8 @@ public class ContactsManager implements OnItemClickListener{
 	}
 
 
-
 	private Context context;
-	private String[] autoCompleteNames;
+	private ArrayList<String> autoCompleteNames;
 	private ArrayAdapter<String> autoCompleteAdapter;
 	private ContactSelected contactSelectedDelegate;
 	private AutoCompleteTextView autoCompleteTextView;
@@ -49,6 +52,10 @@ public class ContactsManager implements OnItemClickListener{
 	public ContactsManager(Context c, ContactSelected delegate){
 		context = c;
 		contactSelectedDelegate = delegate;
+	}
+	
+	public ContactsManager(Context c){
+		context = c;
 	}
 
 	//-------------------------
@@ -74,8 +81,8 @@ public class ContactsManager implements OnItemClickListener{
 
 	private void setAutoCompleteNames(){
 		String[] projection = new String[]{Contacts.DISPLAY_NAME};
-		// Get all contacts whether they have a phone or not. We will prompt the user if no phone later.		
-		// String selection = Contacts.HAS_PHONE_NUMBER + "=1";
+		// Show all contacts so user can enter the number in his contact list if it isnt there.
+        // String selection = Contacts.HAS_PHONE_NUMBER + "=1";
 		Cursor c = context.getContentResolver().query(Contacts.CONTENT_URI, projection, null, null , null);
 		if (c == null || c.getCount() == 0){
 			Log.e(TAG, "ERROR: setAutoCompleteData: got null cursor from contacs query");
@@ -83,19 +90,18 @@ public class ContactsManager implements OnItemClickListener{
 				c.close();
 			return;
 		}
-
-		autoCompleteNames = new String[c.getCount()];
+		
+		Set<String> uniq = new HashSet<String>();
 		int di = c.getColumnIndex(Contacts.DISPLAY_NAME);
 		c.moveToFirst();
-		int i = 0;
 		do {
-			autoCompleteNames[i] = c.getString(di);
-			i++;
+			uniq.add(c.getString(di));
 		} while (c.moveToNext());
 		c.close();
-
-		Log.i(STAG, "count = " + autoCompleteNames.length);
-		// printAllPhoneNumberObjectForNames(autoCompleteNames);
+		autoCompleteNames = new ArrayList<String>();
+	    autoCompleteNames.addAll(uniq);
+		Log.i(STAG, "count = " + autoCompleteNames.size());
+//		 printAllPhoneNumberObjectForNames(autoCompleteNames);
 	}
 
 	public void setupContactsAutoCompleteView(AutoCompleteTextView atv) {
@@ -111,10 +117,7 @@ public class ContactsManager implements OnItemClickListener{
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		String displayName = autoCompleteTextView.getText().toString();
-		LinkedTreeMap<String, String> c = getFirstLastWithDisplayName(displayName);
-		c.put(Contact.ContactKeys.DISPLAY_NAME, displayName);
-		ArrayList<LinkedTreeMap<String, String>> vpos = validPhoneObjectsWithDisplayName(displayName);
-		Contact contact = new Contact(c, vpos);
+		Contact contact = contactWithDisplayName(displayName);
 
 		hideKeyboard();
 		notifyContactSelected(contact);
@@ -147,7 +150,7 @@ public class ContactsManager implements OnItemClickListener{
 	}
 
 	//----------------
-	// Contact look up
+	// Contact look up used to get contact from sms.
 	//----------------
 	public static Map<String, String> getFirstLastWithRawContactId(Context context, String rawContactId){
 		Log.i(STAG, "getFirstLast: rawContactId:" + rawContactId);
@@ -178,6 +181,10 @@ public class ContactsManager implements OnItemClickListener{
 		}
 		if (c != null)
 			c.close();
+		
+		if (displayName == null)
+			return null;
+		
 		return getFirstLastWithDisplayName(displayName);
 	}
 
@@ -189,6 +196,7 @@ public class ContactsManager implements OnItemClickListener{
 			int spaceI = displayName.indexOf(' ');
 			if (spaceI == -1){
 				r.put(Contact.ContactKeys.FIRST_NAME, displayName);
+				r.put(Contact.ContactKeys.LAST_NAME, "");
 			} else {
 				r.put(Contact.ContactKeys.FIRST_NAME, displayName.substring(0, spaceI));
 				r.put(Contact.ContactKeys.LAST_NAME, displayName.substring(spaceI+1, displayName.length()));
@@ -200,13 +208,29 @@ public class ContactsManager implements OnItemClickListener{
 	//--------------------------
 	// Phone numbers for contact
 	//--------------------------
+	public Contact contactWithDisplayName(String displayName){
+		LinkedTreeMap<String, String> c = getFirstLastWithDisplayName(displayName);
+		c.put(Contact.ContactKeys.DISPLAY_NAME, displayName);
+		ArrayList<LinkedTreeMap<String, String>> vpos = validPhoneObjectsWithDisplayName(displayName);
+		return new Contact(c, vpos);
+	}
+	
 	public ArrayList<LinkedTreeMap<String,String>> validPhoneObjectsWithDisplayName(String displayName){
+		Log.i(TAG, "validPhoneObjectsWithDisplayName: " + displayName);
 		String cIds = contactIdsWithDisplayName(displayName);
+		if (cIds == null)
+			return null;
+		return validPhoneObjectsWithContactIds(cIds);
+	}
+	
+	public ArrayList<LinkedTreeMap<String, String>> validPhoneObjectsWithContactIds(String cIds){
 		if (cIds == null)
 			return null;
 
 		String rcIds = rawContactIdsWithContactIds(cIds);
+		
 		ArrayList<LinkedTreeMap<String, String>> pnos =  phoneNumberObjectsWithRawContactIds(rcIds);
+		Log.i(TAG, "validPhoneObjectsWithContactIds: " + " cIds:" + cIds + "rcIds: " + rcIds + " pnos:" + pnos);
 		return validPhoneNumberObjectsWithPhoneNumbers(pnos);
 	}
 
@@ -276,6 +300,7 @@ public class ContactsManager implements OnItemClickListener{
 				int pt = c.getInt(c.getColumnIndex(CommonDataKinds.Phone.TYPE));
 				String phoneType = (String) CommonDataKinds.Phone.getTypeLabel(context.getResources(), pt, "");
 				e.put(Contact.PhoneNumberKeys.PHONE_TYPE, phoneType);
+				e.put(Contact.PhoneNumberKeys.PHONE_TYPE_INT, pt + "");
 				e.put(Contact.PhoneNumberKeys.PHONE_NUMBER, c.getString(c.getColumnIndex(CommonDataKinds.Phone.NUMBER)));
 				r.add(e);
 			} while (c.moveToNext());
@@ -296,6 +321,7 @@ public class ContactsManager implements OnItemClickListener{
 				phoneHash.put(Contact.PhoneNumberKeys.INTERNATIONAL, pu.format(pn, PhoneNumberFormat.INTERNATIONAL));
 				phoneHash.put(Contact.PhoneNumberKeys.NATIONAL, pu.format(pn, PhoneNumberFormat.NATIONAL));
 				phoneHash.put(Contact.PhoneNumberKeys.E164, pu.format(pn, PhoneNumberFormat.E164));
+				phoneHash.put(Contact.PhoneNumberKeys.COUNTRY_CODE, pn.getCountryCode() + "");
 				r.add(phoneHash);
 			}
 		}
@@ -304,7 +330,7 @@ public class ContactsManager implements OnItemClickListener{
 
 	// Tries to prepend a default AreaCode in order to make a valid number.
 	private static PhoneNumber getPhoneObject(String phone, String defaultRegion, String defaultAreaCode){
-		// Log.i(STAG, "getPhoneObject:" +  phone + " defaultRegion:" + defaultRegion + " defaultAreaCode:" + defaultAreaCode);
+		Log.i(STAG, "getPhoneObject:" +  phone + " defaultRegion:" + defaultRegion + " defaultAreaCode:" + defaultAreaCode);
 		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
 		PhoneNumber pn = null;
 		try {
@@ -355,6 +381,25 @@ public class ContactsManager implements OnItemClickListener{
 			return false;
 	}
 
+	//-------------
+	// User Profile
+	//-------------
+	public Contact userProfile(Context context){
+		Log.i(STAG, "userProfile");
+		String[] projection = {Contacts.DISPLAY_NAME};
+		Cursor c = context.getContentResolver().query(Profile.CONTENT_URI, projection, null, null, null);
+		
+		Log.i(TAG, "cursor: " + c.getCount());
+		
+		if (c==null || c.getCount()==0)
+			return null;
+		
+		c.moveToFirst();
+		String displayName = c.getString(c.getColumnIndex(Contacts.DISPLAY_NAME));
+		
+		return contactWithDisplayName(displayName);
+	}
+	
 	//----------------
 	// Tests and debug
 	//----------------

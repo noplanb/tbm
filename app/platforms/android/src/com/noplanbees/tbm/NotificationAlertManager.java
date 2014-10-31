@@ -29,7 +29,7 @@ public class NotificationAlertManager {
 	public static final String LARGE_IMAGE_PATH_KEY = "largeImagePathKey";
 	public static final String SMALL_ICON_KEY = "smallIconKey";
 	
-	private static String subTitle = "Three By Me";
+	private static final String subTitle = Config.appName;
 	private static int smallIcon = R.drawable.ic_stat_gcm;
 	private static Uri alertSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 

@@ -31,7 +31,7 @@ import android.widget.VideoView;
 
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
 
-public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback, VideoRecorderExceptionHandler, VersionHandlerInterface, GridEventNotificationDelegate{
+public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback, VideoRecorderExceptionHandler, GridEventNotificationDelegate{
 
 	final String TAG = this.getClass().getSimpleName();
 	final Float ASPECT = 240F/320F;
@@ -659,42 +659,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		  versionHandler = new VersionHandler(this);
 	}
 	
-	@Override
-	public void compatibilityCheckCallback(String result) {
-		Log.i(TAG, "compatibilityCheckCallback: " + result);
-		if (VersionHandler.updateSchemaRequired(result)) {
-			ActiveModelsHandler.destroyAll(this);
-			showVersionHandlerDialog("Your " + Config.appName + " app is obsolete. Please update.", false);
-		} else if (VersionHandler.updateRequired(result)) {
-			showVersionHandlerDialog("Your " + Config.appName + " app is obsolete. Please update.", false);
-		} else if (VersionHandler.updateOptional(result)) {
-			showVersionHandlerDialog("Your " + Config.appName + " app is out of date. Please update.", true);
-		} else if (!VersionHandler.current(result)){
-			Log.e(TAG, "Version compatibilityCheckCallback: Unknow result: " + result.toString());
-		}
-	}
-	
-	private void showVersionHandlerDialog(String message, Boolean negativeButton){
-		AlertDialog.Builder builder = new AlertDialog.Builder(instance);
-		builder.setTitle("Update Available")
-		.setMessage(message)
-		.setPositiveButton("Update", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
-				VersionHandler.goToPlayStore(instance);
-				finish();
-			}
-		});
-		
-		if (negativeButton){
-			builder.setNegativeButton("Later", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int id) {
-				}
-			});
-		}
-		AlertDialog alertDialog = builder.create();
-		alertDialog.setCanceledOnTouchOutside(false);
-		alertDialog.show();
-	}
 
 	//------------
 	// Grid Events
@@ -726,10 +690,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	        	benchController.toggle();
 	            return true;
 	        case R.id.action_get_contacts:
-	        	ContactsManager.allPhones(this);
+	        	UserFactory.current_user().getCountryCode();
 	            return true;
 	        case R.id.action_get_sms:
-	        	Log.i(TAG, "Region:" + UserFactory.current_user().getRegion() + " CountryCode:" + UserFactory.current_user().getCountryCode());
+	        	benchController.callSms();
 	            return true;
 	        case R.id.action_reset:
 				ActiveModelsHandler.destroyAll(instance);

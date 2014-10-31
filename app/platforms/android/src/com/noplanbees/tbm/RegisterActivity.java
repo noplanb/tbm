@@ -9,16 +9,25 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
-public class RegisterActivity extends Activity{
+public class RegisterActivity extends Activity {
 	private final String TAG = this.getClass().getSimpleName();
 	private UserFactory userFactory;
 	private User user;
@@ -27,7 +36,26 @@ public class RegisterActivity extends Activity{
 
 	private ArrayList<LinkedTreeMap<String, String>> friendList = new ArrayList<LinkedTreeMap<String,String>>();
 	private LinkedTreeMap<String, String> userParams = new LinkedTreeMap<String, String>();
-	
+
+	private String firstName;
+	private String lastName;
+	private String countryCode;
+	private String mobileNumber;
+	private String e164;
+	private String verificationCode;
+	private String auth;
+	private String mkey;
+
+	private EditText firstNameTxt;
+	private EditText lastNameTxt;
+	private EditText countryCodeTxt;
+	private EditText mobileNumberTxt;
+	private EditText verificationCodeTxt;
+
+
+	//----------
+	// LifeCycle
+	//----------
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -39,6 +67,17 @@ public class RegisterActivity extends Activity{
 		AddShortcutIcon();
 	}
 
+	@Override
+	protected void onResume(){
+		super.onResume();
+		setUpView();
+		new VersionHandler(this);
+	}
+
+
+	//-----
+	// Init
+	//-----
 	private void init(){
 		userFactory = UserFactory.getFactoryInstance();
 		userFactory.destroyAll(this);
@@ -46,21 +85,128 @@ public class RegisterActivity extends Activity{
 		friendFactory = FriendFactory.getFactoryInstance();
 	}
 
-	private void getUser() {	
-		EditText phoneView = (EditText) findViewById(R.id.phoneNumber);
-		String phoneNumber = phoneView.getText().toString().replaceAll(" ", "");
-		new GetUser("/reg/get_user?mobile_number=" + Uri.encode(phoneNumber));
+	//----------
+	// SetupView 
+	//----------
+	private void setUpView(){
+		initTxtFields();
+		prefillTextFields();
+	}
+	private void initTxtFields() {
+		firstNameTxt = (EditText) findViewById(R.id.first_name_txt);
+		lastNameTxt = (EditText) findViewById(R.id.last_name_txt);
+		countryCodeTxt = (EditText) findViewById(R.id.country_code_txt);
+		mobileNumberTxt = (EditText) findViewById(R.id.mobile_number_text);		
 	}
 
-	class GetUser extends Server{
-		public GetUser(String uri) {
-			super(uri);
+	private void prefillTextFields() {
+		Contact contact = new ContactsManager(this).userProfile(this);
+		Log.i(TAG, "profile: " + contact);
+		if (contact.getFirstName() != null)
+			firstNameTxt.setText(contact.getFirstName());
+
+		if (contact.getLastName() != null)
+			lastNameTxt.setText(contact.getLastName());
+
+		LinkedTreeMap<String, String> po = contact.firstPhoneMarkedMobileForContact();
+		if (po != null){
+			countryCodeTxt.setText(po.get(Contact.PhoneNumberKeys.COUNTRY_CODE));
+			mobileNumberTxt.setText(po.get(Contact.PhoneNumberKeys.NATIONAL));
+		} else {
+			countryCodeTxt.setText("1");
+		}
+	}
+
+	//----------------------------
+	// Handle register form submit
+	//----------------------------
+	private void registerUser() {	
+		firstName = cleanName(firstNameTxt.getText().toString());
+		firstNameTxt.setText(firstName);
+		lastName = cleanName(lastNameTxt.getText().toString());
+		lastNameTxt.setText(lastName);
+		countryCode = cleanNumber(countryCodeTxt.getText().toString());
+		countryCodeTxt.setText(countryCode);
+		mobileNumber = cleanNumber(mobileNumberTxt.getText().toString());
+		mobileNumberTxt.setText(mobileNumber);
+		e164 = "+" + countryCode + mobileNumber;
+
+		if (!isValidName(firstName)){
+			firstNameError();
+			return;
+		}
+		if (!isValidName(lastName)){
+			lastNameError();
+			return;
+		}
+		if (!isValidPhone(e164)){
+			phoneError();
+			return;
+		}
+		register();
+	}
+
+
+	private boolean isValidPhone(String p) {
+		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
+		PhoneNumber pn;
+		try {
+			pn = pu.parse(p, "US");
+		} catch (NumberParseException e) {
+			return false;
+		}
+
+		if (pu.isValidNumber(pn))
+			return true;
+		else
+			return false;
+	}
+
+	private boolean isValidName(String name) {
+		if (name != null && !name.isEmpty())
+			return true;
+		else
+			return false;
+	}
+
+	private String cleanNumber(String num) {
+		return num.replaceAll("\\D", "");
+	}
+
+	private String cleanName(String name) {
+		String r = name.replaceAll("\\W", "");
+		return r.replaceAll("\\d", "");
+	}
+
+	private void register(){
+		Uri.Builder ub = new Uri.Builder();
+		ub.appendPath("reg")
+		.appendPath("reg");
+		new Register(ub.build().toString(), userParams());
+	}
+
+	private LinkedTreeMap<String, String> userParams(){
+		LinkedTreeMap<String, String> r = new LinkedTreeMap<String, String>();
+		r.put(UserFactory.ServerParamKeys .DEVICE_PLATFORM, "android");
+		r.put(UserFactory.ServerParamKeys.FIRST_NAME, firstName);
+		r.put(UserFactory.ServerParamKeys.LAST_NAME, lastName);
+		r.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, e164);
+		r.put(UserFactory.ServerParamKeys.AUTH, auth);
+		r.put(UserFactory.ServerParamKeys.MKEY, mkey);
+		r.put(UserFactory.ServerParamKeys.VERIFICATION_CODE, verificationCode);
+		return r;
+	}
+
+	class Register extends Server{
+
+		public Register(String uri, LinkedTreeMap<String, String> params) {
+			super(uri, params);
 			progress.show();
 		}
 		@Override
-		public void success(String response) {	
+		public void success(String response) {
 			progress.dismiss();
-			gotUser(response);
+			didRegister(response);
 		}
 		@Override
 		public void error(String errorString) {
@@ -68,17 +214,111 @@ public class RegisterActivity extends Activity{
 			serverError();
 		}
 	}
-	
+
+	//-------------------------
+	// Handle verification code 
+	//-------------------------
 	@SuppressWarnings("unchecked")
-	private void gotUser(String r){
-		Log.i(TAG, "gotUser: " + r);
+	public void didRegister(String r) {
 		Gson g = new Gson();
-		userParams = g.fromJson(r, userParams.getClass());
-		Log.i(TAG, "gotUser: " + userParams.toString());
-		if (userParams.isEmpty()){
-			badPhoneError();
-			return;
+		LinkedTreeMap<String, String> params = new LinkedTreeMap<String,String>();
+		params = g.fromJson(r, params.getClass());
+		Log.i(TAG, "didRegister: " + params.toString());
+
+		if ( Server.isSuccess(params.get(Server.ParamKeys.RESPONSE_STATUS)) ){
+			auth = params.get(UserFactory.ServerParamKeys.AUTH);
+			mkey = params.get(UserFactory.ServerParamKeys.MKEY);
+			showVerificationDialog();
+		} else {
+			String title = params.get(Server.ParamKeys.ERROR_TITLE);
+			String msg = params.get(Server.ParamKeys.ERROR_MSG);
+			showErrorDialog(title, msg);
 		}
+	}
+
+	private void showVerificationDialog() {
+		LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+		LinearLayout ll = new LinearLayout(this);
+		ll.setLayoutParams(lp);
+		ll.setOrientation(LinearLayout.VERTICAL);
+		ll.setPadding(20, 20, 20, 20);
+		
+		TextView msgTxt = new TextView(this);
+		msgTxt.setText("We sent a code via text message to\n\n" + phoneWithFormat("international") + ".");
+		msgTxt.setLayoutParams(lp);
+		msgTxt.setPadding(15, 20, 15, 50);
+		msgTxt.setTextSize(17);
+		msgTxt.setGravity(Gravity.CENTER);
+		
+		verificationCodeTxt = new EditText(this);
+		verificationCodeTxt.setLayoutParams(lp);
+		verificationCodeTxt.setHint("Enter code");
+		msgTxt.setGravity(Gravity.CENTER_HORIZONTAL);
+		verificationCodeTxt.setInputType(InputType.TYPE_CLASS_NUMBER);
+		
+		ll.addView(msgTxt);
+		ll.addView(verificationCodeTxt);
+
+		new AlertDialog.Builder(this)
+		.setTitle("Enter Code")
+		.setView(ll)
+		.setPositiveButton("Enter", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				didEnterCode();
+			}
+		})
+		.setNegativeButton("Cancel", null)
+		.show();
+	}
+
+	protected void didEnterCode() {
+		verificationCode = verificationCodeTxt.getText().toString().replaceAll("\\s+", "");
+		Uri.Builder ub = new Uri.Builder();
+		String uri = ub.appendPath("reg") .appendPath("verify_code").build().toString();
+		new SendCode(uri, userParams());
+	}
+
+
+	private class SendCode extends Server{
+		public SendCode(String uri, LinkedTreeMap<String, String> params) {
+			super(uri, params);
+			progress.show();
+		}
+		@Override
+		public void success(String response) {	
+			progress.dismiss();
+			didReceiveCodeResponse(response);
+		}
+		@Override
+		public void error(String errorString) {		
+			progress.dismiss();
+			serverError();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public void didReceiveCodeResponse(String r) {
+		Log.i(TAG, "didReceiveCodeResponse: " + r);
+		Gson g = new Gson();
+		LinkedTreeMap<String,String> params = g.fromJson(r, userParams.getClass());
+		if ( Server.isSuccess(params.get(Server.ParamKeys.RESPONSE_STATUS)) ){
+			gotUser(params);
+		} else {
+			AlertDialog.Builder ab = new AlertDialog.Builder(this);
+			ab.setTitle("Bad Code")
+			.setMessage("The code you enterred is wrong. Please try again.")
+			.setPositiveButton("OK", null);
+			ab.create().show();
+		}
+	}
+	
+	//---------------------
+	// Add user and friends
+	//---------------------
+	
+	private void gotUser(LinkedTreeMap<String, String> params){
 		user.set(User.Attributes.FIRST_NAME, userParams.get(UserFactory.ServerParamKeys.FIRST_NAME));
 		user.set(User.Attributes.LAST_NAME, userParams.get(UserFactory.ServerParamKeys.LAST_NAME));
 		user.set(User.Attributes.MOBILE_NUMBER, userParams.get(UserFactory.ServerParamKeys.MOBILE_NUMBER));
@@ -87,20 +327,17 @@ public class RegisterActivity extends Activity{
 		user.set(User.Attributes.AUTH, userParams.get(UserFactory.ServerParamKeys.AUTH));
 		new GetFriends("/reg/get_friends?auth=" + user.get(User.Attributes.AUTH));
 	}
-	
-	class GetFriends extends Server{
 
+	class GetFriends extends Server{
 		public GetFriends(String uri) {
 			super(uri);
 			progress.show();
 		}
-
 		@Override
 		public void success(String response) {	
 			progress.dismiss();
 			gotFriends(response);
 		}
-
 		@Override
 		public void error(String errorString) {
 			progress.dismiss();
@@ -115,7 +352,7 @@ public class RegisterActivity extends Activity{
 		Log.i(TAG, "gotRegResponse: " + friendList.toString());
 		friendFactory.destroyAll(this);
 		Integer i = 0;
-		
+
 		for (LinkedTreeMap<String, String> fm : friendList){
 			FriendFactory.addFriendFromServerParams(this, fm);
 			i ++;
@@ -123,14 +360,14 @@ public class RegisterActivity extends Activity{
 		user.set(User.Attributes.REGISTERED, "true");
 		regComplete();
 	}
-	
+
 	private void setupListeners(){
-		Button enterBtn = (Button) findViewById(R.id.btnEnter);
+		Button enterBtn = (Button) findViewById(R.id.enter_btn);
 		enterBtn.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
-				getUser();
+				registerUser();
 			}
 		});
 	}
@@ -139,25 +376,33 @@ public class RegisterActivity extends Activity{
 		progress = new ProgressDialog(this);
 		progress.setTitle("Checking");
 	}
-	
+
 	private void regComplete() {
 		ActiveModelsHandler.saveAll(this);
 		Intent i = new Intent(this, HomeActivity.class);
 		startActivity(i);
 		finish();
 	}
-	
+
 	// -------------
 	// Error dialogs
 	//--------------
-	private void badPhoneError(){
-		showErrorDialog("Not Found", "No user found with that phone number. Check the number or contact Sani for assistance.\n\n   Sani Elfishawy\n   ph: 650-245-3537\n   e: sani@sbcglobal.net");
+	private void phoneError() {
+		showErrorDialog("Bad Number", "Enter your country code and mobile number.");
 	}
-	
+
+	private void lastNameError() {
+		showErrorDialog("Last Name", "Enter your last name.");
+	}
+
+	private void firstNameError() {
+		showErrorDialog("First Name", "Enter your first name.");
+	}
+
 	private void serverError(){
-		showErrorDialog("No Connection", "Can't reach ThreeByMe.\n\nCheck your connection and try again.");
+		showErrorDialog("No Connection", "Can't reach " + Config.appName + ".\n\nCheck your connection and try again.");
 	}
-	
+
 	private void showErrorDialog(String title, String message){
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(title)
@@ -167,21 +412,40 @@ public class RegisterActivity extends Activity{
 	}
 
 	//-------------
+	// Convenience
+	//-------------
+	private String phoneWithFormat(String format){
+		if (e164 == null)
+			return null;
+		
+		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
+		try {
+			PhoneNumber pn = pu.parse(e164, "US");
+			if (format.equals("international"))
+				return pu.format(pn, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
+			else
+				return pu.format(pn, PhoneNumberUtil.PhoneNumberFormat.NATIONAL);
+		} catch (NumberParseException e) {
+			return null;
+		}
+	}
+	
+	//-------------
 	// Add shortcut
 	//-------------
 	private void AddShortcutIcon(){
 
-	    Intent shortcutIntent = new Intent(getApplicationContext(), HomeActivity.class);
-//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-	    
+		Intent shortcutIntent = new Intent(getApplicationContext(), HomeActivity.class);
+		//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-	    Intent addIntent = new Intent();
-	    addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
-	    addIntent.putExtra("duplicate", false);
-	    addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, Config.appName);
-	    addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(getApplicationContext(), R.drawable.ic_launcher));
-	    addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
-	    getApplicationContext().sendBroadcast(addIntent);
+
+		Intent addIntent = new Intent();
+		addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+		addIntent.putExtra("duplicate", false);
+		addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, Config.appName);
+		addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(getApplicationContext(), R.drawable.ic_launcher));
+		addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+		getApplicationContext().sendBroadcast(addIntent);
 	}
 }

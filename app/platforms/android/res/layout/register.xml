@@ -1,36 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/register"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingTop="10dp" >
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:text="Phone with Area Code"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textSize="24sp" />
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp" >
 
     <EditText
-        android:id="@+id/phoneNumber"
+        android:id="@+id/first_name_txt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:ems="10"
-        android:inputType="textShortMessage" >
+        android:layout_alignParentTop="true"
+        android:hint="First Name"
+        android:inputType="textPersonName"
+        android:textSize="22dp" >
+
         <requestFocus />
     </EditText>
 
-    <Button
-        android:id="@+id/btnEnter"
+    <EditText
+        android:id="@+id/last_name_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/first_name_txt"
+        android:layout_marginTop="20dp"
+        android:hint="Last Name"
+        android:inputType="textPersonName"
+        android:textSize="22dp" />
+
+    <TextView
+        android:id="@+id/plus_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Enter" />
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/last_name_txt"
+        android:layout_marginTop="20dp"
+        android:ems="1"
+        android:text="+"
+        android:textSize="22dp" />
 
-</LinearLayout>
+    <EditText
+        android:id="@+id/country_code_txt"
+        android:layout_width="66dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/plus_txt"
+        android:layout_alignBottom="@+id/plus_txt"
+        android:layout_toRightOf="@id/plus_txt"
+        android:inputType="phone"
+        android:textSize="22dp" />
+
+    <EditText
+        android:id="@+id/mobile_number_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/plus_txt"
+        android:layout_alignBottom="@+id/plus_txt"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@id/country_code_txt"
+        android:hint="Mobile Number"
+        android:inputType="phone"
+        android:textSize="22dp" />
+
+    <TextView
+        android:id="@+id/cc_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/country_code_txt"
+        android:layout_below="@id/country_code_txt"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="8dp"
+        android:text="Country Code"
+        android:textSize="8dp" />
+
+    <Button
+        android:id="@+id/enter_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/mobile_number_text"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Enter"
+        android:textSize="22dp" />
+
+</RelativeLayout>

@@ -69,12 +69,13 @@ public class User extends ActiveModel{
     	} catch (NumberParseException e) {
 			Log.e(TAG, "ERROR: " + get(Attributes.MOBILE_NUMBER) + ":  NumberParseException was thrown: " + e.toString());
     	}
+    	Log.i(TAG, "PN : " + r + " phoneNumber:" + get(Attributes.MOBILE_NUMBER));
     	return r;
     }
     
     public Integer getCountryCode(){
     	if (getPhoneNumberObj() == null)
-    		return null;
+    		return 1; //USA = 1
     	return getPhoneNumberObj().getCountryCode();
     }
     
