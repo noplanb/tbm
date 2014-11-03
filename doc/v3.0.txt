@@ -329,6 +329,12 @@ Message from user who is not friend yet
 - PollallFriends
 
 
+PROBLEM: HomeActivity registers itself as a delegate for each friend. When we add a new friend later homeActivity is not registered as a delegate.
+SOLUTION: Move the delegate handling to the friendFactory class
+TODO: 
+x Remove addVideoStatusChangedCallbackDelegate from friend
+x Add it to friend factory
+x Call the factory instance
 
 GENERAL TODO:
 -------------

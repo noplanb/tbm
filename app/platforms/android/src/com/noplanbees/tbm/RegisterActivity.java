@@ -26,16 +26,13 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
 
-public class RegisterActivity extends Activity {
+public class RegisterActivity extends Activity{
 	private final String TAG = this.getClass().getSimpleName();
 	private UserFactory userFactory;
 	private User user;
-	private FriendFactory friendFactory;
 	private ProgressDialog progress;
-
-	private ArrayList<LinkedTreeMap<String, String>> friendList = new ArrayList<LinkedTreeMap<String,String>>();
-	private LinkedTreeMap<String, String> userParams = new LinkedTreeMap<String, String>();
 
 	private String firstName;
 	private String lastName;
@@ -82,7 +79,6 @@ public class RegisterActivity extends Activity {
 		userFactory = UserFactory.getFactoryInstance();
 		userFactory.destroyAll(this);
 		user = userFactory.makeInstance(this);
-		friendFactory = FriendFactory.getFactoryInstance();
 	}
 
 	//----------
@@ -302,7 +298,8 @@ public class RegisterActivity extends Activity {
 	public void didReceiveCodeResponse(String r) {
 		Log.i(TAG, "didReceiveCodeResponse: " + r);
 		Gson g = new Gson();
-		LinkedTreeMap<String,String> params = g.fromJson(r, userParams.getClass());
+		LinkedTreeMap<String,String> params = new LinkedTreeMap<String, String>();
+		params = g.fromJson(r, params.getClass());
 		if ( Server.isSuccess(params.get(Server.ParamKeys.RESPONSE_STATUS)) ){
 			gotUser(params);
 		} else {
@@ -319,46 +316,18 @@ public class RegisterActivity extends Activity {
 	//---------------------
 	
 	private void gotUser(LinkedTreeMap<String, String> params){
-		user.set(User.Attributes.FIRST_NAME, userParams.get(UserFactory.ServerParamKeys.FIRST_NAME));
-		user.set(User.Attributes.LAST_NAME, userParams.get(UserFactory.ServerParamKeys.LAST_NAME));
-		user.set(User.Attributes.MOBILE_NUMBER, userParams.get(UserFactory.ServerParamKeys.MOBILE_NUMBER));
-		user.set(User.Attributes.ID, userParams.get(UserFactory.ServerParamKeys.ID)).toString();
-		user.set(User.Attributes.MKEY, userParams.get(UserFactory.ServerParamKeys.MKEY));
-		user.set(User.Attributes.AUTH, userParams.get(UserFactory.ServerParamKeys.AUTH));
-		new GetFriends("/reg/get_friends?auth=" + user.get(User.Attributes.AUTH));
-	}
-
-	class GetFriends extends Server{
-		public GetFriends(String uri) {
-			super(uri);
-			progress.show();
-		}
-		@Override
-		public void success(String response) {	
-			progress.dismiss();
-			gotFriends(response);
-		}
-		@Override
-		public void error(String errorString) {
-			progress.dismiss();
-			serverError();
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public void gotFriends(String r) {
-		Gson g = new Gson();
-		friendList = g.fromJson(r, friendList.getClass());
-		Log.i(TAG, "gotRegResponse: " + friendList.toString());
-		friendFactory.destroyAll(this);
-		Integer i = 0;
-
-		for (LinkedTreeMap<String, String> fm : friendList){
-			FriendFactory.addFriendFromServerParams(this, fm);
-			i ++;
-		}
-		user.set(User.Attributes.REGISTERED, "true");
-		regComplete();
+		user.set(User.Attributes.FIRST_NAME, params.get(UserFactory.ServerParamKeys.FIRST_NAME));
+		user.set(User.Attributes.LAST_NAME, params.get(UserFactory.ServerParamKeys.LAST_NAME));
+		user.set(User.Attributes.MOBILE_NUMBER, params.get(UserFactory.ServerParamKeys.MOBILE_NUMBER));
+		user.set(User.Attributes.ID, params.get(UserFactory.ServerParamKeys.ID)).toString();
+		user.set(User.Attributes.MKEY, params.get(UserFactory.ServerParamKeys.MKEY));
+		user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
+		new FriendGetter(this, true, new FriendGetterCallback(){
+			@Override
+			public void gotFriends() {
+				regComplete();
+			}
+		});
 	}
 
 	private void setupListeners(){
@@ -378,6 +347,7 @@ public class RegisterActivity extends Activity {
 	}
 
 	private void regComplete() {
+		UserFactory.current_user().set(User.Attributes.REGISTERED, "true");
 		ActiveModelsHandler.saveAll(this);
 		Intent i = new Intent(this, HomeActivity.class);
 		startActivity(i);
@@ -448,4 +418,6 @@ public class RegisterActivity extends Activity {
 		addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
 		getApplicationContext().sendBroadcast(addIntent);
 	}
+
+
 }

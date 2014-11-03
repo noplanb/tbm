@@ -20,3 +20,27 @@ Video record dimming in low light
 - Create a sample project with cameraPreview media recorder to record a 320x240 size video. 
 - Figure out why in dim light conditions the preview and recording darkens considerably when you start recording.
 
+
+
+Possible Architecture
+---------------------
+- Strategy:
+  - Subclass and us Application rather home activity as the parent class that handles background intents and the state models.
+
+- Instantiation of Application:
+  - Subclass Application as a singleton 
+  - Use manifest to refer to it
+  - Make Application implement LocalBroadcastManager.
+
+- Sending and Handling Intents:
+    - Intents sent from GcmBroadcastReciever (notification) and from FileTransfermanager are sent as LocalBroadcastManager intents and received by Application. They are no longer sent as intents to wake an activity.
+    - Intent handler is pulled into Application and out of HomeActivity it manages changes to state due to incoming intents.
+
+- Managing the models:
+  - Models are instantiated under Application
+  - Saving and restoring the models to filesystem is handled by Application under its lifecycle.
+  - Activities refer up to the application to access the models
+
+- Communication between Application and activities
+  - Activities register with the models under Application to receive notification of changes to state
+

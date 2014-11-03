@@ -1,5 +1,7 @@
 package com.noplanbees.tbm;
 
+import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
+
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -8,8 +10,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.PowerManager;
 import android.util.Log;
-
-import com.google.gson.internal.LinkedTreeMap;
 
 public class IntentHandler {
 	
@@ -158,10 +158,15 @@ public class IntentHandler {
 //			return;
 //		}
 		
-		// We may be getting a message from someone who is not a friend yet. 
+		// We may be getting a message from someone who is not a friend yet. Get new friends and poll them all.
 		if (friend == null){
-			FriendFactory.getFriendsFromServer();
-			new Poller(homeActivity).pollAll();
+			Log.i(TAG, "Got Video from a user who is not currently a friend. Getting friends.");
+			new FriendGetter(homeActivity, false, new FriendGetterCallback(){
+				@Override
+				public void gotFriends() {
+					new Poller(homeActivity).pollAll();
+				}	
+			});
 			return;
 		}
 		

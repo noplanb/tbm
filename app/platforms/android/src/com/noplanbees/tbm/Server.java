@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -61,7 +62,7 @@ public abstract class Server {
 		method = "GET";
 		new BgHttpReq().execute();
 	}
-
+	
 	public Server(String uri){
 		this.uri = uri; 
 		sParams = "";

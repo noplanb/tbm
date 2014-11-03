@@ -2,12 +2,16 @@ package com.noplanbees.tbm;
 
 import java.util.ArrayList;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.Friend.Attributes;
 
 public class FriendFactory extends ActiveModelFactory{
 	private final String TAG = getClass().getSimpleName();
@@ -21,7 +25,7 @@ public class FriendFactory extends ActiveModelFactory{
 		public static final String MOBILE_NUMBER = "mobile_number";
 		public static final String HAS_APP = "has_app";
 	}
-	
+		
 	public static FriendFactory instance = null;
 
 	public static FriendFactory getFactoryInstance(){
@@ -88,5 +92,24 @@ public class FriendFactory extends ActiveModelFactory{
 		}
 		return r;
 	}
+	
+	//----------------------------
+	// VideoStatusChange callbacks
+	//----------------------------
+	private ArrayList <VideoStatusChangedCallback> vStatusCallbackDelegates = new ArrayList <VideoStatusChangedCallback> ();
+
+	public void addVideoStatusChangedCallbackDelegate (VideoStatusChangedCallback delegate){
+		if (vStatusCallbackDelegates.contains(delegate))
+			return;
+		vStatusCallbackDelegates.add(delegate);
+		Log.i(TAG, "addVideoStatusChangedCallbackDelegate for " + delegate.toString() + " num=" + vStatusCallbackDelegates.size());
+	}
+
+	public void notifyStatusChanged(Friend f){
+		for (VideoStatusChangedCallback delegate : vStatusCallbackDelegates){
+			delegate.onVideoStatusChanged(f);
+		}
+	}
+
 
 }

@@ -34,7 +34,7 @@ public class UserFactory extends ActiveModelFactory {
 			return (User) instances.get(0);
 		}
 	}
-	
+		
 	public static User current_user(){
 		UserFactory uf = UserFactory.getFactoryInstance();
 		if (uf.hasInstances()){

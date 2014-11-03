@@ -374,21 +374,6 @@ public class Friend extends ActiveModel{
 	// Changes to status and local notification.
 	//------------------------------------------
 
-	// Notify Callbacks
-	private ArrayList <VideoStatusChangedCallback> vStatusCallbackDelegates = new ArrayList <VideoStatusChangedCallback> ();
-
-	public void addVideoStatusChangedCallbackDelegate (VideoStatusChangedCallback delegate){
-		if (vStatusCallbackDelegates.contains(delegate))
-			return;
-		vStatusCallbackDelegates.add(delegate);
-		Log.i(TAG, "addVideoStatusChangedCallbackDelegate for " + get(Attributes.FIRST_NAME) + " num=" + vStatusCallbackDelegates.size());
-	}
-
-	private void notifyStatusChanged(){
-		for (VideoStatusChangedCallback delegate : vStatusCallbackDelegates){
-			delegate.onVideoStatusChanged(this);
-		}
-	}
 
 	// Outgoing video status
 	private void setOutgoingVideoStatus(int status){
@@ -405,7 +390,7 @@ public class Friend extends ActiveModel{
 			if (status == OutgoingVideoStatus.NEW)
 				setUploadRetryCount(0);
 			setLastEventTypeOutgoing();
-			notifyStatusChanged();
+			FriendFactory.getFactoryInstance().notifyStatusChanged(this);
 		}
 	}
 
@@ -422,7 +407,7 @@ public class Friend extends ActiveModel{
 		if (getUploadRetryCount() != retryCount){
 			setUploadRetryCount(retryCount);
 			setLastEventTypeOutgoing();
-			notifyStatusChanged();
+			FriendFactory.getFactoryInstance().notifyStatusChanged(this);
 		}
 	}
 
@@ -447,7 +432,7 @@ public class Friend extends ActiveModel{
 			// Only notify the UI of changes in status to the last incoming video.
 			if (newestIncomingVideo().getId().equals(videoId)){
 				setLastEventTypeIncoming();
-				notifyStatusChanged();
+				FriendFactory.getFactoryInstance().notifyStatusChanged(this);
 			}
 		}
 	}
@@ -474,7 +459,7 @@ public class Friend extends ActiveModel{
 			// Only notify the UI of changes in retry count of the last incoming video.
 			if (newestIncomingVideo().getId().equals(videoId)){
 				setLastEventTypeIncoming();
-				notifyStatusChanged();
+				FriendFactory.getFactoryInstance().notifyStatusChanged(this);
 			}
 		}
 	}

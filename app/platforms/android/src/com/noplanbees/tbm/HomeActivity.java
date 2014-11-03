@@ -50,7 +50,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private GridElementFactory gridElementFactory;
 
 	private FrameLayout cameraPreviewFrame;
-	
+
 	private String lastState;
 	private Intent currentIntent;
 
@@ -68,7 +68,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	public void onCreate(Bundle savedInstanceState) {
 		Log.e(TAG, "onCreate state " + getFilesDir().getAbsolutePath());
 		super.onCreate(savedInstanceState);
-	
+
 		//Note Boot.boot must complete successfully before we continue the home activity. 
 		//Boot will start the registrationActivity and return false if needed. 
 		if (!Boot.boot(this)){
@@ -163,7 +163,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		ActiveModelsHandler.saveAll(this);
 		lastState = "onPause";
 	}
-	
+
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
@@ -200,7 +200,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	//-------------------
-    // HandleIntentAction
+	// HandleIntentAction
 	//-------------------
 	private void handleIntentAction(){
 		// Right now the only actions are 
@@ -217,18 +217,18 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			Log.i(TAG, "handleIntentAction: no ation or data. Exiting.");
 			return;
 		}
-		
+
 		String friendId = currentIntent.getData().getQueryParameter(IntentHandler.IntentParamKeys.FRIEND_ID);
 		if (action == null || friendId == null){
 			Log.i(TAG, "handleIntentAction: no friendId or action. Exiting." + currentIntent.toString());
 			return;
 		}
-		
+
 		if (action.equals(IntentHandler.IntentActions.PLAY_VIDEO) && !NotificationAlertManager.screenIsLocked(instance)){
 			currentIntent.setAction(IntentHandler.IntentActions.NONE);
 			gridElementFactory.findWithFriendId(friendId).videoPlayer.start();
 		}
-		
+
 		// Not used as I decided pending intent coming back from sending sms is to disruptive. Just assume
 		// sms's sent go through.
 		if (action.equals(IntentHandler.IntentActions.SMS_RESULT) && !NotificationAlertManager.screenIsLocked(instance)){
@@ -236,7 +236,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			Log.i(TAG, currentIntent.toString());
 		}
 	}
-	
+
 	//---------------
 	// Initialization
 	//---------------
@@ -279,10 +279,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	private void setupGrid(){
 		GridManager.setGridEventNotificationDelegate(this);
-		
+
 		if (gridElementFactory.all().size() == 8)
 			return;
-		
+
 		gridElementFactory.destroyAll(this);
 		ArrayList<Friend> allFriends = friendFactory.all();
 		for (Integer i=0; i<8; i++){
@@ -293,7 +293,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			}
 		}
 	}
-	
+
 	private void runTests() {
 		// Log.e(TAG, getFilesDir().getAbsolutePath());
 		// Convenience.printOurTaskInfo(this);
@@ -317,7 +317,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		videoViews.add((VideoView) findViewById(R.id.VideoView5));
 		videoViews.add((VideoView) findViewById(R.id.VideoView6));
 		videoViews.add((VideoView) findViewById(R.id.VideoView7));
-		
+
 		plusTexts.add((TextView) findViewById(R.id.PlusText0));
 		plusTexts.add((TextView) findViewById(R.id.PlusText1));
 		plusTexts.add((TextView) findViewById(R.id.PlusText2));
@@ -353,7 +353,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView5));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView6));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView7));
-		
+
 		Integer i=0;
 		for (GridElement ge : gridElementFactory.all()){
 			ge.frame = frames.get(i);
@@ -386,9 +386,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void setupVideoStatusChangedCallbacks(){
-		for (Friend f : friendFactory.all()){
-			f.addVideoStatusChangedCallbackDelegate(this);
-		}
+		friendFactory.addVideoStatusChangedCallbackDelegate(this);
 	}
 
 	private void setVideoViewHeights(int width, int height) {
@@ -460,7 +458,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
 		if (!ge.hasFriend())
 			return;
-		
+
 		Friend f = ge.friend();
 		GridManager.rankingActionOccurred(f);
 		if (videoRecorder.startRecording()) {
@@ -481,7 +479,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
 		if (!ge.hasFriend())
 			return;
-		
+
 		Friend f = ge.friend();
 		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
 		if ( videoRecorder.stopRecording(f) ){
@@ -495,7 +493,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
 		if (!ge.hasFriend())
 			return;
-		
+
 		Friend f = ge.friend();
 		Log.i(TAG, "onPlayClick" + f.get(Friend.Attributes.FIRST_NAME));
 		GridManager.rankingActionOccurred(f);
@@ -508,7 +506,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		if (ge != null)
 			ge.nameText.setText(ge.friend().getStatusString());
 	}
-    
+
 	// Since the call for this had to be moved from onPause to onStop this really never has any effect since
 	// the surfaces disappear by that time and the mediaRecorder in videoRecorder is disposed.
 	private void abortAnyRecording() {
@@ -530,7 +528,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// Attache ViewSizeGetter
 		cameraPreviewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
 		cameraPreviewFrame.addView(new ViewSizeGetter(this));
-		
+
 		for (TextView p : plusTexts){
 			p.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -614,7 +612,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		alertDialog.setCanceledOnTouchOutside(false);
 		alertDialog.show();
 	}
-	
+
 	// ---------------------------------------
 	// Video Recorder ExceptionHandler delegate
 	// ----------------------------------------
@@ -656,9 +654,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private void setupVersionHandler(){
 		//Only check the version when the app is started fresh. 
 		if (versionHandler == null)
-		  versionHandler = new VersionHandler(this);
+			versionHandler = new VersionHandler(this);
 	}
-	
+
 
 	//------------
 	// Grid Events
@@ -667,47 +665,47 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	public void gridDidChange() {
 		initViews();
 	}
-	
-	
+
+
 	//----------
 	// ActionBar
 	//----------
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-	    // Inflate the menu items for use in the action bar
-	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.home_menu, menu);
-	    return super.onCreateOptionsMenu(menu);
+		// Inflate the menu items for use in the action bar
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.home_menu, menu);
+		return super.onCreateOptionsMenu(menu);
 	}
-	
+
 	@SuppressWarnings("null")
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-	    // Handle presses on the action bar items
-	    switch (item.getItemId()) {
-	        case R.id.action_bench:
-	        	benchController.toggle();
-	            return true;
-	        case R.id.action_get_contacts:
-	        	UserFactory.current_user().getCountryCode();
-	            return true;
-	        case R.id.action_get_sms:
-	        	benchController.callSms();
-	            return true;
-	        case R.id.action_reset:
-				ActiveModelsHandler.destroyAll(instance);
-				finish();
-	            return true;
-	        case R.id.action_crash:
-				Camera c = null;
-				c.cancelAutoFocus();
-	            return true;
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
+		// Handle presses on the action bar items
+		switch (item.getItemId()) {
+		case R.id.action_bench:
+			benchController.toggle();
+			return true;
+		case R.id.action_get_contacts:
+			UserFactory.current_user().getCountryCode();
+			return true;
+		case R.id.action_get_sms:
+			benchController.callSms();
+			return true;
+		case R.id.action_reset:
+			ActiveModelsHandler.destroyAll(instance);
+			finish();
+			return true;
+		case R.id.action_crash:
+			Camera c = null;
+			c.cancelAutoFocus();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
-	
+
 	//-----------------------------------------
 	// Views that may be covering the home page
 	//-----------------------------------------
