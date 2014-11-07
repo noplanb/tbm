@@ -365,6 +365,16 @@ x Check about bailing out.
 - Server static landing page for zazoapp.com get the app on android and ios.
 
 
+- Test cases:
+  - Friend with blank first name
+  - Friend with blank last name
+  - Friend with blank phone
+  - Friend with null for hasApp
+  
+  
+CORNER CASES TO TEST:
+--------------------
+- Dont register pushToken for user until we have gotten past verification on registration.
 
 
 
