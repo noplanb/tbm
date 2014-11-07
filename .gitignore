@@ -11,6 +11,8 @@
 # generated files
 app/platforms/android/bin/
 app/platforms/android/gen/
+bin
+gen
 
 # Local configuration file (sdk path, etc)
 app/platforms/android/local.properties
