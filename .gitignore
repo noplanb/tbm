@@ -1,4 +1,5 @@
 # built application files
+# I do want to keep the released apks in the repo so commented out *.apk
 #*.apk
 *.ap_
 
