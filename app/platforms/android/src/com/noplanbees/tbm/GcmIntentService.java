@@ -1,5 +1,6 @@
 package com.noplanbees.tbm;
 
+
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
@@ -71,7 +72,7 @@ public class GcmIntentService extends IntentService {
 		} else {
 			Log.e(TAG, "handleVideoStatusUpdate: ERROR got unknow sent video status");
 		}
-		startHomeActivity(intent);
+		startDataHolderService(intent);
 	}
 
 	// --------
@@ -83,16 +84,16 @@ public class GcmIntentService extends IntentService {
 		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
 		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Video.IncomingVideoStatus.NEW);
 		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID)); 
-		startHomeActivity(intent);
+		startDataHolderService(intent);
 	}
 
-	private void startHomeActivity(Intent intent) {
-		intent.setClass(getApplicationContext(), HomeActivity.class);
+	private void startDataHolderService(Intent intent) {
+		intent.setClass(getApplicationContext(), DataHolderService.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
 		intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); // See doc/task_manager_bug.txt for the reason for this flag.
 		intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // This is probably not necessary since HomeActivity is singleTask but on a test bed I needed it to make sure onNewIntent is called in the activity.
-		startActivity(intent);
+		startService(intent);
 	}
 
 }

@@ -15,7 +15,10 @@ import android.util.Log;
 
 // Queries, gets, and sets parameters for the camera we use.
 
-interface CameraExceptionHandler{
+
+public class CameraManager {
+
+public static interface CameraExceptionHandler{
 	public void noCameraHardware();
 	public void noFrontCamera();
 	public void cameraInUseByOtherApplication();
@@ -23,8 +26,7 @@ interface CameraExceptionHandler{
 	public void unableToFindAppropriateVideoSize();
 }
 
-public class CameraManager {
-	final String TAG = this.getClass().getSimpleName();
+final String TAG = this.getClass().getSimpleName();
 	private static String STAG = CameraManager.class.getSimpleName();
 
 	// Allow registration of a single delegate to handle exceptions.

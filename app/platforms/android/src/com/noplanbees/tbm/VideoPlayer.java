@@ -1,6 +1,5 @@
 package com.noplanbees.tbm;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.VideoView;
+
 
 public class VideoPlayer implements OnCompletionListener{
 	String TAG = this.getClass().getSimpleName();

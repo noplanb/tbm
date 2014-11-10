@@ -3,6 +3,7 @@ package com.noplanbees.tbm;
 import android.content.Intent;
 import android.util.Log;
 
+
 public class Boot {
 	public static final String TAG = "Boot";
 	
@@ -12,7 +13,8 @@ public class Boot {
 		//--------------------------
 		// Retrieve or create User model from local storage
 		//--------------------------
-		ActiveModelsHandler.ensureUser(homeActivity);
+//		ActiveModelsHandler instance = ActiveModelsHandler.getInstance(homeActivity);
+//		instance.ensureUser();
 
 		
 		//--------------------------
@@ -29,7 +31,7 @@ public class Boot {
 		//--------------------------
         // Try to retrieve all models from local storage
 		//--------------------------
-		ActiveModelsHandler.ensureAll(homeActivity);
+//		instance.ensureAll();
 
 		return true;
 	}

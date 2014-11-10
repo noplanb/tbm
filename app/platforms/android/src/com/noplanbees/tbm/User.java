@@ -33,13 +33,13 @@ public class User extends ActiveModel{
 	}
 	
 	public static boolean isRegistered(Context context){
-		UserFactory uf = ActiveModelsHandler.ensureUser(context);
+		UserFactory uf = ActiveModelsHandler.getInstance(context).ensureUser();
 		return uf.hasInstances() && uf.instances.get(0).get(User.Attributes.REGISTERED).startsWith("t");
 	}
 	
 	public static String userId(Context context){
 		String id = null;
-		UserFactory uf = ActiveModelsHandler.ensureUser(context);
+		UserFactory uf = ActiveModelsHandler.getInstance(context).ensureUser();
 		if (uf.hasInstances()){
 			id = uf.instances.get(0).getId();
 		}

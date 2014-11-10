@@ -7,30 +7,30 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
 	private final String TAG = this.getClass().getSimpleName();
 
-	public static SurfaceHolder surfaceHolder;
-	private Context context;
+	private VideoRecorder videoRecorder;
 
-	public CameraPreview(Context context) {
+	public static SurfaceHolder surfaceHolder;
+
+	public CameraPreview(Context context, VideoRecorder vRecorder) {
 		super(context);
 		Log.i(TAG, "constructor");
-		context = context;
 		init();
+		this.videoRecorder = vRecorder;
 	}
 
 	public CameraPreview(Context context, AttributeSet attrs){
 		super(context, attrs);
 		Log.i(TAG, "constructor");
-		context = context;
 		init();
 	}
 
 	public CameraPreview(Context context, AttributeSet attrs, int defStyle){
 		super(context, attrs, defStyle);
 		Log.i(TAG, "constructor");
-		context = context;
 		init();
 	}
 
@@ -51,13 +51,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {		
 		Log.i(TAG, "surfaceCreated");
-		HomeActivity.instance.videoRecorder.previewSurfaceCreated(holder);
+		videoRecorder.previewSurfaceCreated(holder);
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {		
 		Log.i(TAG, "surfaceDestroyed");
-		HomeActivity.instance.videoRecorder.previewSurfaceDestroyed(holder);
+		videoRecorder.previewSurfaceDestroyed(holder);
 	}
 
 }

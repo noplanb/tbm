@@ -108,7 +108,7 @@ public class VersionHandler {
 	public void handleCompatibilityResult(String result) {
 		Log.i(TAG, "compatibilityCheckCallback: " + result);
 		if (VersionHandler.updateSchemaRequired(result)) {
-			ActiveModelsHandler.destroyAll(activity);
+			ActiveModelsHandler.getInstance(activity).destroyAll();
 			showVersionHandlerDialog("Your " + Config.appName + " app is obsolete. Please update.", false);
 		} else if (VersionHandler.updateRequired(result)) {
 			showVersionHandlerDialog("Your " + Config.appName + " app is obsolete. Please update.", false);

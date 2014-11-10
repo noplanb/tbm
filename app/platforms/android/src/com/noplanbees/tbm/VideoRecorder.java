@@ -21,21 +21,22 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
 
-// Even though I set up this exception handling interface to be complete I probably wont use it the failure cause of failure
-// for all of these errors will not be something that the user can do anything about. And the result of the failure will 
-// be that the VideoRecorder wont work. I do need a general system in the app though whereby we can report caught exceptions that 
-// make the app unusable back to our servers for analysis.
-interface VideoRecorderExceptionHandler{
-	public void unableToSetPrievew();
-	public void unableToPrepareMediaRecorder();
-	public void recordingAborted();
-	public void recordingTooShort();
-	public void illegalStateOnStart();
-	public void runntimeErrorOnStart();
-}
+
+
 
 public class VideoRecorder {
-
+	// Even though I set up this exception handling interface to be complete I probably wont use it the failure cause of failure
+	// for all of these errors will not be something that the user can do anything about. And the result of the failure will 
+	// be that the VideoRecorder wont work. I do need a general system in the app though whereby we can report caught exceptions that 
+	// make the app unusable back to our servers for analysis.
+	public static interface VideoRecorderExceptionHandler{
+		public void unableToSetPrievew();
+		public void unableToPrepareMediaRecorder();
+		public void recordingAborted();
+		public void recordingTooShort();
+		public void illegalStateOnStart();
+		public void runntimeErrorOnStart();
+	}
 	private final String TAG = this.getClass().getSimpleName();
 
 	private Context context;

@@ -8,29 +8,25 @@ import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
 
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
-import android.widget.ImageView;
-import android.widget.VideoView;
 
-interface VideoStatusChangedCallback{
-	public void onVideoStatusChanged(Friend friend);
-}
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+
 
 public class Friend extends ActiveModel{
 
+public static interface VideoStatusChangedCallback{
+	public void onVideoStatusChanged(Friend friend);
+}
 	public static class OutgoingVideoStatus{
 		public static final int NONE = 0;
 		public static final int NEW = 1;

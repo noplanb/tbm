@@ -1,7 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -348,7 +346,7 @@ public class RegisterActivity extends Activity{
 
 	private void regComplete() {
 		UserFactory.current_user().set(User.Attributes.REGISTERED, "true");
-		ActiveModelsHandler.saveAll(this);
+		ActiveModelsHandler.getInstance(this).saveAll();
 		Intent i = new Intent(this, HomeActivity.class);
 		startActivity(i);
 		finish();

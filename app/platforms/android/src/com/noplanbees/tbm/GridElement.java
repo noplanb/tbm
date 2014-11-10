@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.VideoView;
 
+
 public class GridElement extends ActiveModel {
 
 	public static class Attributes{

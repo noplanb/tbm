@@ -24,7 +24,7 @@ public class UserFactory extends ActiveModelFactory {
 	}
 	
 	@Override
-	protected User makeInstance(Context context) {
+	public User makeInstance(Context context) {
 		if ( instances.isEmpty() ){
 			User i = new User();
 			i.init(context);

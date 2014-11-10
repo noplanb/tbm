@@ -4,23 +4,26 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Resources.Theme;
 import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.PowerManager;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -29,14 +32,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.noplanbees.tbm.CameraManager.CameraExceptionHandler;
+import com.noplanbees.tbm.DataHolderService.LocalBinder;
+import com.noplanbees.tbm.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
+import com.noplanbees.tbm.VideoRecorder.VideoRecorderExceptionHandler;
 
 public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback, VideoRecorderExceptionHandler, GridEventNotificationDelegate{
 
 	final String TAG = this.getClass().getSimpleName();
 	final Float ASPECT = 240F/320F;
 
-	public static HomeActivity instance;
 	public Boolean isForeground = false;
 	public LongpressTouchHandler longpressTouchHandler;
 	public VideoRecorder videoRecorder;
@@ -44,10 +50,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	public VersionHandler versionHandler;
 	private BenchController benchController;
 	private SmsStatsHandler smsStatsHandler;
-
-	private FriendFactory friendFactory;
-	private UserFactory userFactory;
-	private GridElementFactory gridElementFactory;
 
 	private FrameLayout cameraPreviewFrame;
 
@@ -59,7 +61,22 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private ArrayList<TextView> plusTexts = new ArrayList<TextView>(8);
 	private ArrayList<FrameLayout> frames = new ArrayList<FrameLayout>(8);
 	private ArrayList<TextView> nameTexts = new ArrayList<TextView>(8);
-	public ArrayList<VideoPlayer> videoPlayers = new ArrayList<VideoPlayer>(8);
+	private ArrayList<VideoPlayer> videoPlayers = new ArrayList<VideoPlayer>(8);
+	
+	private ActiveModelsHandler activeModelsHandler;
+	
+	
+	private ServiceConnection conn = new ServiceConnection() {
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			activeModelsHandler = null;
+		}
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			activeModelsHandler = ((LocalBinder)service).getDataManager();
+		}
+	};
 
 	//--------------
 	// App lifecycle
@@ -77,22 +94,14 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			return;
 		}
 
-		// If activity was destroyed and activity was created due to an intent for videoReceived or videoStatus keep task in the background.
-		Integer intentResult = new IntentHandler(this, getIntent()).handle();
-		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
-			Log.e(TAG, "onCreate: finishing.");
-			finish();
-			return;
-		} else {			
-			Log.e(TAG, "onCreate: marking activity as foreground.");
-			isForeground = true;
-		}
 		Boot.initGCM(this);
 
 		setupWindow();
 		setContentView(R.layout.home);
 		currentIntent = getIntent();
 		lastState = "onCreate";
+		
+		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 	}
 
 	@Override
@@ -105,6 +114,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	protected void onStart() {
 		super.onStart();
 
+		TbmApplication.getInstance().setForeground(true);
+		
 		Log.e(TAG, "onStart: state");
 		if (isForeground){
 			ensureModels();
@@ -146,6 +157,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	@Override
 	protected void onStop() {
 		super.onStop();
+
+		TbmApplication.getInstance().setForeground(false);
+
 		Log.e(TAG, "onStop: state");
 		isForeground = false;
 		abortAnyRecording(); // really as no effect when called here since the surfaces will have been destroyed and the recording already stopped.
@@ -160,7 +174,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	protected void onPause() {
 		super.onPause();
 		Log.e(TAG, "onPause: state");
-		ActiveModelsHandler.saveAll(this);
+		ActiveModelsHandler.getInstance(this).saveAll();
 		lastState = "onPause";
 	}
 
@@ -168,15 +182,15 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		Log.e(TAG, "onNewIntent state" + ((currentIntent == null || currentIntent.getExtras() == null) ? "no extras" : currentIntent.getExtras().toString()));
-		Integer intentResult = new IntentHandler(this, intent).handle();
-		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
-			Log.e(TAG, "onNewIntent: moving activity to background.");
-			moveTaskToBack(true);
-			isForeground = false;
-		} else {
-			Log.e(TAG, "onNewIntent: moving activity to foreground.");
-			isForeground = true;
-		}
+//		Integer intentResult = new IntentHandler(this, intent).handle();
+//		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
+//			Log.e(TAG, "onNewIntent: moving activity to background.");
+//			moveTaskToBack(true);
+//			isForeground = false;
+//		} else {
+//			Log.e(TAG, "onNewIntent: moving activity to foreground.");
+//			isForeground = true;
+//		}
 		currentIntent = intent;
 		lastState = "onNewIntent";
 	}
@@ -224,14 +238,14 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			return;
 		}
 
-		if (action.equals(IntentHandler.IntentActions.PLAY_VIDEO) && !NotificationAlertManager.screenIsLocked(instance)){
+		if (action.equals(IntentHandler.IntentActions.PLAY_VIDEO) && !NotificationAlertManager.screenIsLocked(this)){
 			currentIntent.setAction(IntentHandler.IntentActions.NONE);
-			gridElementFactory.findWithFriendId(friendId).videoPlayer.start();
+			activeModelsHandler.getGf().findWithFriendId(friendId).videoPlayer.start();
 		}
 
 		// Not used as I decided pending intent coming back from sending sms is to disruptive. Just assume
 		// sms's sent go through.
-		if (action.equals(IntentHandler.IntentActions.SMS_RESULT) && !NotificationAlertManager.screenIsLocked(instance)){
+		if (action.equals(IntentHandler.IntentActions.SMS_RESULT) && !NotificationAlertManager.screenIsLocked(this)){
 			currentIntent.setAction(IntentHandler.IntentActions.NONE);
 			Log.i(TAG, currentIntent.toString());
 		}
@@ -249,14 +263,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	private void initModels() {
 		Log.i(TAG, "initModels");
-		instance = this;
 		CameraManager.addExceptionHandlerDelegate(this);
 		VideoRecorder.addExceptionHandlerDelegate(this);
 		videoRecorder = new VideoRecorder(this);
 		gcmHandler = new GcmHandler(this);
-		friendFactory = FriendFactory.getFactoryInstance();
-		userFactory = UserFactory.getFactoryInstance();
-		gridElementFactory = GridElementFactory.getFactoryInstance();
 		benchController = new BenchController(this);
 		setupGrid();
 		getVideoViewsAndPlayers();
@@ -264,29 +274,29 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void ensureModels() {
-		if ( instance == null ||
-				videoRecorder == null ||
-				gcmHandler == null ||
-				friendFactory == null ||
-				userFactory == null || 
-				gridElementFactory == null ||
-				longpressTouchHandler == null || 
-				benchController == null
-				){
+//		if ( instance == null ||
+//				videoRecorder == null ||
+//				gcmHandler == null ||
+//				friendFactory == null ||
+//				userFactory == null || 
+//				activeModelsHandler.getGf() == null ||
+//				longpressTouchHandler == null || 
+//				benchController == null
+//				){
 			initModels();
-		}
+//		}
 	}
 
 	private void setupGrid(){
 		GridManager.setGridEventNotificationDelegate(this);
 
-		if (gridElementFactory.all().size() == 8)
+		if (activeModelsHandler.getGf().all().size() == 8)
 			return;
 
-		gridElementFactory.destroyAll(this);
-		ArrayList<Friend> allFriends = friendFactory.all();
+		activeModelsHandler.getGf().destroyAll(this);
+		ArrayList<Friend> allFriends = activeModelsHandler.getFf().all();
 		for (Integer i=0; i<8; i++){
-			GridElement g = gridElementFactory.makeInstance(this);
+			GridElement g = activeModelsHandler.getGf().makeInstance(this);
 			if (i < allFriends.size()){
 				Friend f = allFriends.get(i);
 				g.set(GridElement.Attributes.FRIEND_ID, f.getId());
@@ -355,7 +365,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView7));
 
 		Integer i=0;
-		for (GridElement ge : gridElementFactory.all()){
+		for (GridElement ge : activeModelsHandler.getGf().all()){
 			ge.frame = frames.get(i);
 			ge.videoView = videoViews.get(i);
 			ge.thumbView = thumbViews.get(i);
@@ -367,7 +377,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	private void initViews(){
 		Integer i = 0;
-		for (GridElement ge : gridElementFactory.all()){
+		for (GridElement ge : activeModelsHandler.getGf().all()){
 			Friend f = ge.friend();
 			if (f != null){
 				plusTexts.get(i).setVisibility(View.INVISIBLE);
@@ -386,12 +396,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void setupVideoStatusChangedCallbacks(){
-		friendFactory.addVideoStatusChangedCallbackDelegate(this);
+		activeModelsHandler.getFf().addVideoStatusChangedCallbackDelegate(this);
 	}
 
 	private void setVideoViewHeights(int width, int height) {
 		int h = (int) ((float) width / ASPECT);
-		LayoutParams lp = cameraPreviewFrame.getLayoutParams();
+		ViewGroup.LayoutParams lp = cameraPreviewFrame.getLayoutParams();
 		lp.height = h;
 		cameraPreviewFrame.setLayoutParams(lp);
 		Log.i(TAG, String.format("setVideoViewHeights %d  %d", height, lp.height));
@@ -443,7 +453,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		};
 
 		// Add gridElement boxes as valid targets.
-		for (GridElement ge : gridElementFactory.all()){
+		for (GridElement ge : activeModelsHandler.getGf().all()){
 			longpressTouchHandler.addTargetView(ge.frame);
 		};
 	}
@@ -455,7 +465,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private void onRecordStart(View v){
 		VideoPlayer.stopAll();
 		hideAllCoveringViews();
-		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
+		GridElement ge = activeModelsHandler.getGf().getGridElementWithFrame(v);
 		if (!ge.hasFriend())
 			return;
 
@@ -476,7 +486,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void onRecordStop(View v){
-		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
+		GridElement ge = activeModelsHandler.getGf().getGridElementWithFrame(v);
 		if (!ge.hasFriend())
 			return;
 
@@ -490,7 +500,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	private void onPlayClick(View v) {
 		hideAllCoveringViews();
-		GridElement ge = gridElementFactory.getGridElementWithFrame(v);
+		GridElement ge = activeModelsHandler.getGf().getGridElementWithFrame(v);
 		if (!ge.hasFriend())
 			return;
 
@@ -502,7 +512,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	@Override
 	public void onVideoStatusChanged(Friend friend) {
-		GridElement ge = gridElementFactory.findWithFriendId(friend.getId());
+		GridElement ge = activeModelsHandler.getGf().findWithFriendId(friend.getId());
 		if (ge != null)
 			ge.nameText.setText(ge.friend().getStatusString());
 	}
@@ -594,12 +604,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void showCameraExceptionDialog(String title, String message, String negativeButton, String positiveButton){
-		AlertDialog.Builder builder = new AlertDialog.Builder(instance);
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(title)
 		.setMessage(message)
 		.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
-				instance.finish();
+				finish();
 			}
 		})
 		.setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
@@ -694,7 +704,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			benchController.callSms();
 			return true;
 		case R.id.action_reset:
-			ActiveModelsHandler.destroyAll(instance);
+			ActiveModelsHandler.getInstance(this).destroyAll();
 			finish();
 			return true;
 		case R.id.action_crash:

@@ -6,15 +6,18 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+
 public class CameraOverlay extends SurfaceView implements SurfaceHolder.Callback {
 
 	private final String TAG = this.getClass().getSimpleName(); 
 	public SurfaceHolder holder;
+	private VideoRecorder videoRecorder;
 
-	public CameraOverlay(Context context) {
+	public CameraOverlay(Context context, VideoRecorder videoRecorder) {
 		super(context);
 		Log.i(TAG, "constructor");
 		init();
+		this.videoRecorder = videoRecorder;
 	}
 
 	public CameraOverlay(Context context, AttributeSet attrs){
@@ -38,7 +41,7 @@ public class CameraOverlay extends SurfaceView implements SurfaceHolder.Callback
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {	
 		Log.i(TAG, "surfaceCreated");
-		HomeActivity.instance.videoRecorder.overlaySurfaceCreated(holder);
+		videoRecorder.overlaySurfaceCreated(holder);
 	}
 
 	@Override

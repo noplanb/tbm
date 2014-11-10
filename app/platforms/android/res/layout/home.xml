@@ -109,12 +109,12 @@
                 android:id="@+id/camera_preview_frame"
                 style="@style/vFrame" >
 
-                <com.noplanbees.tbm.CameraOverlay
+                <com.noplanbees.tbm.camera.CameraOverlay
                     android:id="@+id/camera_overlay_surface"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent" />
 
-                <com.noplanbees.tbm.CameraPreview
+                <com.noplanbees.tbm.camera.CameraPreview
                     android:id="@+id/camera_preview_surface"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent" />

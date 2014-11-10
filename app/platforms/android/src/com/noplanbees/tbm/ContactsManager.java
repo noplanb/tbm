@@ -25,7 +25,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.SimpleAdapter;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
