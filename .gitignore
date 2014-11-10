@@ -1,5 +1,6 @@
 # built application files
-*.apk
+# I do want to keep the released apks in the repo so commented out *.apk
+#*.apk
 *.ap_
 
 # files for the dex VM

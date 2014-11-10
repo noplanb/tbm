@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
 
@@ -237,20 +238,20 @@ public class RegisterActivity extends Activity{
 		ll.setLayoutParams(lp);
 		ll.setOrientation(LinearLayout.VERTICAL);
 		ll.setPadding(20, 20, 20, 20);
-		
+
 		TextView msgTxt = new TextView(this);
-		msgTxt.setText("We sent a code via text message to\n\n" + phoneWithFormat("international") + ".");
+		msgTxt.setText("We sent a code via text message to\n\n" + phoneWithFormat(e164, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL) + ".");
 		msgTxt.setLayoutParams(lp);
 		msgTxt.setPadding(15, 20, 15, 50);
 		msgTxt.setTextSize(17);
 		msgTxt.setGravity(Gravity.CENTER);
-		
+
 		verificationCodeTxt = new EditText(this);
 		verificationCodeTxt.setLayoutParams(lp);
 		verificationCodeTxt.setHint("Enter code");
 		msgTxt.setGravity(Gravity.CENTER_HORIZONTAL);
 		verificationCodeTxt.setInputType(InputType.TYPE_CLASS_NUMBER);
-		
+
 		ll.addView(msgTxt);
 		ll.addView(verificationCodeTxt);
 
@@ -301,18 +302,14 @@ public class RegisterActivity extends Activity{
 		if ( Server.isSuccess(params.get(Server.ParamKeys.RESPONSE_STATUS)) ){
 			gotUser(params);
 		} else {
-			AlertDialog.Builder ab = new AlertDialog.Builder(this);
-			ab.setTitle("Bad Code")
-			.setMessage("The code you enterred is wrong. Please try again.")
-			.setPositiveButton("OK", null);
-			ab.create().show();
+			showErrorDialog("Bad Code", "The code you enterred is wrong. Please try again.");
 		}
 	}
-	
+
 	//---------------------
 	// Add user and friends
 	//---------------------
-	
+
 	private void gotUser(LinkedTreeMap<String, String> params){
 		user.set(User.Attributes.FIRST_NAME, params.get(UserFactory.ServerParamKeys.FIRST_NAME));
 		user.set(User.Attributes.LAST_NAME, params.get(UserFactory.ServerParamKeys.LAST_NAME));
@@ -382,22 +379,19 @@ public class RegisterActivity extends Activity{
 	//-------------
 	// Convenience
 	//-------------
-	private String phoneWithFormat(String format){
-		if (e164 == null)
+	private String phoneWithFormat(String phone, PhoneNumberFormat format){
+		if (phone == null)
 			return null;
-		
+
 		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
 		try {
-			PhoneNumber pn = pu.parse(e164, "US");
-			if (format.equals("international"))
-				return pu.format(pn, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
-			else
-				return pu.format(pn, PhoneNumberUtil.PhoneNumberFormat.NATIONAL);
+			PhoneNumber pn = pu.parse(phone, "US");
+			return pu.format(pn, format);
 		} catch (NumberParseException e) {
 			return null;
 		}
 	}
-	
+
 	//-------------
 	// Add shortcut
 	//-------------

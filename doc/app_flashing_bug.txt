@@ -44,3 +44,92 @@ Possible Architecture
 - Communication between Application and activities
   - Activities register with the models under Application to receive notification of changes to state
 
+
+Demo for new architecture
+-------------------------
+General goal: 
+  - To thoroughly stress and test the architecture in a simple environment.
+  - Throw a lot of simultaneous asynchronous events at the architecture to make sure it behaves as we assume, is thread safe, and doesn't crash unexpectedly.
+  - Asynchronous events should include launching and killing the activity by the user concurrently with external events from background  services as well as pushNotifications.
+
+NOTE: It turns out you can bind a service to another service using bindService. See here: http://stackoverflow.com/questions/6488445/could-a-service-bind-another-service. This may be useful so that UploadService, DownloadService, GcmIntentService can bind to the ModelManager service to ensure the models are in memory before they do work.
+  
+- Application subclass
+  - Log onCreate event and all other events just so we can see them.
+  - QUESTION: Should onCreate start the ModelManager service?
+  
+- PersistentModel class
+  - Log all actions so we can see what is happening.
+  - State instance variables:
+    - downloadState:
+      - DOWNLOADING_START
+      - DOWNLOADING_1
+      - DOWNLOADING_2
+      - DOWNLOADING_3
+      - DOWNLOADED
+    - uploadState: 
+      - UPLOADING_START
+      - UPLOADING_1
+      - UPLOADING_2
+      - UPLOADING_3
+      - UPLOADED
+  - Instantiation:
+    - Singleton pointed to by class getInstance()
+  - Instance Methods
+    - set and get for state instance variables
+      - Thread safe 
+  - Class methods and variables
+    - Pointer to singleton instance
+    - save: to filesystem
+    - retrieve: from file system
+    - addDelegate (StateChangeCallback)
+    - removeDelegate (StateChangeCallback)
+  - Interface: StateChangeCallback
+    - stateDidChange: Called on the delegate(s) if any exist whenever the state changes.
+
+- ModelManager service
+  - Log all actions and events
+  - Long lived service (START_STICKY?)
+  - Interface: (ModelsReadyCallback)
+  - Allows binding to set the delegate for the callback
+  - OnCreate: Retrieves the PersistentModel from fileSystem
+  - OnDestroy: Saves the PersistentModel to the fileSystem
+  
+- UploadService
+  - QUESTION: how will this service know that the modelManager has restored the models? Bind this service to the ModelManager service?
+  - Log all actions
+  - Simulates our FileUploadService without actually doing any work.
+  - IntentService
+  - Actions:
+    - Started with an intent
+    - Changes uploadState in the PersistentModel to UPLOADING_1, waits 1 second, then changes it to UPLOADING_2, etc till UPLOADED 
+    - After UPLOADED is reached service starts DownloadService (just to get more activity)
+
+- DownloadService
+  - QUESTION: how will this service know that the modelManager has restored the models? Bind with ModelManager service?
+  - Same as UploadService but changes state uploadState in the PersistentModel waiting 1 second between the states. Completes when it gets to DOWNLOADED
+  
+- MainActivity
+  - Log all actions and events
+  - Starts and binds to ModelManager Service
+  - Waits for onModelsReady event
+  - UI
+    - Waiting for models ready indication then:
+    - TextField showing uploadState
+    - TextField showing downloadState
+    - Button to start upload
+      - Changes state to UPLOADING_START (so we can see if there is any problem with activity setting state as well as service.)
+      - Sends upload intent to UploadService
+    - Button to finish() the activity
+      
+- GoogleCloudMessaging WakefulBroadCastReceiver, IntentService, 
+  - QUESTION: how will this service know that the modelManager has restored the models? Bind with ModelManager service?
+  - Log all events and actions
+  - Role: 
+    - to receive and handle push notifications.
+    - So that we can make sure that rapidly occurring asynchronous external events dont cause unforeseen crashes or problems.
+  - See TBM: GcmHandler, GcmIntentService, GcmBroadcastReceiver
+  - I will write a little server so that we can rapidly send push notifications to the app.
+  - Action on receiving a notifcation.
+    - Change PersistantModel uploading state to UPLOADING_STARTED
+    - Start UploadService
