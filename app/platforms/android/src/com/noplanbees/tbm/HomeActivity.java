@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -43,7 +44,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	final String TAG = this.getClass().getSimpleName();
 	final Float ASPECT = 240F/320F;
 
-	public Boolean isForeground = false;
 	public LongpressTouchHandler longpressTouchHandler;
 	public VideoRecorder videoRecorder;
 	public GcmHandler gcmHandler;
@@ -75,8 +75,11 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			activeModelsHandler = ((LocalBinder)service).getDataManager();
+			
+			onLoadComplete();
 		}
 	};
+	private ProgressDialog pd;
 
 	//--------------
 	// App lifecycle
@@ -101,6 +104,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		currentIntent = getIntent();
 		lastState = "onCreate";
 		
+		
+		pd = ProgressDialog.show(this, "Data", "retrieving data...");
 		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 	}
 
@@ -117,14 +122,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		TbmApplication.getInstance().setForeground(true);
 		
 		Log.e(TAG, "onStart: state");
-		if (isForeground){
-			ensureModels();
-			initViews();
-			setupVideoStatusChangedCallbacks();
-			ensureListeners();
-			runTests();
-		}
-		lastState = "onStart";		
 	}
 
 	private Boolean screenIsOff(){
@@ -146,10 +143,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
 			// Budge go get around the fact that we dont get an intent here.
 			IntentHandler.handleUserLaunchIntent(this);
-			isForeground = true;
 		}
 
-		if (isForeground && videoRecorder != null)
+		if (videoRecorder != null)
 			videoRecorder.restore();
 		lastState = "onRestart";
 	}
@@ -161,7 +157,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		TbmApplication.getInstance().setForeground(false);
 
 		Log.e(TAG, "onStop: state");
-		isForeground = false;
 		abortAnyRecording(); // really as no effect when called here since the surfaces will have been destroyed and the recording already stopped.
 		longpressTouchHandler.disable(true);
 		if (videoRecorder != null)
@@ -213,6 +208,16 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		super.onDestroy();
 	}
 
+	private void onLoadComplete(){
+		ensureModels();
+		initViews();
+		setupVideoStatusChangedCallbacks();
+		ensureListeners();
+		runTests();
+		lastState = "onStart";		
+		pd.dismiss();
+	}
+	
 	//-------------------
 	// HandleIntentAction
 	//-------------------
@@ -284,7 +289,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 //				benchController == null
 //				){
 			initModels();
-//		}
+		}
 	}
 
 	private void setupGrid(){

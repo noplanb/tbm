@@ -13,12 +13,12 @@ public class CameraOverlay extends SurfaceView implements SurfaceHolder.Callback
 	public SurfaceHolder holder;
 	private VideoRecorder videoRecorder;
 
-	public CameraOverlay(Context context, VideoRecorder videoRecorder) {
-		super(context);
-		Log.i(TAG, "constructor");
-		init();
-		this.videoRecorder = videoRecorder;
-	}
+//	public CameraOverlay(Context context, VideoRecorder videoRecorder) {
+//		super(context);
+//		Log.i(TAG, "constructor");
+//		init();
+//		this.videoRecorder = videoRecorder;
+//	}
 
 	public CameraOverlay(Context context, AttributeSet attrs){
 		super(context, attrs);

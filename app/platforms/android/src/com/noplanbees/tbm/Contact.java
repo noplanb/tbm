@@ -49,6 +49,8 @@ public class Contact {
 	}
 	
 	public LinkedTreeMap<String, String> firstPhoneMarkedMobileForContact(){
+		if(phoneObjects == null)
+			return null;
 		for(LinkedTreeMap<String, String> po : phoneObjects){
 			if (po.get(PhoneNumberKeys.PHONE_TYPE_INT).equalsIgnoreCase(ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE + ""));
 				return po;
