@@ -51,8 +51,8 @@ public class VideoRecorder {
 	public VideoRecorder(HomeActivity a) {
 		activity = a;
 		context = activity.getApplicationContext();
-		previewSurface = (SurfaceView) activity.findViewById(R.id.camera_preview_surface);
-		overlaySurface = (SurfaceView) activity.findViewById(R.id.camera_overlay_surface);
+		//previewSurface = (SurfaceView) activity.findViewById(R.id.camera_preview_surface);
+		//overlaySurface = (SurfaceView) activity.findViewById(R.id.camera_overlay_surface);
 		previewText = (TextView) activity.findViewById(R.id.previewText);
 	}
 

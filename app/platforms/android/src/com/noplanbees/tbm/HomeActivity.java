@@ -39,13 +39,14 @@ import com.noplanbees.tbm.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
 import com.noplanbees.tbm.VideoRecorder.VideoRecorderExceptionHandler;
 
-public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback, VideoRecorderExceptionHandler, GridEventNotificationDelegate{
+public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback,
+		VideoRecorderExceptionHandler, GridEventNotificationDelegate {
 
 	final String TAG = this.getClass().getSimpleName();
-	final Float ASPECT = 240F/320F;
+	final Float ASPECT = 240F / 320F;
 
 	public LongpressTouchHandler longpressTouchHandler;
-	public VideoRecorder videoRecorder;
+	//public VideoRecorder videoRecorder;
 	public GcmHandler gcmHandler;
 	public VersionHandler versionHandler;
 	private BenchController benchController;
@@ -62,37 +63,38 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private ArrayList<FrameLayout> frames = new ArrayList<FrameLayout>(8);
 	private ArrayList<TextView> nameTexts = new ArrayList<TextView>(8);
 	private ArrayList<VideoPlayer> videoPlayers = new ArrayList<VideoPlayer>(8);
-	
+
 	private ActiveModelsHandler activeModelsHandler;
-	
-	
+
 	private ServiceConnection conn = new ServiceConnection() {
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			activeModelsHandler = null;
 		}
-		
+
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			activeModelsHandler = ((LocalBinder)service).getDataManager();
-			
+			activeModelsHandler = ((LocalBinder) service).getDataManager();
+
 			onLoadComplete();
 		}
 	};
 	private ProgressDialog pd;
+	private NewSurfaceView surfaceView;
 
-	//--------------
+	// --------------
 	// App lifecycle
-	//--------------
+	// --------------
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		Log.e(TAG, "onCreate state " + getFilesDir().getAbsolutePath());
 		super.onCreate(savedInstanceState);
 
-		//Note Boot.boot must complete successfully before we continue the home activity. 
-		//Boot will start the registrationActivity and return false if needed. 
-		if (!Boot.boot(this)){
-			Log.i(TAG,"Finish HomeActivity");
+		// Note Boot.boot must complete successfully before we continue the home
+		// activity.
+		// Boot will start the registrationActivity and return false if needed.
+		if (!Boot.boot(this)) {
+			Log.i(TAG, "Finish HomeActivity");
 			finish();
 			return;
 		}
@@ -103,10 +105,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		setContentView(R.layout.home);
 		currentIntent = getIntent();
 		lastState = "onCreate";
-		
-		
-		pd = ProgressDialog.show(this, "Data", "retrieving data...");
-		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 	}
 
 	@Override
@@ -116,38 +114,55 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	@Override
-	protected void onStart() {
-		super.onStart();
-
-		TbmApplication.getInstance().setForeground(true);
-		
-		Log.e(TAG, "onStart: state");
-	}
-
-	private Boolean screenIsOff(){
-		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		return !pm.isScreenOn();
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		Log.e(TAG, "onNewIntent state"
+				+ ((currentIntent == null || currentIntent.getExtras() == null) ? "no extras" : currentIntent
+						.getExtras().toString()));
+		// Integer intentResult = new IntentHandler(this, intent).handle();
+		// if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
+		// Log.e(TAG, "onNewIntent: moving activity to background.");
+		// moveTaskToBack(true);
+		// isForeground = false;
+		// } else {
+		// Log.e(TAG, "onNewIntent: moving activity to foreground.");
+		// isForeground = true;
+		// }
+		currentIntent = intent;
+		lastState = "onNewIntent";
+	
 	}
 
 	@Override
-	protected void onRestart() {
-		super.onRestart();
-		Log.e(TAG, "onRestart: state");
+	protected void onStart() {
+		super.onStart();
 
-		// To handle the fucked up Android (bug in my view) that when we are launched from the task manager 
-		// as opposed to from any other vector we dont go through new onNewIntent. We transition directly 
-		// from onStop() to onRestart(). In this case we need to set isForeground explicitly here.
-		// We also have to handle another fucked up Android bug where if the screen is off it takes us through:
-		// restart, start, resume, pause, then onNewIntent. 
-		if (lastState.startsWith("onStop") && !screenIsOff()){
-			Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
-			// Budge go get around the fact that we dont get an intent here.
-			IntentHandler.handleUserLaunchIntent(this);
-		}
+		pd = ProgressDialog.show(this, "Data", "retrieving data...");
+		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 
-		if (videoRecorder != null)
-			videoRecorder.restore();
-		lastState = "onRestart";
+		TbmApplication.getInstance().setForeground(true);
+
+		Log.e(TAG, "onStart: state");
+		
+		
+		gcmHandler = new GcmHandler(this);
+		benchController = new BenchController(this);
+		initModels();
+
+
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Log.e(TAG, "onResume: state");
+		// setupVersionHandler onResume because may cause a dialog which would
+		// crash the app before onResume.
+		setupVersionHandler();
+		handleIntentAction();
+		if (gcmHandler != null)
+			gcmHandler.checkPlayServices();
+		//longpressTouchHandler.enable();
 	}
 
 	@Override
@@ -157,10 +172,14 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		TbmApplication.getInstance().setForeground(false);
 
 		Log.e(TAG, "onStop: state");
-		abortAnyRecording(); // really as no effect when called here since the surfaces will have been destroyed and the recording already stopped.
-		longpressTouchHandler.disable(true);
-		if (videoRecorder != null)
-			videoRecorder.dispose(); // Probably redundant since the preview surface will have been destroyed by the time we get here.
+		abortAnyRecording(); // really as no effect when called here since the
+								// surfaces will have been destroyed and the
+								// recording already stopped.
+		//longpressTouchHandler.disable(true);
+//		if (videoRecorder != null)
+//			videoRecorder.dispose(); // Probably redundant since the preview
+										// surface will have been destroyed by
+										// the time we get here.
 		VideoPlayer.release(this);
 		lastState = "onStop";
 	}
@@ -174,92 +193,100 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		Log.e(TAG, "onNewIntent state" + ((currentIntent == null || currentIntent.getExtras() == null) ? "no extras" : currentIntent.getExtras().toString()));
-//		Integer intentResult = new IntentHandler(this, intent).handle();
-//		if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
-//			Log.e(TAG, "onNewIntent: moving activity to background.");
-//			moveTaskToBack(true);
-//			isForeground = false;
-//		} else {
-//			Log.e(TAG, "onNewIntent: moving activity to foreground.");
-//			isForeground = true;
-//		}
-		currentIntent = intent;
-		lastState = "onNewIntent";
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		Log.e(TAG, "onResume: state");
-		// setupVersionHandler onResume because  may cause a dialog which would crash the app before onResume.
-		setupVersionHandler();
-		handleIntentAction();
-		if (gcmHandler != null)
-			gcmHandler.checkPlayServices();
-		longpressTouchHandler.enable();
-	}
-
-	@Override
 	protected void onDestroy() {
 		Log.e(TAG, "onDestroy: state");
 		super.onDestroy();
 	}
 
-	private void onLoadComplete(){
-		ensureModels();
+	@Override
+		protected void onRestart() {
+			super.onRestart();
+			Log.e(TAG, "onRestart: state");
+	
+			// To handle the fucked up Android (bug in my view) that when we are
+			// launched from the task manager
+			// as opposed to from any other vector we dont go through new
+			// onNewIntent. We transition directly
+			// from onStop() to onRestart(). In this case we need to set
+			// isForeground explicitly here.
+			// We also have to handle another fucked up Android bug where if the
+			// screen is off it takes us through:
+			// restart, start, resume, pause, then onNewIntent.
+			if (lastState.startsWith("onStop") && !screenIsOff()) {
+				Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
+				// Budge go get around the fact that we dont get an intent here.
+				IntentHandler.handleUserLaunchIntent(this);
+			}
+	
+	//		if (videoRecorder != null)
+	//			videoRecorder.restore();
+			lastState = "onRestart";
+		}
+
+	private Boolean screenIsOff() {
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		return !pm.isScreenOn();
+	}
+
+	private void onLoadComplete() {
 		initViews();
 		setupVideoStatusChangedCallbacks();
-		ensureListeners();
 		runTests();
-		lastState = "onStart";		
+		setupGrid();
+		getVideoViewsAndPlayers();
+		setupLongPressTouchHandler();
+		longpressTouchHandler.enable();
+		lastState = "onStart";
+		ensureListeners();
+
 		pd.dismiss();
 	}
-	
-	//-------------------
+
+	// -------------------
 	// HandleIntentAction
-	//-------------------
-	private void handleIntentAction(){
-		// Right now the only actions are 
-		// 1) to automatically start playing the appropriate video if the user got here by clicking a notification.
-		// 2) to notify the user if there was a problem sending Sms invite to a friend. (Not used as decided this is unnecessarily disruptive)
+	// -------------------
+	private void handleIntentAction() {
+		// Right now the only actions are
+		// 1) to automatically start playing the appropriate video if the user
+		// got here by clicking a notification.
+		// 2) to notify the user if there was a problem sending Sms invite to a
+		// friend. (Not used as decided this is unnecessarily disruptive)
 		Log.i(TAG, "handleIntentAction: " + currentIntent.toString());
-		if (currentIntent == null){
+		if (currentIntent == null) {
 			Log.i(TAG, "handleIntentAction: no intent. Exiting.");
 			return;
 		}
 		String action = currentIntent.getAction();
 		Uri data = currentIntent.getData();
-		if (action == null || data == null){
+		if (action == null || data == null) {
 			Log.i(TAG, "handleIntentAction: no ation or data. Exiting.");
 			return;
 		}
 
 		String friendId = currentIntent.getData().getQueryParameter(IntentHandler.IntentParamKeys.FRIEND_ID);
-		if (action == null || friendId == null){
+		if (action == null || friendId == null) {
 			Log.i(TAG, "handleIntentAction: no friendId or action. Exiting." + currentIntent.toString());
 			return;
 		}
 
-		if (action.equals(IntentHandler.IntentActions.PLAY_VIDEO) && !NotificationAlertManager.screenIsLocked(this)){
+		if (action.equals(IntentHandler.IntentActions.PLAY_VIDEO) && !NotificationAlertManager.screenIsLocked(this)) {
 			currentIntent.setAction(IntentHandler.IntentActions.NONE);
 			activeModelsHandler.getGf().findWithFriendId(friendId).videoPlayer.start();
 		}
 
-		// Not used as I decided pending intent coming back from sending sms is to disruptive. Just assume
+		// Not used as I decided pending intent coming back from sending sms is
+		// to disruptive. Just assume
 		// sms's sent go through.
-		if (action.equals(IntentHandler.IntentActions.SMS_RESULT) && !NotificationAlertManager.screenIsLocked(this)){
+		if (action.equals(IntentHandler.IntentActions.SMS_RESULT) && !NotificationAlertManager.screenIsLocked(this)) {
 			currentIntent.setAction(IntentHandler.IntentActions.NONE);
 			Log.i(TAG, currentIntent.toString());
 		}
 	}
 
-	//---------------
+	// ---------------
 	// Initialization
-	//---------------
-	private void setupWindow(){
+	// ---------------
+	private void setupWindow() {
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
@@ -268,31 +295,25 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	private void initModels() {
 		Log.i(TAG, "initModels");
-		CameraManager.addExceptionHandlerDelegate(this);
-		VideoRecorder.addExceptionHandlerDelegate(this);
-		videoRecorder = new VideoRecorder(this);
-		gcmHandler = new GcmHandler(this);
-		benchController = new BenchController(this);
-		setupGrid();
-		getVideoViewsAndPlayers();
-		setupLongPressTouchHandler();
+		NewSurfaceView.addCameraExceptionHandlerDelegate(this);
+		NewSurfaceView.addVideoRecorderExceptionHandlerDelegate(this);
+		//videoRecorder = new VideoRecorder(this);
+		surfaceView = (NewSurfaceView) findViewById(R.id.new_surface_view);
 	}
+//
+//	private void ensureModels() {
+//		// if ( instance == null ||
+//		// videoRecorder == null ||
+//		// gcmHandler == null ||
+//		// friendFactory == null ||
+//		// userFactory == null ||
+//		// activeModelsHandler.getGf() == null ||
+//		// longpressTouchHandler == null ||
+//		// benchController == null
+//		// ){
+//	}
 
-	private void ensureModels() {
-//		if ( instance == null ||
-//				videoRecorder == null ||
-//				gcmHandler == null ||
-//				friendFactory == null ||
-//				userFactory == null || 
-//				activeModelsHandler.getGf() == null ||
-//				longpressTouchHandler == null || 
-//				benchController == null
-//				){
-			initModels();
-		}
-	}
-
-	private void setupGrid(){
+	private void setupGrid() {
 		GridManager.setGridEventNotificationDelegate(this);
 
 		if (activeModelsHandler.getGf().all().size() == 8)
@@ -300,9 +321,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		activeModelsHandler.getGf().destroyAll(this);
 		ArrayList<Friend> allFriends = activeModelsHandler.getFf().all();
-		for (Integer i=0; i<8; i++){
+		for (Integer i = 0; i < 8; i++) {
 			GridElement g = activeModelsHandler.getGf().makeInstance(this);
-			if (i < allFriends.size()){
+			if (i < allFriends.size()) {
 				Friend f = allFriends.get(i);
 				g.set(GridElement.Attributes.FRIEND_ID, f.getId());
 			}
@@ -312,15 +333,18 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private void runTests() {
 		// Log.e(TAG, getFilesDir().getAbsolutePath());
 		// Convenience.printOurTaskInfo(this);
-		// NotificationAlertManager.alert(this, (Friend) FriendFactory.getFactoryInstance().find("3")); 
+		// NotificationAlertManager.alert(this, (Friend)
+		// FriendFactory.getFactoryInstance().find("3"));
 		// new CamcorderHelper();
-		//testService();
+		// testService();
 		// ConfigTest.run();
 		// FriendTest.run();
 		// new ServerTest().run();
 		// new FileDownloadDeprecated.BgDownload().execute();
-		// Friend f = (Friend) friendFactory.findWhere(Friend.Attributes.FIRST_NAME, "Farhad");
-		// new FileDownloadDeprecated.BgDownloadFromFriendId().execute(f.getId());
+		// Friend f = (Friend)
+		// friendFactory.findWhere(Friend.Attributes.FIRST_NAME, "Farhad");
+		// new
+		// FileDownloadDeprecated.BgDownloadFromFriendId().execute(f.getId());
 	}
 
 	private void getVideoViewsAndPlayers() {
@@ -357,7 +381,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		nameTexts.add((TextView) findViewById(R.id.nameText3));
 		nameTexts.add((TextView) findViewById(R.id.nameText4));
 		nameTexts.add((TextView) findViewById(R.id.nameText5));
-		nameTexts.add((TextView) findViewById(R.id.nameText6));		
+		nameTexts.add((TextView) findViewById(R.id.nameText6));
 		nameTexts.add((TextView) findViewById(R.id.nameText7));
 
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView0));
@@ -369,8 +393,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView6));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView7));
 
-		Integer i=0;
-		for (GridElement ge : activeModelsHandler.getGf().all()){
+		Integer i = 0;
+		for (GridElement ge : activeModelsHandler.getGf().all()) {
 			ge.frame = frames.get(i);
 			ge.videoView = videoViews.get(i);
 			ge.thumbView = thumbViews.get(i);
@@ -380,11 +404,11 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		}
 	}
 
-	private void initViews(){
+	private void initViews() {
 		Integer i = 0;
-		for (GridElement ge : activeModelsHandler.getGf().all()){
+		for (GridElement ge : activeModelsHandler.getGf().all()) {
 			Friend f = ge.friend();
-			if (f != null){
+			if (f != null) {
 				plusTexts.get(i).setVisibility(View.INVISIBLE);
 				Log.i(TAG, plusTexts.get(i).getText().toString());
 				Log.i(TAG, plusTexts.get(i).toString());
@@ -400,7 +424,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		VideoPlayer.showAllThumbs();
 	}
 
-	private void setupVideoStatusChangedCallbacks(){
+	private void setupVideoStatusChangedCallbacks() {
 		activeModelsHandler.getFf().addVideoStatusChangedCallbackDelegate(this);
 	}
 
@@ -413,7 +437,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		lp = frames.get(0).getLayoutParams();
 		lp.height = h;
-		for (FrameLayout f: frames)
+		for (FrameLayout f : frames)
 			f.setLayoutParams(lp);
 	}
 
@@ -423,51 +447,58 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			public void startLongpress(View v) {
 				onRecordStart(v);
 			}
+
 			@Override
-			public void endLongpress(View v) {	
+			public void endLongpress(View v) {
 				onRecordStop(v);
 			}
+
 			@Override
 			public void click(View v) {
 				onPlayClick(v);
 			}
+
 			@Override
 			public void bigMove(View v) {
 				onRecordCancel();
 			}
+
 			@Override
-			public void abort(View v) {	
+			public void abort(View v) {
 				onRecordCancel();
 			}
+
 			@Override
-			public void flingRight() {	
+			public void flingRight() {
 				benchController.hide();
 			}
+
 			@Override
-			public void flingLeft() {	
+			public void flingLeft() {
 				benchController.show();
 			}
+
 			@Override
-			public void flingUp() {	
+			public void flingUp() {
 				Log.i(TAG, "flingUp");
 			}
+
 			@Override
-			public void flingDown() {	
+			public void flingDown() {
 				Log.i(TAG, "flingDown");
 			}
 		};
 
 		// Add gridElement boxes as valid targets.
-		for (GridElement ge : activeModelsHandler.getGf().all()){
+		for (GridElement ge : activeModelsHandler.getGf().all()) {
 			longpressTouchHandler.addTargetView(ge.frame);
-		};
+		}
 	}
 
-
-	//-------
+	// -------
 	// Events
-	//-------
-	private void onRecordStart(View v){
+	// -------
+	private void onRecordStart(View v) {
 		VideoPlayer.stopAll();
 		hideAllCoveringViews();
 		GridElement ge = activeModelsHandler.getGf().getGridElementWithFrame(v);
@@ -476,28 +507,28 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		Friend f = ge.friend();
 		GridManager.rankingActionOccurred(f);
-		if (videoRecorder.startRecording()) {
+		if (surfaceView.startRecording()) {
 			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
 		} else {
 			Log.e(TAG, "onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
 			longpressTouchHandler.cancelGesture(true);
-		}	
+		}
 	}
 
-	private void onRecordCancel(){
+	private void onRecordCancel() {
 		// Different from abortAnyRecording becuase we always toast here.
-		videoRecorder.stopRecording(null);
-		toast("Not sent.");	
+		surfaceView.stopRecording(null);
+//		toast("Not sent.");
 	}
 
-	private void onRecordStop(View v){
+	private void onRecordStop(View v) {
 		GridElement ge = activeModelsHandler.getGf().getGridElementWithFrame(v);
 		if (!ge.hasFriend())
 			return;
 
 		Friend f = ge.friend();
 		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
-		if ( videoRecorder.stopRecording(f) ){
+		if (surfaceView.stopRecording(f)) {
 			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
 			f.uploadVideo();
 		}
@@ -522,19 +553,21 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			ge.nameText.setText(ge.friend().getStatusString());
 	}
 
-	// Since the call for this had to be moved from onPause to onStop this really never has any effect since
-	// the surfaces disappear by that time and the mediaRecorder in videoRecorder is disposed.
+	// Since the call for this had to be moved from onPause to onStop this
+	// really never has any effect since
+	// the surfaces disappear by that time and the mediaRecorder in
+	// videoRecorder is disposed.
 	private void abortAnyRecording() {
 		Log.i(TAG, "abortAnyRecording");
-		if(videoRecorder != null)
-			videoRecorder.stopRecording(null);
+		if (surfaceView != null)
+			surfaceView.stopRecording(null);
 	}
 
-	//----------------
+	// ----------------
 	// Setup Listeners
-	//----------------
-	private void ensureListeners(){
-		if (cameraPreviewFrame == null){
+	// ----------------
+	private void ensureListeners() {
+		if (cameraPreviewFrame == null) {
 			addListeners();
 		}
 	}
@@ -544,7 +577,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		cameraPreviewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
 		cameraPreviewFrame.addView(new ViewSizeGetter(this));
 
-		for (TextView p : plusTexts){
+		for (TextView p : plusTexts) {
 			p.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -554,7 +587,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		}
 	}
 
-	private class ViewSizeGetter extends View{
+	private class ViewSizeGetter extends View {
 		int width;
 		int height;
 
@@ -576,8 +609,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		}
 	}
 
-	private void toast(String msg){
-		Toast toast=Toast.makeText(this, msg, Toast.LENGTH_SHORT);
+	private void toast(String msg) {
+		Toast toast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
 	}
@@ -586,18 +619,24 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	// CameraExceptionHandler delegate
 	// -------------------------------
 	@Override
-	public void noCameraHardware() {	
-		showCameraExceptionDialog("No Camera", "Your device does not seem to have a camera. This app requires a camera.", "Quit", "Try Again");
+	public void noCameraHardware() {
+		showCameraExceptionDialog("No Camera",
+				"Your device does not seem to have a camera. This app requires a camera.", "Quit", "Try Again");
 	}
 
 	@Override
-	public void noFrontCamera() {		
-		showCameraExceptionDialog("No Front Camera", "Your device does not seem to have a front facing camera. This app requires a front facing camera.", "Quit", "Try Again");
+	public void noFrontCamera() {
+		showCameraExceptionDialog("No Front Camera",
+				"Your device does not seem to have a front facing camera. This app requires a front facing camera.",
+				"Quit", "Try Again");
 	}
 
 	@Override
 	public void cameraInUseByOtherApplication() {
-		showCameraExceptionDialog("Camera in Use", "Your camera seems to be in use by another application. Please close that app and try again. You may also need to restart your device.", "Quit", "Try Again");
+		showCameraExceptionDialog(
+				"Camera in Use",
+				"Your camera seems to be in use by another application. Please close that app and try again. You may also need to restart your device.",
+				"Quit", "Try Again");
 	}
 
 	@Override
@@ -605,24 +644,23 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	@Override
-	public void unableToFindAppropriateVideoSize() {		
+	public void unableToFindAppropriateVideoSize() {
 	}
 
-	private void showCameraExceptionDialog(String title, String message, String negativeButton, String positiveButton){
+	private void showCameraExceptionDialog(String title, String message, String negativeButton, String positiveButton) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(title)
-		.setMessage(message)
-		.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
-				finish();
-			}
-		})
-		.setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
-				videoRecorder.dispose();
-				videoRecorder.restore();
-			}
-		});
+		builder.setTitle(title).setMessage(message)
+				.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						finish();
+					}
+				}).setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						surfaceView.dispose();
+						surfaceView.restore();
+						//????
+					}
+				});
 		AlertDialog alertDialog = builder.create();
 		alertDialog.setCanceledOnTouchOutside(false);
 		alertDialog.show();
@@ -653,7 +691,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	@Override
 	public void illegalStateOnStart() {
-		toast("Runntime exception on MediaRecorder.start. Quitting app.");	
+		toast("Runntime exception on MediaRecorder.start. Quitting app.");
 		finish();
 	}
 
@@ -662,29 +700,26 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		toast("Unable to start recording. Try again.");
 	}
 
-
-	//-----------------
+	// -----------------
 	// Version Handling
-	//-----------------
-	private void setupVersionHandler(){
-		//Only check the version when the app is started fresh. 
+	// -----------------
+	private void setupVersionHandler() {
+		// Only check the version when the app is started fresh.
 		if (versionHandler == null)
 			versionHandler = new VersionHandler(this);
 	}
 
-
-	//------------
+	// ------------
 	// Grid Events
-	//------------
+	// ------------
 	@Override
 	public void gridDidChange() {
 		initViews();
 	}
 
-
-	//----------
+	// ----------
 	// ActionBar
-	//----------
+	// ----------
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -721,12 +756,11 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		}
 	}
 
-	//-----------------------------------------
+	// -----------------------------------------
 	// Views that may be covering the home page
-	//-----------------------------------------
+	// -----------------------------------------
 	private void hideAllCoveringViews() {
 		benchController.hideAllViews();
 	}
-
 
 };

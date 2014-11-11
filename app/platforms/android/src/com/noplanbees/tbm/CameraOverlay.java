@@ -11,14 +11,6 @@ public class CameraOverlay extends SurfaceView implements SurfaceHolder.Callback
 
 	private final String TAG = this.getClass().getSimpleName(); 
 	public SurfaceHolder holder;
-	private VideoRecorder videoRecorder;
-
-//	public CameraOverlay(Context context, VideoRecorder videoRecorder) {
-//		super(context);
-//		Log.i(TAG, "constructor");
-//		init();
-//		this.videoRecorder = videoRecorder;
-//	}
 
 	public CameraOverlay(Context context, AttributeSet attrs){
 		super(context, attrs);
@@ -37,11 +29,10 @@ public class CameraOverlay extends SurfaceView implements SurfaceHolder.Callback
 		holder = getHolder();
 		holder.addCallback(this);
 	}
-
+	
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {	
 		Log.i(TAG, "surfaceCreated");
-		videoRecorder.overlaySurfaceCreated(holder);
 	}
 
 	@Override
