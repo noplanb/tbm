@@ -103,7 +103,12 @@ public class ActiveModelFactory {
 		Gson g = new Gson();
 		all = g.fromJson(json, all.getClass());
 
-		Log.i(TAG, "class of attr: " + all.get(0).getClass().getSimpleName());
+		if (all == null){
+			Log.i(TAG, "retrieve: got null for objects");
+		} else {
+			Log.i(TAG, "class of attr: " + all.get(0).getClass().getSimpleName());
+			return false;
+		}
 
 		for (LinkedTreeMap<String, String> ats : all){
 			ActiveModel i = makeInstance(context);
