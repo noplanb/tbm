@@ -308,6 +308,34 @@ public class RegisterActivity extends Activity{
 		}
 	}
 
+	//---------------
+	// Debug_get_user
+	//---------------
+	private void debugGetUser(){
+		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
+		params.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, countryCodeTxt.getText().toString() + mobileNumberTxt.getText().toString());
+		Uri.Builder ub = new Uri.Builder();
+		ub.appendPath("reg").appendPath("debug_get_user");
+		new DebugGetUser(ub.build().toString(), params);
+	}
+	
+	private class DebugGetUser extends Server{
+		public DebugGetUser(String uri, LinkedTreeMap<String, String> params) {
+			super(uri, params);
+			progress.show();
+		}
+		@Override
+		public void success(String response) {	
+			progress.dismiss();
+			didReceiveCodeResponse(response);
+		}
+		@Override
+		public void error(String errorString) {	
+			progress.dismiss();
+			serverError();
+		}
+	}
+	
 	//---------------------
 	// Add user and friends
 	//---------------------
@@ -330,10 +358,17 @@ public class RegisterActivity extends Activity{
 	private void setupListeners(){
 		Button enterBtn = (Button) findViewById(R.id.enter_btn);
 		enterBtn.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View v) {
 				registerUser();
+			}
+		});
+		
+		Button debugBtn = (Button) findViewById(R.id.debug_btn);
+		debugBtn.setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View v) {	
+				debugGetUser();
 			}
 		});
 	}
