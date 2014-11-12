@@ -45,12 +45,20 @@ public class Contact {
 	}
 	
 	public String toString(){
-		return "contact: " + contact.toString() + "\n" + "phoneObjects: " + phoneObjects.toString();
+		String c = "none";
+		if (contact != null)
+			c = contact.toString();
+		String po = "none";
+		if (phoneObjects != null)
+			po = phoneObjects.toString();
+		
+		return "contact: " + c + "\n" + "phoneObjects: " + po;
 	}
 	
 	public LinkedTreeMap<String, String> firstPhoneMarkedMobileForContact(){
-		if(phoneObjects == null)
+		if (phoneObjects == null)
 			return null;
+		
 		for(LinkedTreeMap<String, String> po : phoneObjects){
 			if (po.get(PhoneNumberKeys.PHONE_TYPE_INT).equalsIgnoreCase(ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE + ""));
 				return po;

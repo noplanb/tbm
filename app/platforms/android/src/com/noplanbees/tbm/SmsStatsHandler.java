@@ -235,6 +235,10 @@ public class SmsStatsHandler {
 	
 	public static void printRankedPhoneData(ArrayList<LinkedTreeMap<String, String>> rankedPhoneData){
 		Log.i(STAG, "printRankedPhoneData");
+		if (rankedPhoneData == null){
+			Log.i(STAG, "no Ranked Phone Data");
+			return;
+		}
 		for (LinkedTreeMap<String, String>e : rankedPhoneData){
 			Log.i(STAG, e.get(Keys.FIRST_NAME) + "-" + e.get(Keys.LAST_NAME) + " " + e.get(Keys.DISPLAY_NAME) + " " + e.get(Keys.MOBILE_NUMBER) + " " + e.get(Keys.NUM_MESSAGES));
 		}

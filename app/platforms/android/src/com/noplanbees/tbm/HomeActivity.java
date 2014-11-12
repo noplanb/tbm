@@ -210,24 +210,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void onLoadComplete() {
-		getVideoViewsAndPlayers();
-		initViews();
-		setupVideoStatusChangedCallbacks();
-		runTests();
-		setupGrid();
-		setupLongPressTouchHandler();
-		longpressTouchHandler.enable();
-		lastState = "onStart";
-		ensureListeners();
-		
-		gcmHandler = new GcmHandler(this);
-		benchController = new BenchController(this);
-		initModels();
-
-
-		Boot.initGCM(this);
-
-		pd.dismiss();
 		
 		// Note Boot.boot must complete successfully before we continue the home
 		// activity.
@@ -236,7 +218,28 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			Log.i(TAG, "Finish HomeActivity");
 			finish();
 			return;
+		}else{
+
+			getVideoViewsAndPlayers();
+			initViews();
+			setupVideoStatusChangedCallbacks();
+			runTests();
+			setupGrid();
+			setupLongPressTouchHandler();
+			longpressTouchHandler.enable();
+			lastState = "onStart";
+			ensureListeners();
+			
+			gcmHandler = new GcmHandler(this);
+			benchController = new BenchController(this);
+			initModels();
+
+
+			Boot.initGCM(this);
+			
 		}
+
+		pd.dismiss();
 	}
 
 	// -------------------
