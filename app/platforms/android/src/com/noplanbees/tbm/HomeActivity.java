@@ -46,7 +46,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	final Float ASPECT = 240F / 320F;
 
 	public LongpressTouchHandler longpressTouchHandler;
-	//public VideoRecorder videoRecorder;
+	public VideoRecorder videoRecorder;
 	public GcmHandler gcmHandler;
 	public VersionHandler versionHandler;
 	private BenchController benchController;
@@ -80,7 +80,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		}
 	};
 	private ProgressDialog pd;
-	private NewSurfaceView surfaceView;
+	//private NewSurfaceView surfaceView;
 
 	// --------------
 	// App lifecycle
@@ -89,18 +89,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	public void onCreate(Bundle savedInstanceState) {
 		Log.e(TAG, "onCreate state " + getFilesDir().getAbsolutePath());
 		super.onCreate(savedInstanceState);
-
-		// Note Boot.boot must complete successfully before we continue the home
-		// activity.
-		// Boot will start the registrationActivity and return false if needed.
-		if (!Boot.boot(this)) {
-			Log.i(TAG, "Finish HomeActivity");
-			finish();
-			return;
-		}
-
-		Boot.initGCM(this);
-
 		setupWindow();
 		setContentView(R.layout.home);
 		currentIntent = getIntent();
@@ -143,13 +131,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		TbmApplication.getInstance().setForeground(true);
 
 		Log.e(TAG, "onStart: state");
-		
-		
-		gcmHandler = new GcmHandler(this);
-		benchController = new BenchController(this);
-		initModels();
-
-
 	}
 
 	@Override
@@ -176,8 +157,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 								// surfaces will have been destroyed and the
 								// recording already stopped.
 		//longpressTouchHandler.disable(true);
-//		if (videoRecorder != null)
-//			videoRecorder.dispose(); // Probably redundant since the preview
+		if (videoRecorder != null)
+			videoRecorder.dispose(); // Probably redundant since the preview
 										// surface will have been destroyed by
 										// the time we get here.
 		VideoPlayer.release(this);
@@ -229,17 +210,33 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void onLoadComplete() {
+		getVideoViewsAndPlayers();
 		initViews();
 		setupVideoStatusChangedCallbacks();
 		runTests();
 		setupGrid();
-		getVideoViewsAndPlayers();
 		setupLongPressTouchHandler();
 		longpressTouchHandler.enable();
 		lastState = "onStart";
 		ensureListeners();
+		
+		gcmHandler = new GcmHandler(this);
+		benchController = new BenchController(this);
+		initModels();
+
+
+		Boot.initGCM(this);
 
 		pd.dismiss();
+		
+		// Note Boot.boot must complete successfully before we continue the home
+		// activity.
+		// Boot will start the registrationActivity and return false if needed.
+		if (!Boot.boot(this)) {
+			Log.i(TAG, "Finish HomeActivity");
+			finish();
+			return;
+		}
 	}
 
 	// -------------------
@@ -295,10 +292,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	private void initModels() {
 		Log.i(TAG, "initModels");
-		NewSurfaceView.addCameraExceptionHandlerDelegate(this);
-		NewSurfaceView.addVideoRecorderExceptionHandlerDelegate(this);
-		//videoRecorder = new VideoRecorder(this);
-		surfaceView = (NewSurfaceView) findViewById(R.id.new_surface_view);
+		CameraManager.addExceptionHandlerDelegate(this);
+		VideoRecorder.addExceptionHandlerDelegate(this);
+		videoRecorder = new VideoRecorder(this);
+		//surfaceView = (NewSurfaceView) findViewById(R.id.new_surface_view);
 	}
 //
 //	private void ensureModels() {
@@ -507,7 +504,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		Friend f = ge.friend();
 		GridManager.rankingActionOccurred(f);
-		if (surfaceView.startRecording()) {
+		if (videoRecorder.startRecording()) {
 			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
 		} else {
 			Log.e(TAG, "onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
@@ -517,7 +514,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	private void onRecordCancel() {
 		// Different from abortAnyRecording becuase we always toast here.
-		surfaceView.stopRecording(null);
+		videoRecorder.stopRecording(null);
 //		toast("Not sent.");
 	}
 
@@ -528,7 +525,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		Friend f = ge.friend();
 		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
-		if (surfaceView.stopRecording(f)) {
+		if (videoRecorder.stopRecording(f)) {
 			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
 			f.uploadVideo();
 		}
@@ -559,8 +556,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	// videoRecorder is disposed.
 	private void abortAnyRecording() {
 		Log.i(TAG, "abortAnyRecording");
-		if (surfaceView != null)
-			surfaceView.stopRecording(null);
+		if (videoRecorder != null)
+			videoRecorder.stopRecording(null);
 	}
 
 	// ----------------
@@ -656,8 +653,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 					}
 				}).setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
-						surfaceView.dispose();
-						surfaceView.restore();
+						videoRecorder.dispose();
+						videoRecorder.restore();
 						//????
 					}
 				});

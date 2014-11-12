@@ -15,11 +15,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 	public static SurfaceHolder surfaceHolder;
 
-	public CameraPreview(Context context, VideoRecorder vRecorder) {
+	public CameraPreview(Context context) {
 		super(context);
 		Log.i(TAG, "constructor");
 		init();
-		this.videoRecorder = vRecorder;
 	}
 
 	public CameraPreview(Context context, AttributeSet attrs){
@@ -51,13 +50,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {		
 		Log.i(TAG, "surfaceCreated");
-		videoRecorder.previewSurfaceCreated(holder);
+		//videoRecorder.previewSurfaceCreated(holder);
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {		
 		Log.i(TAG, "surfaceDestroyed");
-		videoRecorder.previewSurfaceDestroyed(holder);
+		//videoRecorder.previewSurfaceDestroyed(holder);
 	}
 
 }
