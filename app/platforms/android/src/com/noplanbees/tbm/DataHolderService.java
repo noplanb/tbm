@@ -2,7 +2,9 @@ package com.noplanbees.tbm;
 
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 
 
 public class DataHolderService extends NonStopIntentService {
@@ -14,6 +16,8 @@ public class DataHolderService extends NonStopIntentService {
 	private static final String TAG = "DataHolderService";
 
 	private ActiveModelsHandler dataManager;
+	
+	private Handler handler = new Handler(Looper.getMainLooper());
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -51,8 +55,13 @@ public class DataHolderService extends NonStopIntentService {
 	}
 
 	@Override
-	protected void onHandleIntent(Intent intent, int startId) {
-		new IntentHandler(this, intent).handle();
+	protected void onHandleIntent(final Intent intent, int startId) {
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				new IntentHandler(DataHolderService.this, intent).handle();
+			}
+		});
 	}
 	
 

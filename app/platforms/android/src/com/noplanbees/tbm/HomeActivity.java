@@ -16,7 +16,9 @@ import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.Gravity;
@@ -37,7 +39,6 @@ import com.noplanbees.tbm.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.DataHolderService.LocalBinder;
 import com.noplanbees.tbm.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
-import com.noplanbees.tbm.VideoRecorder.VideoRecorderExceptionHandler;
 
 public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback,
 		VideoRecorderExceptionHandler, GridEventNotificationDelegate {
@@ -79,6 +80,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			onLoadComplete();
 		}
 	};
+	
+	//private Handler handler = new Handler(Looper.getMainLooper());
+	
 	private ProgressDialog pd;
 	//private NewSurfaceView surfaceView;
 
@@ -141,8 +145,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// crash the app before onResume.
 		setupVersionHandler();
 		handleIntentAction();
-		if (gcmHandler != null)
-			gcmHandler.checkPlayServices();
 		//longpressTouchHandler.enable();
 	}
 
@@ -220,11 +222,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			return;
 		}else{
 
+			initModels();
+			setupGrid();
 			getVideoViewsAndPlayers();
 			initViews();
 			setupVideoStatusChangedCallbacks();
 			runTests();
-			setupGrid();
 			setupLongPressTouchHandler();
 			longpressTouchHandler.enable();
 			lastState = "onStart";
@@ -232,10 +235,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			
 			gcmHandler = new GcmHandler(this);
 			benchController = new BenchController(this);
-			initModels();
 
 
 			Boot.initGCM(this);
+
+			if (gcmHandler != null)
+				gcmHandler.checkPlayServices();
 			
 		}
 

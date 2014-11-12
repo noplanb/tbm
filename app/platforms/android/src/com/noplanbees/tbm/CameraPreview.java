@@ -13,7 +13,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 	private VideoRecorder videoRecorder;
 
-	public static SurfaceHolder surfaceHolder;
+	public SurfaceHolder surfaceHolder;
+
+	private SurfaceChangeListener changeListener;
+
 
 	public CameraPreview(Context context) {
 		super(context);
@@ -41,22 +44,30 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 	}
 
+	
+	public void setChangeListener(SurfaceChangeListener changeListener) {
+		this.changeListener = changeListener;
+		if(surfaceHolder!=null)
+			changeListener.onSurfaceCreated(surfaceHolder);
+	}
+	
 	@Override
-	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-		Log.i(TAG, "surfaceChanged");
-//		HomeActivity.instance.videoRecorder.cameraPreviewSurfaceChanged(holder, format, width, height);
+	public void surfaceCreated(SurfaceHolder holder) {	
+		Log.i(TAG, "surfaceCreated");
+		if(changeListener != null)
+			changeListener.onSurfaceCreated(holder);
 	}
 
 	@Override
-	public void surfaceCreated(SurfaceHolder holder) {		
-		Log.i(TAG, "surfaceCreated");
-		//videoRecorder.previewSurfaceCreated(holder);
+	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+		Log.i(TAG, "surfaceChanged");
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {		
 		Log.i(TAG, "surfaceDestroyed");
-		//videoRecorder.previewSurfaceDestroyed(holder);
+		if(changeListener != null)
+			changeListener.onSurfaceDestroyed();
 	}
 
 }

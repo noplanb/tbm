@@ -22,7 +22,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.noplanbees.tbm.CameraManager.CameraExceptionHandler;
-import com.noplanbees.tbm.VideoRecorder.VideoRecorderExceptionHandler;
 
 public class NewSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
 

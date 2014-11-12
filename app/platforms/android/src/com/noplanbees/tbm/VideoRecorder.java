@@ -21,22 +21,21 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
 
-
-
+// Even though I set up this exception handling interface to be complete I probably wont use it the failure cause of failure
+// for all of these errors will not be something that the user can do anything about. And the result of the failure will 
+// be that the VideoRecorder wont work. I do need a general system in the app though whereby we can report caught exceptions that 
+// make the app unusable back to our servers for analysis.
+interface VideoRecorderExceptionHandler{
+	public void unableToSetPrievew();
+	public void unableToPrepareMediaRecorder();
+	public void recordingAborted();
+	public void recordingTooShort();
+	public void illegalStateOnStart();
+	public void runntimeErrorOnStart();
+}
 
 public class VideoRecorder {
-	// Even though I set up this exception handling interface to be complete I probably wont use it the failure cause of failure
-	// for all of these errors will not be something that the user can do anything about. And the result of the failure will 
-	// be that the VideoRecorder wont work. I do need a general system in the app though whereby we can report caught exceptions that 
-	// make the app unusable back to our servers for analysis.
-	public static interface VideoRecorderExceptionHandler{
-		public void unableToSetPrievew();
-		public void unableToPrepareMediaRecorder();
-		public void recordingAborted();
-		public void recordingTooShort();
-		public void illegalStateOnStart();
-		public void runntimeErrorOnStart();
-	}
+
 	private final String TAG = this.getClass().getSimpleName();
 
 	private Context context;
@@ -44,16 +43,38 @@ public class VideoRecorder {
 	private SurfaceHolder previewSurfaceHolder; 
 	private SurfaceHolder overlaySurfaceHolder;
 	private MediaRecorder mediaRecorder;
-	private SurfaceView previewSurface;
-	private SurfaceView overlaySurface;
+	private CameraPreview previewSurface;
+	private CameraOverlay overlaySurface;
 	private TextView previewText;
 
 	public VideoRecorder(HomeActivity a) {
 		activity = a;
 		context = activity.getApplicationContext();
-		//previewSurface = (SurfaceView) activity.findViewById(R.id.camera_preview_surface);
-		//overlaySurface = (SurfaceView) activity.findViewById(R.id.camera_overlay_surface);
+		previewSurface = (CameraPreview) activity.findViewById(R.id.camera_preview_surface);
+		overlaySurface = (CameraOverlay) activity.findViewById(R.id.camera_overlay_surface);
 		previewText = (TextView) activity.findViewById(R.id.previewText);
+		
+		previewSurface.setChangeListener(new SurfaceChangeListener() {
+			@Override
+			public void onSurfaceDestroyed() {
+				previewSurfaceDestroyed();
+			}
+			
+			@Override
+			public void onSurfaceCreated(SurfaceHolder holder) {
+				previewSurfaceCreated(holder);
+			}
+		});
+		overlaySurface.setChangeListener(new SurfaceChangeListener() {
+			@Override
+			public void onSurfaceDestroyed() {
+			}
+			
+			@Override
+			public void onSurfaceCreated(SurfaceHolder holder) {
+				overlaySurfaceCreated(holder);
+			}
+		});
 	}
 
 	// --------------
@@ -191,7 +212,7 @@ public class VideoRecorder {
 		overlaySurface.bringToFront();
 	}
 
-	public void previewSurfaceDestroyed(SurfaceHolder holder){
+	public void previewSurfaceDestroyed(){
 		release();
 	}
 
