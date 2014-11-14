@@ -133,3 +133,182 @@ NOTE: It turns out you can bind a service to another service using bindService. 
   - Action on receiving a notifcation.
     - Change PersistantModel uploading state to UPLOADING_STARTED
     - Start UploadService
+    
+    
+TESTS
+-----
+
+NOTICE: These tests require you to load the app on 2 phones
+
+Interaction while app is live in foreground
+-------------------------------------------
+- Sending phone app live in foreground.
+  - Send message
+  - Notice.
+    - Status indicators updating properly through sending, sent, received, viewed.
+
+- Receiving phone app live in foreground.
+  - Receive message
+  - Notice 
+    - Message received with unviewed indication.
+    - No notification is placed on the phone.
+  
+  - Receive multiple messages
+  - Notice 
+    - Viewed messages are deleted  
+    - Unviewed messages are retained 
+    - New message thumbnail showing with unviewed indication.
+    - Playing plays all unviewed messages as well as the new one.
+    - No notification is placed on the phone
+  
+  - Receive message while playing message(s)
+  - Notice 
+    - New message plays at the end of the existing messages that are currently playing.
+    - No notification is received on the phone
+    
+Interaction while app is terminated
+------------------------------------
+  - Send message but do not view on receiving phone.
+    - Notice status indicators on sending phone showing message received  but not viewed by receiving phone.
+  - Terminate sending phone app then view message on receiving phone.
+  - Relaunch app on sending phone
+    - Notice viewed indicator set on sending phone.
+
+- Receiving phone terminated screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking notification
+  - Notice 
+    - message should start playing automatically.
+  - Close app
+  - Notice 
+    - Notifications are removed from list of notifications
+    - Notifcations are removed from status bar
+
+- Receiving phone terminated screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking app icon
+  - Notice 
+    - message highlighted as unviewed.
+  - Close app without viewing
+  - Notice?
+    - Are notifications removed?
+
+- Receiving phone terminated screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking app icon
+  - Notice 
+    - message highlighted as unviewed.
+  - Close app without viewing
+  - Notice?
+    - Are notifications removed?
+    
+- Receiving phone terminated screen off with no security code for lock screen
+  - Receive a message
+  - Notice 
+    - notification on lock screen
+  - Open app by clicking notification
+  - Notice 
+    - message should start playing automatically.
+  - Close app
+  - Notice 
+    - Notifications are removed from list of notifications
+    - Notifcations are removed from status bar
+
+- Receiving phone terminated screen off with security code for lock screen
+  - Receive a message
+  - Notice 
+    - notification on lock screen
+  - Click notification
+  - Notice
+    - takes you to enter code for unlocking screen.
+  - Enter code
+  - Notice 
+    - message should start playing automatically.
+  - Close app
+  - Notice 
+    - Notifications are removed from list of notifications
+    - Notifcations are removed from status bar
+    
+    
+Interaction while app is in the background but not terminated
+-------------------------------------------------------------
+  - Send message but do not view on receiving phone.
+    - Notice status indicators on sending phone showing message received  but not viewed by receiving phone.
+  - Background sending phone app then view message on receiving phone.
+  - Foreground app on sending phone
+    - Notice viewed indicator set on sending phone.
+
+- Receiving phone background screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking notification
+  - Notice 
+    - message should start playing automatically.
+  - Close app
+  - Notice 
+    - Notifications are removed from list of notifications
+    - Notifcations are removed from status bar
+
+- Receiving phone background screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking app icon
+  - Notice 
+    - message highlighted as unviewed.
+  - Close app without viewing
+  - Notice?
+    - Are notifications removed?
+
+- Receiving phone background screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking app icon
+  - Notice 
+    - message highlighted as unviewed.
+  - Close app without viewing
+  - Notice?
+    - Are notifications removed?
+
+
+Interaction with phone calls putting the app in the paused state
+---------------------------------------------------------------- 
+- Sending phone app live in foreground
+  - Begin recording a message.
+  - Receive a phone call while recording.
+    - Notice 
+      - app replaced by phone app. 
+      - Recording stops.
+      - Message not sent
+      - Closing phone call returns to app.
+      - App records and plays properly after returning from phone call.
+      
+- Receiving phone app live in the foreground
+  - Begin playing a long series of messages.
+  - Receive a phone call while playing.
+    - Notice 
+      - app replaced by phone app. 
+      - Playing stops.
+      - Closing phone call returns to app.
+      - App records and plays properly after returning from phone call.
+
+- Receiving phone app is in background
+  - Start a phone call
+  - Receive a message while on phone call. 
+  - Notice
+    - Phone call is not interrupted.
+    - Notification is received.

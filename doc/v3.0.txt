@@ -235,7 +235,6 @@ SelectPhoneNumberDialog
   - Create a phoneNumberSelect itemView
 
 
-
 InviteManager
 -------------
 - Role

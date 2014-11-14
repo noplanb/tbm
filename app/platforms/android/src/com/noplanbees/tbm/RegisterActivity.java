@@ -351,7 +351,7 @@ public class RegisterActivity extends Activity{
 	//---------------
 	private void debugGetUser(){
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-		params.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, countryCodeTxt.getText().toString() + mobileNumberTxt.getText().toString());
+		params.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, cleanNumber(countryCodeTxt.getText().toString())+ cleanNumber(mobileNumberTxt.getText().toString()));
 		Uri.Builder ub = new Uri.Builder();
 		ub.appendPath("reg").appendPath("debug_get_user");
 		new DebugGetUser(ub.build().toString(), params);
@@ -385,6 +385,7 @@ public class RegisterActivity extends Activity{
 		user.set(User.Attributes.ID, params.get(UserFactory.ServerParamKeys.ID)).toString();
 		user.set(User.Attributes.MKEY, params.get(UserFactory.ServerParamKeys.MKEY));
 		user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
+		user.set(User.Attributes.REGISTERED, "true");
 		new FriendGetter(this, true, new FriendGetterCallback(){
 			@Override
 			public void gotFriends() {

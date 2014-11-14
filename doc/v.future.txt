@@ -10,7 +10,8 @@ Features
 
 Bugs
 - Shortcut icon duplicates on motoG.
-    
+- Cancel on send link should not connect you to the friend.
+- Sms takes a long time and bench is not populated.
 - When laying out the grid make sure we have enough vertical space as well as setting the horizontal space.
 - Some indication that the file will fail permanently Upload and download.
 - Make bluetooth duck work for record as well as playback.
