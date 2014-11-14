@@ -34,7 +34,7 @@ public class CameraOverlay extends SurfaceView implements SurfaceHolder.Callback
 	
 	public void setChangeListener(SurfaceChangeListener changeListener) {
 		this.changeListener = changeListener;
-		if(holder!=null)
+		if(holder!=null && changeListener != null)
 			changeListener.onSurfaceCreated(holder);
 	}
 	

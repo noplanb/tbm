@@ -97,6 +97,14 @@ public class RegisterActivity extends Activity{
 		setUpView();
 		new VersionHandler(this);
 	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		if(pd != null)
+			pd.dismiss();
+		unbindService(conn);
+	}
 
 	private void onLoadComplete(){
 		init();

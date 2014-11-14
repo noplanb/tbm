@@ -17,7 +17,6 @@ import android.media.MediaRecorder;
 import android.os.Build;
 import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
 
@@ -54,6 +53,9 @@ public class VideoRecorder {
 		overlaySurface = (CameraOverlay) activity.findViewById(R.id.camera_overlay_surface);
 		previewText = (TextView) activity.findViewById(R.id.previewText);
 		
+	}
+	
+	public void registerListeners(){
 		previewSurface.setChangeListener(new SurfaceChangeListener() {
 			@Override
 			public void onSurfaceDestroyed() {
@@ -75,6 +77,11 @@ public class VideoRecorder {
 				overlaySurfaceCreated(holder);
 			}
 		});
+	}
+	
+	public void unregisterListeners(){
+		previewSurface.setChangeListener(null);
+		overlaySurface.setChangeListener(null);
 	}
 
 	// --------------
@@ -199,7 +206,7 @@ public class VideoRecorder {
 			return;
 		
 		try {
-			camera.setPreviewDisplay(holder);
+			camera.setPreviewDisplay(previewSurfaceHolder);
 		} catch (IOException e) {
 			Log.e(TAG, "Error setting camera preview: " + e.getMessage());
 			if (videoRecorderExceptionHandler != null)
