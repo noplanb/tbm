@@ -61,7 +61,7 @@ public class VideoPlayer implements OnCompletionListener{
 	public static Boolean isPlaying(String friendId){
 		Boolean r = false;
 		GridElement ge = GridElementFactory.instance.findWithFriendId(friendId);
-		if (ge != null)
+		if (ge != null && ge.videoView != null)
 			r = ge.videoView.isPlaying();
 		return r;
 	}

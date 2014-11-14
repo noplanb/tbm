@@ -1,6 +1,7 @@
 package com.noplanbees.tbm;
 
 import android.content.Context;
+import android.hardware.Camera;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -44,10 +45,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 	}
 
-	
 	public void setChangeListener(SurfaceChangeListener changeListener) {
 		this.changeListener = changeListener;
-		if(surfaceHolder!=null)
+		if(surfaceHolder!=null && changeListener != null)
 			changeListener.onSurfaceCreated(surfaceHolder);
 	}
 	

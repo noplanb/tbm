@@ -80,11 +80,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			onLoadComplete();
 		}
 	};
-	
-	//private Handler handler = new Handler(Looper.getMainLooper());
-	
+
+	// private Handler handler = new Handler(Looper.getMainLooper());
+
 	private ProgressDialog pd;
-	//private NewSurfaceView surfaceView;
+
+	// private NewSurfaceView surfaceView;
 
 	// --------------
 	// App lifecycle
@@ -97,6 +98,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		setContentView(R.layout.home);
 		currentIntent = getIntent();
 		lastState = "onCreate";
+		
+		initModels();
+
 	}
 
 	@Override
@@ -122,19 +126,19 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// }
 		currentIntent = intent;
 		lastState = "onNewIntent";
-	
+
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
+		Log.e(TAG, "onStart: state");
 
 		pd = ProgressDialog.show(this, "Data", "retrieving data...");
 		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 
 		TbmApplication.getInstance().setForeground(true);
 
-		Log.e(TAG, "onStart: state");
 	}
 
 	@Override
@@ -144,13 +148,76 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// setupVersionHandler onResume because may cause a dialog which would
 		// crash the app before onResume.
 		setupVersionHandler();
-		handleIntentAction();
-		//longpressTouchHandler.enable();
+		// longpressTouchHandler.enable();
+		
+		
+//		// Open the default i.e. the first rear facing camera.
+//		camera = CameraHelper.getDefaultFrontFacingCameraInstance();
+//		if (camera == null)
+//			camera = CameraHelper.getDefaultCameraInstance();
+//		preview.setCamera(camera);
+		videoRecorder.registerListeners();
+		
+		//findViewById(R.id.camera_preview_surface).requestLayout();
+
+	}
+
+	@Override
+	protected void onRestart() {
+		super.onRestart();
+		Log.e(TAG, "onRestart: state");
+
+		// To handle the fucked up Android (bug in my view) that when we are
+		// launched from the task manager
+		// as opposed to from any other vector we dont go through new
+		// onNewIntent. We transition directly
+		// from onStop() to onRestart(). In this case we need to set
+		// isForeground explicitly here.
+		// We also have to handle another fucked up Android bug where if the
+		// screen is off it takes us through:
+		// restart, start, resume, pause, then onNewIntent.
+		if (lastState.startsWith("onStop") && !screenIsOff()) {
+			Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
+			// Budge go get around the fact that we dont get an intent here.
+			IntentHandler.handleUserLaunchIntent(this);
+		}
+
+		if (videoRecorder != null)
+			videoRecorder.restore();
+		lastState = "onRestart";
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		Log.e(TAG, "onPause: state");
+		ActiveModelsHandler.getInstance(this).saveAll();
+		lastState = "onPause";
+		
+		
+		videoRecorder.unregisterListeners();
+//		if (isRecording) {
+//			mediaRecorder.stop();
+//			releaseMediaRecorder();
+//			camera.lock();
+//		}
+//		// Because the Camera object is a shared resource, it's very
+//		// important to release it when the activity is paused.
+//		if (camera != null) {
+//			preview.setCamera(null);
+//			camera.release();
+//			camera = null;
+//		}
+		//findViewById(R.id.camera_preview_surface).requestLayout();
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
+		if (pd != null)
+			pd.dismiss();
+
+		unbindService(conn);
 
 		TbmApplication.getInstance().setForeground(false);
 
@@ -158,7 +225,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		abortAnyRecording(); // really as no effect when called here since the
 								// surfaces will have been destroyed and the
 								// recording already stopped.
-		//longpressTouchHandler.disable(true);
+
+		if (longpressTouchHandler != null)
+			longpressTouchHandler.disable(true);
+
 		if (videoRecorder != null)
 			videoRecorder.dispose(); // Probably redundant since the preview
 										// surface will have been destroyed by
@@ -168,43 +238,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	@Override
-	protected void onPause() {
-		super.onPause();
-		Log.e(TAG, "onPause: state");
-		ActiveModelsHandler.getInstance(this).saveAll();
-		lastState = "onPause";
-	}
-
-	@Override
 	protected void onDestroy() {
 		Log.e(TAG, "onDestroy: state");
 		super.onDestroy();
 	}
-
-	@Override
-		protected void onRestart() {
-			super.onRestart();
-			Log.e(TAG, "onRestart: state");
-	
-			// To handle the fucked up Android (bug in my view) that when we are
-			// launched from the task manager
-			// as opposed to from any other vector we dont go through new
-			// onNewIntent. We transition directly
-			// from onStop() to onRestart(). In this case we need to set
-			// isForeground explicitly here.
-			// We also have to handle another fucked up Android bug where if the
-			// screen is off it takes us through:
-			// restart, start, resume, pause, then onNewIntent.
-			if (lastState.startsWith("onStop") && !screenIsOff()) {
-				Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
-				// Budge go get around the fact that we dont get an intent here.
-				IntentHandler.handleUserLaunchIntent(this);
-			}
-	
-	//		if (videoRecorder != null)
-	//			videoRecorder.restore();
-			lastState = "onRestart";
-		}
 
 	private Boolean screenIsOff() {
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -212,7 +249,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void onLoadComplete() {
-		
+
 		// Note Boot.boot must complete successfully before we continue the home
 		// activity.
 		// Boot will start the registrationActivity and return false if needed.
@@ -220,9 +257,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			Log.i(TAG, "Finish HomeActivity");
 			finish();
 			return;
-		}else{
+		} else {
 
-			initModels();
 			setupGrid();
 			getVideoViewsAndPlayers();
 			initViews();
@@ -232,16 +268,17 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			longpressTouchHandler.enable();
 			lastState = "onStart";
 			ensureListeners();
-			
+
 			gcmHandler = new GcmHandler(this);
 			benchController = new BenchController(this);
-
 
 			Boot.initGCM(this);
 
 			if (gcmHandler != null)
 				gcmHandler.checkPlayServices();
-			
+
+			handleIntentAction();
+
 		}
 
 		pd.dismiss();
@@ -303,20 +340,21 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		CameraManager.addExceptionHandlerDelegate(this);
 		VideoRecorder.addExceptionHandlerDelegate(this);
 		videoRecorder = new VideoRecorder(this);
-		//surfaceView = (NewSurfaceView) findViewById(R.id.new_surface_view);
+		// surfaceView = (NewSurfaceView) findViewById(R.id.new_surface_view);
 	}
-//
-//	private void ensureModels() {
-//		// if ( instance == null ||
-//		// videoRecorder == null ||
-//		// gcmHandler == null ||
-//		// friendFactory == null ||
-//		// userFactory == null ||
-//		// activeModelsHandler.getGf() == null ||
-//		// longpressTouchHandler == null ||
-//		// benchController == null
-//		// ){
-//	}
+
+	//
+	// private void ensureModels() {
+	// // if ( instance == null ||
+	// // videoRecorder == null ||
+	// // gcmHandler == null ||
+	// // friendFactory == null ||
+	// // userFactory == null ||
+	// // activeModelsHandler.getGf() == null ||
+	// // longpressTouchHandler == null ||
+	// // benchController == null
+	// // ){
+	// }
 
 	private void setupGrid() {
 		GridManager.setGridEventNotificationDelegate(this);
@@ -523,7 +561,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private void onRecordCancel() {
 		// Different from abortAnyRecording becuase we always toast here.
 		videoRecorder.stopRecording(null);
-//		toast("Not sent.");
+		// toast("Not sent.");
 	}
 
 	private void onRecordStop(View v) {
@@ -663,7 +701,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 					public void onClick(DialogInterface dialog, int id) {
 						videoRecorder.dispose();
 						videoRecorder.restore();
-						//????
+						// ????
 					}
 				});
 		AlertDialog alertDialog = builder.create();
