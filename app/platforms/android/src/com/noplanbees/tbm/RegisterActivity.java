@@ -347,6 +347,7 @@ public class RegisterActivity extends Activity{
 		user.set(User.Attributes.ID, params.get(UserFactory.ServerParamKeys.ID)).toString();
 		user.set(User.Attributes.MKEY, params.get(UserFactory.ServerParamKeys.MKEY));
 		user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
+		user.set(User.Attributes.REGISTERED, "true");
 		new FriendGetter(this, true, new FriendGetterCallback(){
 			@Override
 			public void gotFriends() {

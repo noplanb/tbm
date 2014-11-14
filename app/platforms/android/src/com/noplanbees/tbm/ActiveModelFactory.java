@@ -105,9 +105,9 @@ public class ActiveModelFactory {
 
 		if (all == null){
 			Log.i(TAG, "retrieve: got null for objects");
+			return false;
 		} else {
 			Log.i(TAG, "class of attr: " + all.get(0).getClass().getSimpleName());
-			return false;
 		}
 
 		for (LinkedTreeMap<String, String> ats : all){

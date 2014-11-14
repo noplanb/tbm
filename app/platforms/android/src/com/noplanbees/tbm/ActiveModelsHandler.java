@@ -43,7 +43,7 @@ public class ActiveModelsHandler {
 		} else if (uf.retrieve(context)){
 			Log.i(TAG, "Retrieved User from local storage.");
 		} else {
-			Log.i(TAG, "Config not retrievable from local storage. Creating an instance.");
+			Log.i(TAG, "User not retrievable from local storage. Creating an instance.");
 			uf.makeInstance(context);
 		}
 		return uf;
@@ -124,7 +124,7 @@ public class ActiveModelsHandler {
 	public static void saveUser(Context context){
 		UserFactory uf = UserFactory.getFactoryInstance();
 		if (uf.hasInstances()){
-			Log.i(TAG, "Saving User to local storage");
+			Log.i(TAG, "Saving User to local storage:" + uf.current_user().attributes.toString());
 			uf.save(context);
 		} else {
 			Log.i(TAG, "Not Saving User. No instances found");

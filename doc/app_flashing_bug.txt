@@ -138,7 +138,7 @@ NOTE: It turns out you can bind a service to another service using bindService. 
 TESTS
 -----
 
-- Load on 2 phones
+NOTICE: These tests require you to load the app on 2 phones
 
 Interaction while app is live in foreground
 -------------------------------------------
@@ -180,16 +180,109 @@ Interaction while app is terminated
     - notification in status bar 
     - notification in list of notifications.
   - Open app by clicking notification
-    - Notice 
-      - message should start playing automatically.
-  
+  - Notice 
+    - message should start playing automatically.
+  - Close app
+  - Notice 
+    - Notifications are removed from list of notifications
+    - Notifcations are removed from status bar
 
-- Receiving phone terminated screen off
+- Receiving phone terminated screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking app icon
+  - Notice 
+    - message highlighted as unviewed.
+  - Close app without viewing
+  - Notice?
+    - Are notifications removed?
 
+- Receiving phone terminated screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking app icon
+  - Notice 
+    - message highlighted as unviewed.
+  - Close app without viewing
+  - Notice?
+    - Are notifications removed?
+    
+- Receiving phone terminated screen off with no security code for lock screen
+  - Receive a message
+  - Notice 
+    - notification on lock screen
+  - Open app by clicking notification
+  - Notice 
+    - message should start playing automatically.
+  - Close app
+  - Notice 
+    - Notifications are removed from list of notifications
+    - Notifcations are removed from status bar
 
+- Receiving phone terminated screen off with security code for lock screen
+  - Receive a message
+  - Notice 
+    - notification on lock screen
+  - Click notification
+  - Notice
+    - takes you to enter code for unlocking screen.
+  - Enter code
+  - Notice 
+    - message should start playing automatically.
+  - Close app
+  - Notice 
+    - Notifications are removed from list of notifications
+    - Notifcations are removed from status bar
+    
+    
 Interaction while app is in the background but not terminated
 -------------------------------------------------------------
+  - Send message but do not view on receiving phone.
+    - Notice status indicators on sending phone showing message received  but not viewed by receiving phone.
+  - Background sending phone app then view message on receiving phone.
+  - Foreground app on sending phone
+    - Notice viewed indicator set on sending phone.
 
+- Receiving phone background screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking notification
+  - Notice 
+    - message should start playing automatically.
+  - Close app
+  - Notice 
+    - Notifications are removed from list of notifications
+    - Notifcations are removed from status bar
+
+- Receiving phone background screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking app icon
+  - Notice 
+    - message highlighted as unviewed.
+  - Close app without viewing
+  - Notice?
+    - Are notifications removed?
+
+- Receiving phone background screen on
+  - Receive a message
+  - Notice 
+    - notification in status bar 
+    - notification in list of notifications.
+  - Open app by clicking app icon
+  - Notice 
+    - message highlighted as unviewed.
+  - Close app without viewing
+  - Notice?
+    - Are notifications removed?
 
 
 Interaction with phone calls putting the app in the paused state
