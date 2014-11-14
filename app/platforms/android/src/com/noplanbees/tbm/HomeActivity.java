@@ -100,7 +100,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		lastState = "onCreate";
 		
 		initModels();
-
+		videoRecorder.registerListeners();
 	}
 
 	@Override
@@ -149,17 +149,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// crash the app before onResume.
 		setupVersionHandler();
 		// longpressTouchHandler.enable();
-		
-		
-//		// Open the default i.e. the first rear facing camera.
-//		camera = CameraHelper.getDefaultFrontFacingCameraInstance();
-//		if (camera == null)
-//			camera = CameraHelper.getDefaultCameraInstance();
-//		preview.setCamera(camera);
-		videoRecorder.registerListeners();
-		
-		//findViewById(R.id.camera_preview_surface).requestLayout();
-
 	}
 
 	@Override
@@ -193,22 +182,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		Log.e(TAG, "onPause: state");
 		ActiveModelsHandler.getInstance(this).saveAll();
 		lastState = "onPause";
-		
-		
-		videoRecorder.unregisterListeners();
-//		if (isRecording) {
-//			mediaRecorder.stop();
-//			releaseMediaRecorder();
-//			camera.lock();
-//		}
-//		// Because the Camera object is a shared resource, it's very
-//		// important to release it when the activity is paused.
-//		if (camera != null) {
-//			preview.setCamera(null);
-//			camera.release();
-//			camera = null;
-//		}
-		//findViewById(R.id.camera_preview_surface).requestLayout();
 	}
 
 	@Override

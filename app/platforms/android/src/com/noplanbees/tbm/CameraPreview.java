@@ -1,7 +1,6 @@
 package com.noplanbees.tbm;
 
 import android.content.Context;
-import android.hardware.Camera;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -12,12 +11,8 @@ import android.view.SurfaceView;
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
 	private final String TAG = this.getClass().getSimpleName();
 
-	private VideoRecorder videoRecorder;
-
 	public SurfaceHolder surfaceHolder;
-
 	private SurfaceChangeListener changeListener;
-
 
 	public CameraPreview(Context context) {
 		super(context);

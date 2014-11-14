@@ -52,7 +52,6 @@ public class VideoRecorder {
 		previewSurface = (CameraPreview) activity.findViewById(R.id.camera_preview_surface);
 		overlaySurface = (CameraOverlay) activity.findViewById(R.id.camera_overlay_surface);
 		previewText = (TextView) activity.findViewById(R.id.previewText);
-		
 	}
 	
 	public void registerListeners(){
@@ -198,7 +197,7 @@ public class VideoRecorder {
     // Surface callbacks
 	// -----------------
 	public void previewSurfaceCreated(SurfaceHolder holder) {
-		Log.i(TAG, "cameraPreviewSurfaceCreated");
+		Log.i(TAG, "cameraPreviewSurfaceCreated + " + holder);
 		previewSurfaceHolder = holder;
 		
 		Camera camera = CameraManager.getCamera(context);
@@ -206,7 +205,7 @@ public class VideoRecorder {
 			return;
 		
 		try {
-			camera.setPreviewDisplay(previewSurfaceHolder);
+			camera.setPreviewDisplay(holder);
 		} catch (IOException e) {
 			Log.e(TAG, "Error setting camera preview: " + e.getMessage());
 			if (videoRecorderExceptionHandler != null)
@@ -215,11 +214,15 @@ public class VideoRecorder {
 		}
        	
 		camera.startPreview();
-		prepareMediaRecorder();
+		//prepareMediaRecorder();
 		overlaySurface.bringToFront();
 	}
 
 	public void previewSurfaceDestroyed(){
+		Camera camera = CameraManager.getCamera(context);
+		if (camera == null)
+			return;
+		camera.stopPreview();
 		release();
 	}
 
