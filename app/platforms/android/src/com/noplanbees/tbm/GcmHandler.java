@@ -26,7 +26,6 @@ public class GcmHandler {
 	private static final String PROPERTY_APP_VERSION = "appVersion";
 	
 	private Activity activity;
-	private Context context;
 	private final String TAG = "GCM";
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 	private String SENDER_ID = "550639704405";
@@ -37,12 +36,11 @@ public class GcmHandler {
 
 	public GcmHandler(Activity a){
 		activity = a;
-		context = activity.getApplicationContext();
 	}
 
 
 	public boolean checkPlayServices() {
-		int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
+		int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity);
 		if (resultCode != ConnectionResult.SUCCESS) {
 			if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
 				GooglePlayServicesUtil.getErrorDialog(resultCode, activity, PLAY_SERVICES_RESOLUTION_REQUEST).show();
@@ -57,7 +55,7 @@ public class GcmHandler {
 	public String registerGcm(){
 		Log.i(TAG, "registerGCM");
 		gcm = GoogleCloudMessaging.getInstance(activity);
-		regid = getRegistrationId(context);
+		regid = getRegistrationId(activity);
 		Log.i(TAG, "registerGCM: got GCM registration id = " + regid);
 		
 		if (regid.isEmpty()) {
@@ -134,7 +132,7 @@ public class GcmHandler {
 		protected Void doInBackground(Void... params) {
 			try {
 				if (gcm == null) {
-					gcm = GoogleCloudMessaging.getInstance(context);
+					gcm = GoogleCloudMessaging.getInstance(activity);
 				}
 				regid = gcm.register(SENDER_ID);
 				Log.i(TAG, "Device registered, registration ID=" + regid);
@@ -147,7 +145,7 @@ public class GcmHandler {
 				// message using the 'from' address in the message.
 
 				// Persist the regID - no need to register again.
-				storeRegistrationId(context, regid);
+				storeRegistrationId(activity, regid);
 			} catch (IOException ex) {
 				// If there is an error wait for the user to turn off the app to try again.
 				Log.e(TAG, "Error :" + ex.getMessage());

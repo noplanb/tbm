@@ -251,9 +251,10 @@ public static interface VideoStatusChangedCallback{
 	public Bitmap sqThumbBitmap(String videoId){
 		Bitmap sq = null;
 		Bitmap thumbBmp = thumbBitmap(videoId);
-		if (thumbBmp != null)
+		if (thumbBmp != null){
 			sq = ThumbnailUtils.extractThumbnail(thumbBmp, thumbBmp.getWidth(), thumbBmp.getWidth());
-		Log.i(TAG, "sqThumbBitmap: size = " + ((Integer) sq.getByteCount()).toString());
+			Log.i(TAG, "sqThumbBitmap: size = " + ((Integer) sq.getByteCount()).toString());
+		}
 		return sq;
 	}
 

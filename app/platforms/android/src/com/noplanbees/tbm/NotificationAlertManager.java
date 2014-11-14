@@ -68,7 +68,7 @@ public class NotificationAlertManager {
 		Log.i(STAG, "postNativeAlert");
 		final int NOTIFICATION_ID = 1;
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		Intent intent = new Intent(context.getApplicationContext(), context.getClass());
+		Intent intent = new Intent(context.getApplicationContext(), HomeActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, makePlayVideoIntent(intent, context, friend), 0);		
 
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
@@ -78,7 +78,8 @@ public class NotificationAlertManager {
 		.setContentTitle(title(friend))
 		.setStyle(new NotificationCompat.BigTextStyle().bigText(title(friend)))
 		.setContentText(subTitle)
-		.setContentIntent(contentIntent);
+		.setContentIntent(contentIntent)
+		.setAutoCancel(true);
 				
 		notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 	}

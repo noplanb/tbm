@@ -4,7 +4,6 @@ package com.noplanbees.tbm;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -15,7 +14,6 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
  */
 public class GcmIntentService extends IntentService {
 	private final String TAG = "GCM " + this.getClass().getSimpleName();
-	NotificationCompat.Builder builder;
 
 	public GcmIntentService() {
 		super("GcmIntentService");

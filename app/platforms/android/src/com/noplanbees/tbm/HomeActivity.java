@@ -99,8 +99,17 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		currentIntent = getIntent();
 		lastState = "onCreate";
 		
-		initModels();
+
+		
+		CameraManager.addExceptionHandlerDelegate(this);
+		VideoRecorder.addExceptionHandlerDelegate(this);
+		videoRecorder = new VideoRecorder(this);
 		videoRecorder.registerListeners();
+		
+		gcmHandler = new GcmHandler(this);
+		
+		benchController = new BenchController(this);
+
 	}
 
 	@Override
@@ -115,18 +124,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		Log.e(TAG, "onNewIntent state"
 				+ ((currentIntent == null || currentIntent.getExtras() == null) ? "no extras" : currentIntent
 						.getExtras().toString()));
-		// Integer intentResult = new IntentHandler(this, intent).handle();
-		// if (intentResult == IntentHandler.RESULT_RUN_IN_BACKGROUND){
-		// Log.e(TAG, "onNewIntent: moving activity to background.");
-		// moveTaskToBack(true);
-		// isForeground = false;
-		// } else {
-		// Log.e(TAG, "onNewIntent: moving activity to foreground.");
-		// isForeground = true;
-		// }
 		currentIntent = intent;
 		lastState = "onNewIntent";
-
 	}
 
 	@Override
@@ -242,13 +241,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			lastState = "onStart";
 			ensureListeners();
 
-			gcmHandler = new GcmHandler(this);
-			benchController = new BenchController(this);
-
 			Boot.initGCM(this);
 
-			if (gcmHandler != null)
-				gcmHandler.checkPlayServices();
+			gcmHandler.checkPlayServices();
 
 			handleIntentAction();
 
@@ -306,14 +301,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-	}
-
-	private void initModels() {
-		Log.i(TAG, "initModels");
-		CameraManager.addExceptionHandlerDelegate(this);
-		VideoRecorder.addExceptionHandlerDelegate(this);
-		videoRecorder = new VideoRecorder(this);
-		// surfaceView = (NewSurfaceView) findViewById(R.id.new_surface_view);
 	}
 
 	//
@@ -764,9 +751,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			finish();
 			return true;
 		case R.id.action_crash:
-			Camera c = null;
-			c.cancelAutoFocus();
-			return true;
+			throw new NullPointerException("simulate exception");
 		default:
 			return super.onOptionsItemSelected(item);
 		}

@@ -131,7 +131,7 @@ public class VideoRecorder {
 		if (mediaRecorder == null){
 			Log.e(TAG, "startRecording: ERROR no mediaRecorder this should never happen.");
 			prepareMediaRecorder();
-			return false;
+			//return false;
 		}
 		
 		try {

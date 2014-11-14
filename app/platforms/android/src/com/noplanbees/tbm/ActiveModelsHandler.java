@@ -144,7 +144,7 @@ public class ActiveModelsHandler {
 	public void saveUser(){
 		uf = UserFactory.getFactoryInstance();
 		if (uf.hasInstances()){
-			Log.i(TAG, "Saving User to local storage:" + uf.current_user().attributes.toString());
+			Log.i(TAG, "Saving User to local storage:" + UserFactory.current_user().attributes.toString());
 			uf.save(context);
 		} else {
 			Log.i(TAG, "Not Saving User. No instances found");
