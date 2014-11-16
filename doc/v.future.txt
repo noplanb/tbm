@@ -9,6 +9,7 @@ Features
 - If donwloading when user clicks play dont play toast downloading
 
 Bugs
+- Limit sms contacts to 20.
 - Shortcut icon duplicates on motoG.
 - Cancel on send link should not connect you to the friend.
 - Sms takes a long time and bench is not populated.

@@ -99,6 +99,9 @@ public class RegisterActivity extends Activity{
 	private void prefillTextFields() {
 		Contact contact = new ContactsManager(this).userProfile(this);
 		Log.i(TAG, "profile: " + contact);
+		if (contact == null)
+			return;
+		
 		if (contact.getFirstName() != null)
 			firstNameTxt.setText(contact.getFirstName());
 
