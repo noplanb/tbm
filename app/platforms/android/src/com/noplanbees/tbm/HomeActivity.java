@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources.Theme;
 import android.graphics.Canvas;
-import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -65,6 +64,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private ArrayList<TextView> nameTexts = new ArrayList<TextView>(8);
 	private ArrayList<VideoPlayer> videoPlayers = new ArrayList<VideoPlayer>(8);
 
+	private Handler handler = new Handler(Looper.getMainLooper());
+	
 	private ActiveModelsHandler activeModelsHandler;
 
 	private ServiceConnection conn = new ServiceConnection() {
@@ -138,6 +139,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		TbmApplication.getInstance().setForeground(true);
 
+		NotificationAlertManager.cancelNativeAlerts(this);
 	}
 
 	@Override
@@ -167,7 +169,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		if (lastState.startsWith("onStop") && !screenIsOff()) {
 			Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
 			// Budge go get around the fact that we dont get an intent here.
-			IntentHandler.handleUserLaunchIntent(this);
+			handleUserLaunchIntent(this);
 		}
 
 		if (videoRecorder != null)
@@ -201,10 +203,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		if (longpressTouchHandler != null)
 			longpressTouchHandler.disable(true);
 
-		if (videoRecorder != null)
-			videoRecorder.dispose(); // Probably redundant since the preview
-										// surface will have been destroyed by
-										// the time we get here.
+//		if (videoRecorder != null)
+//			videoRecorder.dispose(); // Probably redundant since the preview
+//										// surface will have been destroyed by
+//										// the time we get here.
 		VideoPlayer.release(this);
 		lastState = "onStop";
 	}
@@ -550,10 +552,17 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	@Override
-	public void onVideoStatusChanged(Friend friend) {
-		GridElement ge = activeModelsHandler.getGf().findWithFriendId(friend.getId());
-		if (ge != null)
-			ge.nameText.setText(ge.friend().getStatusString());
+	public void onVideoStatusChanged(final Friend friend) {
+		handler.post(new Runnable(){
+			@Override
+			public void run() {
+				GridElement ge = activeModelsHandler.getGf().findWithFriendId(friend.getId());
+				if (ge != null){
+					ge.nameText.setText(ge.friend().getStatusString());
+					ge.videoPlayer.refreshThumb();
+				}
+			}
+		});
 	}
 
 	// Since the call for this had to be moved from onPause to onStop this
@@ -764,4 +773,15 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		benchController.hideAllViews();
 	}
 
-};
+	//--------------------------
+	// Handle user launch intent 
+	//--------------------------
+	private void handleUserLaunchIntent(Context context) {
+		Log.i(TAG, "handleUserLaunchIntent");
+		FileUploadService.restartTransfersPendingRetry(context);
+		FileDownloadService.restartTransfersPendingRetry(context);
+		NotificationAlertManager.cancelNativeAlerts(context);
+		(new Poller(context)).pollAll();
+	}
+	
+}

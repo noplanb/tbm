@@ -17,8 +17,6 @@ public class DataHolderService extends NonStopIntentService {
 
 	private ActiveModelsHandler dataManager;
 	
-	private Handler handler = new Handler(Looper.getMainLooper());
-
 	@Override
 	public IBinder onBind(Intent intent) {
 		return new LocalBinder();
@@ -56,12 +54,7 @@ public class DataHolderService extends NonStopIntentService {
 
 	@Override
 	protected void onHandleIntent(final Intent intent, int startId) {
-		handler.post(new Runnable() {
-			@Override
-			public void run() {
-				new IntentHandler(DataHolderService.this, intent).handle();
-			}
-		});
+		new IntentHandler(DataHolderService.this, intent).handle();
 	}
 	
 

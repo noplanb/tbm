@@ -117,7 +117,8 @@
                 <com.noplanbees.tbm.CameraPreview
                     android:id="@+id/camera_preview_surface"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent" />
+                    android:layout_height="fill_parent" 
+                    />
             </FrameLayout>
 
             <FrameLayout

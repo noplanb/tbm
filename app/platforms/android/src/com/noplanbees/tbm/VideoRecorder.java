@@ -215,10 +215,11 @@ public class VideoRecorder {
        	
 		camera.startPreview();
 		//prepareMediaRecorder();
-		overlaySurface.bringToFront();
+		//overlaySurface.bringToFront();
 	}
 
 	public void previewSurfaceDestroyed(){
+		stopRecording(null);
 		Camera camera = CameraManager.getCamera(context);
 		if (camera == null)
 			return;

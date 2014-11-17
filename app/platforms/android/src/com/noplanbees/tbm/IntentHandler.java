@@ -58,9 +58,10 @@ public class IntentHandler {
 			handleDownloadIntent();
 		} else if (isUploadIntent()){
 			handleUploadIntent();
-		} else {
-			handleUserLaunchIntent(context);
-		}
+		} 
+//		else {
+//			handleUserLaunchIntent(context);
+//		}
 		return getReturnResult();
 	}
 
@@ -120,17 +121,6 @@ public class IntentHandler {
 	}
 	
 
-	//--------------------------
-	// Handle user launch intent 
-	//--------------------------
-	public static void handleUserLaunchIntent(Context context) {
-		Log.i(STAG, "handleUserLaunchIntent");
-		FileUploadService.restartTransfersPendingRetry(context);
-		FileDownloadService.restartTransfersPendingRetry(context);
-		NotificationAlertManager.cancelNativeAlerts(context);
-		(new Poller(context)).pollAll();
-	}
-	
 	//---------------------
 	// Handle upload intent 
 	//---------------------
@@ -196,10 +186,12 @@ public class IntentHandler {
 			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()){
 				NotificationAlertManager.alert(context, friend, videoId);
 			} else {
-				if (!VideoPlayer.isPlaying(friend.getId())){
-					VideoPlayer.refreshThumbWithFriendId(friend.getId());
-					playNotificationTone();
-				}
+				FriendFactory.getFactoryInstance().notifyStatusChanged(friend);
+//				if (!VideoPlayer.isPlaying(friend.getId())){
+//					VideoPlayer.refreshThumbWithFriendId(friend.getId());
+//					playNotificationTone();
+//				}
+				playNotificationTone();
 			}
 			
 			rSHandler.deleteRemoteVideoIdAndFile(friend, videoId);

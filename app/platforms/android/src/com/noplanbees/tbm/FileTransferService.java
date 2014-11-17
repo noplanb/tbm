@@ -89,10 +89,6 @@ public abstract class FileTransferService extends NonStopIntentService {
 		Log.i(TAG, "reportStatus");
 		intent.setClass(getApplicationContext(), DataHolderService.class);
 		intent.putExtra(IntentFields.STATUS_KEY, status);
-		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
-		intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); // See doc/task_manager_bug.txt for the reason for this flag.
-		intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // This is probably not necessary but on a test bed I needed it to make sure onNewIntent is called in the activity.
 		getApplicationContext().startService(intent);
 	}
 
