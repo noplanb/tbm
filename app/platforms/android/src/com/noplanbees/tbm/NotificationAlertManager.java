@@ -1,7 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.net.URI;
-
 import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.app.Notification;
