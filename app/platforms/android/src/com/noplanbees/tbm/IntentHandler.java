@@ -178,8 +178,6 @@ public class IntentHandler {
 		if (status == Video.IncomingVideoStatus.DOWNLOADED){
 			friend.createThumb(videoId);
 			
-			GridManager.moveFriendToGrid(context,friend);
-			
 			if (!VideoPlayer.isPlaying(friend.getId()))
 				friend.deleteAllViewedVideos();
 			

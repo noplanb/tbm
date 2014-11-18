@@ -9,14 +9,6 @@ public class Boot {
 	
 	public static boolean boot(HomeActivity homeActivity){
 		Log.i(TAG, "boot");
-		
-		//--------------------------
-		// Retrieve or create User model from local storage
-		//--------------------------
-//		ActiveModelsHandler instance = ActiveModelsHandler.getInstance(homeActivity);
-//		instance.ensureUser();
-
-		
 		//--------------------------
 		// Check registration
 		//--------------------------
@@ -27,12 +19,6 @@ public class Boot {
 			Log.i(TAG, "Exiting boot");
 			return false;
 		}
-		
-		//--------------------------
-        // Try to retrieve all models from local storage
-		//--------------------------
-//		instance.ensureAll();
-
 		return true;
 	}
 	

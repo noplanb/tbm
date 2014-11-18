@@ -76,17 +76,13 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			activeModelsHandler = ((LocalBinder) service).getDataManager();
+			activeModelsHandler = ((LocalBinder) service).getActiveModelsHandler();
 
 			onLoadComplete();
 		}
 	};
 
-	// private Handler handler = new Handler(Looper.getMainLooper());
-
 	private ProgressDialog pd;
-
-	// private NewSurfaceView surfaceView;
 
 	// --------------
 	// App lifecycle
@@ -100,17 +96,13 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		currentIntent = getIntent();
 		lastState = "onCreate";
 		
-
-		
 		CameraManager.addExceptionHandlerDelegate(this);
 		VideoRecorder.addExceptionHandlerDelegate(this);
 		videoRecorder = new VideoRecorder(this);
 		videoRecorder.registerListeners();
 		
 		gcmHandler = new GcmHandler(this);
-		
 		benchController = new BenchController(this);
-
 	}
 
 	@Override
@@ -120,24 +112,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		Log.e(TAG, "onNewIntent state"
-				+ ((currentIntent == null || currentIntent.getExtras() == null) ? "no extras" : currentIntent
-						.getExtras().toString()));
-		currentIntent = intent;
-		lastState = "onNewIntent";
-	}
-
-	@Override
 	protected void onStart() {
 		super.onStart();
 		Log.e(TAG, "onStart: state");
 
 		pd = ProgressDialog.show(this, "Data", "retrieving data...");
 		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
-
-		TbmApplication.getInstance().setForeground(true);
 
 		NotificationAlertManager.cancelNativeAlerts(this);
 	}
@@ -149,7 +129,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// setupVersionHandler onResume because may cause a dialog which would
 		// crash the app before onResume.
 		setupVersionHandler();
-		// longpressTouchHandler.enable();
 	}
 
 	@Override
@@ -181,7 +160,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	protected void onPause() {
 		super.onPause();
 		Log.e(TAG, "onPause: state");
-		ActiveModelsHandler.getInstance(this).saveAll();
 		lastState = "onPause";
 	}
 
@@ -190,11 +168,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		super.onStop();
 		if (pd != null)
 			pd.dismiss();
-
 		unbindService(conn);
-
-		TbmApplication.getInstance().setForeground(false);
-
 		Log.e(TAG, "onStop: state");
 		abortAnyRecording(); // really as no effect when called here since the
 								// surfaces will have been destroyed and the
@@ -203,10 +177,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		if (longpressTouchHandler != null)
 			longpressTouchHandler.disable(true);
 
-//		if (videoRecorder != null)
-//			videoRecorder.dispose(); // Probably redundant since the preview
-//										// surface will have been destroyed by
-//										// the time we get here.
 		VideoPlayer.release(this);
 		lastState = "onStop";
 	}
@@ -223,7 +193,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void onLoadComplete() {
-
 		// Note Boot.boot must complete successfully before we continue the home
 		// activity.
 		// Boot will start the registrationActivity and return false if needed.
@@ -248,6 +217,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			gcmHandler.checkPlayServices();
 
 			handleIntentAction();
+			
+			benchController.onDataLoaded();
 
 		}
 
@@ -305,19 +276,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
-	//
-	// private void ensureModels() {
-	// // if ( instance == null ||
-	// // videoRecorder == null ||
-	// // gcmHandler == null ||
-	// // friendFactory == null ||
-	// // userFactory == null ||
-	// // activeModelsHandler.getGf() == null ||
-	// // longpressTouchHandler == null ||
-	// // benchController == null
-	// // ){
-	// }
-
 	private void setupGrid() {
 		GridManager.setGridEventNotificationDelegate(this);
 
@@ -344,7 +302,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// testService();
 		// ConfigTest.run();
 		// FriendTest.run();
-		// new ServerTest().run();
 		// new FileDownloadDeprecated.BgDownload().execute();
 		// Friend f = (Friend)
 		// friendFactory.findWhere(Friend.Attributes.FIRST_NAME, "Farhad");
@@ -512,7 +469,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		Friend f = ge.friend();
 		GridManager.rankingActionOccurred(f);
-		if (videoRecorder.startRecording()) {
+		if (videoRecorder.startRecording(f)) {
 			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
 		} else {
 			Log.e(TAG, "onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
@@ -522,8 +479,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 	private void onRecordCancel() {
 		// Different from abortAnyRecording becuase we always toast here.
-		videoRecorder.stopRecording(null);
-		// toast("Not sent.");
+		videoRecorder.stopRecording();
+		toast("Not sent.");
 	}
 
 	private void onRecordStop(View v) {
@@ -533,7 +490,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		Friend f = ge.friend();
 		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
-		if (videoRecorder.stopRecording(f)) {
+		if (videoRecorder.stopRecording()) {
 			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
 			f.uploadVideo();
 		}
@@ -556,6 +513,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		handler.post(new Runnable(){
 			@Override
 			public void run() {
+				GridManager.moveFriendToGrid(HomeActivity.this,friend);
+
 				GridElement ge = activeModelsHandler.getGf().findWithFriendId(friend.getId());
 				if (ge != null){
 					ge.nameText.setText(ge.friend().getStatusString());
@@ -572,7 +531,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private void abortAnyRecording() {
 		Log.i(TAG, "abortAnyRecording");
 		if (videoRecorder != null)
-			videoRecorder.stopRecording(null);
+			videoRecorder.stopRecording();
 	}
 
 	// ----------------

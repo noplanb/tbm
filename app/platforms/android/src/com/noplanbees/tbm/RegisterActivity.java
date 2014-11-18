@@ -65,7 +65,7 @@ public class RegisterActivity extends Activity{
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			activeModelsHandler = ((LocalBinder) service).getDataManager();
+			activeModelsHandler = ((LocalBinder) service).getActiveModelsHandler();
 
 			onLoadComplete();
 		}

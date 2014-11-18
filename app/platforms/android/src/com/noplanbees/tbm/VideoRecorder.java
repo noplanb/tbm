@@ -46,6 +46,8 @@ public class VideoRecorder {
 	private CameraOverlay overlaySurface;
 	private TextView previewText;
 
+	private Friend currentFriend;
+
 	public VideoRecorder(HomeActivity a) {
 		activity = a;
 		context = activity.getApplicationContext();
@@ -93,7 +95,7 @@ public class VideoRecorder {
 		videoRecorderExceptionHandler = handler;
 	}
 	
-	public boolean stopRecording(Friend friend) {
+	public boolean stopRecording() {
 		Log.i(TAG, "stopRecording");
 		boolean rval = false;
 		hideRecordingIndicator(); // It should be safe to call this even if the sufraces have already been destroyed.
@@ -106,8 +108,8 @@ public class VideoRecorder {
 				mediaRecorder.stop();
 				rval = true;
 				Log.i(TAG, String.format("Recorded file %s : %d",Config.recordingFilePath(context), Config.recordingFile(context).length()));
-				if (friend != null)
-					moveRecordingToFriend(friend);
+				if (currentFriend != null)
+					moveRecordingToFriend(currentFriend);
 			} catch (IllegalStateException e) {
 				Log.e(TAG, "stopRecording: IllegalStateException: " + e.toString());
  				rval = false;
@@ -125,8 +127,10 @@ public class VideoRecorder {
 		return rval;
 	}
 
-	public boolean startRecording() {
+	public boolean startRecording(Friend f) {
 		Log.i(TAG, "startRecording");
+		
+		this.currentFriend = f;
 
 		if (mediaRecorder == null){
 			Log.e(TAG, "startRecording: ERROR no mediaRecorder this should never happen.");
@@ -219,7 +223,7 @@ public class VideoRecorder {
 	}
 
 	public void previewSurfaceDestroyed(){
-		stopRecording(null);
+		stopRecording();
 		Camera camera = CameraManager.getCamera(context);
 		if (camera == null)
 			return;
