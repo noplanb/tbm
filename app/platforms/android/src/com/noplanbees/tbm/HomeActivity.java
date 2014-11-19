@@ -131,30 +131,30 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		setupVersionHandler();
 	}
 
-	@Override
-	protected void onRestart() {
-		super.onRestart();
-		Log.e(TAG, "onRestart: state");
-
-		// To handle the fucked up Android (bug in my view) that when we are
-		// launched from the task manager
-		// as opposed to from any other vector we dont go through new
-		// onNewIntent. We transition directly
-		// from onStop() to onRestart(). In this case we need to set
-		// isForeground explicitly here.
-		// We also have to handle another fucked up Android bug where if the
-		// screen is off it takes us through:
-		// restart, start, resume, pause, then onNewIntent.
-		if (lastState.startsWith("onStop") && !screenIsOff()) {
-			Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
-			// Budge go get around the fact that we dont get an intent here.
-			handleUserLaunchIntent(this);
-		}
-
-		if (videoRecorder != null)
-			videoRecorder.restore();
-		lastState = "onRestart";
-	}
+//	@Override
+//	protected void onRestart() {
+//		super.onRestart();
+//		Log.e(TAG, "onRestart: state");
+//
+//		// To handle the fucked up Android (bug in my view) that when we are
+//		// launched from the task manager
+//		// as opposed to from any other vector we dont go through new
+//		// onNewIntent. We transition directly
+//		// from onStop() to onRestart(). In this case we need to set
+//		// isForeground explicitly here.
+//		// We also have to handle another fucked up Android bug where if the
+//		// screen is off it takes us through:
+//		// restart, start, resume, pause, then onNewIntent.
+//		if (lastState.startsWith("onStop") && !screenIsOff()) {
+//			Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
+//			// Budge go get around the fact that we dont get an intent here.
+//			handleUserLaunchIntent(this);
+//		}
+//
+//		if (videoRecorder != null)
+//			videoRecorder.restore();
+//		lastState = "onRestart";
+//	}
 
 	@Override
 	protected void onPause() {
@@ -168,7 +168,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		super.onStop();
 		if (pd != null)
 			pd.dismiss();
+		
 		unbindService(conn);
+		
 		Log.e(TAG, "onStop: state");
 		abortAnyRecording(); // really as no effect when called here since the
 								// surfaces will have been destroyed and the
@@ -192,7 +194,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		return !pm.isScreenOn();
 	}
 
-	private void onLoadComplete() {
+	public void onLoadComplete() {
 		// Note Boot.boot must complete successfully before we continue the home
 		// activity.
 		// Boot will start the registrationActivity and return false if needed.

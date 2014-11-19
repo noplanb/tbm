@@ -97,7 +97,7 @@
         <service android:name=".GcmIntentService" />
         
                 <service
-            android:name="com.noplanbees.tbm.DataHolderService"/>
+            android:name="com.noplanbees.tbm.DataHolderService" />
         
     </application>
 

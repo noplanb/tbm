@@ -21,7 +21,10 @@ public class TbmApplication extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		Log.d(TAG, "onCreate");
 		application = this;
+		
+		
 		startService(new Intent(this, DataHolderService.class));
 		
 		registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {

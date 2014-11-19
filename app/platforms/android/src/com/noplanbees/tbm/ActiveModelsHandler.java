@@ -13,7 +13,7 @@ public class ActiveModelsHandler {
 	private FriendFactory ff;
 	private VideoFactory vf;
 	private GridElementFactory gf;
-
+	
 	private Context context;
 
 	private ActiveModelsHandler(Context context) {
@@ -25,20 +25,22 @@ public class ActiveModelsHandler {
 			activeModelsHandler = new ActiveModelsHandler(context);
 		return activeModelsHandler;
 	}
-
+	
 	public void ensureAll(){
 		ensureUser();
 		ensureFriend();
 		ensureVideo();
 		ensureGridElement();
+		Log.d(TAG, "ensureAll end");
 	}
-	
+
 	public void saveAll(){
 		saveUser();
 		saveFriend();
 		Log.i(TAG, "saveAll: saving " + VideoFactory.getFactoryInstance().count() + "videos");
 		saveVideo();
 		saveGridElement();
+		Log.i(TAG, "saveAll end");
 	}
 	
 	public void retreiveAll(){
