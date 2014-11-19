@@ -7,21 +7,24 @@ Features
 - Get the users profile for filling in name and phone number in reg. see http://developer.android.com/guide/topics/providers/contacts-provider.html
 - Registration pre populate first last phone using ContactsContract.Profile.
 - If donwloading when user clicks play dont play toast downloading
+- Limit sms contacts to 20.
 
 Bugs
-- Limit sms contacts to 20.
+- Invitation
+  - Cancel on send link or any other point should not connect you to the friend.
+  - Use the has_app api in the invite flow
+  - Handle auth errors and other errors in the invite flow.
 - Shortcut icon duplicates on motoG.
-- Cancel on send link should not connect you to the friend.
-- Sms takes a long time and bench is not populated.
+- Sms takes a long time and bench is not populated. So pulling out the bench before it is ready shows as unpopulated.
 - When laying out the grid make sure we have enough vertical space as well as setting the horizontal space.
 - Some indication that the file will fail permanently Upload and download.
-- Make bluetooth duck work for record as well as playback.
-- Try setting audioManager to voice call.
-- Launch icon says tbm instead of three by me
+- Bluetooth
+  - Make bluetooth duck work for record as well as playback.
+  - Try setting audioManager to voice call.
+
 - First name should have last initial if there are more than one of the same. Work to distinguish them Mike Sample and Mike Smedberg.
 
 - Flashing screen when app should be in background.
-- Kon sees video too short notification. Has to reboot the phone to make it stop happening. Then it comes back sometime later.
 - Try adding backgroundFlag to our intents to see if it helps prevent the app from popping into the foreground and whether it keeps the app in the task manager. 
 - Our app flashes on the screen when video comes in even if app is in the background.
 - Alarm indicator
