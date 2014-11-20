@@ -55,21 +55,20 @@ public class SmsStatsHandler {
 	private ArrayList<LinkedTreeMap<String, String>> rankedPhoneData;
 	
 	private SmsManagerCallback delegate;
+	
+	private boolean wasCalledAsync;
 
 	//------------
 	// Constructor
 	//------------
-	public SmsStatsHandler(Context c, SmsManagerCallback d){
-		instance = this;
+	private SmsStatsHandler(Context c){
 		context = c;
-		setDelegate(d);
-		(new GetRankedPhoneDataAsync()).execute();
 	}
     
 	// Singleton instance.
 	public static SmsStatsHandler getInstance(Context c, SmsManagerCallback d){
 		if (instance == null)
-			instance = new SmsStatsHandler(c,d);
+			instance = new SmsStatsHandler(c);
         
 		instance.setDelegate(d);
 		return instance;		
@@ -87,6 +86,9 @@ public class SmsStatsHandler {
 	}
 
 
+	public boolean isWasCalledAsync() {
+		return wasCalledAsync;
+	}
 	//-------------------------------------------------
 	// Ranking phone data by frequency of text messages
 	//-------------------------------------------------
@@ -101,6 +103,7 @@ public class SmsStatsHandler {
 			setMessagesCursor();
 			rankPhoneData();
 			printRankedPhoneData();
+			wasCalledAsync = true;
 			return null;
 		}
 		

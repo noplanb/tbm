@@ -16,7 +16,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
-public class ActiveModelFactory {
+public abstract class ActiveModelFactory {
 	private String TAG = this.getClass().getSimpleName();
 
 	public ArrayList<ActiveModel> instances = new ArrayList<ActiveModel>();
@@ -24,12 +24,7 @@ public class ActiveModelFactory {
 	//--------------------
 	// Factory
 	//--------------------
-	protected ActiveModel makeInstance(Context context){
-		ActiveModel i = new ActiveModel();
-		i.init(context);
-		instances.add(i);
-		return i;
-	}
+	abstract protected ActiveModel makeInstance(Context context);
 
 	public void destroyAll(Context context){
 		instances.clear();

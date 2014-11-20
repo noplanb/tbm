@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.FrameLayout;
+
 
 public class GridElementFactory extends ActiveModelFactory {
 
@@ -17,7 +17,7 @@ public class GridElementFactory extends ActiveModelFactory {
 	}
 
 	@Override
-	protected GridElement makeInstance(Context context) {
+	public GridElement makeInstance(Context context) {
 		GridElement i = new GridElement();
 		i.init(context);
 		instances.add(i);

@@ -1,6 +1,5 @@
 package com.noplanbees.tbm;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,11 +11,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.VideoView;
 
+
 public class VideoPlayer implements OnCompletionListener{
 	String TAG = this.getClass().getSimpleName();
 	
 	GridElement gridElement;
-	Activity activity;
+	Context context;
 	VideoView videoView;
 	ImageView thumbView;
 	String videoId;
@@ -61,7 +61,7 @@ public class VideoPlayer implements OnCompletionListener{
 	public static Boolean isPlaying(String friendId){
 		Boolean r = false;
 		GridElement ge = GridElementFactory.instance.findWithFriendId(friendId);
-		if (ge != null)
+		if (ge != null && ge.videoView != null)
 			r = ge.videoView.isPlaying();
 		return r;
 	}
@@ -74,7 +74,7 @@ public class VideoPlayer implements OnCompletionListener{
 	
 	public VideoPlayer(GridElement ge) {
 		gridElement = ge;
-		activity = gridElement.activity;
+		this.context = gridElement.context;
 		videoView = gridElement.videoView;
 		videoView.setOnCompletionListener(this);
 		
@@ -115,7 +115,7 @@ public class VideoPlayer implements OnCompletionListener{
 		if (friend().videoFromFile(videoId).length() > 100){
 			videoView.setVideoPath(friend().videoFromPath(videoId));
 			hideThumb();
-			AudioManager am = (AudioManager) activity.getSystemService(Activity.AUDIO_SERVICE);
+			AudioManager am = (AudioManager) this.context.getSystemService(Activity.AUDIO_SERVICE);
 			am.setBluetoothScoOn(true);
 			videoView.start();		
 		} else {
@@ -125,7 +125,7 @@ public class VideoPlayer implements OnCompletionListener{
 	
 	public void stop(){
 		Log.i(TAG, "stop");
-		VideoPlayer.restoreExistingBluetooth(activity);
+		VideoPlayer.restoreExistingBluetooth(context);
 		VideoPlayer.stopAll();
 	}
 

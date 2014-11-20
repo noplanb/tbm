@@ -1,11 +1,11 @@
 package com.noplanbees.tbm;
 
-import android.app.Activity;
 import android.content.Context;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.VideoView;
+
 
 public class GridElement extends ActiveModel {
 
@@ -23,7 +23,7 @@ public class GridElement extends ActiveModel {
 		return a;
 	}
 	
-	public Activity activity;
+	public Context context;
 	public VideoView videoView;
 	public ImageView thumbView;
 	public TextView nameText; 
@@ -33,7 +33,7 @@ public class GridElement extends ActiveModel {
 	@Override
 	public void init(Context context) {
 		super.init(context);
-		activity = (Activity) context;
+		this.context = context;
 	}
 	
 	public Friend friend(){

@@ -45,16 +45,16 @@ public class FriendGetter {
 	class GetFriends extends Server{
 		public GetFriends(String uri, LinkedTreeMap<String, String>params){
 			super(uri, params);
-			progress.show();
+			//progress.show();
 		}
 		@Override
 		public void success(String response) {	
-			progress.dismiss();
+			//progress.dismiss();
 			gotFriends(context, response);
 		}
 		@Override
 		public void error(String errorString) {
-			progress.dismiss();
+			//progress.dismiss();
 			serverError();
 		}
 	}

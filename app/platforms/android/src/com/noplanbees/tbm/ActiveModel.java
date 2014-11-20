@@ -7,7 +7,7 @@ import com.google.gson.internal.LinkedTreeMap;
 
 
 
-public class ActiveModel {
+public abstract class ActiveModel {
 	protected final String TAG = this.getClass().getSimpleName();
 
 	public LinkedTreeMap<String, String> attributes = new LinkedTreeMap<String, String>();

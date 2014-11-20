@@ -17,7 +17,6 @@ import android.media.MediaRecorder;
 import android.os.Build;
 import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
 
@@ -43,16 +42,47 @@ public class VideoRecorder {
 	private SurfaceHolder previewSurfaceHolder; 
 	private SurfaceHolder overlaySurfaceHolder;
 	private MediaRecorder mediaRecorder;
-	private SurfaceView previewSurface;
-	private SurfaceView overlaySurface;
+	private CameraPreview previewSurface;
+	private CameraOverlay overlaySurface;
 	private TextView previewText;
+
+	private Friend currentFriend;
 
 	public VideoRecorder(HomeActivity a) {
 		activity = a;
 		context = activity.getApplicationContext();
-		previewSurface = (SurfaceView) activity.findViewById(R.id.camera_preview_surface);
-		overlaySurface = (SurfaceView) activity.findViewById(R.id.camera_overlay_surface);
+		previewSurface = (CameraPreview) activity.findViewById(R.id.camera_preview_surface);
+		overlaySurface = (CameraOverlay) activity.findViewById(R.id.camera_overlay_surface);
 		previewText = (TextView) activity.findViewById(R.id.previewText);
+	}
+	
+	public void registerListeners(){
+		previewSurface.setChangeListener(new SurfaceChangeListener() {
+			@Override
+			public void onSurfaceDestroyed() {
+				previewSurfaceDestroyed();
+			}
+			
+			@Override
+			public void onSurfaceCreated(SurfaceHolder holder) {
+				previewSurfaceCreated(holder);
+			}
+		});
+		overlaySurface.setChangeListener(new SurfaceChangeListener() {
+			@Override
+			public void onSurfaceDestroyed() {
+			}
+			
+			@Override
+			public void onSurfaceCreated(SurfaceHolder holder) {
+				overlaySurfaceCreated(holder);
+			}
+		});
+	}
+	
+	public void unregisterListeners(){
+		previewSurface.setChangeListener(null);
+		overlaySurface.setChangeListener(null);
 	}
 
 	// --------------
@@ -65,7 +95,7 @@ public class VideoRecorder {
 		videoRecorderExceptionHandler = handler;
 	}
 	
-	public boolean stopRecording(Friend friend) {
+	public boolean stopRecording() {
 		Log.i(TAG, "stopRecording");
 		boolean rval = false;
 		hideRecordingIndicator(); // It should be safe to call this even if the sufraces have already been destroyed.
@@ -78,8 +108,8 @@ public class VideoRecorder {
 				mediaRecorder.stop();
 				rval = true;
 				Log.i(TAG, String.format("Recorded file %s : %d",Config.recordingFilePath(context), Config.recordingFile(context).length()));
-				if (friend != null)
-					moveRecordingToFriend(friend);
+				if (currentFriend != null)
+					moveRecordingToFriend(currentFriend);
 			} catch (IllegalStateException e) {
 				Log.e(TAG, "stopRecording: IllegalStateException: " + e.toString());
  				rval = false;
@@ -97,13 +127,15 @@ public class VideoRecorder {
 		return rval;
 	}
 
-	public boolean startRecording() {
+	public boolean startRecording(Friend f) {
 		Log.i(TAG, "startRecording");
+		
+		this.currentFriend = f;
 
 		if (mediaRecorder == null){
 			Log.e(TAG, "startRecording: ERROR no mediaRecorder this should never happen.");
 			prepareMediaRecorder();
-			return false;
+			//return false;
 		}
 		
 		try {
@@ -169,7 +201,7 @@ public class VideoRecorder {
     // Surface callbacks
 	// -----------------
 	public void previewSurfaceCreated(SurfaceHolder holder) {
-		Log.i(TAG, "cameraPreviewSurfaceCreated");
+		Log.i(TAG, "cameraPreviewSurfaceCreated + " + holder);
 		previewSurfaceHolder = holder;
 		
 		Camera camera = CameraManager.getCamera(context);
@@ -186,11 +218,16 @@ public class VideoRecorder {
 		}
        	
 		camera.startPreview();
-		prepareMediaRecorder();
-		overlaySurface.bringToFront();
+		//prepareMediaRecorder();
+		//overlaySurface.bringToFront();
 	}
 
-	public void previewSurfaceDestroyed(SurfaceHolder holder){
+	public void previewSurfaceDestroyed(){
+		stopRecording();
+		Camera camera = CameraManager.getCamera(context);
+		if (camera == null)
+			return;
+		camera.stopPreview();
 		release();
 	}
 

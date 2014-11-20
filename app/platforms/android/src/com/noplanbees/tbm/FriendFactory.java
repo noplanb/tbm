@@ -2,16 +2,13 @@ package com.noplanbees.tbm;
 
 import java.util.ArrayList;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import com.noplanbees.tbm.Friend.Attributes;
+import com.noplanbees.tbm.Friend.VideoStatusChangedCallback;
 
 public class FriendFactory extends ActiveModelFactory{
 	private final String TAG = getClass().getSimpleName();

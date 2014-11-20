@@ -52,6 +52,11 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		setupSwipeTouchListener();
 	}
 	
+	public void onDataLoaded(){
+		if(!smsStatsHandler.isWasCalledAsync())
+			smsStatsHandler.getRankedPhoneData();
+	}
+	
 	public void callSms(){
 		smsStatsHandler.getRankedPhoneData();
 	}

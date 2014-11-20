@@ -1,7 +1,5 @@
 package com.noplanbees.tbm;
 
-import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
-
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +8,8 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.PowerManager;
 import android.util.Log;
+
+import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
 
 public class IntentHandler {
 	
@@ -27,11 +27,11 @@ public class IntentHandler {
 	private final String TAG = this.getClass().getSimpleName();
 	private final static String STAG = IntentHandler.class.getSimpleName();
 	
-	public static final int RESULT_RUN_IN_BACKGROUND = 0;
-	public static final int RESULT_RUN_IN_FOREGROUND = 1;
+//	public static final int RESULT_RUN_IN_BACKGROUND = 0;
+//	public static final int RESULT_RUN_IN_FOREGROUND = 1;
 	public static final int RESULT_FINISH = 2; // not used
 
-	private HomeActivity homeActivity;
+	private Context context;
 	private Intent intent;
 	private Friend friend;
 	private String transferType;
@@ -39,9 +39,9 @@ public class IntentHandler {
 	private RemoteStorageHandler rSHandler;
 	private int status;
 
-	public IntentHandler(HomeActivity a, Intent i){
+	public IntentHandler(Context context, Intent i){
 		// Convenience.printBundle(i.getExtras());
-		homeActivity = a;
+		this.context = context;
 		intent = i;
 		friend = FriendFactory.getFactoryInstance().getFriendFromIntent(intent);
 		transferType = intent.getStringExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY);
@@ -58,22 +58,24 @@ public class IntentHandler {
 			handleDownloadIntent();
 		} else if (isUploadIntent()){
 			handleUploadIntent();
-		} else {
-			handleUserLaunchIntent(homeActivity);
-		}
+		} 
+//		else {
+//			handleUserLaunchIntent(context);
+//		}
 		return getReturnResult();
 	}
 
 	private Integer getReturnResult() {
-		if ( !isBackgroundIntent() ){
-			return RESULT_RUN_IN_FOREGROUND;
-		} else {
-			if (homeActivity.isForeground){
-				return RESULT_RUN_IN_FOREGROUND;
-			} else {
-				return RESULT_RUN_IN_BACKGROUND;
-			}
-		}
+		return null;
+//		if ( !isBackgroundIntent() ){
+//			return RESULT_RUN_IN_FOREGROUND;
+//		} else {
+//			if (TbmApplication.getInstance().isForeground()){
+//				return RESULT_RUN_IN_FOREGROUND;
+//			} else {
+//				return RESULT_RUN_IN_BACKGROUND;
+//			}
+//		}
 	}
 
 	//------------
@@ -96,12 +98,12 @@ public class IntentHandler {
 	}
 	
 	private Boolean screenIsOff(){
-		PowerManager pm = (PowerManager) homeActivity.getSystemService(Context.POWER_SERVICE);
+		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
 		return !pm.isScreenOn();
 	}
 	
 	private Boolean screenIsLocked(){
-		KeyguardManager km = (KeyguardManager) homeActivity.getSystemService(Context.KEYGUARD_SERVICE);
+		KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
 		return (Boolean) km.inKeyguardRestrictedInputMode();
 	}
 	
@@ -111,25 +113,14 @@ public class IntentHandler {
 
 	private void printState(){
 		//Convenience.printRunningTaskInfo(homeActivity);
-		Log.i(TAG,"isForeground=" + homeActivity.isForeground.toString());
+		Log.i(TAG,"isForeground=" + TbmApplication.getInstance().isForeground());
 		Log.e(TAG, "is Background intent=" + isBackgroundIntent().toString());
 		Log.i(TAG,"screenIsOff=" + screenIsOff().toString());
 		Log.i(TAG,"screenIsLocked=" + screenIsLocked().toString());
-		Log.i(TAG,"numActivities=" + Convenience.numActivitiesInOurTask(homeActivity));
+		Log.i(TAG,"numActivities=" + Convenience.numActivitiesInOurTask(context));
 	}
 	
 
-	//--------------------------
-	// Handle user launch intent 
-	//--------------------------
-	public static void handleUserLaunchIntent(HomeActivity homeActivity) {
-		Log.i(STAG, "handleUserLaunchIntent");
-		FileUploadService.restartTransfersPendingRetry(homeActivity);
-		FileDownloadService.restartTransfersPendingRetry(homeActivity);
-		NotificationAlertManager.cancelNativeAlerts(homeActivity);
-		(new Poller(homeActivity)).pollAll();
-	}
-	
 	//---------------------
 	// Handle upload intent 
 	//---------------------
@@ -161,10 +152,10 @@ public class IntentHandler {
 		// We may be getting a message from someone who is not a friend yet. Get new friends and poll them all.
 		if (friend == null){
 			Log.i(TAG, "Got Video from a user who is not currently a friend. Getting friends.");
-			new FriendGetter(homeActivity, false, new FriendGetterCallback(){
+			new FriendGetter(context, false, new FriendGetterCallback(){
 				@Override
 				public void gotFriends() {
-					new Poller(homeActivity).pollAll();
+					new Poller(context).pollAll();
 				}	
 			});
 			return;
@@ -177,7 +168,7 @@ public class IntentHandler {
 		
 		if (status == Video.IncomingVideoStatus.NEW){
 			// Create the video
-			friend.createIncomingVideo(homeActivity, videoId);	
+			friend.createIncomingVideo(context, videoId);	
 			// Download only if we did not have this videoId before this intent.
 			friend.downloadVideo(intent);
 		}
@@ -187,18 +178,18 @@ public class IntentHandler {
 		if (status == Video.IncomingVideoStatus.DOWNLOADED){
 			friend.createThumb(videoId);
 			
-			GridManager.moveFriendToGrid(homeActivity,friend);
-			
 			if (!VideoPlayer.isPlaying(friend.getId()))
 				friend.deleteAllViewedVideos();
 			
-			if (!homeActivity.isForeground || screenIsLockedOrOff()){
-				NotificationAlertManager.alert(homeActivity, friend, videoId);
+			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()){
+				NotificationAlertManager.alert(context, friend, videoId);
 			} else {
-				if (!VideoPlayer.isPlaying(friend.getId())){
-					VideoPlayer.refreshThumbWithFriendId(friend.getId());
-					playNotificationTone();
-				}
+				FriendFactory.getFactoryInstance().notifyStatusChanged(friend);
+//				if (!VideoPlayer.isPlaying(friend.getId())){
+//					VideoPlayer.refreshThumbWithFriendId(friend.getId());
+//					playNotificationTone();
+//				}
+				playNotificationTone();
 			}
 			
 			rSHandler.deleteRemoteVideoIdAndFile(friend, videoId);
@@ -213,7 +204,7 @@ public class IntentHandler {
 	
 	private void playNotificationTone(){
 		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		Ringtone r = RingtoneManager.getRingtone(homeActivity.getApplicationContext(), notification);
+		Ringtone r = RingtoneManager.getRingtone(context.getApplicationContext(), notification);
 		r.play();
 	}
 	

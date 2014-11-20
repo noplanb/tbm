@@ -5,10 +5,14 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
@@ -27,6 +31,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.noplanbees.tbm.DataHolderService.LocalBinder;
 import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
 
 public class RegisterActivity extends Activity{
@@ -50,6 +55,21 @@ public class RegisterActivity extends Activity{
 	private EditText mobileNumberTxt;
 	private EditText verificationCodeTxt;
 
+	private ProgressDialog pd;
+	protected ActiveModelsHandler activeModelsHandler;
+	private ServiceConnection conn = new ServiceConnection() {
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			activeModelsHandler = null;
+		}
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			activeModelsHandler = ((LocalBinder) service).getActiveModelsHandler();
+
+			onLoadComplete();
+		}
+	};
 
 	//----------
 	// LifeCycle
@@ -58,7 +78,6 @@ public class RegisterActivity extends Activity{
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-		init();
 		setContentView(R.layout.register);
 		setupListeners();
 		setupProgressDialog();
@@ -66,18 +85,37 @@ public class RegisterActivity extends Activity{
 	}
 
 	@Override
+	protected void onStart() {
+		super.onStart();
+		pd = ProgressDialog.show(this, "Data", "retrieving data...");
+		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
+	}
+	
+	@Override
 	protected void onResume(){
 		super.onResume();
 		setUpView();
 		new VersionHandler(this);
 	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		if(pd != null)
+			pd.dismiss();
+		unbindService(conn);
+	}
 
+	private void onLoadComplete(){
+		init();
+		pd.dismiss();
+	}
 
 	//-----
 	// Init
 	//-----
 	private void init(){
-		userFactory = UserFactory.getFactoryInstance();
+		userFactory = activeModelsHandler.getUf();
 		userFactory.destroyAll(this);
 		user = userFactory.makeInstance(this);
 	}
@@ -99,7 +137,8 @@ public class RegisterActivity extends Activity{
 	private void prefillTextFields() {
 		Contact contact = new ContactsManager(this).userProfile(this);
 		Log.i(TAG, "profile: " + contact);
-		if (contact == null)
+		
+		if(contact == null)
 			return;
 		
 		if (contact.getFirstName() != null)
@@ -384,7 +423,7 @@ public class RegisterActivity extends Activity{
 
 	private void regComplete() {
 		UserFactory.current_user().set(User.Attributes.REGISTERED, "true");
-		ActiveModelsHandler.saveAll(this);
+		activeModelsHandler.saveAll();
 		Intent i = new Intent(this, HomeActivity.class);
 		startActivity(i);
 		finish();
@@ -453,4 +492,4 @@ public class RegisterActivity extends Activity{
 	}
 
 
-}
+}

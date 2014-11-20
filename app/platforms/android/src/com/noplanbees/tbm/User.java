@@ -33,13 +33,13 @@ public class User extends ActiveModel{
 	}
 	
 	public static boolean isRegistered(Context context){
-		UserFactory uf = ActiveModelsHandler.ensureUser(context);
+		UserFactory uf = ActiveModelsHandler.getInstance(context).ensureUser();
 		return uf.hasInstances() && uf.instances.get(0).get(User.Attributes.REGISTERED).startsWith("t");
 	}
 	
 	public static String userId(Context context){
 		String id = null;
-		UserFactory uf = ActiveModelsHandler.ensureUser(context);
+		UserFactory uf = ActiveModelsHandler.getInstance(context).ensureUser();
 		if (uf.hasInstances()){
 			id = uf.instances.get(0).getId();
 		}
@@ -67,7 +67,7 @@ public class User extends ActiveModel{
     	try {
     		r = PhoneNumberUtil.getInstance().parse(get(Attributes.MOBILE_NUMBER), "US");
     	} catch (NumberParseException e) {
-			Log.e(TAG, "ERROR: " + get(Attributes.MOBILE_NUMBER) + ":  NumberParseException was thrown: " + e.toString());
+			//Log.e(TAG, "ERROR: " + get(Attributes.MOBILE_NUMBER) + ":  NumberParseException was thrown: " + e.toString());
     	}
     	return r;
     }

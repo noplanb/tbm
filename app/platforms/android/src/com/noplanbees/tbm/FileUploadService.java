@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+
 public class FileUploadService extends FileTransferService {
 	private final String TAG = getClass().getSimpleName();
 	private static final String STAG = FileTransferService.class.getSimpleName();
