@@ -90,7 +90,8 @@ public class DataHolderService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.i(TAG, "onStartCommand flags=" + flags + " startId=" + startId);
 
-	    onStart(intent, startId);
+		if(intent!=null)
+			onStart(intent, startId);
 	    // If service is stopped when the queue still has intents that have not been handled.
 	    // It will restart and redeliver the intents for which we did not send a stopSelf(startId).
 	    return START_STICKY;
