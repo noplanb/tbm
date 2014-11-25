@@ -18,7 +18,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.PowerManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -53,9 +52,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private SmsStatsHandler smsStatsHandler;
 
 	private FrameLayout cameraPreviewFrame;
-
-	private String lastState;
-	private Intent currentIntent;
 
 	private ArrayList<VideoView> videoViews = new ArrayList<VideoView>(8);
 	private ArrayList<ImageView> thumbViews = new ArrayList<ImageView>(8);
@@ -93,8 +89,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		super.onCreate(savedInstanceState);
 		setupWindow();
 		setContentView(R.layout.home);
-		currentIntent = getIntent();
-		lastState = "onCreate";
 		
 		CameraManager.addExceptionHandlerDelegate(this);
 		VideoRecorder.addExceptionHandlerDelegate(this);
@@ -110,7 +104,13 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		Log.i(TAG, "onApplyThemeResource" + theme.toString() + " resid=" + resid);
 		super.onApplyThemeResource(theme, resid, first);
 	}
-
+	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		setIntent(intent);
+	}
+	
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -131,36 +131,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		setupVersionHandler();
 	}
 
-//	@Override
-//	protected void onRestart() {
-//		super.onRestart();
-//		Log.e(TAG, "onRestart: state");
-//
-//		// To handle the fucked up Android (bug in my view) that when we are
-//		// launched from the task manager
-//		// as opposed to from any other vector we dont go through new
-//		// onNewIntent. We transition directly
-//		// from onStop() to onRestart(). In this case we need to set
-//		// isForeground explicitly here.
-//		// We also have to handle another fucked up Android bug where if the
-//		// screen is off it takes us through:
-//		// restart, start, resume, pause, then onNewIntent.
-//		if (lastState.startsWith("onStop") && !screenIsOff()) {
-//			Log.e(TAG, "onRestart: moving to foreground because last state was stop and screen was on.");
-//			// Budge go get around the fact that we dont get an intent here.
-//			handleUserLaunchIntent(this);
-//		}
-//
-//		if (videoRecorder != null)
-//			videoRecorder.restore();
-//		lastState = "onRestart";
-//	}
-
 	@Override
 	protected void onPause() {
 		super.onPause();
 		Log.e(TAG, "onPause: state");
-		lastState = "onPause";
 	}
 
 	@Override
@@ -180,18 +154,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			longpressTouchHandler.disable(true);
 
 		VideoPlayer.release(this);
-		lastState = "onStop";
 	}
 
 	@Override
 	protected void onDestroy() {
 		Log.e(TAG, "onDestroy: state");
 		super.onDestroy();
-	}
-
-	private Boolean screenIsOff() {
-		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		return !pm.isScreenOn();
 	}
 
 	public void onLoadComplete() {
@@ -211,7 +179,6 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			runTests();
 			setupLongPressTouchHandler();
 			longpressTouchHandler.enable();
-			lastState = "onStart";
 			ensureListeners();
 
 			Boot.initGCM(this);
@@ -236,7 +203,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// got here by clicking a notification.
 		// 2) to notify the user if there was a problem sending Sms invite to a
 		// friend. (Not used as decided this is unnecessarily disruptive)
-		Log.i(TAG, "handleIntentAction: " + currentIntent.toString());
+		Intent currentIntent = getIntent();
+		Log.i(TAG, "handleIntentAction: " + currentIntent .toString());
 		if (currentIntent == null) {
 			Log.i(TAG, "handleIntentAction: no intent. Exiting.");
 			return;

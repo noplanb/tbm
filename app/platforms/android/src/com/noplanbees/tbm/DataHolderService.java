@@ -90,17 +90,8 @@ public class DataHolderService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.i(TAG, "onStartCommand flags=" + flags + " startId=" + startId);
 
-		if (intent.getAction() != null && intent.getAction().equals("INTERRUPT")){
-			// Let the interrupt take effect immediately to interrupt a transfer waiting on a long retry delay. 
-			// But also add the interrupt intent to the queue so that when it comes up we can call stop self in turn
-			// it is important that stopSelf is called in order for each intent that comes in because 
-			// android tracks them for the purpose of START_REDELIVER_INTENT. Calling stop self out of order
-			// can have unknown consequences.
-			Log.i(TAG, "onStart: Got a request to INTERRUPT");
-	        mServiceLooper.getThread().interrupt();
-		}
-		
-	    onStart(intent, startId);
+		if(intent!=null)
+			onStart(intent, startId);
 	    // If service is stopped when the queue still has intents that have not been handled.
 	    // It will restart and redeliver the intents for which we did not send a stopSelf(startId).
 	    return START_STICKY;
