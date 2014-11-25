@@ -13,6 +13,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import com.noplanbees.tbm.utilities.Logger;
+
 
 public class DataHolderService extends Service {
 	private final String TAG = this.getClass().getSimpleName();

@@ -1,7 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;

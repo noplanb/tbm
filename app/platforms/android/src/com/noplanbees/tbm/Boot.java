@@ -1,5 +1,6 @@
 package com.noplanbees.tbm;
 
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
@@ -7,15 +8,15 @@ import android.util.Log;
 public class Boot {
 	public static final String TAG = "Boot";
 	
-	public static boolean boot(HomeActivity homeActivity){
+	public static boolean boot(Context context){
 		Log.i(TAG, "boot");
 		//--------------------------
 		// Check registration
 		//--------------------------
-		if (!User.isRegistered(homeActivity)) {
+		if (!User.isRegistered(context)) {
 			Log.i(TAG, "Not registered. Starting RegisterActivty");
-			Intent i = new Intent(homeActivity, RegisterActivity.class);
-			homeActivity.startActivity(i);
+			Intent i = new Intent(context, RegisterActivity.class);
+			context.startActivity(i);
 			Log.i(TAG, "Exiting boot");
 			return false;
 		}

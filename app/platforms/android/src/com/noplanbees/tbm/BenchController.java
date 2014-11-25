@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Point;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -63,7 +64,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
 	private void setupFrame() {
 		benchLayout = (RelativeLayout) activity.findViewById(R.id.bench_frame);
-		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(benchWidth(), windowSize().y);
+		DrawerLayout.LayoutParams lp = new DrawerLayout.LayoutParams(benchWidth(), windowSize().y);
 		benchLayout.setLayoutParams(lp);
 		benchLayout.setX(hiddenX());
 		isShowing = false;

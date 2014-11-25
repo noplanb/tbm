@@ -177,9 +177,10 @@ public class IntentHandler {
 
 		if (status == Video.IncomingVideoStatus.DOWNLOADED){
 			friend.createThumb(videoId);
-			
-			if (!VideoPlayer.isPlaying(friend.getId()))
-				friend.deleteAllViewedVideos();
+
+			//TODO: need rewrite this part
+//			if (!VideoPlayer.isPlaying(friend.getId()))
+//				friend.deleteAllViewedVideos();
 			
 			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()){
 				NotificationAlertManager.alert(context, friend, videoId);

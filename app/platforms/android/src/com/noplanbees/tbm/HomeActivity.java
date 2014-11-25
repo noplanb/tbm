@@ -79,6 +79,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	};
 
 	private ProgressDialog pd;
+	private VideoPlayer videoPlayer;
 
 	// --------------
 	// App lifecycle
@@ -97,6 +98,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		
 		gcmHandler = new GcmHandler(this);
 		benchController = new BenchController(this);
+		
+		videoPlayer = new VideoPlayer(this);
 	}
 
 	@Override
@@ -153,7 +156,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		if (longpressTouchHandler != null)
 			longpressTouchHandler.disable(true);
 
-		VideoPlayer.release(this);
+		videoPlayer.release(this);
 	}
 
 	@Override
@@ -175,10 +178,9 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			setupGrid();
 			getVideoViewsAndPlayers();
 			initViews();
-			setupVideoStatusChangedCallbacks();
+			activeModelsHandler.getFf().addVideoStatusChangedCallbackDelegate(this);
 			runTests();
 			setupLongPressTouchHandler();
-			longpressTouchHandler.enable();
 			ensureListeners();
 
 			Boot.initGCM(this);
@@ -224,7 +226,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		if (action.equals(IntentHandler.IntentActions.PLAY_VIDEO) && !NotificationAlertManager.screenIsLocked(this)) {
 			currentIntent.setAction(IntentHandler.IntentActions.NONE);
-			activeModelsHandler.getGf().findWithFriendId(friendId).videoPlayer.start();
+			videoPlayer.play(friendId);
 		}
 
 		// Not used as I decided pending intent coming back from sending sms is
@@ -331,7 +333,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			ge.videoView = videoViews.get(i);
 			ge.thumbView = thumbViews.get(i);
 			ge.nameText = nameTexts.get(i);
-			ge.videoPlayer = new VideoPlayer(ge);
+			//ge.videoPlayer = new VideoPlayer(ge);
 			i++;
 		}
 	}
@@ -353,11 +355,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			}
 			i++;
 		}
-		VideoPlayer.showAllThumbs();
-	}
-
-	private void setupVideoStatusChangedCallbacks() {
-		activeModelsHandler.getFf().addVideoStatusChangedCallbackDelegate(this);
+		//videoPlayer.showAllThumbs();
 	}
 
 	private void setVideoViewHeights(int width, int height) {
@@ -421,6 +419,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			}
 		};
 
+		longpressTouchHandler.enable();
+
 		// Add gridElement boxes as valid targets.
 		for (GridElement ge : activeModelsHandler.getGf().all()) {
 			longpressTouchHandler.addTargetView(ge.frame);
@@ -431,7 +431,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	// Events
 	// -------
 	private void onRecordStart(View v) {
-		VideoPlayer.stopAll();
+		videoPlayer.stop();
 		hideAllCoveringViews();
 		GridElement ge = activeModelsHandler.getGf().getGridElementWithFrame(v);
 		if (!ge.hasFriend())
@@ -475,7 +475,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		Friend f = ge.friend();
 		Log.i(TAG, "onPlayClick" + f.get(Friend.Attributes.FIRST_NAME));
 		GridManager.rankingActionOccurred(f);
-		ge.videoPlayer.click();
+		//ge.videoPlayer.click();
 	}
 
 	@Override
@@ -488,7 +488,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 				GridElement ge = activeModelsHandler.getGf().findWithFriendId(friend.getId());
 				if (ge != null){
 					ge.nameText.setText(ge.friend().getStatusString());
-					ge.videoPlayer.refreshThumb();
+					//ge.videoPlayer.refreshThumb();
 				}
 			}
 		});
