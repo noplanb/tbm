@@ -32,9 +32,9 @@ public class GridElementFactory extends ActiveModelFactory {
 		return r;
 	}
 	
-	public GridElement getGridElementWithFrame(View v){
+	public GridElement getGridElementByFriendId(String friendId){
 		for (GridElement ge : all()){
-			if (ge.frame.getId() == v.getId())
+			if (ge.getFriendId().equals(friendId))
 				return ge;
 		}
 		return null;

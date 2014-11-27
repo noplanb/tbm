@@ -47,7 +47,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name="com.noplanbees.tbm.MainActivity"
+            android:name="com.noplanbees.tbm.ui.MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait" >

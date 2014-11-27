@@ -37,6 +37,7 @@ import com.noplanbees.tbm.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.DataHolderService.LocalBinder;
 import com.noplanbees.tbm.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
+import com.noplanbees.tbm.VideoRecorder.VideoRecorderExceptionHandler;
 
 public class HomeActivity extends Activity implements CameraExceptionHandler, VideoStatusChangedCallback,
 		VideoRecorderExceptionHandler, GridEventNotificationDelegate {
@@ -91,10 +92,10 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		setupWindow();
 		setContentView(R.layout.home);
 		
-		CameraManager.addExceptionHandlerDelegate(this);
-		VideoRecorder.addExceptionHandlerDelegate(this);
-		videoRecorder = new VideoRecorder(this);
-		videoRecorder.registerListeners();
+//		CameraManager.addExceptionHandlerDelegate(this);
+//		VideoRecorder.addExceptionHandlerDelegate(this);
+//		videoRecorder = new VideoRecorder(this);
+//		videoRecorder.registerListeners();
 		
 		gcmHandler = new GcmHandler(this);
 		benchController = new BenchController(this);
@@ -327,15 +328,15 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView6));
 		thumbViews.add((ImageView) findViewById(R.id.ThumbView7));
 
-		Integer i = 0;
-		for (GridElement ge : activeModelsHandler.getGf().all()) {
-			ge.frame = frames.get(i);
-			ge.videoView = videoViews.get(i);
-			ge.thumbView = thumbViews.get(i);
-			ge.nameText = nameTexts.get(i);
-			//ge.videoPlayer = new VideoPlayer(ge);
-			i++;
-		}
+//		Integer i = 0;
+//		for (GridElement ge : activeModelsHandler.getGf().all()) {
+//			ge.frame = frames.get(i);
+//			ge.videoView = videoViews.get(i);
+//			ge.thumbView = thumbViews.get(i);
+//			ge.nameText = nameTexts.get(i);
+//			//ge.videoPlayer = new VideoPlayer(ge);
+//			i++;
+//		}
 	}
 
 	private void initViews() {
@@ -423,7 +424,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 		// Add gridElement boxes as valid targets.
 		for (GridElement ge : activeModelsHandler.getGf().all()) {
-			longpressTouchHandler.addTargetView(ge.frame);
+			//longpressTouchHandler.addTargetView(ge.frame);
 		}
 	}
 
@@ -433,18 +434,18 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	private void onRecordStart(View v) {
 		videoPlayer.stop();
 		hideAllCoveringViews();
-		GridElement ge = activeModelsHandler.getGf().getGridElementWithFrame(v);
-		if (!ge.hasFriend())
-			return;
-
-		Friend f = ge.friend();
-		GridManager.rankingActionOccurred(f);
-		if (videoRecorder.startRecording(f)) {
-			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
-		} else {
-			Log.e(TAG, "onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
-			longpressTouchHandler.cancelGesture(true);
-		}
+//		GridElement ge = activeModelsHandler.getGf().getGridElementByFriendId(v);
+//		if (!ge.hasFriend())
+//			return;
+//
+//		Friend f = ge.friend();
+//		GridManager.rankingActionOccurred(f);
+//		if (videoRecorder.startRecording(f)) {
+//			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
+//		} else {
+//			Log.e(TAG, "onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
+//			longpressTouchHandler.cancelGesture(true);
+//		}
 	}
 
 	private void onRecordCancel() {
@@ -454,27 +455,27 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	}
 
 	private void onRecordStop(View v) {
-		GridElement ge = activeModelsHandler.getGf().getGridElementWithFrame(v);
-		if (!ge.hasFriend())
-			return;
-
-		Friend f = ge.friend();
-		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
-		if (videoRecorder.stopRecording()) {
-			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
-			f.uploadVideo();
-		}
+//		GridElement ge = activeModelsHandler.getGf().getGridElementByFriendId(v);
+//		if (!ge.hasFriend())
+//			return;
+//
+//		Friend f = ge.friend();
+//		Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
+//		if (videoRecorder.stopRecording()) {
+//			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
+//			f.uploadVideo();
+//		}
 	}
 
 	private void onPlayClick(View v) {
-		hideAllCoveringViews();
-		GridElement ge = activeModelsHandler.getGf().getGridElementWithFrame(v);
-		if (!ge.hasFriend())
-			return;
-
-		Friend f = ge.friend();
-		Log.i(TAG, "onPlayClick" + f.get(Friend.Attributes.FIRST_NAME));
-		GridManager.rankingActionOccurred(f);
+//		hideAllCoveringViews();
+//		GridElement ge = activeModelsHandler.getGf().getGridElementByFriendId(v);
+//		if (!ge.hasFriend())
+//			return;
+//
+//		Friend f = ge.friend();
+//		Log.i(TAG, "onPlayClick" + f.get(Friend.Attributes.FIRST_NAME));
+//		GridManager.rankingActionOccurred(f);
 		//ge.videoPlayer.click();
 	}
 
@@ -487,7 +488,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 				GridElement ge = activeModelsHandler.getGf().findWithFriendId(friend.getId());
 				if (ge != null){
-					ge.nameText.setText(ge.friend().getStatusString());
+//					ge.nameText.setText(ge.friend().getStatusString());
 					//ge.videoPlayer.refreshThumb();
 				}
 			}
@@ -597,8 +598,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 					}
 				}).setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
-						videoRecorder.dispose();
-						videoRecorder.restore();
+						//videoRecorder.dispose();
+						//videoRecorder.restore();
 						// ????
 					}
 				});

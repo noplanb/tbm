@@ -116,7 +116,7 @@ public class GridManager{
 			@Override
 			public void onAnimationEnd(Animator animation) {
 				Log.i(STAG, "onAnimationEnd");
-				ge.frame.removeView(v);
+				//ge.frame.removeView(v);
 			}
 			@Override
 			public void onAnimationStart(Animator animation) {}
@@ -128,7 +128,7 @@ public class GridManager{
 		
 		AnimatorSet as = new AnimatorSet();
 		as.play(a1).before(a2);
-		ge.frame.addView(v);
+		//ge.frame.addView(v);
 		as.start();
 	}
 }

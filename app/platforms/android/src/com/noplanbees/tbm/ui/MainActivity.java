@@ -1,4 +1,4 @@
-package com.noplanbees.tbm;
+package com.noplanbees.tbm.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -10,25 +10,33 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
+import com.noplanbees.tbm.ActiveModelsHandler;
+import com.noplanbees.tbm.BenchController;
+import com.noplanbees.tbm.Boot;
+import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.DataHolderService.LocalBinder;
-import com.noplanbees.tbm.ui.GridViewFragment;
+import com.noplanbees.tbm.GcmHandler;
+import com.noplanbees.tbm.NotificationAlertManager;
+import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.UserFactory;
+import com.noplanbees.tbm.VersionHandler;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements GridViewFragment.Callbacks {
 	private final static String TAG = "MainActivity";
 
 	private ProgressDialog pd;
-	private ActiveModelsHandler activeModelsHandler;
 
 	private ServiceConnection conn = new ServiceConnection() {
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
-			activeModelsHandler = null;
 		}
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			activeModelsHandler = ((LocalBinder) service).getActiveModelsHandler();
 
 			onLoadComplete();
 		}
@@ -36,15 +44,16 @@ public class MainActivity extends Activity {
 
 	private GcmHandler gcmHandler;
 	private BenchController benchController;
+
+	private VersionHandler versionHandler;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_activity);
 		
 		gcmHandler = new GcmHandler(this);
-
 		benchController = new BenchController(this);
-
+		versionHandler = new VersionHandler(this);
 	};
 
 	@Override
@@ -56,15 +65,31 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onStart() {
 		super.onStart();
+		Log.d(TAG, "onStart");
+		versionHandler.checkVersionCompatibility();		
 
 		pd = ProgressDialog.show(this, "Data", "retrieving data...");
 		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 
 		NotificationAlertManager.cancelNativeAlerts(this);
 	}
+	
+	@Override
+	protected void onResume() {
+		Log.d(TAG, "onResume");
+		super.onResume();
+	}
+	
+	@Override
+	protected void onPause() {
+		Log.d(TAG, "onPause");
+		super.onPause();
+	}
+	
 	@Override
 	protected void onStop() {
 		super.onStop();
+		Log.d(TAG, "onStop");
 		if (pd != null)
 			pd.dismiss();
 		
@@ -72,6 +97,7 @@ public class MainActivity extends Activity {
 	}
 	
 	private void onLoadComplete() {
+		Log.i(TAG, "onLoadComplete");
 		// Note Boot.boot must complete successfully before we continue the home
 		// activity.
 		// Boot will start the registrationActivity and return false if needed.
@@ -80,6 +106,9 @@ public class MainActivity extends Activity {
 			finish();
 			return;
 		} else {
+			if (pd != null)
+				pd.dismiss();
+
 			Fragment mainFragment = new GridViewFragment();
 			getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment).commit();
 			
@@ -88,9 +117,48 @@ public class MainActivity extends Activity {
 			} else {
 				Log.e(TAG, "No valid Google Play Services APK found.");
 			}
-		}
-		if (pd != null)
-			pd.dismiss();
 
+			benchController.onDataLoaded();
+
+		}
+
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu items for use in the action bar
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.home_menu, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@SuppressWarnings("null")
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle presses on the action bar items
+		switch (item.getItemId()) {
+		case R.id.action_bench:
+			benchController.toggle();
+			return true;
+		case R.id.action_get_contacts:
+			UserFactory.current_user().getCountryCode();
+			return true;
+		case R.id.action_get_sms:
+			benchController.callSms();
+			return true;
+		case R.id.action_reset:
+			ActiveModelsHandler.getInstance(this).destroyAll();
+			finish();
+			return true;
+		case R.id.action_crash:
+			throw new NullPointerException("simulate exception");
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	@Override
+	public void onFinish() {
+		finish();
 	}
 }

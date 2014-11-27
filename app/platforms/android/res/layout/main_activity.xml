@@ -1,48 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <android.support.v4.widget.DrawerLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/drawer_layout"
+    <!-- The main content view -->
+
+    <FrameLayout
+        android:id="@+id/content_frame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent" />
+    <!-- The navigation drawer -->
 
-        <!-- The main content view -->
+    <RelativeLayout
+        android:id="@+id/bench_frame"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:layout_gravity="end" >
 
-        <FrameLayout
-            android:id="@+id/content_frame"
+        <com.noplanbees.tbm.ContactsAutoCompleteTextView
+            android:id="@+id/contacts_auto_complete_text_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-        <!-- The navigation drawer -->
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:completionThreshold="1"
+            android:ems="10"
+            android:hint="Search"
+            android:textColor="@color/white" />
 
-        <RelativeLayout
-            android:id="@+id/bench_frame"
-            android:layout_width="wrap_content"
+        <ListView
+            android:id="@+id/bench_list"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="end" >
+            android:layout_alignParentBottom="true"
+            android:layout_below="@id/contacts_auto_complete_text_view" >
 
-            <com.noplanbees.tbm.ContactsAutoCompleteTextView
-                android:id="@+id/contacts_auto_complete_text_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:completionThreshold="1"
-                android:ems="10"
-                android:hint="Search"
-                android:textColor="@color/white" />
-
-            <ListView
-                android:id="@+id/bench_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_alignParentBottom="true"
-                android:layout_below="@id/contacts_auto_complete_text_view" >
-
-                <requestFocus />
-            </ListView>
-        </RelativeLayout>
-    </android.support.v4.widget.DrawerLayout>
-
-</FrameLayout>
+            <requestFocus />
+        </ListView>
+    </RelativeLayout>
+</android.support.v4.widget.DrawerLayout>

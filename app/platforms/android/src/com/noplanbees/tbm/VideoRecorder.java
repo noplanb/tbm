@@ -16,89 +16,58 @@ import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.TextView;
 
-// Even though I set up this exception handling interface to be complete I probably wont use it the failure cause of failure
-// for all of these errors will not be something that the user can do anything about. And the result of the failure will 
-// be that the VideoRecorder wont work. I do need a general system in the app though whereby we can report caught exceptions that 
-// make the app unusable back to our servers for analysis.
-interface VideoRecorderExceptionHandler{
-	public void unableToSetPrievew();
-	public void unableToPrepareMediaRecorder();
-	public void recordingAborted();
-	public void recordingTooShort();
-	public void illegalStateOnStart();
-	public void runntimeErrorOnStart();
-}
+
 
 public class VideoRecorder {
-
+	
+	// Even though I set up this exception handling interface to be complete I probably wont use it the failure cause of failure
+	// for all of these errors will not be something that the user can do anything about. And the result of the failure will 
+	// be that the VideoRecorder wont work. I do need a general system in the app though whereby we can report caught exceptions that 
+	// make the app unusable back to our servers for analysis.
+	public interface VideoRecorderExceptionHandler{
+		public void unableToSetPrievew();
+		public void unableToPrepareMediaRecorder();
+		public void recordingAborted();
+		public void recordingTooShort();
+		public void illegalStateOnStart();
+		public void runntimeErrorOnStart();
+	}
+	
 	private final String TAG = this.getClass().getSimpleName();
 
+	// Allow registration of a single delegate to handle exceptions.
+	private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
+
 	private Context context;
-	private Activity activity;
-	private SurfaceHolder previewSurfaceHolder; 
-	private SurfaceHolder overlaySurfaceHolder;
 	private MediaRecorder mediaRecorder;
-	private CameraPreview previewSurface;
-	private CameraOverlay overlaySurface;
-	private TextView previewText;
 
 	private Friend currentFriend;
+	private Surface surface;
 
-	public VideoRecorder(HomeActivity a) {
-		activity = a;
-		context = activity.getApplicationContext();
-		previewSurface = (CameraPreview) activity.findViewById(R.id.camera_preview_surface);
-		overlaySurface = (CameraOverlay) activity.findViewById(R.id.camera_overlay_surface);
-		previewText = (TextView) activity.findViewById(R.id.previewText);
+	public VideoRecorder(Context context) {
+		this.context = context;
 	}
 	
-	public void registerListeners(){
-		previewSurface.setChangeListener(new SurfaceChangeListener() {
-			@Override
-			public void onSurfaceDestroyed() {
-				previewSurfaceDestroyed();
-			}
-			
-			@Override
-			public void onSurfaceCreated(SurfaceHolder holder) {
-				previewSurfaceCreated(holder);
-			}
-		});
-		overlaySurface.setChangeListener(new SurfaceChangeListener() {
-			@Override
-			public void onSurfaceDestroyed() {
-			}
-			
-			@Override
-			public void onSurfaceCreated(SurfaceHolder holder) {
-				overlaySurfaceCreated(holder);
-			}
-		});
-	}
-	
-	public void unregisterListeners(){
-		previewSurface.setChangeListener(null);
-		overlaySurface.setChangeListener(null);
+	public void setSurface(Surface surface) {
+		this.surface = surface;
 	}
 
-	// --------------
-	// Public Methods
-	// --------------
+	public Friend getCurrentFriend() {
+		return currentFriend;
+	}
 	
-	// Allow registration of a single delegate to handle exceptions.
-	private static VideoRecorderExceptionHandler videoRecorderExceptionHandler;
-	public static void addExceptionHandlerDelegate(VideoRecorderExceptionHandler handler){
+	public void addExceptionHandlerDelegate(VideoRecorderExceptionHandler handler){
 		videoRecorderExceptionHandler = handler;
 	}
 	
 	public boolean stopRecording() {
 		Log.i(TAG, "stopRecording");
 		boolean rval = false;
-		hideRecordingIndicator(); // It should be safe to call this even if the sufraces have already been destroyed.
 		if (mediaRecorder !=null){
 			// hideRecordingIndicator is in the if statement because if VideoRecorder was disposed due to an external event such as a 
 			// phone call while the user was still pressing record when he releases his finger
@@ -154,7 +123,6 @@ public class VideoRecorder {
 				videoRecorderExceptionHandler.runntimeErrorOnStart();
 			return false;
 		}
-		showRecordingIndicator();
 		return true;
 	}
 	
@@ -169,24 +137,12 @@ public class VideoRecorder {
 			} catch (RuntimeException e) {
 			}
 		}
-		CameraManager.releaseCamera();
+//		CameraManager.releaseCamera();
 		releaseMediaRecorder();
 		if (abortedRecording && videoRecorderExceptionHandler != null)
 			videoRecorderExceptionHandler.recordingAborted();
 			
 	}
-	
-	public void dispose(){
-		previewSurface.setVisibility(View.GONE);
-		overlaySurface.setVisibility(View.GONE);
-	}
-
-	public void restore(){
-		Log.i(TAG, "restore");
-		overlaySurface.setVisibility(View.VISIBLE);
-		previewSurface.setVisibility(View.VISIBLE);
-	}
-	
 	
 	// ---------------
 	// Private Methods
@@ -197,46 +153,14 @@ public class VideoRecorder {
 		ing.renameTo(ed);
 	}
 
-	// -----------------
-    // Surface callbacks
-	// -----------------
-	public void previewSurfaceCreated(SurfaceHolder holder) {
-		Log.i(TAG, "cameraPreviewSurfaceCreated + " + holder);
-		previewSurfaceHolder = holder;
-		
-		Camera camera = CameraManager.getCamera(context);
-		if (camera == null)
-			return;
-		
-		try {
-			camera.setPreviewDisplay(holder);
-		} catch (IOException e) {
-			Log.e(TAG, "Error setting camera preview: " + e.getMessage());
-			if (videoRecorderExceptionHandler != null)
-				videoRecorderExceptionHandler.unableToSetPrievew();
-			return;
-		}
-       	
-		camera.startPreview();
-		//prepareMediaRecorder();
-		//overlaySurface.bringToFront();
-	}
-
 	public void previewSurfaceDestroyed(){
-		stopRecording();
-		Camera camera = CameraManager.getCamera(context);
-		if (camera == null)
-			return;
-		camera.stopPreview();
-		release();
+//		stopRecording();
+//		Camera camera = CameraManager.getCamera(context);
+//		if (camera == null)
+//			return;
+//		camera.stopPreview();
+//		release();
 	}
-
-	public void overlaySurfaceCreated(SurfaceHolder holder){
-		Log.i(TAG, "overlaySurfaceCreated");
-		overlaySurfaceHolder = holder;
-		holder.setFormat(PixelFormat.TRANSPARENT);
-	}
-
 	
 	// ---------------------------------
 	// Prepare and release MediaRecorder
@@ -290,7 +214,7 @@ public class VideoRecorder {
 		
 		// Step 5: Set the preview output
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder.setPreviewDisplay");
-		mediaRecorder.setPreviewDisplay(previewSurfaceHolder.getSurface());
+		mediaRecorder.setPreviewDisplay(surface);
 
 		// Step 6: Prepare configured MediaRecorder
 		try {
@@ -322,65 +246,7 @@ public class VideoRecorder {
 			mediaRecorder.release(); // release the recorder object
 			mediaRecorder = null;
 		}
-		CameraManager.lockCamera();
+		//CameraManager.lockCamera();
 	}
-
-	
-	// -------------------
-	// Recording indicator
-	// -------------------
-	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-	private void showRecordingIndicator(){
-		Runnable sri = new Runnable() {
-			@Override
-			public void run() {
-				Log.i(TAG, "showRecordingIndicator");
-				previewText.setText("Recording...");
-				previewText.setTextColor(Color.RED);
-				previewText.setVisibility(View.VISIBLE);
-				Canvas c = overlaySurfaceHolder.lockCanvas();
-				Path borderPath = new Path();
-				borderPath.lineTo(c.getWidth(), 0);
-				borderPath.lineTo(c.getWidth(), c.getHeight());
-				borderPath.lineTo(0, c.getHeight());
-				borderPath.lineTo(0, 0);
-				Paint paint = new Paint();
-				paint.setColor(0xffCC171E);
-				paint.setStrokeWidth(Convenience.dpToPx(context, 2));
-				paint.setStyle(Paint.Style.STROKE);
-				Paint cpaint = new Paint();
-				cpaint.setColor(0xffCC171E);
-				cpaint.setStyle(Paint.Style.FILL);
-				c.drawPath(borderPath, paint);
-				c.drawCircle(Convenience.dpToPx(context, 13), Convenience.dpToPx(context, 13), Convenience.dpToPx(context, 4), cpaint);
-				overlaySurfaceHolder.unlockCanvasAndPost(c);
-			}
-		};
-		activity.runOnUiThread(sri);
-	}
-
-	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-	private void hideRecordingIndicator(){
-		Runnable hri = new Runnable(){
-			@Override
-			public void run() {
-				Log.i(TAG, "hideRecordingIndicator");
-				// Catch runntime exceptions here because I want to be able to call this 
-				// and not worry that the surfaces may have already been destroyed because the 
-				// user hid our app for example.
-				try{
-				previewText.setVisibility(View.INVISIBLE);
-				Canvas c = overlaySurfaceHolder.lockCanvas();
-				c.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-				overlaySurfaceHolder.unlockCanvasAndPost(c);
-				overlaySurface.invalidate();
-				} catch (RuntimeException e){
-					Log.e(TAG, "hideRecordingIndicator: ERROR. Perhaps the surfaces have been destroyed");
-				}
-			}
-		};
-		activity.runOnUiThread(hri);
-	}
-
 
 }

@@ -1,18 +1,15 @@
 package com.noplanbees.tbm.ui;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
-import android.graphics.BitmapFactory;
+import android.content.DialogInterface;
 import android.hardware.Camera;
-import android.media.CamcorderProfile;
-import android.media.MediaRecorder;
-import android.media.MediaRecorder.OnInfoListener;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,42 +17,57 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.noplanbees.tbm.ActiveModelsHandler;
+import com.noplanbees.tbm.CameraManager;
+import com.noplanbees.tbm.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.Friend;
+import com.noplanbees.tbm.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.GridElement;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.VideoPlayer;
+import com.noplanbees.tbm.VideoRecorder;
 import com.noplanbees.tbm.ui.CustomAdapterView.OnItemTouchListener;
 import com.noplanbees.tbm.utilities.CameraHelper;
 import com.noplanbees.tbm.utilities.Logger;
 
-public class GridViewFragment extends Fragment implements GridEventNotificationDelegate {
+public class GridViewFragment extends Fragment implements GridEventNotificationDelegate, VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback {
 
+	public interface Callbacks{
+		void onFinish();
+	}
+	
 	private static final String TAG = "GridViewFragment";
-
-	private Camera camera;
-
-	private MediaRecorder mediaRecorder;
 	private boolean isRecording;
 	private int currentItemPlayed = -1;
-	
 	private CustomAdapterView gridView;
-	private List<FriendStub> list;
-
 	private FriendsAdapter adapter;
-
-
 	private ActiveModelsHandler activeModelsHandler;
-
 	private VideoPlayer videoPlayer;
+//	private VideoRecorder videoRecorder;
+	private Camera camera;
+	private Callbacks callbacks;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		activeModelsHandler = ActiveModelsHandler.getActiveModelsHandler();
-		
+		activeModelsHandler.getFf().addVideoStatusChangedCallbackDelegate(this);
+
 		videoPlayer = new VideoPlayer(getActivity());
+		
+//		CameraManager.addExceptionHandlerDelegate(this);
+//		videoRecorder = new VideoRecorder(getActivity());
+//		videoRecorder.addExceptionHandlerDelegate(this);
+		
+		setupGrid();
+
+	}
+	
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		callbacks = (Callbacks) activity;
 	}
 	
 	@Override
@@ -79,23 +91,32 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				if(currentItemPlayed == position){
 					currentItemPlayed = -1;
 				}else{
-					FriendStub fs = (FriendStub)((FriendsAdapter)parent.getAdapter()).getItem(position);
-					
-					videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth(), view.getHeight());
-					videoPlayer.play(fs.getFriendId());
-					
-					currentItemPlayed = position;
+					GridElement ge = (GridElement)((FriendsAdapter)parent.getAdapter()).getItem(position);
+					String friendId = ge.getFriendId();
+					if(friendId != null && !friendId.equals("")){
+						videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth(), view.getHeight());
+						videoPlayer.play(friendId);
+						currentItemPlayed = position;
+					}else{
+						//show bench
+					}
 				}
 				return true;
 			}
 			@Override
 			public boolean onItemLongClick(CustomAdapterView parent, View view, int position, long id) {
-				Logger.d("START RECORD");
 				if(id == -1)
 					return false;
 
-				adapter.setRecording(true);
-				new MediaPrepareTask().execute();
+				GridElement ge = (GridElement)((FriendsAdapter)parent.getAdapter()).getItem(position);
+				String friendId = ge.getFriendId();
+				if(friendId != null && !friendId.equals("")){
+					Logger.d("START RECORD");
+					onRecordStart(friendId);
+					adapter.setRecording(true);
+					isRecording = true;
+				}
+				
 				return true;
 			}
 			@Override
@@ -103,18 +124,9 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				if (isRecording) {
 					Logger.d("STOP RECORD");
 					adapter.setRecording(false);
-					// stop recording and release camera
-					try{
-						mediaRecorder.stop(); // stop the recording
-					}catch(RuntimeException e){
-						Toast.makeText(getActivity(), "Video is too short", Toast.LENGTH_SHORT).show();
-					}
-					releaseMediaRecorder(); // release the MediaRecorder object
-					camera.lock(); // take camera access back from
-									// MediaRecorder
-
-					// inform the user that recording has stopped
 					isRecording = false;
+					
+					onRecordStop();
 				}
 				return false;
 			}
@@ -125,17 +137,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				if (isRecording) {
 					Logger.d("STOP RECORD");
 					adapter.setRecording(false);
-					// stop recording and release camera
-					try{
-						mediaRecorder.stop(); // stop the recording
-					}catch(RuntimeException e){
-						Toast.makeText(getActivity(), "Video is too short", Toast.LENGTH_SHORT).show();
-					}
-					releaseMediaRecorder(); // release the MediaRecorder object
-					camera.lock(); // take camera access back from
-									// MediaRecorder
-
-					// inform the user that recording has stopped
+					onRecordCancel();
 					isRecording = false;
 				}
 				return false;
@@ -148,49 +150,26 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		
-		setupGrid();
-		
-		list = new ArrayList<FriendStub>(8);
-		
-		
-		for (GridElement ge : activeModelsHandler.getGf().all()) {
-			FriendStub stub = new FriendStub();
-			Friend f = ge.friend();
-			if (f != null) {
-				stub.setFriendId(f.getId());
-				stub.setName(f.getStatusString());
-				stub.setNotViewed(f.incomingVideoNotViewed());
-				if (!f.thumbExists() ){
-					Log.i(TAG, "loadThumb: Loading icon for thumb for friend=" + f.get(Friend.Attributes.FIRST_NAME));
-					stub.setThumb(BitmapFactory.decodeResource(getResources(),R.drawable.head));
-				}else{
-					Log.i(TAG, "loadThumb: Loading bitmap for friend=" + f.get(Friend.Attributes.FIRST_NAME));
-					stub.setThumb(f.lastThumbBitmap());
-				}
-			}
-			list.add(stub);
-		}
-		
-		adapter = new FriendsAdapter(getActivity(), list);
+		adapter = new FriendsAdapter(getActivity(), activeModelsHandler.getGf().all());
 		gridView.setAdapter(adapter);
 	}
 
 	@Override
 	public void onResume() {
+		Logger.d(TAG, "onResume");
 		super.onResume();
 		// Open the default i.e. the first rear facing camera.
-		camera = CameraHelper.getDefaultFrontFacingCameraInstance();
-		if (camera == null)
-			camera = CameraHelper.getDefaultCameraInstance();
+		camera = CameraManager.getCamera(getActivity());
+		//camera = CameraHelper.getDefaultFrontFacingCameraInstance();
 		adapter.setCamera(camera);
 	}
 	
 	@Override
 	public void onPause() {
+		Logger.d(TAG, "onPause");
 		super.onPause();
 		if (isRecording) {
-			mediaRecorder.stop();
-			releaseMediaRecorder();
+			//videoRecorder.stopRecording();
 			camera.lock();
 		}
 		// Because the Camera object is a shared resource, it's very
@@ -200,106 +179,43 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 			camera.release();
 			camera = null;
 		}
+		videoPlayer.release(getActivity());
+	}
+
+	// -------
+	// Events
+	// -------
+	private void onRecordStart(String friendId) {
+		videoPlayer.stop();
+		GridElement ge = activeModelsHandler.getGf().getGridElementByFriendId(friendId);
+		if (!ge.hasFriend())
+			return;
+
+		Friend f = ge.friend();
+		GridManager.rankingActionOccurred(f);
+//		if (videoRecorder.startRecording(f)) {
+//			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
+//		} else {
+//			Log.e(TAG, "onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
+//		}
+	}
+
+	private void onRecordCancel() {
+		// Different from abortAnyRecording becuase we always toast here.
+//		videoRecorder.stopRecording();
+		toast("Not sent.");
+	}
+
+	private void onRecordStop() {
+
+//		if (videoRecorder.stopRecording()) {
+//			Friend f = videoRecorder.getCurrentFriend();
+//			Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
+//			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
+//			f.uploadVideo();
+//		}
 	}
 	
-	void prepareRecorder() {
-		CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-		Camera.Parameters parameters = camera.getParameters();
-
-		List<Camera.Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
-		Camera.Size optimalSize = CameraHelper.getOptimalPreviewSize(mSupportedPreviewSizes, adapter.getPreviewWidth(),
-				adapter.getPreviewHeight());
-
-		// Use the same size for recording profile.
-		profile.videoFrameWidth = optimalSize.width;
-		profile.videoFrameHeight = optimalSize.height;
-
-		// likewise for the camera object itself.
-		parameters.setPreviewSize(profile.videoFrameWidth, profile.videoFrameHeight);
-
-		camera.setParameters(parameters);
-
-		// BEGIN_INCLUDE (configure_media_recorder)
-		mediaRecorder = new MediaRecorder();
-
-		// Step 1: Unlock and set camera to MediaRecorder
-		camera.startPreview();
-		camera.unlock();
-		mediaRecorder.setCamera(camera);
-
-		// Step 2: Set sources
-		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
-		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-
-		// Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
-		mediaRecorder.setProfile(profile);
-
-		// Step 4: Set output file
-		mediaRecorder.setOutputFile(CameraHelper.getOutputMediaFile(CameraHelper.MEDIA_TYPE_VIDEO).toString());
-		// END_INCLUDE (configure_media_recorder)
-
-		mediaRecorder.setOnInfoListener(new OnInfoListener() {
-
-			@Override
-			public void onInfo(MediaRecorder mr, int what, int extra) {
-				Logger.d("what = " + what + ", extra = " + extra);
-			}
-		});
-		mediaRecorder.setOnErrorListener(new MediaRecorder.OnErrorListener() {
-			public void onError(MediaRecorder mr, int what, int extra) {
-				Logger.d("MediaRecorder error: " + what + " extra: " + extra);
-			}
-		});
-
-		mediaRecorder.setPreviewDisplay(adapter.getPreviewSurface());
-		mediaRecorder.setOrientationHint(90);
-
-		// Step 5: Prepare configured MediaRecorder
-		try {
-			mediaRecorder.prepare();
-		} catch (IllegalStateException e) {
-			Logger.d("IllegalStateException preparing MediaRecorder: " + e.getMessage());
-			releaseMediaRecorder();
-		} catch (IOException e) {
-			Logger.d("IOException preparing MediaRecorder: " + e.getMessage());
-			releaseMediaRecorder();
-		}
-	}
-
-	private void releaseMediaRecorder() {
-		if (mediaRecorder != null) {
-			// clear recorder configuration
-			mediaRecorder.reset();
-			// release the recorder object
-			mediaRecorder.release();
-			mediaRecorder = null;
-			// Lock camera for later use i.e taking it back from MediaRecorder.
-			// MediaRecorder doesn't need it anymore and we will release it if
-			// the activity pauses.
-			camera.lock();
-		}
-	}
-
-	/**
-	 * Asynchronous task for preparing the {@link android.media.MediaRecorder}
-	 * since it's a long blocking operation.
-	 */
-	class MediaPrepareTask extends AsyncTask<Void, Void, Void> {
-
-		@Override
-		protected Void doInBackground(Void... voids) {
-			prepareRecorder();
-			mediaRecorder.start();
-			isRecording = true;
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-		}
-	}
-	
-
 	private void setupGrid() {
 		GridManager.setGridEventNotificationDelegate(this);
 
@@ -315,14 +231,110 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				g.set(GridElement.Attributes.FRIEND_ID, f.getId());
 			}
 		}
-		
-		
 	}
 
 	@Override
 	public void gridDidChange() {
+		adapter.notifyDataSetChanged();
+	}
+
+	// ---------------------------------------
+	// Video Recorder ExceptionHandler delegate
+	// ----------------------------------------
+	@Override
+	public void unableToSetPrievew() {
+		toast("unable to set preview");
+	}
+
+	@Override
+	public void unableToPrepareMediaRecorder() {
+		toast("Unable to prepare MediaRecorder");
+	}
+
+	@Override
+	public void recordingAborted() {
+		toast("Recording Aborted due to Release before Stop.");
+	}
+
+	@Override
+	public void recordingTooShort() {
+		toast("Not sent. Too short.");
+	}
+
+	@Override
+	public void illegalStateOnStart() {
+		toast("Runntime exception on MediaRecorder.start. Quitting app.");
+	}
+
+	@Override
+	public void runntimeErrorOnStart() {
+		toast("Unable to start recording. Try again.");
+	}
+
+	// -------------------------------
+	// CameraExceptionHandler delegate
+	// -------------------------------
+	@Override
+	public void noCameraHardware() {
+		showCameraExceptionDialog("No Camera",
+				"Your device does not seem to have a camera. This app requires a camera.", "Quit", "Try Again");
+	}
+
+	@Override
+	public void noFrontCamera() {
+		showCameraExceptionDialog("No Front Camera",
+				"Your device does not seem to have a front facing camera. This app requires a front facing camera.",
+				"Quit", "Try Again");
+	}
+
+	@Override
+	public void cameraInUseByOtherApplication() {
+		showCameraExceptionDialog(
+				"Camera in Use",
+				"Your camera seems to be in use by another application. Please close that app and try again. You may also need to restart your device.",
+				"Quit", "Try Again");
+	}
+
+	private void showCameraExceptionDialog(String title, String message, String negativeButton, String positiveButton) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(title).setMessage(message)
+				.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						callbacks.onFinish();
+					}
+				}).setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						//videoRecorder.dispose();
+						//videoRecorder.restore();
+						// ????
+					}
+				});
+		AlertDialog alertDialog = builder.create();
+		alertDialog.setCanceledOnTouchOutside(false);
+		alertDialog.show();
+	}
+
+	@Override
+	public void unableToSetCameraParams() {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void unableToFindAppropriateVideoSize() {
+		// TODO Auto-generated method stub
 		
+	}
+
+	private void toast(String msg) {
+		Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.CENTER, 0, 0);
+		toast.show();
+	}
+
+	@Override
+	public void onVideoStatusChanged(Friend friend) {
+		adapter.notifyDataSetChanged();
+	}
+
 }

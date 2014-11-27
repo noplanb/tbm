@@ -3,7 +3,6 @@ package com.noplanbees.tbm.ui;
 import java.util.List;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -13,19 +12,22 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.noplanbees.tbm.Friend;
+import com.noplanbees.tbm.GridElement;
 import com.noplanbees.tbm.R;
 
 public class FriendsAdapter extends BaseAdapter {
 
 	private Context context;
-	private List<FriendStub> list;
+	private List<GridElement> list;
 	private Preview preview;
 	private Camera camera;
 	private boolean isRecording;
 
-	public FriendsAdapter(Context context, List<FriendStub> list) {
+	public FriendsAdapter(Context context, List<GridElement> arrayList) {
 		this.context = context;
-		this.list = list;
+		this.list = arrayList;
+
 	}
 
 	public Surface getPreviewSurface() {
@@ -42,7 +44,7 @@ public class FriendsAdapter extends BaseAdapter {
 
 	public void setRecording(boolean b) {
 		isRecording = b;
-		if(preview!=null)
+		if (preview != null)
 			preview.setRecording(b);
 	}
 
@@ -58,7 +60,7 @@ public class FriendsAdapter extends BaseAdapter {
 	}
 
 	@Override
-	public FriendStub getItem(int position) {
+	public GridElement getItem(int position) {
 		if (position < (int) (getCount() / 2))
 			return list.get(position);
 		else
@@ -78,6 +80,7 @@ public class FriendsAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View v;
+
 		if (position == getCount() / 2) {
 			v = getUserView(position, convertView, parent);
 		} else {
@@ -88,12 +91,13 @@ public class FriendsAdapter extends BaseAdapter {
 	}
 
 	private View getUserView(int position, View convertView, ViewGroup parent) {
-		preview = new Preview(context);
+		if(preview == null)
+			preview = new Preview(context);
 		if (camera != null)
 			preview.setCamera(camera);
-			
+
 		preview.setRecording(isRecording);
-			
+
 		return preview;
 	}
 
@@ -103,18 +107,24 @@ public class FriendsAdapter extends BaseAdapter {
 		TextView tw_name = (TextView) v.findViewById(R.id.textView1);
 		ImageView img_thumb = (ImageView) v.findViewById(R.id.img_thumb);
 
-		FriendStub st = getItem(position);
-		
-		Bitmap thumb = st.getThumb();
-		img_thumb.setImageBitmap(thumb);
-		
-		if (st.isNotViewed()){
-			img_thumb.setBackgroundResource(R.drawable.blue_border_shape);
-		} else {
-			img_thumb.setBackgroundResource(0);
-		}
+		GridElement ge = getItem(position);
+		Friend f = ge.friend();
+		if (f != null) {
+			if (f.incomingVideoNotViewed()) {
+				img_thumb.setBackgroundResource(R.drawable.blue_border_shape);
+			} else {
+				img_thumb.setBackgroundResource(0);
+			}
 
-		tw_name.setText(st.getName());
+			if (f.thumbExists())
+				img_thumb.setImageBitmap(f.lastThumbBitmap());
+			else
+				img_thumb.setImageResource(R.drawable.head);
+
+			tw_name.setText(f.getStatusString());
+		}else{
+			tw_name.setText("");
+		}
 		return v;
 	}
 }

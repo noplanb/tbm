@@ -22,12 +22,12 @@ import android.view.ViewGroup;
 import com.noplanbees.tbm.Convenience;
 
 /**
- * A simple wrapper around a Camera and a SurfaceView that renders a
- * centered preview of the Camera to the surface. We need to center the
- * SurfaceView because not all devices have cameras that support preview
- * sizes at the same aspect ratio as the device's display.
+ * A simple wrapper around a Camera and a SurfaceView that renders a centered
+ * preview of the Camera to the surface. We need to center the SurfaceView
+ * because not all devices have cameras that support preview sizes at the same
+ * aspect ratio as the device's display.
  */
-public class Preview extends ViewGroup implements SurfaceHolder.Callback{
+public class Preview extends ViewGroup implements SurfaceHolder.Callback {
 	private final String TAG = "Preview";
 
 	private SurfaceView surfaceView;
@@ -66,19 +66,19 @@ public class Preview extends ViewGroup implements SurfaceHolder.Callback{
 		}
 	}
 
-	public void switchCamera(Camera camera) {
-		setCamera(camera);
-		try {
-			camera.setPreviewDisplay(holder);
-		} catch (IOException exception) {
-			Log.e(TAG, "IOException caused by setPreviewDisplay()", exception);
-		}
-		Camera.Parameters parameters = camera.getParameters();
-		parameters.setPreviewSize(previewSize.width, previewSize.height);
-		requestLayout();
-
-		camera.setParameters(parameters);
-	}
+//	public void switchCamera(Camera camera) {
+//		setCamera(camera);
+//		try {
+//			camera.setPreviewDisplay(holder);
+//		} catch (IOException exception) {
+//			Log.e(TAG, "IOException caused by setPreviewDisplay()", exception);
+//		}
+//		Camera.Parameters parameters = camera.getParameters();
+//		parameters.setPreviewSize(previewSize.width, previewSize.height);
+//		requestLayout();
+//
+//		camera.setParameters(parameters);
+//	}
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -121,6 +121,9 @@ public class Preview extends ViewGroup implements SurfaceHolder.Callback{
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
+		Log.d(VIEW_LOG_TAG, "surfaceCreated " + camera);
+		this.holder = holder;
+
 		// The Surface has been created, acquire the camera and tell it
 		// where
 		// to draw.
@@ -137,9 +140,11 @@ public class Preview extends ViewGroup implements SurfaceHolder.Callback{
 	}
 
 	public void surfaceDestroyed(SurfaceHolder holder) {
+		Log.d(VIEW_LOG_TAG, "surfaceDestroyed " + camera);
+		this.holder = holder;
 		// Surface will be destroyed when we return, so stop the preview.
 		if (this.camera != null) {
-			//this.camera.stopPreview();
+			this.camera.stopPreview();
 		}
 	}
 
@@ -180,64 +185,68 @@ public class Preview extends ViewGroup implements SurfaceHolder.Callback{
 	}
 
 	public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+		this.holder = holder;
+		Log.d(VIEW_LOG_TAG, "surfaceChanged " + camera);
 		// Now that the size is known, set up the camera parameters and
 		// begin
 		// the preview.
-		Camera.Parameters parameters = this.camera.getParameters();
-		parameters.setPreviewSize(previewSize.width, previewSize.height);
-		parameters.setRecordingHint(true);
+		if (camera != null) {
+			Camera.Parameters parameters = this.camera.getParameters();
+			parameters.setPreviewSize(previewSize.width, previewSize.height);
+			parameters.setRecordingHint(true);
 
-		CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-		List<int[]> fps_ranges = parameters.getSupportedPreviewFpsRange();
-		int selected_min_fps = -1, selected_max_fps = -1, selected_diff = -1;
-		for (int[] fps_range : fps_ranges) {
-			int min_fps = fps_range[Camera.Parameters.PREVIEW_FPS_MIN_INDEX];
-			int max_fps = fps_range[Camera.Parameters.PREVIEW_FPS_MAX_INDEX];
-			if (min_fps <= profile.videoFrameRate * 1000 && max_fps >= profile.videoFrameRate * 1000) {
-				int diff = max_fps - min_fps;
-				if (selected_diff == -1 || diff < selected_diff) {
-					selected_min_fps = min_fps;
-					selected_max_fps = max_fps;
-					selected_diff = diff;
-				}
-			}
-		}
-		if (selected_min_fps == -1) {
-			selected_diff = -1;
-			int selected_dist = -1;
+			CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+			List<int[]> fps_ranges = parameters.getSupportedPreviewFpsRange();
+			int selected_min_fps = -1, selected_max_fps = -1, selected_diff = -1;
 			for (int[] fps_range : fps_ranges) {
 				int min_fps = fps_range[Camera.Parameters.PREVIEW_FPS_MIN_INDEX];
 				int max_fps = fps_range[Camera.Parameters.PREVIEW_FPS_MAX_INDEX];
-				int diff = max_fps - min_fps;
-				int dist = -1;
-				if (max_fps < profile.videoFrameRate * 1000)
-					dist = profile.videoFrameRate * 1000 - max_fps;
-				else
-					dist = min_fps - profile.videoFrameRate * 1000;
-				if (selected_dist == -1 || dist < selected_dist || (dist == selected_dist && diff < selected_diff)) {
-					selected_min_fps = min_fps;
-					selected_max_fps = max_fps;
-					selected_dist = dist;
-					selected_diff = diff;
+				if (min_fps <= profile.videoFrameRate * 1000 && max_fps >= profile.videoFrameRate * 1000) {
+					int diff = max_fps - min_fps;
+					if (selected_diff == -1 || diff < selected_diff) {
+						selected_min_fps = min_fps;
+						selected_max_fps = max_fps;
+						selected_diff = diff;
+					}
 				}
 			}
-			parameters.setPreviewFpsRange(selected_min_fps, selected_max_fps);
+			if (selected_min_fps == -1) {
+				selected_diff = -1;
+				int selected_dist = -1;
+				for (int[] fps_range : fps_ranges) {
+					int min_fps = fps_range[Camera.Parameters.PREVIEW_FPS_MIN_INDEX];
+					int max_fps = fps_range[Camera.Parameters.PREVIEW_FPS_MAX_INDEX];
+					int diff = max_fps - min_fps;
+					int dist = -1;
+					if (max_fps < profile.videoFrameRate * 1000)
+						dist = profile.videoFrameRate * 1000 - max_fps;
+					else
+						dist = min_fps - profile.videoFrameRate * 1000;
+					if (selected_dist == -1 || dist < selected_dist || (dist == selected_dist && diff < selected_diff)) {
+						selected_min_fps = min_fps;
+						selected_max_fps = max_fps;
+						selected_dist = dist;
+						selected_diff = diff;
+					}
+				}
+				parameters.setPreviewFpsRange(selected_min_fps, selected_max_fps);
 
-		} else {
-			parameters.setPreviewFpsRange(selected_min_fps, selected_max_fps);
+			} else {
+				parameters.setPreviewFpsRange(selected_min_fps, selected_max_fps);
+			}
+
+			int maxExposureCompensation = parameters.getMaxExposureCompensation();
+			parameters.setExposureCompensation(maxExposureCompensation);
+
+			// parameters.setAutoExposureLock(true);
+			// parameters.setAutoWhiteBalanceLock(true);
+
+			requestLayout();
+
+			this.camera.setParameters(parameters);
+
+			this.camera.startPreview();
 		}
-
-		int maxExposureCompensation = parameters.getMaxExposureCompensation();
-		parameters.setExposureCompensation(maxExposureCompensation);
-
-		// parameters.setAutoExposureLock(true);
-		// parameters.setAutoWhiteBalanceLock(true);
-
-		requestLayout();
-
-		this.camera.setParameters(parameters);
-
-		this.camera.startPreview();
 	}
 
 	public SurfaceHolder getHolder() {
@@ -248,16 +257,16 @@ public class Preview extends ViewGroup implements SurfaceHolder.Callback{
 		this.isRecording = isRecording;
 		invalidate();
 	}
-	
+
 	@Override
 	public void draw(Canvas canvas) {
 		super.draw(canvas);
-		if(isRecording){
+		if (isRecording) {
 			drawIndicator(canvas);
 		}
 	}
-	
-	private void drawIndicator(Canvas c){
+
+	private void drawIndicator(Canvas c) {
 		Path borderPath = new Path();
 		borderPath.lineTo(c.getWidth(), 0);
 		borderPath.lineTo(c.getWidth(), c.getHeight());
@@ -270,12 +279,12 @@ public class Preview extends ViewGroup implements SurfaceHolder.Callback{
 		c.drawPath(borderPath, paint);
 		paint.setColor(0xffCC171E);
 		paint.setStyle(Paint.Style.FILL);
-		c.drawCircle(Convenience.dpToPx(getContext(), 13), Convenience.dpToPx(getContext(), 13), 
+		c.drawCircle(Convenience.dpToPx(getContext(), 13), Convenience.dpToPx(getContext(), 13),
 				Convenience.dpToPx(getContext(), 4), paint);
 		paint.setAntiAlias(true);
-		paint.setTextSize(Convenience.dpToPx(getContext(), 13)); //some size
+		paint.setTextSize(Convenience.dpToPx(getContext(), 13)); // some size
 		paint.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
 		paint.setTextAlign(Align.CENTER);
-		c.drawText("Recording...", c.getWidth()/2, c.getHeight() - 13, paint);
+		c.drawText("Recording...", c.getWidth() / 2, c.getHeight() - 13, paint);
 	}
 }

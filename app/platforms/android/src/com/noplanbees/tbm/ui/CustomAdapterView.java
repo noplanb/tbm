@@ -64,8 +64,11 @@ public class CustomAdapterView extends ViewGroup {
 
 	public interface OnItemTouchListener {
 		boolean onItemClick(CustomAdapterView parent, View view, int position, long id);
+
 		boolean onItemLongClick(CustomAdapterView parent, View view, int position, long id);
+
 		boolean onItemStopTouch();
+
 		boolean onCancelTouch();
 	}
 
@@ -396,10 +399,11 @@ public class CustomAdapterView extends ViewGroup {
 		Double a2 = Math.pow(mLastX - event.getRawX(), 2D);
 		Double b2 = Math.pow(mLastY - event.getRawY(), 2D);
 		Double limit = (double) Convenience.dpToPx(getContext(), (int) Math.pow(BIG_MOVE_DISTANCE, 2D));
-		
-		Log.d(VIEW_LOG_TAG, "isBigMove " + mLastX + ", " + mLastY + " | " + event.getRawX() + "," + event.getRawY()
-				+ " || " + (a2 + b2) + " ? "+ limit);
-		
+
+		// Log.d(VIEW_LOG_TAG, "isBigMove " + mLastX + ", " + mLastY + " | " +
+		// event.getRawX() + "," + event.getRawY()
+		// + " || " + (a2 + b2) + " ? "+ limit);
+
 		if (a2 + b2 > limit) {
 			return true;
 		} else {
