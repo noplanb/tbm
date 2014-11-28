@@ -42,8 +42,11 @@ final String TAG = this.getClass().getSimpleName();
 	// Public methods
 	// --------------
 	public static Camera getCamera(Context context){
-		if(camera == null)
+		//if(camera == null)
 			setupFrontCamera(context);
+		return camera;
+	}
+	public static Camera getTCamera(Context context){
 		return camera;
 	}
 	
@@ -94,7 +97,7 @@ final String TAG = this.getClass().getSimpleName();
 	// ---------------
 	private static Camera setupFrontCamera(Context context){
 		Log.i(STAG, "getFrontCamera:");
-		releaseCamera();
+		//releaseCamera();
 		
 		if (!hasCameraHardware(context)){
 			if (cameraExceptionHandler != null)

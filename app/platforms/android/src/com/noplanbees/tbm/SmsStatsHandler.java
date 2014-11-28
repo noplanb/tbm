@@ -15,6 +15,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.noplanbees.tbm.utilities.AsyncTaskManager;
 
 public class SmsStatsHandler {
 
@@ -93,7 +94,7 @@ public class SmsStatsHandler {
 	// Ranking phone data by frequency of text messages
 	//-------------------------------------------------
 	public void getRankedPhoneData(){
-		(new GetRankedPhoneDataAsync()).execute();
+		AsyncTaskManager.executeAsyncTask(new GetRankedPhoneDataAsync(), new Void[]{});
 	}
 	
 	private class GetRankedPhoneDataAsync extends AsyncTask<Void, Void, Void>{

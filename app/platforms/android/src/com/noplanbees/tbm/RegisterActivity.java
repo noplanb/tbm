@@ -31,6 +31,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.noplanbees.tbm.DataHolderService.LocalBinder;
 import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
+import com.noplanbees.tbm.ui.MainActivity;
 
 public class RegisterActivity extends Activity{
 	private final String TAG = this.getClass().getSimpleName();
@@ -422,7 +423,7 @@ public class RegisterActivity extends Activity{
 	private void regComplete() {
 		UserFactory.current_user().set(User.Attributes.REGISTERED, "true");
 		activeModelsHandler.saveAll();
-		Intent i = new Intent(this, HomeActivity.class);
+		Intent i = new Intent(this, MainActivity.class);
 		startActivity(i);
 		finish();
 	}
@@ -475,7 +476,7 @@ public class RegisterActivity extends Activity{
 	//-------------
 	private void AddShortcutIcon(){
 
-		Intent shortcutIntent = new Intent(getApplicationContext(), HomeActivity.class);
+		Intent shortcutIntent = new Intent(getApplicationContext(), MainActivity.class);
 		//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 

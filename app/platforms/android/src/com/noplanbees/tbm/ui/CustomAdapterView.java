@@ -64,16 +64,18 @@ public class CustomAdapterView extends ViewGroup {
 
 	public interface OnItemTouchListener {
 		boolean onItemClick(CustomAdapterView parent, View view, int position, long id);
-
 		boolean onItemLongClick(CustomAdapterView parent, View view, int position, long id);
-
 		boolean onItemStopTouch();
-
 		boolean onCancelTouch();
+	}
+	
+	public interface OnChildLayoutCompleteListener{
+		void onChildLayoutComplete(int childWidth, int childHeight);
 	}
 
 	private BaseAdapter adapter;
 	private OnItemTouchListener itemClickListener;
+	private OnChildLayoutCompleteListener childLayoutCompleteListener;
 
 	/**
 	 * One of TOUCH_MODE_REST, TOUCH_MODE_DOWN, TOUCH_MODE_TAP,
@@ -154,22 +156,46 @@ public class CustomAdapterView extends ViewGroup {
 	public void setItemClickListener(OnItemTouchListener itemClickListener) {
 		this.itemClickListener = itemClickListener;
 	}
+	
+	public void setChildLayoutCompleteListener(OnChildLayoutCompleteListener childLayoutCompleteListener) {
+		this.childLayoutCompleteListener = childLayoutCompleteListener;
+	}
 
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		if (adapter == null)
 			return;
-		if (isDirty == true && getChildCount() > 0) {
-			removeAllViews();
-		} else if (getChildCount() < adapter.getCount()) {
+		View v = null;
+		int childCount = getChildCount();
+		if (isDirty == true && childCount > 0) {
+			v = getChildAt(childCount/2);
+			int j=0;
+			while(getChildCount()>1){
+				View child = getChildAt(j);
+				if(child.equals(v)){
+					j++;
+					continue;
+				}
+				removeView(child);
+			}
+			//removeAllViews();
+			Log.d(VIEW_LOG_TAG, "removed all childs");
+		} 
+		
+		if (childCount < adapter.getCount() || isDirty) {
 			int position = 0;
 			int bottomEdge = 0;
 			while (bottomEdge < getHeight() && position < adapter.getCount()) {
 				int rightEdge = 0;
 				int measuredHeight = 0;
 				while (rightEdge < getWidth() && position < adapter.getCount()) {
-					View newChild = adapter.getView(position, null, this);
-					addAndMeasureChild(newChild, position);
+					View newChild;
+					if(isDirty && position == childCount/2)
+						newChild = v;
+					else{
+						newChild = adapter.getView(position, null, this);
+						addAndMeasureChild(newChild, position);
+					}
 					rightEdge += newChild.getMeasuredWidth();
 					measuredHeight = newChild.getMeasuredHeight();
 					position++;
@@ -206,16 +232,23 @@ public class CustomAdapterView extends ViewGroup {
 		View child = getChildAt(0);
 		int numCol = getWidth() / child.getMeasuredWidth();
 
+		int width=0, height=0;
+		
 		for (int index = 0; index < getChildCount(); index++) {
 			child = getChildAt(index);
-			int width = child.getMeasuredWidth();
-			int height = child.getMeasuredHeight();
+			width = child.getMeasuredWidth();
+			height = child.getMeasuredHeight();
 			int mod = index / numCol;
 			int left = (index - mod * numCol) * width;
 			int top = mod * height;
 
 			child.layout(left, top, left + width, top + height);
 		}
+		if(childLayoutCompleteListener!=null){
+			childLayoutCompleteListener.onChildLayoutComplete(width, height);
+		}
+
+		Log.d(VIEW_LOG_TAG, "layoutChildren");
 	}
 
 	@Override

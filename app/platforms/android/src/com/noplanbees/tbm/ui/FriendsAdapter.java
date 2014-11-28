@@ -3,9 +3,10 @@ package com.noplanbees.tbm.ui;
 import java.util.List;
 
 import android.content.Context;
-import android.hardware.Camera;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Surface;
+import android.view.TextureView;
+import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -20,38 +21,23 @@ public class FriendsAdapter extends BaseAdapter {
 
 	private Context context;
 	private List<GridElement> list;
-	private Preview preview;
-	private Camera camera;
+	private PreviewTextureView preview;
 	private boolean isRecording;
+	private SurfaceTextureListener listener;
 
 	public FriendsAdapter(Context context, List<GridElement> arrayList) {
 		this.context = context;
 		this.list = arrayList;
-
 	}
 
-	public Surface getPreviewSurface() {
-		return preview.getHolder().getSurface();
+	public void setListener(TextureView.SurfaceTextureListener listener) {
+		this.listener = listener;
 	}
-
-	public int getPreviewWidth() {
-		return preview.getHeight();
-	}
-
-	public int getPreviewHeight() {
-		return preview.getWidth();
-	}
-
+	
 	public void setRecording(boolean b) {
 		isRecording = b;
 		if (preview != null)
 			preview.setRecording(b);
-	}
-
-	public void setCamera(Camera camera) {
-		if (preview != null)
-			preview.setCamera(camera);
-		this.camera = camera;
 	}
 
 	@Override
@@ -91,13 +77,11 @@ public class FriendsAdapter extends BaseAdapter {
 	}
 
 	private View getUserView(int position, View convertView, ViewGroup parent) {
-		if(preview == null)
-			preview = new Preview(context);
-		if (camera != null)
-			preview.setCamera(camera);
-
+		if(preview == null){
+			preview = new PreviewTextureView(context);
+			preview.setSurfaceTextureListener(listener);
+		}
 		preview.setRecording(isRecording);
-
 		return preview;
 	}
 

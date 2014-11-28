@@ -28,7 +28,7 @@ public class VideoPlayer implements OnCompletionListener{
 		((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(false);
 	}
 	
-	public Boolean isPlaying(String friendId){
+	public Boolean isPlaying(){
 		return videoView.isPlaying();
 	}
 	

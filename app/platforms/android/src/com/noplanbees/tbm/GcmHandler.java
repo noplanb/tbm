@@ -17,6 +17,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.utilities.AsyncTaskManager;
 
 public class GcmHandler {
 
@@ -123,7 +124,7 @@ public class GcmHandler {
 	 * shared preferences.
 	 */
 	private void registerInBackground() {
-		(new RIBAsync()).execute(null, null, null);
+		AsyncTaskManager.executeAsyncTask(new RIBAsync(), new Void[]{});
 	}
 
 

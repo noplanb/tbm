@@ -3,23 +3,14 @@ package com.noplanbees.tbm;
 import java.io.File;
 import java.io.IOException;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
-import android.os.Build;
+import android.os.AsyncTask;
 import android.util.Log;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.View;
-import android.widget.TextView;
+
+import com.noplanbees.tbm.utilities.AsyncTaskManager;
 
 
 
@@ -47,16 +38,13 @@ public class VideoRecorder {
 	private MediaRecorder mediaRecorder;
 
 	private Friend currentFriend;
-	private Surface surface;
+
+	private MediaPrepareTask task;
 
 	public VideoRecorder(Context context) {
 		this.context = context;
 	}
 	
-	public void setSurface(Surface surface) {
-		this.surface = surface;
-	}
-
 	public Friend getCurrentFriend() {
 		return currentFriend;
 	}
@@ -80,18 +68,16 @@ public class VideoRecorder {
 				if (currentFriend != null)
 					moveRecordingToFriend(currentFriend);
 			} catch (IllegalStateException e) {
-				Log.e(TAG, "stopRecording: IllegalStateException: " + e.toString());
+				Log.e(TAG, "stopRecording: IllegalStateException: ", e);
  				rval = false;
-				releaseMediaRecorder();
 			} catch (RuntimeException e) {
-				Log.e(TAG, "stopRecording: Recording to short. No output file " + e.toString());
+				Log.e(TAG, "stopRecording: Recording to short. No output file ", e);
 				if (videoRecorderExceptionHandler != null){
 					videoRecorderExceptionHandler.recordingTooShort();
 				}
 				rval = false;
-				releaseMediaRecorder();
 			}
-			prepareMediaRecorder();
+			releaseMediaRecorder();
 		}
 		return rval;
 	}
@@ -101,28 +87,12 @@ public class VideoRecorder {
 		
 		this.currentFriend = f;
 
-		if (mediaRecorder == null){
-			Log.e(TAG, "startRecording: ERROR no mediaRecorder this should never happen.");
-			prepareMediaRecorder();
-			//return false;
-		}
+		if(task!=null)
+			task.cancel(true);
 		
-		try {
-			mediaRecorder.start();	
-		} catch (IllegalStateException e) {
-			Log.e(TAG, "startRecording: called in illegal state.");
-			releaseMediaRecorder();
-			if (videoRecorderExceptionHandler != null)
-				videoRecorderExceptionHandler.illegalStateOnStart();
-			return false;
-		} catch (RuntimeException e){
-			// Since this seems to get the media recorder into a wedged state I will just finish the app here.
-			Log.e(TAG, "ERROR: RuntimeException: this should never happen according to google. But I have seen it. " + e.toString());
-			releaseMediaRecorder();
-			if (videoRecorderExceptionHandler != null)
-				videoRecorderExceptionHandler.runntimeErrorOnStart();
-			return false;
-		}
+		task = new MediaPrepareTask();
+		AsyncTaskManager.executeAsyncTask(task, new Void[]{});
+		
 		return true;
 	}
 	
@@ -137,7 +107,6 @@ public class VideoRecorder {
 			} catch (RuntimeException e) {
 			}
 		}
-//		CameraManager.releaseCamera();
 		releaseMediaRecorder();
 		if (abortedRecording && videoRecorderExceptionHandler != null)
 			videoRecorderExceptionHandler.recordingAborted();
@@ -152,15 +121,6 @@ public class VideoRecorder {
 		File ing = Config.recordingFile(context);
 		ing.renameTo(ed);
 	}
-
-	public void previewSurfaceDestroyed(){
-//		stopRecording();
-//		Camera camera = CameraManager.getCamera(context);
-//		if (camera == null)
-//			return;
-//		camera.stopPreview();
-//		release();
-	}
 	
 	// ---------------------------------
 	// Prepare and release MediaRecorder
@@ -170,7 +130,7 @@ public class VideoRecorder {
 		if (mediaRecorder == null)
 			mediaRecorder = new MediaRecorder();
 		
-		Camera camera = CameraManager.getCamera(context);
+		Camera camera = CameraManager.getTCamera(context);
 		if (camera == null){
 			Log.e(TAG, "prepareMediaRecorde: ERROR: No camera this should never happen!");
 			return;
@@ -214,7 +174,7 @@ public class VideoRecorder {
 		
 		// Step 5: Set the preview output
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder.setPreviewDisplay");
-		mediaRecorder.setPreviewDisplay(surface);
+		//mediaRecorder.setPreviewDisplay(surface);
 
 		// Step 6: Prepare configured MediaRecorder
 		try {
@@ -247,6 +207,49 @@ public class VideoRecorder {
 			mediaRecorder = null;
 		}
 		//CameraManager.lockCamera();
+	}
+	
+	/**
+	 * Asynchronous task for preparing the {@link android.media.MediaRecorder}
+	 * since it's a long blocking operation.
+	 */
+	private class MediaPrepareTask extends AsyncTask<Void, Void, Boolean> {
+
+		private ProgressDialog pd;
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			//pd = ProgressDialog.show(context, "MediaRecorder", "preparation...");
+		}
+		
+		@Override
+		protected Boolean doInBackground(Void... voids) {
+			if(mediaRecorder == null)
+				prepareMediaRecorder();
+			try {
+				mediaRecorder.start();	
+			} catch (IllegalStateException e) {
+				Log.e(TAG, "startRecording: called in illegal state.", e);
+				releaseMediaRecorder();
+				if (videoRecorderExceptionHandler != null)
+					videoRecorderExceptionHandler.illegalStateOnStart();
+				return false;
+			} catch (RuntimeException e){
+				// Since this seems to get the media recorder into a wedged state I will just finish the app here.
+				Log.e(TAG, "ERROR: RuntimeException: this should never happen according to google. But I have seen it. " + e.toString());
+				releaseMediaRecorder();
+				if (videoRecorderExceptionHandler != null)
+					videoRecorderExceptionHandler.runntimeErrorOnStart();
+				return false;
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+			//pd.dismiss();
+		}
 	}
 
 }

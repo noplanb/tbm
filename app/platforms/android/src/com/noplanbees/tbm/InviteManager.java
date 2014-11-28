@@ -16,6 +16,7 @@ import android.widget.EditText;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.ui.MainActivity;
 
 public class InviteManager implements DialogInterface.OnClickListener{
 	
@@ -191,7 +192,7 @@ public class InviteManager implements DialogInterface.OnClickListener{
 	
 	// Not used as the intent coming back into home activity is unnecessarily disruptive.
 	private PendingIntent makeSmsResultPendingIntent(){
-		Intent i = new Intent(context, HomeActivity.class);
+		Intent i = new Intent(context, MainActivity.class);
 		i.setAction(IntentActions.SMS_RESULT);
 		Uri uri = new Uri.Builder().appendPath(IntentHandler.IntentActions.SMS_RESULT).appendQueryParameter(IntentHandler.IntentParamKeys.FRIEND_ID, friend.getId()).build();
 		i.setData(uri);

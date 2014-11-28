@@ -15,6 +15,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.noplanbees.tbm.ui.MainActivity;
+
 public class LockScreenAlertActivity extends Activity {
 
 	private final String TAG = getClass().getSimpleName();
@@ -100,7 +102,7 @@ public class LockScreenAlertActivity extends Activity {
 
 
 	private void startHomeActivity(){
-		Intent i = new Intent(this, HomeActivity.class);
+		Intent i = new Intent(this, MainActivity.class);
 		i.setAction(getIntent().getAction());
 		i.setData(getIntent().getData());
 		Log.i(TAG, "startHomeActivity: ");

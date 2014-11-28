@@ -3,7 +3,6 @@ package com.noplanbees.tbm;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.view.View;
 
 
 public class GridElementFactory extends ActiveModelFactory {

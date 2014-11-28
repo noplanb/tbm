@@ -7,19 +7,23 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import com.noplanbees.tbm.ActiveModelsHandler;
 import com.noplanbees.tbm.BenchController;
 import com.noplanbees.tbm.Boot;
 import com.noplanbees.tbm.DataHolderService;
-import com.noplanbees.tbm.DataHolderService.LocalBinder;
 import com.noplanbees.tbm.GcmHandler;
+import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.NotificationAlertManager;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.UserFactory;
@@ -46,10 +50,18 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	private BenchController benchController;
 
 	private VersionHandler versionHandler;
+
+	private GridViewFragment mainFragment;
+
+	private DrawerLayout body;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_activity);
+		
+		body = (DrawerLayout)findViewById(R.id.drawer_layout);
+		
+		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		
 		gcmHandler = new GcmHandler(this);
 		benchController = new BenchController(this);
@@ -109,8 +121,11 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 			if (pd != null)
 				pd.dismiss();
 
-			Fragment mainFragment = new GridViewFragment();
-			getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment).commit();
+			mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
+			if(mainFragment == null){
+				mainFragment = new GridViewFragment();
+				getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
+			}
 			
 			if (gcmHandler.checkPlayServices()){
 				gcmHandler.registerGcm();
@@ -119,9 +134,7 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 			}
 
 			benchController.onDataLoaded();
-
 		}
-
 	}
 
 	@Override
@@ -138,7 +151,11 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 		// Handle presses on the action bar items
 		switch (item.getItemId()) {
 		case R.id.action_bench:
-			benchController.toggle();
+			//benchController.toggle();
+			if(body.isDrawerOpen(Gravity.RIGHT))
+				body.closeDrawers();
+			else
+				body.openDrawer(Gravity.RIGHT);
 			return true;
 		case R.id.action_get_contacts:
 			UserFactory.current_user().getCountryCode();
@@ -161,4 +178,5 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	public void onFinish() {
 		finish();
 	}
+	
 }

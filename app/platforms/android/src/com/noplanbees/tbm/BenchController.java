@@ -28,9 +28,9 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	private final String TAG = getClass().getSimpleName();
 
 	private Activity activity;
-	private RelativeLayout benchLayout;
-	private boolean isShowing;
-	private ObjectAnimator anim;
+//	private RelativeLayout benchLayout;
+//	private boolean isShowing;
+//	private ObjectAnimator anim;
 	private ListView listView;
 	private FriendFactory friendFactory;
 	private SmsStatsHandler smsStatsHandler;
@@ -44,13 +44,12 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	public BenchController(Activity a){
 		activity = a;
 		friendFactory = FriendFactory.getFactoryInstance();
-		smsStatsHandler = SmsStatsHandler.getInstance(activity, this);
-		contactsManager = new ContactsManager(activity, this);
 
-		setupFrame();
-		setupAnimator();
-		setupListView();
-		setupSwipeTouchListener();
+		listView = (ListView) activity.findViewById(R.id.bench_list);
+		listView.setOnItemClickListener(this);		
+
+		contactsManager = new ContactsManager(activity, this);
+		smsStatsHandler = SmsStatsHandler.getInstance(activity, this);
 	}
 	
 	public void onDataLoaded(){
@@ -62,35 +61,10 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		smsStatsHandler.getRankedPhoneData();
 	}
 
-	private void setupFrame() {
-		benchLayout = (RelativeLayout) activity.findViewById(R.id.bench_frame);
-		DrawerLayout.LayoutParams lp = new DrawerLayout.LayoutParams(benchWidth(), windowSize().y);
-		benchLayout.setLayoutParams(lp);
-		benchLayout.setX(hiddenX());
-		isShowing = false;
-	}
-
-	private void setupAnimator(){
-		anim = ObjectAnimator.ofFloat(benchLayout, "X", (float)hiddenX(), (float)shownX());
-		anim.setDuration(BenchController.ANIMATION_DURATION);
-	}
-
-	private void setupListView() {
-		listView = (ListView) activity.findViewById(R.id.bench_list);
-		listView.setOnItemClickListener(this);		
-	}
-
-	private void setupSwipeTouchListener() {	
-		listView.setOnTouchListener(new SwipeTouchListener(activity){
-			public void onSwipeRight() {
-				hide();
-			}
-		});
-	}
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		hide();
+//		hide();
 
 		BenchObject bo = currentAllOnBench.get(position);
 		Log.i(TAG, "Postion:" + position + " " + bo.displayName);
@@ -159,6 +133,9 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 			b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(SmsStatsHandler.Keys.MOBILE_NUMBER));
 			smsBenchObjects.add(new BenchObject(b));
 		}
+		
+		populate();
+		contactsManager.setupAutoComplete((AutoCompleteTextView) activity.findViewById(R.id.contacts_auto_complete_text_view));
 	}
 
 	private ArrayList<BenchObject> dedupedSmsBenchObjects(){
@@ -203,7 +180,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	public void contactSelected(Contact contact) {
 		Log.i(TAG, contact.toString());
 		
-		hide();
+//		hide();
 
 		Friend f = friendMatchingContact(contact);
 		if (f != null){
@@ -257,60 +234,60 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	//--------------
 	// Show and hide
 	//--------------
-	public void toggle() {
-		if (isShowing)
-			hide();
-		else
-			show();
-	}
+//	public void toggle() {
+//		if (isShowing)
+//			hide();
+//		else
+//			show();
+//	}
+//
+//	public void show(){
+//		if (isShowing)
+//			return;
+//		
+//		hideAllViews();
+//		populate();
+//		
+////		anim.setFloatValues((float)hiddenX(), (float)shownX());
+////		anim.start();
+//		isShowing = true;
+//	}
+//
+//	public void hide(){
+//		if (!isShowing)
+//			return;
+//
+//		contactsManager.resetViews();
+////		anim.setFloatValues((float)shownX(), (float)hiddenX());
+////		anim.start();	
+//		isShowing = false;
+//	}
+//
+//	public void hideAllViews(){
+//		hide();
+//		contactsManager.resetViews();
+//	}
 
-	public void show(){
-		if (isShowing)
-			return;
-		
-		hideAllViews();
-		populate();
-		contactsManager.setupAutoComplete((AutoCompleteTextView) activity.findViewById(R.id.contacts_auto_complete_text_view));
-		anim.setFloatValues((float)hiddenX(), (float)shownX());
-		anim.start();
-		isShowing = true;
-	}
-
-	public void hide(){
-		if (!isShowing)
-			return;
-
-		contactsManager.resetViews();
-		anim.setFloatValues((float)shownX(), (float)hiddenX());
-		anim.start();	
-		isShowing = false;
-	}
-
-	public void hideAllViews(){
-		hide();
-		contactsManager.resetViews();
-	}
 
 
-
-	//------------------
-	// Size calculations
-	//------------------
-	private int benchWidth(){
-		return (int) (PERCENT_OF_WINDOW * windowSize().x);
-	}
-
-	private int shownX(){
-		return windowSize().x - benchWidth();
-	}
-
-	private int hiddenX(){
-		return windowSize().x;
-	}
-
-	private Point windowSize(){
-		Point p = new Point();
-		activity.getWindowManager().getDefaultDisplay().getSize(p);
-		return p;
-	}
+//	//------------------
+//	// Size calculations
+//	//------------------
+//	private int benchWidth(){
+//		return (int) (PERCENT_OF_WINDOW * windowSize().x);
+//	}
+//
+//	private int shownX(){
+//		return windowSize().x - benchWidth();
+//	}
+//
+//	private int hiddenX(){
+//		return windowSize().x;
+//	}
+//
+//	private Point windowSize(){
+//		Point p = new Point();
+//		activity.getWindowManager().getDefaultDisplay().getSize(p);
+//		return p;
+//	}
 }

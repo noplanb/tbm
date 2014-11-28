@@ -23,18 +23,4 @@ public class Boot {
 		return true;
 	}
 	
-	//--------------------------
-	// Init GCM
-	//--------------------------
-	public static boolean initGCM(HomeActivity homeActivity){
-		homeActivity.gcmHandler = new GcmHandler(homeActivity);
-		if (homeActivity.gcmHandler.checkPlayServices()){
-			homeActivity.gcmHandler.registerGcm();
-		} else {
-			Log.e(TAG, "No valid Google Play Services APK found.");
-			return false;
-		}
-		return true;
-	}
-
 }

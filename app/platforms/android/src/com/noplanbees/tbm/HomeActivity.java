@@ -184,7 +184,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			setupLongPressTouchHandler();
 			ensureListeners();
 
-			Boot.initGCM(this);
+			//Boot.initGCM(this);
 
 			gcmHandler.checkPlayServices();
 
@@ -401,12 +401,12 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 
 			@Override
 			public void flingRight() {
-				benchController.hide();
+				//benchController.hide();
 			}
 
 			@Override
 			public void flingLeft() {
-				benchController.show();
+				//benchController.show();
 			}
 
 			@Override
@@ -523,7 +523,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			p.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					benchController.show();
+					//benchController.show();
 				}
 			});
 		}
@@ -677,7 +677,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 		// Handle presses on the action bar items
 		switch (item.getItemId()) {
 		case R.id.action_bench:
-			benchController.toggle();
+			//benchController.toggle();
 			return true;
 		case R.id.action_get_contacts:
 			UserFactory.current_user().getCountryCode();
@@ -700,7 +700,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 	// Views that may be covering the home page
 	// -----------------------------------------
 	private void hideAllCoveringViews() {
-		benchController.hideAllViews();
+		//benchController.hideAllViews();
 	}
 
 	//--------------------------
