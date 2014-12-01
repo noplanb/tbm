@@ -409,14 +409,9 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		private Thread mThread;
 		private Thread.UncaughtExceptionHandler mOldUncaughtExceptionHandler = null;
 		private Thread.UncaughtExceptionHandler mUncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
+			// gets called on the same (main) thread
 			@Override
-			public void uncaughtException(Thread thread, Throwable ex) { // gets
-																			// called
-																			// on
-																			// the
-																			// same
-																			// (main)
-																			// thread
+			public void uncaughtException(Thread thread, Throwable ex) { 
 				Log.w("UnexpectedTerminationHelper", "uncaughtException", ex);
 				camera.stopPreview();
 				camera.release();
@@ -450,6 +445,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				break;
 			i++;
 		}
+		
 		View view = gridView.getChildAt(i);
 		videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth(), view.getHeight());
 		videoPlayer.play(friendId);

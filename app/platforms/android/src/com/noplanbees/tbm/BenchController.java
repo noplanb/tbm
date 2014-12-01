@@ -2,12 +2,9 @@ package com.noplanbees.tbm;
 
 import java.util.ArrayList;
 
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.graphics.Point;
-import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -15,7 +12,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Friend.Attributes;

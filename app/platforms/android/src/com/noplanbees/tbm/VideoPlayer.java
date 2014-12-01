@@ -50,9 +50,12 @@ public class VideoPlayer implements OnCompletionListener{
 		videoBody.setLayoutParams(params);
 		videoBody.setX(x);
 		videoBody.setY(y);
-		//videoBody.setVisibility(View.VISIBLE);
 	}
 
+	public String getFriendId() {
+		return friendId;
+	}
+	
 	public void play(String friendId){
 		
 		if (videoView.isPlaying()){

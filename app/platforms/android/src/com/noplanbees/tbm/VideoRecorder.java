@@ -3,7 +3,6 @@ package com.noplanbees.tbm;
 import java.io.File;
 import java.io.IOException;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
@@ -96,22 +95,20 @@ public class VideoRecorder {
 		return true;
 	}
 	
-	public void release() {
-		Log.i(TAG, "dispose");
-		Boolean abortedRecording = false;
-		if (mediaRecorder !=null){
-			try {
-				mediaRecorder.stop();
-				abortedRecording = true;
-			} catch (IllegalStateException e) {
-			} catch (RuntimeException e) {
-			}
-		}
-		releaseMediaRecorder();
-		if (abortedRecording && videoRecorderExceptionHandler != null)
-			videoRecorderExceptionHandler.recordingAborted();
-			
-	}
+//	public void release() {
+//		Log.i(TAG, "dispose");
+//		Boolean abortedRecording = false;
+//		if (mediaRecorder !=null){
+//			try {
+//				mediaRecorder.stop();
+//				abortedRecording = true;
+//			} catch (IllegalStateException e) {
+//			} catch (RuntimeException e) {}
+//		}
+//		releaseMediaRecorder();
+//		if (abortedRecording && videoRecorderExceptionHandler != null)
+//			videoRecorderExceptionHandler.recordingAborted();
+//	}
 	
 	// ---------------
 	// Private Methods
@@ -172,10 +169,6 @@ public class VideoRecorder {
 		
 		mediaRecorder.setOrientationHint(270);
 		
-		// Step 5: Set the preview output
-		Log.i(TAG, "prepareMediaRecorder: mediaRecorder.setPreviewDisplay");
-		//mediaRecorder.setPreviewDisplay(surface);
-
 		// Step 6: Prepare configured MediaRecorder
 		try {
 			Log.i(TAG, "prepareMediaRecorder: mediaRecorder.prepare");
@@ -206,7 +199,6 @@ public class VideoRecorder {
 			mediaRecorder.release(); // release the recorder object
 			mediaRecorder = null;
 		}
-		//CameraManager.lockCamera();
 	}
 	
 	/**
@@ -214,19 +206,13 @@ public class VideoRecorder {
 	 * since it's a long blocking operation.
 	 */
 	private class MediaPrepareTask extends AsyncTask<Void, Void, Boolean> {
-
-		private ProgressDialog pd;
-
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			//pd = ProgressDialog.show(context, "MediaRecorder", "preparation...");
-		}
 		
 		@Override
 		protected Boolean doInBackground(Void... voids) {
-			if(mediaRecorder == null)
-				prepareMediaRecorder();
+			long l = System.currentTimeMillis();
+			prepareMediaRecorder();
+			long l2 = System.currentTimeMillis();
+			Log.d(TAG, "delta for preparation: " + (l2-l));
 			try {
 				mediaRecorder.start();	
 			} catch (IllegalStateException e) {
@@ -248,7 +234,6 @@ public class VideoRecorder {
 
 		@Override
 		protected void onPostExecute(Boolean result) {
-			//pd.dismiss();
 		}
 	}
 

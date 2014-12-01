@@ -3,7 +3,6 @@ package com.noplanbees.tbm.ui;
 import java.util.List;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;

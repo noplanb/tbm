@@ -1,7 +1,5 @@
 package com.noplanbees.tbm.ui;
 
-import com.noplanbees.tbm.Convenience;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -10,10 +8,11 @@ import android.graphics.Path;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
 import android.widget.FrameLayout;
+
+import com.noplanbees.tbm.Convenience;
 
 public class PreviewTextureView extends FrameLayout {
 
@@ -51,7 +50,6 @@ public class PreviewTextureView extends FrameLayout {
 
 	public void setSurfaceTextureListener(SurfaceTextureListener listener) {
 		textureView.setSurfaceTextureListener(listener);
-		
 	}
 	
 	@Override

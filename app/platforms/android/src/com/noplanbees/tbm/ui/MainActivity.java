@@ -7,7 +7,6 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.widget.DrawerLayout;
@@ -23,7 +22,6 @@ import com.noplanbees.tbm.BenchController;
 import com.noplanbees.tbm.Boot;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.GcmHandler;
-import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.NotificationAlertManager;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.UserFactory;
@@ -51,7 +49,7 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 
 	private VersionHandler versionHandler;
 
-	private GridViewFragment mainFragment;
+	private Fragment mainFragment;
 
 	private DrawerLayout body;
 	
@@ -78,11 +76,9 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	protected void onStart() {
 		super.onStart();
 		Log.d(TAG, "onStart");
-		versionHandler.checkVersionCompatibility();		
-
 		pd = ProgressDialog.show(this, "Data", "retrieving data...");
+		versionHandler.checkVersionCompatibility();		
 		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
-
 		NotificationAlertManager.cancelNativeAlerts(this);
 	}
 	
@@ -124,6 +120,7 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 			mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
 			if(mainFragment == null){
 				mainFragment = new GridViewFragment();
+				//mainFragment = new TestF();
 				getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
 			}
 			
