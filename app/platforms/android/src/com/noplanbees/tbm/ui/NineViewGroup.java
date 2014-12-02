@@ -22,15 +22,17 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.TextureView.SurfaceTextureListener;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 
 import com.noplanbees.tbm.Convenience;
 
-public class CustomAdapterView extends ViewGroup {
+public class NineViewGroup extends ViewGroup {
 
 	private static final int BIG_MOVE_DISTANCE = 125;
 	/**
@@ -62,21 +64,31 @@ public class CustomAdapterView extends ViewGroup {
 	 */
 	public static final int INVALID_POSITION = -1;
 
+	private static final float ASPECT = 240F / 320F;
+	
+	private static final int TOTAL_CHILD_COUNT = 9;
+	private static final int CENTRAL_VIEW_POSITION = TOTAL_CHILD_COUNT/2;
+	
 	public interface OnItemTouchListener {
-		boolean onItemClick(CustomAdapterView parent, View view, int position, long id);
-		boolean onItemLongClick(CustomAdapterView parent, View view, int position, long id);
+		boolean onItemClick(NineViewGroup parent, View view, int position, long id);
+		boolean onItemLongClick(NineViewGroup parent, View view, int position, long id);
 		boolean onItemStopTouch();
 		boolean onCancelTouch();
 	}
 	
 	public interface OnChildLayoutCompleteListener{
-		void onChildLayoutComplete(int childWidth, int childHeight);
+		void onChildLayoutComplete();
 	}
 
 	private BaseAdapter adapter;
 	private OnItemTouchListener itemClickListener;
 	private OnChildLayoutCompleteListener childLayoutCompleteListener;
 
+	private PreviewTextureView preview;
+	private boolean isRecording;
+	private SurfaceTextureListener listener;
+
+	
 	/**
 	 * One of TOUCH_MODE_REST, TOUCH_MODE_DOWN, TOUCH_MODE_TAP,
 	 * TOUCH_MODE_SCROLL, or TOUCH_MODE_DONE_WAITING
@@ -122,15 +134,15 @@ public class CustomAdapterView extends ViewGroup {
 
 	private boolean isDirty;
 
-	public CustomAdapterView(Context context, AttributeSet attrs, int defStyle) {
+	public NineViewGroup(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 	}
 
-	public CustomAdapterView(Context context, AttributeSet attrs) {
+	public NineViewGroup(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 
-	public CustomAdapterView(Context context) {
+	public NineViewGroup(Context context) {
 		super(context);
 	}
 
@@ -161,39 +173,56 @@ public class CustomAdapterView extends ViewGroup {
 		this.childLayoutCompleteListener = childLayoutCompleteListener;
 	}
 
+	public void setListener(TextureView.SurfaceTextureListener listener) {
+		this.listener = listener;
+	}
+	
+	public void setRecording(boolean b) {
+		isRecording = b;
+		if (preview != null)
+			preview.setRecording(b);
+	}
+
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		if (adapter == null)
 			return;
-		View v = null;
+		//View  = null;
 		int childCount = getChildCount();
 		if (isDirty == true && childCount > 0) {
-			v = getChildAt(childCount/2);
+			// = getChildAt(CENTRAL_VIEW_POSITION);
 			int j=0;
 			while(getChildCount()>1){
 				View child = getChildAt(j);
-				if(child.equals(v)){
+				if(child.equals(preview)){
 					j++;
 					continue;
 				}
 				removeView(child);
 			}
-			//removeAllViews();
 			Log.d(VIEW_LOG_TAG, "removed all childs");
 		} 
 		
 		if (childCount < adapter.getCount() || isDirty) {
 			int position = 0;
 			int bottomEdge = 0;
-			while (bottomEdge < getHeight() && position < adapter.getCount()) {
+			while (bottomEdge < getHeight() && position < TOTAL_CHILD_COUNT) {
 				int rightEdge = 0;
 				int measuredHeight = 0;
-				while (rightEdge < getWidth() && position < adapter.getCount()) {
+				while (rightEdge < getWidth() && position < TOTAL_CHILD_COUNT) {
 					View newChild;
-					if(isDirty && position == childCount/2)
-						newChild = v;
-					else{
-						newChild = adapter.getView(position, null, this);
+					if(position == CENTRAL_VIEW_POSITION && preview!=null)
+						newChild = preview;
+					else if(position == CENTRAL_VIEW_POSITION && preview==null){
+						newChild = getUserView();
+						addAndMeasureChild(newChild, position);
+					}else{
+						int childPos;
+						if(position>CENTRAL_VIEW_POSITION)
+							childPos = position-1;
+						else
+							childPos = position;
+						newChild = adapter.getView(childPos, null, this);
 						addAndMeasureChild(newChild, position);
 					}
 					rightEdge += newChild.getMeasuredWidth();
@@ -245,10 +274,19 @@ public class CustomAdapterView extends ViewGroup {
 			child.layout(left, top, left + width, top + height);
 		}
 		if(childLayoutCompleteListener!=null){
-			childLayoutCompleteListener.onChildLayoutComplete(width, height);
+			childLayoutCompleteListener.onChildLayoutComplete();
 		}
 
 		Log.d(VIEW_LOG_TAG, "layoutChildren");
+	}
+
+	private View getUserView() {
+		if(preview == null){
+			preview = new PreviewTextureView(getContext());
+			preview.setSurfaceTextureListener(listener);
+		}
+		preview.setRecording(isRecording);
+		return preview;
 	}
 
 	@Override

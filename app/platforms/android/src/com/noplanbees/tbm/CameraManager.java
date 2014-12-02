@@ -42,11 +42,13 @@ final String TAG = this.getClass().getSimpleName();
 	// Public methods
 	// --------------
 	public static Camera getCamera(Context context){
-		//if(camera == null)
-			setupFrontCamera(context);
+		setupFrontCamera(context);
 		return camera;
 	}
-	public static Camera getTCamera(Context context){
+	
+	public static Camera getPreparedCamera(Context context){
+		if(camera == null)
+			setupFrontCamera(context);
 		return camera;
 	}
 	

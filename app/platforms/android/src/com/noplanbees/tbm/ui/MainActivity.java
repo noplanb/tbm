@@ -175,5 +175,10 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	public void onFinish() {
 		finish();
 	}
+
+	@Override
+	public void onBenchRequest(int pos) {
+		body.openDrawer(Gravity.RIGHT);
+	}
 	
 }

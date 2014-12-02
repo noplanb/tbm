@@ -35,7 +35,7 @@ import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.VideoPlayer;
 import com.noplanbees.tbm.VideoRecorder;
-import com.noplanbees.tbm.ui.CustomAdapterView.OnChildLayoutCompleteListener;
+import com.noplanbees.tbm.ui.NineViewGroup.OnChildLayoutCompleteListener;
 import com.noplanbees.tbm.utilities.Logger;
 
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
@@ -43,12 +43,13 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 	public interface Callbacks {
 		void onFinish();
+		void onBenchRequest(int pos);
 	}
 
 	private static final String TAG = "GridViewFragment";
 	private boolean isRecording;
 	private int currentItemPlayed = -1;
-	private CustomAdapterView gridView;
+	private NineViewGroup gridView;
 	private FriendsAdapter adapter;
 	private ActiveModelsHandler activeModelsHandler;
 	private VideoPlayer videoPlayer;
@@ -85,7 +86,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.video_gridview_fragment, null);
+		View v = inflater.inflate(R.layout.nineviewgroup_fragment, null);
 
 		View videoBody = v.findViewById(R.id.video_body);
 		VideoView videoView = (VideoView) v.findViewById(R.id.video_view);
@@ -93,10 +94,10 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		videoPlayer.setVideoView(videoView);
 		videoPlayer.setVideoViewBody(videoBody);
 
-		gridView = (CustomAdapterView) v.findViewById(R.id.grid_view);
-		gridView.setItemClickListener(new CustomAdapterView.OnItemTouchListener() {
+		gridView = (NineViewGroup) v.findViewById(R.id.grid_view);
+		gridView.setItemClickListener(new NineViewGroup.OnItemTouchListener() {
 			@Override
-			public boolean onItemClick(CustomAdapterView parent, View view, int position, long id) {
+			public boolean onItemClick(NineViewGroup parent, View view, int position, long id) {
 				if (id == -1)
 					return false;
 
@@ -111,14 +112,14 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 						videoPlayer.play(friendId);
 						currentItemPlayed = position;
 					} else {
-						// show bench
+						callbacks.onBenchRequest(position);
 					}
 				}
 				return true;
 			}
 
 			@Override
-			public boolean onItemLongClick(CustomAdapterView parent, View view, int position, long id) {
+			public boolean onItemLongClick(NineViewGroup parent, View view, int position, long id) {
 				if (id == -1)
 					return false;
 
@@ -127,7 +128,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				if (friendId != null && !friendId.equals("")) {
 					Logger.d("START RECORD");
 					onRecordStart(friendId);
-					adapter.setRecording(true);
+					gridView.setRecording(true);
 					isRecording = true;
 				}
 
@@ -138,7 +139,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 			public boolean onItemStopTouch() {
 				if (isRecording) {
 					Logger.d("STOP RECORD");
-					adapter.setRecording(false);
+					gridView.setRecording(false);
 					isRecording = false;
 
 					onRecordStop();
@@ -151,7 +152,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				Log.d(getTag(), "onCancelTouch");
 				if (isRecording) {
 					Logger.d("STOP RECORD");
-					adapter.setRecording(false);
+					gridView.setRecording(false);
 					onRecordCancel();
 					isRecording = false;
 				}
@@ -161,7 +162,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		
 		gridView.setChildLayoutCompleteListener(new OnChildLayoutCompleteListener() {
 			@Override
-			public void onChildLayoutComplete(int childWidth, int childHeight) {
+			public void onChildLayoutComplete() {
 				handleIntentAction(getActivity().getIntent());
 			}
 		});
@@ -177,7 +178,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 		adapter = new FriendsAdapter(getActivity(), activeModelsHandler.getGf().all());
 		gridView.setAdapter(adapter);
-		adapter.setListener(new SurfaceTextureListener() {
+		gridView.setListener(new SurfaceTextureListener() {
 			@Override
 			public void onSurfaceTextureUpdated(SurfaceTexture surface) {
 			}
@@ -188,6 +189,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 			@Override
 			public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+				videoRecorder.release();
 				camera.stopPreview();
 				camera.release();
 				camera = null;
@@ -204,8 +206,9 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 					camera.setPreviewTexture(surface);
 					camera.setDisplayOrientation(90);
 					camera.startPreview();
+					videoRecorder.prepare();
 				} catch (IOException ioe) {
-					// Something bad happened
+					Log.e(TAG, "cant prepare camera", ioe);
 				}
 			}
 		});
@@ -226,7 +229,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		super.onPause();
 		if (isRecording) {
 			videoRecorder.stopRecording();
-			camera.lock();
+			//camera.lock();
 		}
 		videoPlayer.release(getActivity());
 	}
@@ -234,7 +237,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		mUnexpectedTerminationHelper.fini();
+		mUnexpectedTerminationHelper.finish();
 	}
 
 	// -------
@@ -349,23 +352,28 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				"Quit", "Try Again");
 	}
 
-	private void showCameraExceptionDialog(String title, String message, String negativeButton, String positiveButton) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle(title).setMessage(message)
-				.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						callbacks.onFinish();
-					}
-				}).setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						// videoRecorder.dispose();
-						// videoRecorder.restore();
-						// ????
-					}
-				});
-		AlertDialog alertDialog = builder.create();
-		alertDialog.setCanceledOnTouchOutside(false);
-		alertDialog.show();
+	private void showCameraExceptionDialog(final String title, final String message, final String negativeButton, final String positiveButton) {
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+				builder.setTitle(title).setMessage(message)
+						.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								callbacks.onFinish();
+							}
+						}).setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								// videoRecorder.dispose();
+								// videoRecorder.restore();
+								// ????
+							}
+						});
+				AlertDialog alertDialog = builder.create();
+				alertDialog.setCanceledOnTouchOutside(false);
+				alertDialog.show();
+			}
+		});
 	}
 
 	@Override
@@ -431,7 +439,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 			mThread.setUncaughtExceptionHandler(mUncaughtExceptionHandler);
 		}
 
-		void fini() {
+		void finish() {
 			mThread.setUncaughtExceptionHandler(mOldUncaughtExceptionHandler);
 			mOldUncaughtExceptionHandler = null;
 			mThread = null;
