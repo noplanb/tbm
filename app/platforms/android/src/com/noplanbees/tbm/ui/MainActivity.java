@@ -27,7 +27,7 @@ import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.UserFactory;
 import com.noplanbees.tbm.VersionHandler;
 
-public class MainActivity extends Activity implements GridViewFragment.Callbacks {
+public class MainActivity extends Activity implements GridViewFragment.Callbacks, BenchController.Callbacks {
 	private final static String TAG = "MainActivity";
 
 	private ProgressDialog pd;
@@ -62,7 +62,6 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		
 		gcmHandler = new GcmHandler(this);
-		benchController = new BenchController(this);
 		versionHandler = new VersionHandler(this);
 	};
 
@@ -76,7 +75,7 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	protected void onStart() {
 		super.onStart();
 		Log.d(TAG, "onStart");
-		pd = ProgressDialog.show(this, "Data", "retrieving data...");
+		//pd = ProgressDialog.show(this, "Data", "retrieving data...");
 		versionHandler.checkVersionCompatibility();		
 		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 		NotificationAlertManager.cancelNativeAlerts(this);
@@ -98,8 +97,8 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	protected void onStop() {
 		super.onStop();
 		Log.d(TAG, "onStop");
-		if (pd != null)
-			pd.dismiss();
+		//if (pd != null)
+		//	pd.dismiss();
 		
 		unbindService(conn);
 	}
@@ -114,8 +113,8 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 			finish();
 			return;
 		} else {
-			if (pd != null)
-				pd.dismiss();
+			//if (pd != null)
+			//	pd.dismiss();
 
 			mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
 			if(mainFragment == null){
@@ -130,6 +129,7 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 				Log.e(TAG, "No valid Google Play Services APK found.");
 			}
 
+			benchController = new BenchController(this);
 			benchController.onDataLoaded();
 		}
 	}
@@ -179,6 +179,11 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	@Override
 	public void onBenchRequest(int pos) {
 		body.openDrawer(Gravity.RIGHT);
+	}
+
+	@Override
+	public void onHide() {
+		body.closeDrawers();
 	}
 	
 }

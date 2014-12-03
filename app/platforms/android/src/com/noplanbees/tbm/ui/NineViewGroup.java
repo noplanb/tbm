@@ -22,18 +22,18 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.TextureView;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.TextureView.SurfaceTextureListener;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 
 import com.noplanbees.tbm.Convenience;
+import com.noplanbees.tbm.VideoRecorder;
 
 public class NineViewGroup extends ViewGroup {
 
+	private static final int MATRIX_DIMENSIONS = 3;
 	private static final int BIG_MOVE_DISTANCE = 125;
 	/**
 	 * Indicates that we are not in the middle of a touch gesture
@@ -84,11 +84,6 @@ public class NineViewGroup extends ViewGroup {
 	private OnItemTouchListener itemClickListener;
 	private OnChildLayoutCompleteListener childLayoutCompleteListener;
 
-	private PreviewTextureView preview;
-	private boolean isRecording;
-	private SurfaceTextureListener listener;
-
-	
 	/**
 	 * One of TOUCH_MODE_REST, TOUCH_MODE_DOWN, TOUCH_MODE_TAP,
 	 * TOUCH_MODE_SCROLL, or TOUCH_MODE_DONE_WAITING
@@ -133,6 +128,7 @@ public class NineViewGroup extends ViewGroup {
 	private DataSetObserver dataSetObserver;
 
 	private boolean isDirty;
+	private VideoRecorder videoRecorder;
 
 	public NineViewGroup(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
@@ -160,6 +156,10 @@ public class NineViewGroup extends ViewGroup {
 	public BaseAdapter getAdapter() {
 		return adapter;
 	}
+	
+	public void setVideoRecorder(VideoRecorder videoRecorder){
+		this.videoRecorder = videoRecorder;
+	}
 
 	public OnItemTouchListener getItemClickListener() {
 		return itemClickListener;
@@ -173,28 +173,19 @@ public class NineViewGroup extends ViewGroup {
 		this.childLayoutCompleteListener = childLayoutCompleteListener;
 	}
 
-	public void setListener(TextureView.SurfaceTextureListener listener) {
-		this.listener = listener;
-	}
-	
-	public void setRecording(boolean b) {
-		isRecording = b;
-		if (preview != null)
-			preview.setRecording(b);
-	}
-
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		if (adapter == null)
+		if (adapter == null  || videoRecorder == null)
 			return;
-		//View  = null;
+		
+		View  preview = videoRecorder.getView();
 		int childCount = getChildCount();
 		if (isDirty == true && childCount > 0) {
 			// = getChildAt(CENTRAL_VIEW_POSITION);
 			int j=0;
 			while(getChildCount()>1){
 				View child = getChildAt(j);
-				if(child.equals(preview)){
+				if(preview!=null && child.equals(preview)){
 					j++;
 					continue;
 				}
@@ -211,11 +202,10 @@ public class NineViewGroup extends ViewGroup {
 				int measuredHeight = 0;
 				while (rightEdge < getWidth() && position < TOTAL_CHILD_COUNT) {
 					View newChild;
-					if(position == CENTRAL_VIEW_POSITION && preview!=null)
-						newChild = preview;
-					else if(position == CENTRAL_VIEW_POSITION && preview==null){
-						newChild = getUserView();
-						addAndMeasureChild(newChild, position);
+					if(position == CENTRAL_VIEW_POSITION){
+						newChild = videoRecorder.getView();
+						if(!isDirty)
+							addAndMeasureChild(newChild, position);
 					}else{
 						int childPos;
 						if(position>CENTRAL_VIEW_POSITION)
@@ -226,7 +216,7 @@ public class NineViewGroup extends ViewGroup {
 						addAndMeasureChild(newChild, position);
 					}
 					rightEdge += newChild.getMeasuredWidth();
-					measuredHeight = newChild.getMeasuredHeight();
+					measuredHeight = getHeight() / MATRIX_DIMENSIONS;//newChild.getMeasuredHeight();
 					position++;
 				}
 				bottomEdge += measuredHeight;
@@ -249,8 +239,8 @@ public class NineViewGroup extends ViewGroup {
 		}
 		addViewInLayout(child, position, params, true);
 
-		int itemWidth = getWidth() / 3;
-		int itemHeight = getHeight() / 3;
+		int itemWidth = getWidth() / MATRIX_DIMENSIONS;
+		int itemHeight = (int) ((float) itemWidth / ASPECT);
 		child.measure(MeasureSpec.EXACTLY | itemWidth, MeasureSpec.EXACTLY | itemHeight);
 	}
 
@@ -262,6 +252,8 @@ public class NineViewGroup extends ViewGroup {
 		int numCol = getWidth() / child.getMeasuredWidth();
 
 		int width=0, height=0;
+		int heightFrame = getHeight()/MATRIX_DIMENSIONS;
+		int padding = (heightFrame - child.getMeasuredHeight())/2;
 		
 		for (int index = 0; index < getChildCount(); index++) {
 			child = getChildAt(index);
@@ -269,24 +261,20 @@ public class NineViewGroup extends ViewGroup {
 			height = child.getMeasuredHeight();
 			int mod = index / numCol;
 			int left = (index - mod * numCol) * width;
-			int top = mod * height;
+			int top = mod * heightFrame + padding;
 
 			child.layout(left, top, left + width, top + height);
+
+		
+			Log.d(VIEW_LOG_TAG, ""+heightFrame + ", " + height + "," + padding);
+			Log.d(VIEW_LOG_TAG, index + ": "+left + ", " + top + ", " + (left + width)  + ", " + (top + height));
 		}
+		
 		if(childLayoutCompleteListener!=null){
 			childLayoutCompleteListener.onChildLayoutComplete();
 		}
 
 		Log.d(VIEW_LOG_TAG, "layoutChildren");
-	}
-
-	private View getUserView() {
-		if(preview == null){
-			preview = new PreviewTextureView(getContext());
-			preview.setSurfaceTextureListener(listener);
-		}
-		preview.setRecording(isRecording);
-		return preview;
 	}
 
 	@Override

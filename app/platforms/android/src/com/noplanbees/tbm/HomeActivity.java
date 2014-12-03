@@ -154,8 +154,8 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 								// surfaces will have been destroyed and the
 								// recording already stopped.
 
-		if (longpressTouchHandler != null)
-			longpressTouchHandler.disable(true);
+//		if (longpressTouchHandler != null)
+//			longpressTouchHandler.disable(true);
 
 		videoPlayer.release(this);
 	}
@@ -420,7 +420,7 @@ public class HomeActivity extends Activity implements CameraExceptionHandler, Vi
 			}
 		};
 
-		longpressTouchHandler.enable();
+//		longpressTouchHandler.enable();
 
 		// Add gridElement boxes as valid targets.
 		for (GridElement ge : activeModelsHandler.getGf().all()) {

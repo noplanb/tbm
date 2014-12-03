@@ -54,7 +54,6 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	private ActiveModelsHandler activeModelsHandler;
 	private VideoPlayer videoPlayer;
 	private VideoRecorder videoRecorder;
-	private Camera camera;
 	private Callbacks callbacks;
 	private Handler handler = new Handler(Looper.getMainLooper());
 
@@ -128,7 +127,6 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				if (friendId != null && !friendId.equals("")) {
 					Logger.d("START RECORD");
 					onRecordStart(friendId);
-					gridView.setRecording(true);
 					isRecording = true;
 				}
 
@@ -139,7 +137,6 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 			public boolean onItemStopTouch() {
 				if (isRecording) {
 					Logger.d("STOP RECORD");
-					gridView.setRecording(false);
 					isRecording = false;
 
 					onRecordStop();
@@ -152,7 +149,6 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				Log.d(getTag(), "onCancelTouch");
 				if (isRecording) {
 					Logger.d("STOP RECORD");
-					gridView.setRecording(false);
 					onRecordCancel();
 					isRecording = false;
 				}
@@ -178,42 +174,8 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 		adapter = new FriendsAdapter(getActivity(), activeModelsHandler.getGf().all());
 		gridView.setAdapter(adapter);
-		gridView.setListener(new SurfaceTextureListener() {
-			@Override
-			public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-			}
-
-			@Override
-			public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-			}
-
-			@Override
-			public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-				videoRecorder.release();
-				camera.stopPreview();
-				camera.release();
-				camera = null;
-				Log.d(getTag(), "onSurfaceTextureDestroyed" + camera);
-				return true;
-			}
-
-			@Override
-			public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-				Log.d(getTag(), "onSurfaceTextureAvailable" + camera);
-
-				try {
-					camera = CameraManager.getCamera(getActivity());
-					camera.setPreviewTexture(surface);
-					camera.setDisplayOrientation(90);
-					camera.startPreview();
-					videoRecorder.prepare();
-				} catch (IOException ioe) {
-					Log.e(TAG, "cant prepare camera", ioe);
-				}
-			}
-		});
-		
-		
+		gridView.setVideoRecorder(videoRecorder);
+	
 		Log.d(TAG, "View created");
 	}
 
@@ -288,11 +250,6 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				g.set(GridElement.Attributes.FRIEND_ID, f.getId());
 			}
 		}
-	}
-
-	@Override
-	public void gridDidChange() {
-		adapter.notifyDataSetChanged();
 	}
 
 	// ---------------------------------------
@@ -400,12 +357,16 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	}
 
 	@Override
+	public void gridDidChange() {
+		adapter.notifyDataSetChanged();
+	}
+
+	@Override
 	public void onVideoStatusChanged(final Friend friend) {
 		handler.post(new Runnable() {
 			@Override
 			public void run() {
 				GridManager.moveFriendToGrid(getActivity(), friend);
-
 				adapter.notifyDataSetChanged();
 			}
 		});
@@ -421,9 +382,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 			@Override
 			public void uncaughtException(Thread thread, Throwable ex) { 
 				Log.w("UnexpectedTerminationHelper", "uncaughtException", ex);
-				camera.stopPreview();
-				camera.release();
-				camera = null;
+				CameraManager.releaseCamera();
 				if (mOldUncaughtExceptionHandler != null) {
 					// it displays the "force close" dialog
 					mOldUncaughtExceptionHandler.uncaughtException(thread, ex);
