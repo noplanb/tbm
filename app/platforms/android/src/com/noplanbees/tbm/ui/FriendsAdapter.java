@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -59,13 +60,14 @@ public class FriendsAdapter extends BaseAdapter {
 	private View getFriendView(Friend f) {
 		View v = LayoutInflater.from(context).inflate(R.layout.friendview_item, null);
 
+		FrameLayout body = (FrameLayout) v.findViewById(R.id.body);
 		TextView tw_name = (TextView) v.findViewById(R.id.textView1);
 		ImageView img_thumb = (ImageView) v.findViewById(R.id.img_thumb);
 
 			if (f.incomingVideoNotViewed()) {
-				img_thumb.setBackgroundResource(R.drawable.blue_border_shape);
+				body.setBackgroundResource(R.drawable.blue_border_shape);
 			} else {
-				img_thumb.setBackgroundResource(0);
+				body.setBackgroundResource(0);
 			}
 
 			if (f.thumbExists())
