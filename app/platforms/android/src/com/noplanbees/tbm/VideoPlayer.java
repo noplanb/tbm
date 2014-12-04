@@ -58,7 +58,7 @@ public class VideoPlayer implements OnCompletionListener{
 	
 	public void play(String friendId){
 		
-		if (videoView.isPlaying()){
+		if (videoView.isPlaying() && friendId.equals(this.friendId)){
 			stop();
 		} else {
 			start(friendId);
@@ -95,7 +95,7 @@ public class VideoPlayer implements OnCompletionListener{
 		VideoPlayer.restoreExistingBluetooth(context);
 		videoView.stopPlayback();
 		videoView.suspend();
-		videoBody.setVisibility(View.INVISIBLE);
+		videoBody.setVisibility(View.GONE);
 	}
 
 	public void release(Context context){

@@ -36,15 +36,13 @@ import com.noplanbees.tbm.utilities.Logger;
 
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
 		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback {
+	private static final String TAG = "GridViewFragment";
 
 	public interface Callbacks {
 		void onFinish();
 		void onBenchRequest(int pos);
 	}
 
-	private static final String TAG = "GridViewFragment";
-	private boolean isRecording;
-	private int currentItemPlayed = -1;
 	private NineViewGroup gridView;
 	private FriendsAdapter adapter;
 	private ActiveModelsHandler activeModelsHandler;
@@ -95,21 +93,14 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 			public boolean onItemClick(NineViewGroup parent, View view, int position, long id) {
 				if (id == -1)
 					return false;
-
-				if (currentItemPlayed == position && videoPlayer.isPlaying()) {
-					videoPlayer.stop();
-					currentItemPlayed = -1;
-				} else {
 					GridElement ge = (GridElement) ((FriendsAdapter) parent.getAdapter()).getItem(position);
 					String friendId = ge.getFriendId();
 					if (friendId != null && !friendId.equals("")) {
 						videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth(), view.getHeight());
 						videoPlayer.play(friendId);
-						currentItemPlayed = position;
 					} else {
 						callbacks.onBenchRequest(position);
 					}
-				}
 				return true;
 			}
 
@@ -123,7 +114,6 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				if (friendId != null && !friendId.equals("")) {
 					Logger.d("START RECORD");
 					onRecordStart(friendId);
-					isRecording = true;
 				}
 
 				return true;
@@ -131,33 +121,24 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 			@Override
 			public boolean onItemStopTouch() {
-				if (isRecording) {
 					Logger.d("STOP RECORD");
-					isRecording = false;
-
 					onRecordStop();
-				}
 				return false;
 			}
 
 			@Override
 			public boolean onCancelTouch() {
 				Log.d(getTag(), "onCancelTouch");
-				if (isRecording) {
 					toast("Dragged Finger Away.");
 					Logger.d("STOP RECORD");
 					onRecordCancel();
-					isRecording = false;
-				}
 				return false;
 			}
 
 			@Override
 			public boolean onCancelTouch(String reason) {
-				if(isRecording){
 					toast(reason);
 					onRecordCancel();
-				}
 				return false;
 			}
 		});
@@ -195,10 +176,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	public void onPause() {
 		Logger.d(TAG, "onPause");
 		super.onPause();
-		if (isRecording) {
-			videoRecorder.stopRecording();
-			//camera.lock();
-		}
+		videoRecorder.stopRecording();
 		videoPlayer.release(getActivity());
 	}
 
@@ -327,9 +305,8 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 							}
 						}).setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id) {
-								// videoRecorder.dispose();
-								// videoRecorder.restore();
-								// ????
+								 videoRecorder.dispose();
+								 videoRecorder.restore();
 							}
 						});
 				AlertDialog alertDialog = builder.create();
@@ -422,7 +399,6 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		View view = gridView.getChildAt(i);
 		videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth(), view.getHeight());
 		videoPlayer.play(friendId);
-		currentItemPlayed = i;
 	}
 	
 	// -------------------

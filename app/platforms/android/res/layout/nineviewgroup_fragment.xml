@@ -15,8 +15,7 @@
         android:id="@+id/video_body"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@android:color/black"
-        android:visibility="invisible" >
+        android:visibility="gone" >
 
         <VideoView
             android:id="@+id/video_view"

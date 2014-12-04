@@ -44,6 +44,9 @@ public class NineViewGroup extends ViewGroup {
 
 	private static final float ASPECT = 240F / 320F;
 	
+	private static final int MARGIN_DP = 6;
+	private static final int PADDING_DP = 3;
+	
 	private static final int TOTAL_CHILD_COUNT = 9;
 	private static final int CENTRAL_VIEW_POSITION = TOTAL_CHILD_COUNT/2;
 
@@ -198,7 +201,8 @@ public class NineViewGroup extends ViewGroup {
 		}
 		addViewInLayout(child, position, params, true);
 
-		int itemWidth = getWidth() / MATRIX_DIMENSIONS;
+		int frameWidth = (getWidth() - 2*Convenience.dpToPx(getContext(), MARGIN_DP))/ MATRIX_DIMENSIONS;
+		int itemWidth = frameWidth - 2*Convenience.dpToPx(getContext(), PADDING_DP);
 		int itemHeight = (int) ((float) itemWidth / ASPECT);
 		child.measure(MeasureSpec.EXACTLY | itemWidth, MeasureSpec.EXACTLY | itemHeight);
 	}
@@ -211,21 +215,25 @@ public class NineViewGroup extends ViewGroup {
 		int numCol = getWidth() / child.getMeasuredWidth();
 
 		int width=0, height=0;
-		int heightFrame = getHeight()/MATRIX_DIMENSIONS;
-		int padding = (heightFrame - child.getMeasuredHeight())/2;
+		int margin_px = Convenience.dpToPx(getContext(), MARGIN_DP);
+		int widthFrame = (getWidth() - 2*margin_px)/MATRIX_DIMENSIONS;
+		int heightFrame = (getHeight() - 2*margin_px)/MATRIX_DIMENSIONS;
+		int paddingHor = (widthFrame - child.getMeasuredWidth())/2;
+		int paddingVert = (heightFrame - child.getMeasuredHeight())/2;
 		
 		for (int index = 0; index < getChildCount(); index++) {
 			child = getChildAt(index);
 			width = child.getMeasuredWidth();
 			height = child.getMeasuredHeight();
 			int mod = index / numCol;
-			int left = (index - mod * numCol) * width;
-			int top = mod * heightFrame + padding;
+			int left = (index - mod * numCol) * widthFrame + paddingHor + margin_px;
+			int top = mod * heightFrame + paddingVert + margin_px;
 
 			child.layout(left, top, left + width, top + height);
 
 		
-			Log.d(TAG, ""+heightFrame + ", " + height + "," + padding);
+			Log.d(TAG, ""+heightFrame + ", " + height + "| " + paddingVert);
+			Log.d(TAG, ""+widthFrame + ", " + width + "| " + paddingHor);
 			Log.d(TAG, index + ": "+left + ", " + top + ", " + (left + width)  + ", " + (top + height));
 		}
 		
@@ -349,9 +357,9 @@ public class NineViewGroup extends ViewGroup {
 		return false;
 	}
 	private boolean isBigMove(MotionEvent event) {
-		Double a2 = Math.pow(downPosition[0] - (double) event.getRawX(), 2D);
-		Double b2 = Math.pow(downPosition[1] - (double) event.getRawY(), 2D);
-		Double limit = (double) Convenience.dpToPx(getContext(), (int) Math.pow(BIG_MOVE_DISTANCE, 2D));
+		double a2 = Math.pow(downPosition[0] - (double) event.getRawX(), 2D);
+		double b2 = Math.pow(downPosition[1] - (double) event.getRawY(), 2D);
+		double limit = (double) Convenience.dpToPx(getContext(), (int) Math.pow(BIG_MOVE_DISTANCE, 2D));
 		if (a2+b2 > limit){
 			return true;
 		} else {
@@ -445,7 +453,8 @@ public class NineViewGroup extends ViewGroup {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				itemClickListener.onItemLongClick(NineViewGroup.this, child, motionPosition, id);
+				if(itemClickListener!=null)
+					itemClickListener.onItemLongClick(NineViewGroup.this, child, motionPosition, id);
 			}
 		});
 	}
@@ -454,7 +463,8 @@ public class NineViewGroup extends ViewGroup {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				itemClickListener.onItemStopTouch();
+				if(itemClickListener!=null)
+					itemClickListener.onItemStopTouch();
 			}
 		});
 	}
@@ -463,7 +473,8 @@ public class NineViewGroup extends ViewGroup {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				itemClickListener.onCancelTouch();
+				if(itemClickListener!=null)
+					itemClickListener.onCancelTouch();
 			}
 		});
 	}
@@ -472,7 +483,8 @@ public class NineViewGroup extends ViewGroup {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				itemClickListener.onCancelTouch(reason);
+				if(itemClickListener!=null)
+					itemClickListener.onCancelTouch(reason);
 			}
 		});
 	}
