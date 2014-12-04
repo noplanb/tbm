@@ -19,11 +19,12 @@ import android.view.WindowManager;
 
 import com.noplanbees.tbm.ActiveModelsHandler;
 import com.noplanbees.tbm.BenchController;
-import com.noplanbees.tbm.Boot;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.GcmHandler;
 import com.noplanbees.tbm.NotificationAlertManager;
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.RegisterActivity;
+import com.noplanbees.tbm.User;
 import com.noplanbees.tbm.UserFactory;
 import com.noplanbees.tbm.VersionHandler;
 
@@ -108,7 +109,11 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 		// Note Boot.boot must complete successfully before we continue the home
 		// activity.
 		// Boot will start the registrationActivity and return false if needed.
-		if (!Boot.boot(this)) {
+		if (!User.isRegistered(this)) {
+			Log.i(TAG, "Not registered. Starting RegisterActivty");
+			Intent i = new Intent(this, RegisterActivity.class);
+			startActivity(i);
+			Log.i(TAG, "Exiting boot");
 			Log.i(TAG, "Finish HomeActivity");
 			finish();
 			return;
