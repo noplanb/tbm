@@ -16,6 +16,9 @@
 
 package com.noplanbees.tbm.ui;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.Rect;
@@ -26,37 +29,23 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ListAdapter;
 
 import com.noplanbees.tbm.Convenience;
 import com.noplanbees.tbm.VideoRecorder;
 
 public class NineViewGroup extends ViewGroup {
+	// ---------
+	// Constants
+	// ---------
+	private static final String TAG = "NineViewGroup";
+	private static final int BIG_MOVE_DISTANCE = 100;
 
 	private static final int MATRIX_DIMENSIONS = 3;
-	private static final int BIG_MOVE_DISTANCE = 125;
-	/**
-	 * Indicates that we are not in the middle of a touch gesture
-	 */
-	static final int TOUCH_MODE_REST = -1;
 
-	/**
-	 * Indicates we just received the touch event and we are waiting to see if
-	 * the it is a tap or a scroll gesture.
-	 */
-	static final int TOUCH_MODE_DOWN = 0;
-
-	/**
-	 * Indicates the touch has been recognized as a tap and we are now waiting
-	 * to see if the touch is a longpress
-	 */
-	static final int TOUCH_MODE_TAP = 1;
-
-	/**
-	 * Indicates we have waited for everything we can wait for, but the user's
-	 * finger is still down
-	 */
-	static final int TOUCH_MODE_DONE_WAITING = 2;
+	private static final float ASPECT = 240F / 320F;
+	
+	private static final int TOTAL_CHILD_COUNT = 9;
+	private static final int CENTRAL_VIEW_POSITION = TOTAL_CHILD_COUNT/2;
 
 	/**
 	 * Represents an invalid position. All valid positions are in the range 0 to
@@ -64,70 +53,40 @@ public class NineViewGroup extends ViewGroup {
 	 */
 	public static final int INVALID_POSITION = -1;
 
-	private static final float ASPECT = 240F / 320F;
-	
-	private static final int TOTAL_CHILD_COUNT = 9;
-	private static final int CENTRAL_VIEW_POSITION = TOTAL_CHILD_COUNT/2;
+	// -----
+	// State
+	// -----
+	private static final class State{
+		public static final int IDLE = 0;
+		public static final int DOWN = 1;
+		public static final int LONGPRESS = 2;
+	}
 	
 	public interface OnItemTouchListener {
 		boolean onItemClick(NineViewGroup parent, View view, int position, long id);
 		boolean onItemLongClick(NineViewGroup parent, View view, int position, long id);
 		boolean onItemStopTouch();
 		boolean onCancelTouch();
+		boolean onCancelTouch(String reason);
 	}
 	
 	public interface OnChildLayoutCompleteListener{
 		void onChildLayoutComplete();
 	}
 
+	private Integer state = State.IDLE;
+	private float[] downPosition = new float[2];
+	private Timer longPressTimer;
+
+	
 	private BaseAdapter adapter;
 	private OnItemTouchListener itemClickListener;
 	private OnChildLayoutCompleteListener childLayoutCompleteListener;
 
-	/**
-	 * One of TOUCH_MODE_REST, TOUCH_MODE_DOWN, TOUCH_MODE_TAP,
-	 * TOUCH_MODE_SCROLL, or TOUCH_MODE_DONE_WAITING
-	 */
-	private int mTouchMode = TOUCH_MODE_REST;
-	/**
-	 * The X value associated with the the down motion event
-	 */
-	private int mMotionPosition;
-	/**
-	 * Rectangle used for hit testing children
-	 */
-	private Rect mTouchFrame;
-	/**
-	 * The last CheckForLongPress runnable we posted, if any
-	 */
-	private CheckForLongPress mPendingCheckForLongPress;
-
-	/**
-	 * The last CheckForTap runnable we posted, if any
-	 */
-	private Runnable mPendingCheckForTap;
-	/**
-	 * Delayed action for touch mode.
-	 */
-	private Runnable mTouchModeReset;
-	/**
-	 * Acts upon click
-	 */
-	private PerformClick mPerformClick;
-	/**
-	 * Last touched position
-	 */
-	private int mLastX;
-	/**
-	 * Last touched position
-	 */
-	private int mLastY;
-
 	private boolean isAttach;
-
 	private DataSetObserver dataSetObserver;
-
 	private boolean isDirty;
+
 	private VideoRecorder videoRecorder;
 
 	public NineViewGroup(Context context, AttributeSet attrs, int defStyle) {
@@ -191,7 +150,7 @@ public class NineViewGroup extends ViewGroup {
 				}
 				removeView(child);
 			}
-			Log.d(VIEW_LOG_TAG, "removed all childs");
+			Log.d(TAG, "removed all childs");
 		} 
 		
 		if (childCount < adapter.getCount() || isDirty) {
@@ -266,15 +225,15 @@ public class NineViewGroup extends ViewGroup {
 			child.layout(left, top, left + width, top + height);
 
 		
-			Log.d(VIEW_LOG_TAG, ""+heightFrame + ", " + height + "," + padding);
-			Log.d(VIEW_LOG_TAG, index + ": "+left + ", " + top + ", " + (left + width)  + ", " + (top + height));
+			Log.d(TAG, ""+heightFrame + ", " + height + "," + padding);
+			Log.d(TAG, index + ": "+left + ", " + top + ", " + (left + width)  + ", " + (top + height));
 		}
 		
 		if(childLayoutCompleteListener!=null){
 			childLayoutCompleteListener.onChildLayoutComplete();
 		}
 
-		Log.d(VIEW_LOG_TAG, "layoutChildren");
+		Log.d(TAG, "layoutChildren");
 	}
 
 	@Override
@@ -290,7 +249,7 @@ public class NineViewGroup extends ViewGroup {
 	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent ev) {
+	public boolean onTouchEvent(MotionEvent event) {
 		if (!isEnabled()) {
 			// A disabled view that is clickable still consumes the touch
 			// events, it just doesn't respond to them.
@@ -299,177 +258,143 @@ public class NineViewGroup extends ViewGroup {
 
 		if (!isAttach)
 			return false;
+		
+		int action = event.getAction();
+		int maskedAction = event.getActionMasked();
 
-		final int actionMasked = ev.getActionMasked();
-		switch (actionMasked) {
-		case MotionEvent.ACTION_DOWN: {
-			Log.w(VIEW_LOG_TAG, "ACTION_DOWN");
-			return onTouchDown(ev);
-		}
-
-		case MotionEvent.ACTION_UP: {
-			Log.w(VIEW_LOG_TAG, "ACTION_UP");
-			return onTouchUp(ev);
-		}
-
-		case MotionEvent.ACTION_CANCEL: {
-			Log.w(VIEW_LOG_TAG, "ACTION_CANCEL");
-			return onTouchCancel();
-		}
-		case MotionEvent.ACTION_MOVE: {
-			Log.w(VIEW_LOG_TAG, "ACTION_MOVE");
-			return onTouchMove(ev);
-		}
-		}
-
-		return false;
-	}
-
-	private boolean onTouchDown(MotionEvent ev) {
-		final int x = (int) ev.getX();
-		final int y = (int) ev.getY();
-		int motionPosition = pointToPosition(x, y);
-
-		if ((motionPosition >= 0) && getAdapter().isEnabled(motionPosition)) {
-			// User clicked on an actual view (and was not stopping a
-			// fling). It might be a click or a scroll. Assume it is a
-			// click until proven otherwise.
-			mTouchMode = TOUCH_MODE_DOWN;
-
-			// FIXME Debounce
-			if (mPendingCheckForTap == null) {
-				mPendingCheckForTap = new CheckForTap();
+		if (state == State.IDLE){
+			switch (action){
+			case MotionEvent.ACTION_DOWN:
+					state = State.DOWN;
+					setDownPosition(event);
+					startLongpressTimer(event);
+					//targetView = v;
+				return true;
+			case MotionEvent.ACTION_CANCEL:
+				// Safe to ignore since we would just stay in IDLE and do nothing.
+				return true;
+			case MotionEvent.ACTION_MOVE:
+				// Should never happen we should always get a ACTION_DOWN first which would move us out of IDLE.
+				return true;
+			case MotionEvent.ACTION_UP:
+				// Should never happen we should always get a ACTION_DOWN first which would move us out of IDLE.
+				return true;
 			}
 
-			postDelayed(mPendingCheckForTap, ViewConfiguration.getTapTimeout());
+			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN){
+				// Should never happen we should always get a ACTION_DOWN first which would move us out of IDLE.
+				return true;
+			}
+			return true;
+		}
 
-			mMotionPosition = motionPosition;
+		if (state == State.DOWN){
+			switch (action){
+			case MotionEvent.ACTION_DOWN:
+				// Happens when the backing window view gets the down event. Just ignore.
+				return true;
+			case MotionEvent.ACTION_MOVE:
+				if (isBigMove(event)){
+					// Do not output our bigMove event here since we have not started a longPress. 
+					state = State.IDLE;
+				}
+				return true;
+			case MotionEvent.ACTION_CANCEL:
+				state = State.IDLE;
+				return true;
+			case MotionEvent.ACTION_UP:
+				state = State.IDLE;
+				runClick(event);
+				return true;
+			}
+			
+			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN){
+				state = State.IDLE;
+				return true;
+			}
+			return true;
+		}
 
-			mLastX = x;
-			mLastY = y;
-
+		if (state == State.LONGPRESS){
+			switch (action){
+			case MotionEvent.ACTION_DOWN:
+				// This should never happen but ignore rather than abort..
+				return true;
+			case MotionEvent.ACTION_MOVE:
+				if (isBigMove(event)){
+					state = State.IDLE;
+					runBigMove(event);
+				}
+				return true;
+			case MotionEvent.ACTION_CANCEL:
+				state = State.IDLE;
+                // This should never happen but endLongPress and send the video rather than abort and lose it.
+				runEndLongpress(event);
+				return true;
+			case MotionEvent.ACTION_UP:
+				state = State.IDLE;
+				runEndLongpress(event);
+				return true;
+			}
+			
+			// Second finger down aborts.
+			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN){
+				state = State.IDLE;
+				runAbort(event, "Two Finger Touch");				
+				return true;
+			}
 			return true;
 		}
 
 		return false;
 	}
-
-	private boolean onTouchUp(MotionEvent ev) {
-
-		if (itemClickListener != null)
-			itemClickListener.onItemStopTouch();
-
-		switch (mTouchMode) {
-		case TOUCH_MODE_DOWN:
-		case TOUCH_MODE_TAP:
-		case TOUCH_MODE_DONE_WAITING: {
-			final int motionPosition = mMotionPosition;
-			final View child = getChildAt(motionPosition);
-			if (child != null) {
-				if (mTouchMode != TOUCH_MODE_DOWN) {
-					child.setPressed(false);
-				}
-
-				child.dispatchTouchEvent(ev);
-
-				if (mPerformClick == null) {
-					mPerformClick = new PerformClick();
-				}
-
-				final PerformClick performClick = mPerformClick;
-				performClick.mClickMotionPosition = motionPosition;
-				performClick.rememberWindowAttachCount();
-				if (mTouchMode == TOUCH_MODE_DOWN || mTouchMode == TOUCH_MODE_TAP) {
-					removeCallbacks(mTouchMode == TOUCH_MODE_DOWN ? mPendingCheckForTap : mPendingCheckForLongPress);
-
-					if (adapter.isEnabled(motionPosition)) {
-						mTouchMode = TOUCH_MODE_TAP;
-						layoutChildren();
-						child.setPressed(true);
-						setPressed(true);
-						if (mTouchModeReset != null) {
-							removeCallbacks(mTouchModeReset);
-						}
-						mTouchModeReset = new Runnable() {
-							@Override
-							public void run() {
-								mTouchModeReset = null;
-								mTouchMode = TOUCH_MODE_REST;
-								child.setPressed(false);
-								setPressed(false);
-								if (isAttach) {
-									performClick.run();
-								}
-							}
-						};
-						postDelayed(mTouchModeReset, ViewConfiguration.getPressedStateDuration());
-					} else {
-						mTouchMode = TOUCH_MODE_REST;
-					}
-					return true;
-				} else if (adapter.isEnabled(motionPosition)) {
-					performClick.run();
-				}
-
-			}
-			mTouchMode = TOUCH_MODE_REST;
-			break;
-		}
-		}
-		setPressed(false);
-
-		// Need to redraw since we probably aren't drawing the selector anymore
-		invalidate();
-		removeCallbacks(mPendingCheckForLongPress);
-		return false;
-	}
-
-	private boolean onTouchCancel() {
-		switch (mTouchMode) {
-		default:
-			mTouchMode = TOUCH_MODE_REST;
-			setPressed(false);
-			final View motionView = this.getChildAt(mMotionPosition);
-			if (motionView != null) {
-				motionView.setPressed(false);
-			}
-			removeCallbacks(mPendingCheckForLongPress);
-		}
-		return true;
-	}
-
-	private boolean onTouchMove(MotionEvent ev) {
-		if (isBigMove(ev)) {
-			mTouchMode = TOUCH_MODE_REST;
-			setPressed(false);
-			final View motionView = this.getChildAt(mMotionPosition);
-			if (motionView != null) {
-				motionView.setPressed(false);
-			}
-			removeCallbacks(mPendingCheckForLongPress);
-			if (itemClickListener != null)
-				itemClickListener.onCancelTouch();
-			return true;
-		}
-		return false;
-	}
-
 	private boolean isBigMove(MotionEvent event) {
-		Double a2 = Math.pow(mLastX - event.getRawX(), 2D);
-		Double b2 = Math.pow(mLastY - event.getRawY(), 2D);
+		Double a2 = Math.pow(downPosition[0] - (double) event.getRawX(), 2D);
+		Double b2 = Math.pow(downPosition[1] - (double) event.getRawY(), 2D);
 		Double limit = (double) Convenience.dpToPx(getContext(), (int) Math.pow(BIG_MOVE_DISTANCE, 2D));
-
-		// Log.d(VIEW_LOG_TAG, "isBigMove " + mLastX + ", " + mLastY + " | " +
-		// event.getRawX() + "," + event.getRawY()
-		// + " || " + (a2 + b2) + " ? "+ limit);
-
-		if (a2 + b2 > limit) {
+		if (a2+b2 > limit){
 			return true;
 		} else {
 			return false;
-		}
+		}	
 	}
 
+	private void longPressTimerFired(MotionEvent event) {
+		if (state == State.IDLE){
+			// This should never happen because any action that starts the timer should move us out of IDLE
+			return;
+		}
+
+		if (state == State.DOWN){
+			state = State.LONGPRESS;
+			runStartLongpress(event);
+			return;
+		}
+
+		if (state == State.LONGPRESS){
+			// This should never happen because we should only get put in LONGPRESS as a result of the timer firing.
+			return;
+		}
+	}
+	
+	private void startLongpressTimer(final MotionEvent event) {
+		if (longPressTimer != null)
+			longPressTimer.cancel();
+
+		longPressTimer = new Timer();
+		longPressTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				longPressTimerFired(event);
+			}
+		}, ViewConfiguration.getLongPressTimeout());
+	}
+
+	private void setDownPosition(MotionEvent event) {
+		downPosition[0] = event.getRawX();
+		downPosition[1] = event.getRawY();
+	}
+	
 	/**
 	 * Maps a point to a position in the list.
 	 * 
@@ -482,11 +407,7 @@ public class NineViewGroup extends ViewGroup {
 	 *         item.
 	 */
 	public int pointToPosition(int x, int y) {
-		Rect frame = mTouchFrame;
-		if (frame == null) {
-			mTouchFrame = new Rect();
-			frame = mTouchFrame;
-		}
+		Rect frame =  new Rect();
 
 		final int count = getChildCount();
 		for (int i = count - 1; i >= 0; i--) {
@@ -500,93 +421,61 @@ public class NineViewGroup extends ViewGroup {
 		}
 		return INVALID_POSITION;
 	}
-
-	final class CheckForTap implements Runnable {
-		@Override
-		public void run() {
-			if (mTouchMode == TOUCH_MODE_DOWN) {
-				mTouchMode = TOUCH_MODE_TAP;
-				final View child = getChildAt(mMotionPosition);
-				if (child != null) {// && !child.hasFocusable()) {
-
-					child.setPressed(true);
-					setPressed(true);
-					layoutChildren();
-
-					final int longPressTimeout = ViewConfiguration.getLongPressTimeout();
-
-					if (mPendingCheckForLongPress == null) {
-						mPendingCheckForLongPress = new CheckForLongPress();
-					}
-					mPendingCheckForLongPress.rememberWindowAttachCount();
-					postDelayed(mPendingCheckForLongPress, longPressTimeout);
-				}
+	
+	private void runClick(MotionEvent ev){
+		int x = (int) ev.getX();
+		int y = (int) ev.getY();
+		final int motionPosition = pointToPosition(x, y);
+		final View child = getChildAt(motionPosition);
+		final long id = adapter.getItemId(motionPosition);
+		post(new Runnable() {
+			@Override
+			public void run() {
+				itemClickListener.onItemClick(NineViewGroup.this, child, motionPosition, id);
 			}
-		}
+		});
 	}
 
-	/**
-	 * A base class for Runnables that will check that their view is still
-	 * attached to the original window as when the Runnable was created.
-	 * 
-	 */
-	private class WindowRunnnable {
-		private int mOriginalAttachCount;
-
-		public void rememberWindowAttachCount() {
-			mOriginalAttachCount = getWindowAttachCount();
-		}
-
-		public boolean sameWindow() {
-			return getWindowAttachCount() == mOriginalAttachCount;
-		}
-	}
-
-	private class PerformClick extends WindowRunnnable implements Runnable {
-		int mClickMotionPosition;
-
-		@Override
-		public void run() {
-
-			final ListAdapter _adapter = adapter;
-			final int motionPosition = mClickMotionPosition;
-			if (_adapter != null && _adapter.getCount() > 0 && motionPosition != INVALID_POSITION
-					&& motionPosition < _adapter.getCount() && sameWindow()) {
-				final View view = getChildAt(motionPosition);
-				// If there is no view, something bad happened (the view
-				// scrolled off the
-				// screen, etc.) and we should cancel the click
-				if (view != null) {
-					performItemClick(view, motionPosition, _adapter.getItemId(motionPosition));
-				}
+	private void runStartLongpress(MotionEvent ev){
+		int x = (int) ev.getX();
+		int y = (int) ev.getY();
+		final int motionPosition = pointToPosition(x, y);
+		final View child = getChildAt(motionPosition);
+		final long id = adapter.getItemId(motionPosition);
+		post(new Runnable() {
+			@Override
+			public void run() {
+				itemClickListener.onItemLongClick(NineViewGroup.this, child, motionPosition, id);
 			}
-		}
+		});
 	}
 
-	private class CheckForLongPress extends WindowRunnnable implements Runnable {
-		@Override
-		public void run() {
-			final int motionPosition = mMotionPosition;
-			final View child = getChildAt(motionPosition);
-			if (child != null) {
-				final int longPressPosition = mMotionPosition;
-				final long longPressId = adapter.getItemId(mMotionPosition);
-
-				boolean handled = false;
-				if (sameWindow()) {
-					handled = performLongPress(child, longPressPosition, longPressId);
-				}
-				if (handled) {
-					mTouchMode = TOUCH_MODE_REST;
-					setPressed(false);
-					child.setPressed(false);
-				} else {
-					mTouchMode = TOUCH_MODE_DONE_WAITING;
-				}
+	private void runEndLongpress(MotionEvent ev){
+		post(new Runnable() {
+			@Override
+			public void run() {
+				itemClickListener.onItemStopTouch();
 			}
-		}
+		});
 	}
 
+	private void runBigMove(MotionEvent ev){
+		post(new Runnable() {
+			@Override
+			public void run() {
+				itemClickListener.onCancelTouch();
+			}
+		});
+	}
+
+	private void runAbort(MotionEvent ev, final String reason){
+		post(new Runnable() {
+			@Override
+			public void run() {
+				itemClickListener.onCancelTouch(reason);
+			}
+		});
+	}
 	private class AdapterDataSetObserver extends DataSetObserver {
 		@Override
 		public void onChanged() {
@@ -598,23 +487,5 @@ public class NineViewGroup extends ViewGroup {
 		public void onInvalidated() {
 			requestLayout();
 		}
-	}
-
-	public boolean performItemClick(View view, int position, long id) {
-		Log.d(VIEW_LOG_TAG, "performItemClick");
-		boolean handled = false;
-		if (itemClickListener != null)
-			handled = itemClickListener.onItemClick(this, view, position, id);
-
-		return handled;
-	}
-
-	boolean performLongPress(final View child, final int longPressPosition, final long longPressId) {
-
-		boolean handled = false;
-		if (itemClickListener != null) {
-			handled = itemClickListener.onItemLongClick(this, child, longPressPosition, longPressId);
-		}
-		return handled;
 	}
 }

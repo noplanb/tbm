@@ -1,6 +1,5 @@
 package com.noplanbees.tbm.ui;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -8,8 +7,6 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,7 +14,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -85,7 +81,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.nineviewgroup_fragment, null);
+		View v = inflater.inflate(R.layout.nineviewgroup_fragment, container, false);
 
 		View videoBody = v.findViewById(R.id.video_body);
 		VideoView videoView = (VideoView) v.findViewById(R.id.video_view);
@@ -148,9 +144,19 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 			public boolean onCancelTouch() {
 				Log.d(getTag(), "onCancelTouch");
 				if (isRecording) {
+					toast("Dragged Finger Away.");
 					Logger.d("STOP RECORD");
 					onRecordCancel();
 					isRecording = false;
+				}
+				return false;
+			}
+
+			@Override
+			public boolean onCancelTouch(String reason) {
+				if(isRecording){
+					toast(reason);
+					onRecordCancel();
 				}
 				return false;
 			}

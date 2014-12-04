@@ -41,6 +41,7 @@ public abstract class LongpressTouchHandler {
 	private Double[] downPosition = new Double[2];
 	private Timer longPressTimer;
 	private Boolean enabled = false;
+	private GestureDetector flingDetector;
 
 	// -------------------
 	// Constructor related
@@ -49,6 +50,7 @@ public abstract class LongpressTouchHandler {
 		this.activity = activity;
 		this.backgroundView = backgroundView;
 		addListener(backgroundView);
+		flingDetector = new GestureDetector(activity, new FlingListener());
 	}
 
 	public void addTargetView(View target){
@@ -65,6 +67,7 @@ public abstract class LongpressTouchHandler {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				handleTouchEvent(v, event);
+				flingDetector.onTouchEvent(event);
 				return v == backgroundView;
 			}
 		});
@@ -72,6 +75,16 @@ public abstract class LongpressTouchHandler {
 	// --------------
 	// Event Handling
 	// --------------
+	public void enable(){
+		Log.i(TAG, "enable");
+		enabled = true;
+	}
+	
+	public void disable(Boolean silent){
+		Log.i(TAG, "disable silent=" + silent.toString());
+		cancelGesture(silent);
+		enabled = false;
+	}
 	
 	public void cancelGesture(Boolean silent) {
 		Log.i(TAG, "cancelGesture silent=" + silent.toString());
