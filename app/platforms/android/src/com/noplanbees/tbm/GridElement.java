@@ -1,10 +1,6 @@
 package com.noplanbees.tbm;
 
 import android.content.Context;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.VideoView;
 
 
 public class GridElement extends ActiveModel {
@@ -22,13 +18,6 @@ public class GridElement extends ActiveModel {
 		};
 		return a;
 	}
-	
-	public Context context;
-	public VideoView videoView;
-	public ImageView thumbView;
-	public TextView nameText; 
-	public FrameLayout frame;
-	public VideoPlayer videoPlayer;
 	
 	@Override
 	public void init(Context context) {
@@ -50,6 +39,10 @@ public class GridElement extends ActiveModel {
 	
 	public void setFriend(Friend f){
 		set(GridElement.Attributes.FRIEND_ID, f.getId());
+	}
+	
+	public String getFriendId(){
+		return attributes.get(GridElement.Attributes.FRIEND_ID);
 	}
 
 

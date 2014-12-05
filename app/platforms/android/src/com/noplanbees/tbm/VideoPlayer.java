@@ -1,6 +1,4 @@
 package com.noplanbees.tbm;
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
@@ -8,31 +6,19 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
 
 
 public class VideoPlayer implements OnCompletionListener{
 	String TAG = this.getClass().getSimpleName();
 	
-	GridElement gridElement;
-	Context context;
-	VideoView videoView;
-	ImageView thumbView;
-	String videoId;
-	
-	private static ArrayList <VideoView> allVideoViews = new ArrayList <VideoView>();
-	private static ArrayList <VideoPlayer> allVideoPlayers = new ArrayList <VideoPlayer>();
-	
-	public static void stopAll(){
-		VideoPlayer.showAllThumbs();
-		VideoPlayer.suspendAll();
-	}
-	
-	public static void release(Context context){
-		restoreExistingBluetooth(context);
-		stopAll();
-	}
+	private Context context;
+	private String videoId;
+	private String friendId;
+	private VideoView videoView;
+	private View videoBody;
 	
 	public static void bypassExistingBluetooth(Context context){
 		((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(true);
@@ -42,79 +28,60 @@ public class VideoPlayer implements OnCompletionListener{
 		((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(false);
 	}
 	
-	private static void suspendAll(){
-		Log.i("VideoPlayer", "suspending all video views");
-		for (VideoView v : VideoPlayer.allVideoViews){
-			Log.i("VideoPlayer", String.format("stoping and suspending %s", v.toString()));
-			v.stopPlayback();
-			v.suspend();
-		}
+	public Boolean isPlaying(){
+		return videoView.isPlaying();
 	}
 	
-	public static void showAllThumbs(){
-		for (VideoPlayer vp : VideoPlayer.allVideoPlayers){
-			if (vp.gridElement.hasFriend())
-				vp.showThumb();
-		}
+	public VideoPlayer(Context context) {
+		this.context = context;
 	}
 	
-	public static Boolean isPlaying(String friendId){
-		Boolean r = false;
-		GridElement ge = GridElementFactory.instance.findWithFriendId(friendId);
-		if (ge != null && ge.videoView != null)
-			r = ge.videoView.isPlaying();
-		return r;
+	public void setVideoView(VideoView videoView){
+		this.videoView = videoView;
+		this.videoView.setOnCompletionListener(this);
 	}
 	
-	public static void refreshThumbWithFriendId(String friendId) {
-		GridElement ge = GridElementFactory.instance.findWithFriendId(friendId);
-		if (ge != null)
-			ge.videoPlayer.refreshThumb();
+	public void setVideoViewBody(View videoBody){
+		this.videoBody = videoBody;
 	}
 	
-	public VideoPlayer(GridElement ge) {
-		gridElement = ge;
-		this.context = gridElement.context;
-		videoView = gridElement.videoView;
-		videoView.setOnCompletionListener(this);
+	public void setVideoViewSize(float x, float y, int width, int height) {
+		LayoutParams params = new FrameLayout.LayoutParams(width, height);
+		videoBody.setLayoutParams(params);
+		videoBody.setX(x);
+		videoBody.setY(y);
+	}
+
+	public String getFriendId() {
+		return friendId;
+	}
+	
+	public void play(String friendId){
 		
-		if (!VideoPlayer.allVideoViews.contains(videoView))
-			VideoPlayer.allVideoViews.add(videoView);
-		
-		VideoPlayer.allVideoPlayers.add(this);
-		
-		thumbView = gridElement.thumbView;
-		showThumb();
-	}
-	
-	private Friend friend(){
-		return gridElement.friend();
-	}
-	
-	public void click(){
-		
-		if (videoView.isPlaying()){
+		if (videoView.isPlaying() && friendId.equals(this.friendId)){
 			stop();
 		} else {
-			start();
+			start(friendId);
 		}
 	}
 	
-	public void start(){
+	private void start(String friendId){
 		Log.i(TAG, "start");
-		VideoPlayer.stopAll();
-	    videoId = friend().firstPlayableVideoId();
+		this.friendId = friendId;
+		
+	    Friend friend = (Friend) FriendFactory.instance.find(friendId);
+		videoId = friend.firstPlayableVideoId();
 		
 		if (videoId == null)
 			return;
 		
-		play();
+		play(friend);
 	}
 	
-	public void play(){
-		if (friend().videoFromFile(videoId).length() > 100){
-			videoView.setVideoPath(friend().videoFromPath(videoId));
-			hideThumb();
+	private void play(Friend f){
+		if (f.videoFromFile(videoId).length() > 100){
+			videoBody.setVisibility(View.VISIBLE);
+			videoView.setVideoPath(f.videoFromPath(videoId));
 			AudioManager am = (AudioManager) this.context.getSystemService(Activity.AUDIO_SERVICE);
 			am.setBluetoothScoOn(true);
 			videoView.start();		
@@ -126,67 +93,24 @@ public class VideoPlayer implements OnCompletionListener{
 	public void stop(){
 		Log.i(TAG, "stop");
 		VideoPlayer.restoreExistingBluetooth(context);
-		VideoPlayer.stopAll();
+		videoView.stopPlayback();
+		videoView.suspend();
+		videoBody.setVisibility(View.GONE);
 	}
 
-
-	//------------------------
-	// Thumb stuff
-	//------------------------
-	public void refreshThumb(){
-		showThumb();
-	}
-	
-	public void showThumb(){
-		setThumbBorder();
-		loadThumb();
-		
-		if (!videoView.isPlaying()){
-			thumbView.invalidate();
-			thumbView.setVisibility(View.VISIBLE);
-			videoView.setVisibility(View.INVISIBLE);
-		}
-	}
-	
-	public void hideThumb(){
-		thumbView.setVisibility(View.INVISIBLE);
-		videoView.setVisibility(View.VISIBLE);
-	}
-
-	private void loadThumb(){
-		if (!gridElement.hasFriend())
-			return;
-		
-		if (!friend().thumbExists() ){
-			Log.i(TAG, "loadThumb: Loading icon for thumb for friend=" + friend().get(Friend.Attributes.FIRST_NAME));
-			thumbView.setImageResource(R.drawable.head);
-		}else{
-			Log.i(TAG, "loadThumb: Loading bitmap for friend=" + friend().get(Friend.Attributes.FIRST_NAME));
-			thumbView.setImageBitmap(friend().lastThumbBitmap());
-		}
-	}
-
-	private void setThumbBorder(){
-		if (!gridElement.hasFriend())
-			return;
-		
-		if (friend().incomingVideoNotViewed()){
-			Log.i(TAG, "setThumbBorder: setting thumb background to unviewed_shape");
-			thumbView.setBackgroundResource(R.drawable.blue_border_shape);
-
-		} else {
-			Log.i(TAG, "setThumbBorder: setting thumb background to null");
-			thumbView.setBackgroundResource(0);
-		}
+	public void release(Context context){
+		restoreExistingBluetooth(context);
+		stop();
 	}
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.i(TAG, "play complete.");
-		friend().setAndNotifyIncomingVideoViewed(videoId);
-		videoId = friend().nextPlayableVideoId(videoId);
+		Friend friend = (Friend) FriendFactory.instance.find(friendId);
+		friend.setAndNotifyIncomingVideoViewed(videoId);
+		videoId = friend.nextPlayableVideoId(videoId);
 		if (videoId != null){
-			play();
+			play(friend);
 		} else {
 			stop();
 		}

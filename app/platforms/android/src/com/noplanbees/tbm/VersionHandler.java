@@ -59,7 +59,6 @@ public class VersionHandler {
 	
 	public VersionHandler(Activity a){
 		activity = a;
-		checkVersionCompatibility();
 	}
 	
 	public Integer versionCode(){

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.noplanbees.tbm.RemoteStorageHandler.GetRemoteIncomingVideoIds;
+import com.noplanbees.tbm.ui.MainActivity;
 
 // Polls for new videos and schedules downloads.
 public class Poller {
@@ -42,7 +43,7 @@ public class Poller {
 
 	public void handleVideoIds(Friend friend, ArrayList<String> videoIds) {
 		for (String videoId : videoIds){
-			Intent intent = new Intent(context, HomeActivity.class);
+			Intent intent = new Intent(context, MainActivity.class);
 			intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
 			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Video.IncomingVideoStatus.NEW);
 			intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId); 	

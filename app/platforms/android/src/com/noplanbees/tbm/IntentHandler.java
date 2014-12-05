@@ -27,10 +27,6 @@ public class IntentHandler {
 	private final String TAG = this.getClass().getSimpleName();
 	private final static String STAG = IntentHandler.class.getSimpleName();
 	
-//	public static final int RESULT_RUN_IN_BACKGROUND = 0;
-//	public static final int RESULT_RUN_IN_FOREGROUND = 1;
-	public static final int RESULT_FINISH = 2; // not used
-
 	private Context context;
 	private Intent intent;
 	private Friend friend;
@@ -59,23 +55,11 @@ public class IntentHandler {
 		} else if (isUploadIntent()){
 			handleUploadIntent();
 		} 
-//		else {
-//			handleUserLaunchIntent(context);
-//		}
 		return getReturnResult();
 	}
 
 	private Integer getReturnResult() {
 		return null;
-//		if ( !isBackgroundIntent() ){
-//			return RESULT_RUN_IN_FOREGROUND;
-//		} else {
-//			if (TbmApplication.getInstance().isForeground()){
-//				return RESULT_RUN_IN_FOREGROUND;
-//			} else {
-//				return RESULT_RUN_IN_BACKGROUND;
-//			}
-//		}
 	}
 
 	//------------
@@ -178,8 +162,13 @@ public class IntentHandler {
 		if (status == Video.IncomingVideoStatus.DOWNLOADED){
 			friend.createThumb(videoId);
 			
-			if (!VideoPlayer.isPlaying(friend.getId()))
+      // if (!VideoPlayer.isPlaying(friend.getId()))
+      //   friend.deleteAllViewedVideos();
+
+			//TODO: may be fail
+			//if(!TbmApplication.getInstance().isForeground()){
 				friend.deleteAllViewedVideos();
+			//}
 			
 			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()){
 				NotificationAlertManager.alert(context, friend, videoId);
@@ -189,6 +178,7 @@ public class IntentHandler {
 //					VideoPlayer.refreshThumbWithFriendId(friend.getId());
 //					playNotificationTone();
 //				}
+
 				playNotificationTone();
 			}
 			

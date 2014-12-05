@@ -3,7 +3,6 @@ package com.noplanbees.tbm;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.view.View;
 
 
 public class GridElementFactory extends ActiveModelFactory {
@@ -32,9 +31,9 @@ public class GridElementFactory extends ActiveModelFactory {
 		return r;
 	}
 	
-	public GridElement getGridElementWithFrame(View v){
+	public GridElement getGridElementByFriendId(String friendId){
 		for (GridElement ge : all()){
-			if (ge.frame.getId() == v.getId())
+			if (ge.getFriendId().equals(friendId))
 				return ge;
 		}
 		return null;

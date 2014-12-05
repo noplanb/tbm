@@ -13,6 +13,8 @@ import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.noplanbees.tbm.ui.MainActivity;
+
 
 public class NotificationAlertManager {
 	
@@ -68,7 +70,7 @@ public class NotificationAlertManager {
 		Log.i(STAG, "postNativeAlert");
 		final int NOTIFICATION_ID = 1;
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		Intent intent = new Intent(context.getApplicationContext(), HomeActivity.class);
+		Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, makePlayVideoIntent(intent, context, friend), 0);		
 
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)

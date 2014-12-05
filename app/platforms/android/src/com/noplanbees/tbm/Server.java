@@ -14,6 +14,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.utilities.AsyncTaskManager;
 
 public abstract class Server {
 	private static String STAG = Server.class.getSimpleName();
@@ -52,21 +53,21 @@ public abstract class Server {
 		this.uri = uri;
 		this.method = method;
 		sParams = paramsToString(params);
-		new BgHttpReq().execute();
+		AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
 	}
 
 	public Server(String uri, LinkedTreeMap<String, String> params){
 		this.uri = uri; 
 		sParams = paramsToString(params);
 		method = "GET";
-		new BgHttpReq().execute();
+		AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
 	}
 	
 	public Server(String uri){
 		this.uri = uri; 
 		sParams = "";
 		method = "GET";
-		new BgHttpReq().execute();
+		AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
 	}
 
 	public abstract void success(String response);

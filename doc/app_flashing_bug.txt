@@ -311,7 +311,6 @@ Interaction with phone calls putting the app in the paused state
   - Receive a message while on phone call. 
   - Notice
     - Phone call is not interrupted.
-<<<<<<< Local Changes
     - Notification is received.
     
     
@@ -704,4 +703,4 @@ M       node_modules/help/README.md
 git rm -r app/platforms/google-play-services_lib/bin
 git rm -r app/platforms/google-play-services_lib/gen
 git rm -r app/platforms/android/.settings=======
-    - Notification is received.>>>>>>> External Changes
+    - Notification is received.
