@@ -12,5 +12,7 @@
     
     <color name="bg_name">#4e4d42</color>
     <color name="color_name">#ffffff</color>
+    
+    <color name="bg_unread_msg">#9ac23b</color>
 
 </resources>

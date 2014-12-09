@@ -29,7 +29,7 @@
         android:background="@android:color/black"
         android:layout_gravity="end" >
 
-        <com.noplanbees.tbm.ContactsAutoCompleteTextView
+        <AutoCompleteTextView
             android:id="@+id/contacts_auto_complete_text_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

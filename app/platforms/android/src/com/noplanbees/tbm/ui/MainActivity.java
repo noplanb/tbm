@@ -106,9 +106,7 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	
 	private void onLoadComplete() {
 		Log.i(TAG, "onLoadComplete");
-		// Note Boot.boot must complete successfully before we continue the home
-		// activity.
-		// Boot will start the registrationActivity and return false if needed.
+
 		if (!User.isRegistered(this)) {
 			Log.i(TAG, "Not registered. Starting RegisterActivty");
 			Intent i = new Intent(this, RegisterActivity.class);
@@ -124,7 +122,6 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 			mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
 			if(mainFragment == null){
 				mainFragment = new GridViewFragment();
-				//mainFragment = new TestF();
 				getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
 			}
 			

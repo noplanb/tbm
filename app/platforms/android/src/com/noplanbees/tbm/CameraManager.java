@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
+import android.os.Build;
 import android.util.Log;
 
 
@@ -94,7 +95,7 @@ final String TAG = this.getClass().getSimpleName();
 	// ---------------
 	private static Camera setupFrontCamera(Context context){
 		Log.i(STAG, "getFrontCamera:");
-		//releaseCamera();
+		releaseCamera();
 		
 		if (!hasCameraHardware(context)){
 			if (cameraExceptionHandler != null)

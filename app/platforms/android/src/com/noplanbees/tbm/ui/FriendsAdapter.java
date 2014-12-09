@@ -45,9 +45,9 @@ public class FriendsAdapter extends BaseAdapter {
 		View v;
 		GridElement ge = getItem(position);
 		Friend f = ge.friend();
-		if (f != null) 
+		if (f != null)
 			v = getFriendView(f);
-		else 
+		else
 			v = getEmptyView();
 		return v;
 	}
@@ -61,23 +61,24 @@ public class FriendsAdapter extends BaseAdapter {
 		View v = LayoutInflater.from(context).inflate(R.layout.friendview_item, null);
 
 		FrameLayout body = (FrameLayout) v.findViewById(R.id.body);
-		TextView tw_name = (TextView) v.findViewById(R.id.textView1);
+		TextView tw_name = (TextView) v.findViewById(R.id.tw_name);
 		ImageView img_thumb = (ImageView) v.findViewById(R.id.img_thumb);
 
-			if (f.incomingVideoNotViewed()) {
-				body.setBackgroundResource(R.drawable.blue_border_shape);
-			} else {
-				body.setBackgroundResource(0);
-			}
+		if (f.incomingVideoNotViewed()) {
+			body.setBackgroundResource(R.drawable.blue_border_shape);
+			tw_name.setBackgroundColor(context.getResources().getColor(R.color.bg_unread_msg));
+		} else {
+			body.setBackgroundResource(0);
+			tw_name.setBackgroundColor(context.getResources().getColor(R.color.bg_name));
+		}
 
-			if (f.thumbExists())
-				img_thumb.setImageBitmap(f.lastThumbBitmap());
-			else
-				img_thumb.setImageResource(R.drawable.head);
+		if (f.thumbExists())
+			img_thumb.setImageBitmap(f.lastThumbBitmap());
+		else
+			img_thumb.setImageResource(R.drawable.head);
 
-			tw_name.setText(f.getStatusString());
+		tw_name.setText(f.getStatusString());
 		return v;
 	}
-	
-	
+
 }
