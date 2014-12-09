@@ -3,6 +3,7 @@ package com.noplanbees.tbm;
 import java.io.File;
 import java.io.IOException;
 
+
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -39,6 +40,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 	private final String TAG = this.getClass().getSimpleName();
 
 	private Context context;
+
 	private MediaRecorder mediaRecorder;
 
 	private Friend currentFriend;
@@ -56,6 +58,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 	// --------------
 	// Public Methods
 	// --------------
+
 
 	// Allow registration of a single delegate to handle exceptions.
 	private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
@@ -87,6 +90,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 					moveRecordingToFriend(currentFriend);
 			} catch (IllegalStateException e) {
 				Log.e(TAG, "stopRecording: IllegalStateException: " + e.toString());
+
 				rval = false;
 				releaseMediaRecorder();
 			} catch (RuntimeException e) {
@@ -121,6 +125,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 			if (videoRecorderExceptionHandler != null)
 				videoRecorderExceptionHandler.illegalStateOnStart();
 			return false;
+
 		} catch (RuntimeException e) {
 			// Since this seems to get the media recorder into a wedged state I
 			// will just finish the app here.
@@ -134,6 +139,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 		showRecordingIndicator();
 		return true;
 	}
+
 
 	public void release() {
 		Log.i(TAG, "dispose");
@@ -150,6 +156,8 @@ public class VideoRecorder implements SurfaceTextureListener {
 		releaseMediaRecorder();
 		if (abortedRecording && videoRecorderExceptionHandler != null)
 			videoRecorderExceptionHandler.recordingAborted();
+
+
 
 	}
 
@@ -170,6 +178,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 		File ing = Config.recordingFile(context);
 		ing.renameTo(ed);
 	}
+
 
 	// ---------------------------------
 	// Prepare and release MediaRecorder
@@ -197,15 +206,11 @@ public class VideoRecorder implements SurfaceTextureListener {
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 		// mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA));
 
+
 		// Set format and encoder see tbm-ios/docs/video_recorder.txt for the
 		// research that lead to these settings for compatability with IOS.
 		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very
-																		// tinny
-																		// but
-																		// plays
-																		// on
-																		// ios
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very tinny but plays on ios
 		mediaRecorder.setAudioChannels(2);
 		mediaRecorder.setAudioEncodingBitRate(96000);
 		mediaRecorder.setAudioSamplingRate(48000);
@@ -213,6 +218,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 		mediaRecorder.setVideoEncodingBitRate(150000);
 		mediaRecorder.setVideoFrameRate(15);
+
 
 		Camera.Size size = CameraManager.getPreviewSize();
 		if (size == null) {
@@ -225,19 +231,20 @@ public class VideoRecorder implements SurfaceTextureListener {
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
 		mediaRecorder.setOutputFile(ofile);
 
+
 		mediaRecorder.setOrientationHint(270);
 
 		// Step 5: Set the preview output
 		// Log.i(TAG, "prepareMediaRecorder: mediaRecorder.setPreviewDisplay");
 		// mediaRecorder.setPreviewDisplay(previewSurfaceHolder.getSurface());
 
+
 		// Step 6: Prepare configured MediaRecorder
 		try {
 			Log.i(TAG, "prepareMediaRecorder: mediaRecorder.prepare");
 			mediaRecorder.prepare();
 		} catch (IllegalStateException e) {
-			Log.e(TAG,
-					"ERROR: IllegalStateException preparing MediaRecorder: This should never happen" + e.getMessage());
+			Log.e(TAG, "ERROR: IllegalStateException preparing MediaRecorder: This should never happen" + e.getMessage());
 			releaseMediaRecorder();
 			notifyUnableToPrepare();
 			return;

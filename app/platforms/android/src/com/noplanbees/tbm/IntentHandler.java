@@ -161,6 +161,9 @@ public class IntentHandler {
 
 		if (status == Video.IncomingVideoStatus.DOWNLOADED){
 			friend.createThumb(videoId);
+			
+      // if (!VideoPlayer.isPlaying(friend.getId()))
+      //   friend.deleteAllViewedVideos();
 
 			//TODO: may be fail
 			//if(!TbmApplication.getInstance().isForeground()){
@@ -171,6 +174,11 @@ public class IntentHandler {
 				NotificationAlertManager.alert(context, friend, videoId);
 			} else {
 				FriendFactory.getFactoryInstance().notifyStatusChanged(friend);
+//				if (!VideoPlayer.isPlaying(friend.getId())){
+//					VideoPlayer.refreshThumbWithFriendId(friend.getId());
+//					playNotificationTone();
+//				}
+
 				playNotificationTone();
 			}
 			

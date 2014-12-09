@@ -15,6 +15,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+
 import com.noplanbees.tbm.utilities.AsyncTaskManager;
 
 public class SmsStatsHandler {
@@ -168,7 +169,7 @@ public class SmsStatsHandler {
 			if (pu.isValidNumber(pn))
 				r = pu.format(pn, PhoneNumberUtil.PhoneNumberFormat.E164);
 		} catch (NumberParseException e) {
-			//Log.e(TAG, "ERROR: found sms number not valid. Not expected to ever happen.");
+			Log.e(TAG, "ERROR: found sms number not valid. Not expected to ever happen.");
 		}
 		return r;
 	}
