@@ -22,4 +22,6 @@
     <color name="recording_border_color">#dc0505</color>
     
     <color name="bg_uploading">#f68b1f</color>
+    
+    <color name="bg_empty_friend">#1c1c19</color>
 </resources>

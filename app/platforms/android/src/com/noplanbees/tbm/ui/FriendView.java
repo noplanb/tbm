@@ -2,10 +2,8 @@ package com.noplanbees.tbm.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnAttachStateChangeListener;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -23,16 +21,17 @@ import com.noplanbees.tbm.Video;
 public class FriendView extends FrameLayout {
 
 	private static final String TAG = "FriendView";
+	
 	private Friend friend;
-	// private FrameLayout body;
 	private TextView twName;
 	private TextView twUnreadCount;
 	private ImageView imgThumb;
 	private ImageView imgViewed;
 	private ImageView imgDownloading;
 	private ImageView imgUploading;
-	private View progressView;
-	private View progressView2;
+	private View progressUploading;
+	private View progressDownloading;
+	private View body;
 
 	public FriendView(Context context) {
 		super(context);
@@ -62,14 +61,16 @@ public class FriendView extends FrameLayout {
 
 	private void init() {
 		LayoutInflater.from(getContext()).inflate(R.layout.friendview_item, this, true);
+		body  = findViewById(R.id.body);
+
 		twName = (TextView) findViewById(R.id.tw_name);
 		twUnreadCount = (TextView) findViewById(R.id.tw_unread_count);
 		imgThumb = (ImageView) findViewById(R.id.img_thumb);
 		imgViewed = (ImageView) findViewById(R.id.img_viewed);
 		imgDownloading = (ImageView) findViewById(R.id.img_downloading);
 		imgUploading = (ImageView) findViewById(R.id.img_uploading);
-		progressView = findViewById(R.id.line);
-		progressView2 = findViewById(R.id.line2);
+		progressUploading = findViewById(R.id.line);
+		progressDownloading = findViewById(R.id.line2);
 	}
 
 	public void setFriend(Friend friend) {
@@ -87,33 +88,26 @@ public class FriendView extends FrameLayout {
 		}
 
 		if (unreadMsgCount>0) {
-			setBackgroundResource(R.drawable.blue_border_shape);
+			body.setBackgroundResource(R.drawable.friend_body_unread_border);
 			twName.setBackgroundColor(getResources().getColor(R.color.bg_unread_msg));
 			
 			twUnreadCount.setVisibility(View.VISIBLE);
 			twUnreadCount.setText("" + unreadMsgCount);
 		} else {
-			setBackgroundResource(0);
+			body.setBackgroundColor(getResources().getColor(R.color.bg_name));
 			twName.setBackgroundColor(getResources().getColor(R.color.bg_name));
 			twUnreadCount.setVisibility(View.INVISIBLE);
 		}
 
 		if (friend.thumbExists())
 			imgThumb.setImageBitmap(friend.lastThumbBitmap());
-		else
-			imgThumb.setImageResource(R.drawable.head);
 
 		twName.setText(friend.getStatusString());
 	}
 
 	private void updateVideoStatus() {
-		//animateDownloading(0, 
-		//		-getMeasuredWidth() + imgDownloading.getMeasuredWidth(), true);
-
 		int incomingStatus = friend.getIncomingVideoStatus();
 		int outgoingStatus = friend.getOutgoingVideoStatus();
-
-		Log.d(TAG, "in: " + incomingStatus + ", out: " + outgoingStatus);
 		
 		switch (incomingStatus) {
 		case Video.IncomingVideoStatus.NEW:
@@ -121,11 +115,11 @@ public class FriendView extends FrameLayout {
 		case Video.IncomingVideoStatus.QUEUED:
 			break;
 		case Video.IncomingVideoStatus.DOWNLOADING:
-			//imgDownloading.setVisibility(View.VISIBLE);
 			animateDownloading(0, 
 					-getMeasuredWidth() + imgDownloading.getMeasuredWidth());
 			break;
 		case Video.IncomingVideoStatus.DOWNLOADED:
+			imgDownloading.setVisibility(View.INVISIBLE);
 			break;
 		case Video.IncomingVideoStatus.VIEWED:
 			break;
@@ -142,6 +136,7 @@ public class FriendView extends FrameLayout {
 			animateUploading(0, getMeasuredWidth() - imgUploading.getMeasuredWidth());
 			break;
 		case OutgoingVideoStatus.UPLOADED:
+			imgUploading.setVisibility(View.INVISIBLE);
 			break;
 		case OutgoingVideoStatus.DOWNLOADED:
 			break;
@@ -159,7 +154,7 @@ public class FriendView extends FrameLayout {
 		int durationMillis = 500;
 
 		int width = getMeasuredWidth();
-		progressView.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
+		progressUploading.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
 		
 
 		ScaleAnimation scale = new ScaleAnimation(
@@ -185,27 +180,22 @@ public class FriendView extends FrameLayout {
 		trAn.setFillAfter(true);
 		AnimationListener listener = new AnimationListener() {
 			@Override
-			public void onAnimationStart(Animation animation) {
-				imgUploading.setVisibility(View.VISIBLE);
-			}
-			
+			public void onAnimationStart(Animation animation) {}
 			@Override
 			public void onAnimationRepeat(Animation animation) {}
-			
 			@Override
 			public void onAnimationEnd(Animation animation) {
-				imgUploading.setVisibility(View.INVISIBLE);
 			}
 		};
 		trAn.setAnimationListener(listener);
 		imgUploading.startAnimation(trAn);
-		progressView.startAnimation(scale);
+		progressUploading.startAnimation(scale);
 	}
 	
 	private void animateDownloading(float fromXDelta, float toXDelta) {
 		int durationMillis = 500;
 		int width = getMeasuredWidth();
-		progressView2.setBackgroundColor(getContext().getResources().getColor(R.color.bg_unread_msg));
+		progressDownloading.setBackgroundColor(getContext().getResources().getColor(R.color.bg_unread_msg));
 		
 		ScaleAnimation scale = new ScaleAnimation(
 				0f, width, 
@@ -231,8 +221,6 @@ public class FriendView extends FrameLayout {
 		AnimationListener listener = new AnimationListener() {
 			@Override
 			public void onAnimationStart(Animation animation) {
-				imgDownloading.setVisibility(View.VISIBLE);
-				Log.d(TAG, "onAnimationStart");
 			}
 			
 			@Override
@@ -240,14 +228,11 @@ public class FriendView extends FrameLayout {
 			
 			@Override
 			public void onAnimationEnd(Animation animation) {
-				//if(!visibleStatus)
-				imgDownloading.setVisibility(View.INVISIBLE);
-				Log.d(TAG, "onAnimationEnd");
 			}
 		};
 		trAn.setAnimationListener(listener);
 		imgDownloading.startAnimation(trAn);
-		progressView2.startAnimation(scale);
+		progressDownloading.startAnimation(scale);
 	}
 
 }

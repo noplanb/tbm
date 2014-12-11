@@ -3,23 +3,65 @@
     android:id="@+id/body"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="2dp">
+    android:background="@color/bg_name">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="@color/bg_uploading"
+            android:textStyle="bold"
+            android:background="@color/bg_empty_friend"
+            android:layout_marginTop="2dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_marginBottom="1dp"
+            android:text="@string/nudge"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="@color/bg_unread_msg_count"
+            android:textStyle="bold"
+            android:background="@color/bg_empty_friend"
+            android:layout_marginTop="1dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:text="@string/record"
+            android:textSize="18sp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"/>
+</LinearLayout>
 
     <ImageView
         android:id="@+id/img_thumb"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="2dp"
         android:scaleType="centerCrop" />
 
-    <TextView
-        android:id="@+id/tw_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:gravity="center_horizontal"
-        android:background="@color/bg_name"
-        android:textColor="@color/color_name"
-        android:text="TextView" />
+        <TextView
+            android:id="@+id/tw_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@color/bg_name"
+            android:gravity="center_horizontal"
+            android:text="TextView"
+            android:textColor="@color/color_name" />
+    
 
     <ImageView
         android:id="@+id/img_viewed"
@@ -66,13 +108,13 @@
 
     <View
         android:id="@+id/line"
-        android:layout_width="1dp"
+        android:layout_width="0dp"
         android:layout_height="1dp" 
         />
 
     <View
         android:id="@+id/line2"
-        android:layout_width="1dp"
+        android:layout_width="0dp"
         android:layout_height="1dp" 
         android:layout_gravity="right"
         />

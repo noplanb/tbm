@@ -97,7 +97,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 					GridElement ge = (GridElement) ((FriendsAdapter) parent.getAdapter()).getItem(position);
 					String friendId = ge.getFriendId();
 					if (friendId != null && !friendId.equals("")) {
-						videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth(), view.getHeight());
+						videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth()+1, view.getHeight()+1);
 						videoPlayer.play(friendId);
 					} else {
 						callbacks.onBenchRequest(position);

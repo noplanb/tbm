@@ -287,7 +287,6 @@ public static interface VideoStatusChangedCallback{
 		for (Video v : incomingVideos()){
 			if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED){
 				i++;
-				break;
 			}
 		}
 		return i;
