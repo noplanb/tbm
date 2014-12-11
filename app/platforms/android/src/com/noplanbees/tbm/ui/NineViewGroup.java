@@ -24,6 +24,7 @@ import android.database.DataSetObserver;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -91,6 +92,8 @@ public class NineViewGroup extends ViewGroup {
 	private boolean isDirty;
 
 	private VideoRecorder videoRecorder;
+	
+	private SparseArray<View> recycleBin; 
 
 	public NineViewGroup(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
@@ -108,6 +111,10 @@ public class NineViewGroup extends ViewGroup {
 		if (this.adapter != null) {
 			this.adapter.unregisterDataSetObserver(dataSetObserver);
 		}
+		if(recycleBin==null){
+			recycleBin = new SparseArray<View>(TOTAL_CHILD_COUNT);
+		}
+		recycleBin.clear();
 
 		dataSetObserver = new AdapterDataSetObserver();
 		adapter.registerDataSetObserver(dataSetObserver);
@@ -174,7 +181,9 @@ public class NineViewGroup extends ViewGroup {
 							childPos = position-1;
 						else
 							childPos = position;
-						newChild = adapter.getView(childPos, null, this);
+						View convertView = recycleBin.get(childPos);
+						newChild = adapter.getView(childPos, convertView , this);
+						recycleBin.put(childPos, newChild);
 						addAndMeasureChild(newChild, position);
 					}
 					rightEdge += newChild.getMeasuredWidth();
@@ -212,7 +221,7 @@ public class NineViewGroup extends ViewGroup {
 	 */
 	private void layoutChildren() {
 		View child = getChildAt(0);
-		int numCol = getWidth() / child.getMeasuredWidth();
+		int numCol = getWidth()/child.getMeasuredWidth();
 
 		int width=0, height=0;
 		int margin_px = Convenience.dpToPx(getContext(), MARGIN_DP);
@@ -230,11 +239,6 @@ public class NineViewGroup extends ViewGroup {
 			int top = mod * heightFrame + paddingVert + margin_px;
 
 			child.layout(left, top, left + width, top + height);
-
-		
-			Log.d(TAG, ""+heightFrame + ", " + height + "| " + paddingVert);
-			Log.d(TAG, ""+widthFrame + ", " + width + "| " + paddingHor);
-			Log.d(TAG, index + ": "+left + ", " + top + ", " + (left + width)  + ", " + (top + height));
 		}
 		
 		if(childLayoutCompleteListener!=null){
@@ -243,7 +247,7 @@ public class NineViewGroup extends ViewGroup {
 
 		Log.d(TAG, "layoutChildren");
 	}
-
+	
 	@Override
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
@@ -269,13 +273,15 @@ public class NineViewGroup extends ViewGroup {
 		
 		int action = event.getAction();
 		int maskedAction = event.getActionMasked();
+		int x = (int) event.getX();
+		int y = (int) event.getY();
 
 		if (state == State.IDLE){
 			switch (action){
 			case MotionEvent.ACTION_DOWN:
 					state = State.DOWN;
 					setDownPosition(event);
-					startLongpressTimer(event);
+					startLongpressTimer(x, y);
 					//targetView = v;
 				return true;
 			case MotionEvent.ACTION_CANCEL:
@@ -367,7 +373,7 @@ public class NineViewGroup extends ViewGroup {
 		}	
 	}
 
-	private void longPressTimerFired(MotionEvent event) {
+	private void longPressTimerFired(int x, int y) {
 		if (state == State.IDLE){
 			// This should never happen because any action that starts the timer should move us out of IDLE
 			return;
@@ -375,7 +381,7 @@ public class NineViewGroup extends ViewGroup {
 
 		if (state == State.DOWN){
 			state = State.LONGPRESS;
-			runStartLongpress(event);
+			runStartLongpress(x, y);
 			return;
 		}
 
@@ -385,17 +391,22 @@ public class NineViewGroup extends ViewGroup {
 		}
 	}
 	
-	private void startLongpressTimer(final MotionEvent event) {
-		if (longPressTimer != null)
-			longPressTimer.cancel();
+	private void startLongpressTimer(final int x, final int y) {
+		cancelLongpressTimer();
 
 		longPressTimer = new Timer();
 		longPressTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				longPressTimerFired(event);
+				Log.d(TAG, "startLongpressTimer.run");
+				longPressTimerFired(x, y);
 			}
 		}, ViewConfiguration.getLongPressTimeout());
+	}
+
+	private void cancelLongpressTimer() {
+		if (longPressTimer != null)
+			longPressTimer.cancel();
 	}
 
 	private void setDownPosition(MotionEvent event) {
@@ -423,7 +434,12 @@ public class NineViewGroup extends ViewGroup {
 			if (child.getVisibility() == View.VISIBLE) {
 				child.getHitRect(frame);
 				if (frame.contains(x, y)) {
-					return i;
+					if(i == CENTRAL_VIEW_POSITION)
+						return INVALID_POSITION;
+					else if(i<CENTRAL_VIEW_POSITION)
+						return i;
+					else
+						return i-1;
 				}
 			}
 		}
@@ -444,9 +460,8 @@ public class NineViewGroup extends ViewGroup {
 		});
 	}
 
-	private void runStartLongpress(MotionEvent ev){
-		int x = (int) ev.getX();
-		int y = (int) ev.getY();
+	private void runStartLongpress(int x, int y){
+
 		final int motionPosition = pointToPosition(x, y);
 		final View child = getChildAt(motionPosition);
 		final long id = adapter.getItemId(motionPosition);
@@ -460,6 +475,7 @@ public class NineViewGroup extends ViewGroup {
 	}
 
 	private void runEndLongpress(MotionEvent ev){
+		cancelLongpressTimer();
 		post(new Runnable() {
 			@Override
 			public void run() {

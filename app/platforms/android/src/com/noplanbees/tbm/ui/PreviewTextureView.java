@@ -2,9 +2,12 @@ package com.noplanbees.tbm.ui;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
+import android.graphics.Paint.FontMetrics;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -13,6 +16,7 @@ import android.view.TextureView.SurfaceTextureListener;
 import android.widget.FrameLayout;
 
 import com.noplanbees.tbm.Convenience;
+import com.noplanbees.tbm.R;
 
 public class PreviewTextureView extends FrameLayout {
 
@@ -67,18 +71,44 @@ public class PreviewTextureView extends FrameLayout {
 		borderPath.lineTo(0, c.getHeight());
 		borderPath.lineTo(0, 0);
 		Paint paint = new Paint();
-		paint.setColor(0xffCC171E);
 		paint.setStrokeWidth(Convenience.dpToPx(getContext(), 2));
-		paint.setStyle(Paint.Style.STROKE);
-		c.drawPath(borderPath, paint);
-		paint.setColor(0xffCC171E);
 		paint.setStyle(Paint.Style.FILL);
-		c.drawCircle(Convenience.dpToPx(getContext(), 13), Convenience.dpToPx(getContext(), 13), 
-				Convenience.dpToPx(getContext(), 4), paint);
-		paint.setAntiAlias(true);
+
+		
+		
 		paint.setTextSize(Convenience.dpToPx(getContext(), 13)); //some size
+		paint.setAntiAlias(true);
 		paint.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
 		paint.setTextAlign(Align.CENTER);
-		c.drawText("Recording...", c.getWidth()/2, c.getHeight() - 13, paint);
+		FontMetrics fm = paint.getFontMetrics();
+		String text = "Recording";
+		int text_x = c.getWidth()/2;
+		int text_y = (int) (c.getHeight() - fm.bottom);
+
+		RectF r = new RectF(0, 
+				text_y + fm.top,
+				c.getWidth(), 
+				c.getHeight());
+		
+		//draw text background
+		paint.setColor(Color.parseColor("#30000000"));
+		c.drawRect(r , paint);
+
+		//draw text
+		paint.setColor(Color.WHITE);
+		c.drawText(text, text_x, text_y, paint);
+
+		paint.setColor(getResources().getColor(R.color.recording_border_color));
+		
+		//draw circle
+		int radius = Convenience.dpToPx(getContext(), 4);
+		c.drawCircle(0 + 2*radius, 
+				text_y - radius,
+				radius, paint);
+		
+		//draw borders
+		paint.setStyle(Paint.Style.STROKE);
+		c.drawPath(borderPath, paint);
+
 	}
 }

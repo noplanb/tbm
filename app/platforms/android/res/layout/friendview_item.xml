@@ -3,15 +3,13 @@
     android:id="@+id/body"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="2dp"
-    android:background="#f68b1f">
+    android:layout_margin="2dp">
 
     <ImageView
         android:id="@+id/img_thumb"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_launcher" />
+        android:scaleType="centerCrop" />
 
     <TextView
         android:id="@+id/tw_name"
@@ -23,4 +21,60 @@
         android:textColor="@color/color_name"
         android:text="TextView" />
 
+    <ImageView
+        android:id="@+id/img_viewed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/viewed"
+        android:background="@color/bg_unread_msg"
+        android:scaleType="center"
+        android:layout_gravity="right"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/img_downloading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/downloading"
+        android:background="@color/bg_unread_msg"
+        android:scaleType="center"
+        android:layout_gravity="right"
+        android:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/img_uploading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/uploading"
+        android:background="@color/bg_uploading"
+        android:scaleType="center"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/tw_unread_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_red_circle"
+        android:textColor="@android:color/white"
+        android:visibility="visible"
+        android:text="1"
+        android:paddingLeft="7dp"
+        android:paddingTop="2dp"
+        android:paddingRight="7dp"
+        android:paddingBottom="2dp"
+        android:layout_gravity="right"/>
+
+    <View
+        android:id="@+id/line"
+        android:layout_width="1dp"
+        android:layout_height="1dp" 
+        />
+
+    <View
+        android:id="@+id/line2"
+        android:layout_width="1dp"
+        android:layout_height="1dp" 
+        android:layout_gravity="right"
+        />
+    
 </FrameLayout>

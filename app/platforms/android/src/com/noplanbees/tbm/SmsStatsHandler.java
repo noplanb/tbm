@@ -169,7 +169,7 @@ public class SmsStatsHandler {
 			if (pu.isValidNumber(pn))
 				r = pu.format(pn, PhoneNumberUtil.PhoneNumberFormat.E164);
 		} catch (NumberParseException e) {
-			Log.e(TAG, "ERROR: found sms number not valid. Not expected to ever happen.");
+			//Log.e(TAG, "ERROR: found sms number not valid. Not expected to ever happen.");
 		}
 		return r;
 	}

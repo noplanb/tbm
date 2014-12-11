@@ -1,12 +1,13 @@
 package com.noplanbees.tbm.ui;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.widget.DrawerLayout;
@@ -16,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import com.noplanbees.tbm.ActiveModelsHandler;
 import com.noplanbees.tbm.BenchController;
@@ -30,8 +32,6 @@ import com.noplanbees.tbm.VersionHandler;
 
 public class MainActivity extends Activity implements GridViewFragment.Callbacks, BenchController.Callbacks {
 	private final static String TAG = "MainActivity";
-
-	private ProgressDialog pd;
 
 	private ServiceConnection conn = new ServiceConnection() {
 		@Override
@@ -64,6 +64,20 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 		
 		gcmHandler = new GcmHandler(this);
 		versionHandler = new VersionHandler(this);
+		
+		setupActionBar();
+		
+	}
+
+	private void setupActionBar() {
+		ActionBar actionBar = getActionBar();
+		actionBar.setDisplayShowCustomEnabled(true);
+		actionBar.setDisplayUseLogoEnabled(false);
+		actionBar.setDisplayShowTitleEnabled(false);
+		getActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent))); 
+		ImageView v = new ImageView(this);
+		v.setImageResource(R.drawable.zazo_type);
+		actionBar.setCustomView(v);
 	};
 
 	@Override
@@ -76,7 +90,6 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	protected void onStart() {
 		super.onStart();
 		Log.d(TAG, "onStart");
-		//pd = ProgressDialog.show(this, "Data", "retrieving data...");
 		versionHandler.checkVersionCompatibility();		
 		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 		NotificationAlertManager.cancelNativeAlerts(this);
@@ -98,9 +111,6 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	protected void onStop() {
 		super.onStop();
 		Log.d(TAG, "onStop");
-		//if (pd != null)
-		//	pd.dismiss();
-		
 		unbindService(conn);
 	}
 	
@@ -116,8 +126,6 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 			finish();
 			return;
 		} else {
-			//if (pd != null)
-			//	pd.dismiss();
 
 			mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
 			if(mainFragment == null){

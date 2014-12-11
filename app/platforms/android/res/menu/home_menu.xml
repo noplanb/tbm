@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/action_bench"
-        android:icon="@drawable/ic_action_view_as_list"
+        android:icon="@drawable/drawer"
         android:showAsAction="always"
         android:title="Bench"/>
     <item

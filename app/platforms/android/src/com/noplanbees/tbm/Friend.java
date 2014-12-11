@@ -281,6 +281,18 @@ public static interface VideoStatusChangedCallback{
 		return r;
 	}
 
+	public int incomingVideoNotViewedCount(){
+		// Return true if any of the incoming videos are status DOWNLOADED
+		int i =0;
+		for (Video v : incomingVideos()){
+			if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED){
+				i++;
+				break;
+			}
+		}
+		return i;
+	}
+
 	public void setIncomingVideoViewed(String videoId){
 		if (!hasIncomingVideoId(videoId)){
 			Log.e(TAG, "setIncomingVideoViewed: ERROR: incoming video doesnt exist");
@@ -579,9 +591,14 @@ public static interface VideoStatusChangedCallback{
 		int shortLen = Math.min(7, fn.length());
 		return fn.substring(0, shortLen);	
 	}
-
-
-
+	
+	public int getIncomingVideoStatus(){
+		Video v = newestIncomingVideo();
+		if (v == null)
+			return -1;
+		return v.getIncomingVideoStatus();
+	}
+	
 	public String fullName() {
 		return get(Attributes.FIRST_NAME) + " " + get(Attributes.LAST_NAME);
 	}

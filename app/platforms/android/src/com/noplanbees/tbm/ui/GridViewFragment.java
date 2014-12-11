@@ -91,6 +91,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		gridView.setItemClickListener(new NineViewGroup.OnItemTouchListener() {
 			@Override
 			public boolean onItemClick(NineViewGroup parent, View view, int position, long id) {
+				Log.d(TAG, "onItemClick: " +position + ", " + id);
 				if (id == -1)
 					return false;
 					GridElement ge = (GridElement) ((FriendsAdapter) parent.getAdapter()).getItem(position);
@@ -106,6 +107,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 			@Override
 			public boolean onItemLongClick(NineViewGroup parent, View view, int position, long id) {
+				Log.d(TAG, "onItemLongClick: " +position + ", " + id);
 				if (id == -1)
 					return false;
 
