@@ -120,6 +120,7 @@ public class FriendView extends FrameLayout {
 			break;
 		case Video.IncomingVideoStatus.DOWNLOADED:
 			imgDownloading.setVisibility(View.INVISIBLE);
+			progressDownloading.setVisibility(View.INVISIBLE);
 			break;
 		case Video.IncomingVideoStatus.VIEWED:
 			break;
@@ -137,6 +138,7 @@ public class FriendView extends FrameLayout {
 			break;
 		case OutgoingVideoStatus.UPLOADED:
 			imgUploading.setVisibility(View.INVISIBLE);
+			progressUploading.setVisibility(View.INVISIBLE);
 			break;
 		case OutgoingVideoStatus.DOWNLOADED:
 			break;

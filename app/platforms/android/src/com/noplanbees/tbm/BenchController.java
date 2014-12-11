@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -86,7 +88,10 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	// Populate
 	// ---------
 	private void populate() {
-		ArrayAdapter<String> ad = new ArrayAdapter<String>(activity, R.layout.bench_list_item, nameArray());
+		ArrayAdapter<String> ad = new ArrayAdapter<String>(activity, 
+				R.layout.bench_list_item,
+				R.id.text1,
+				nameArray());
 		listView.setAdapter(ad);
 	}
 

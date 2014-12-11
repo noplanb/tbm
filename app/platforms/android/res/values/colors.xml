@@ -24,4 +24,8 @@
     <color name="bg_uploading">#f68b1f</color>
     
     <color name="bg_empty_friend">#1c1c19</color>
+    
+    <color name="bg_bench">#2f2e28</color>
+    
+    <color name="light_grey">#a8a294</color>
 </resources>
