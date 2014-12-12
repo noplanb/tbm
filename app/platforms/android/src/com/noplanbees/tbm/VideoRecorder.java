@@ -3,7 +3,6 @@ package com.noplanbees.tbm;
 import java.io.File;
 import java.io.IOException;
 
-
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;

@@ -115,8 +115,7 @@ public class FriendView extends FrameLayout {
 		case Video.IncomingVideoStatus.QUEUED:
 			break;
 		case Video.IncomingVideoStatus.DOWNLOADING:
-			animateDownloading(0, 
-					-getMeasuredWidth() + imgDownloading.getMeasuredWidth());
+			animateDownloading();
 			break;
 		case Video.IncomingVideoStatus.DOWNLOADED:
 			imgDownloading.setVisibility(View.INVISIBLE);
@@ -134,7 +133,7 @@ public class FriendView extends FrameLayout {
 		case OutgoingVideoStatus.QUEUED:
 			break;
 		case OutgoingVideoStatus.UPLOADING:
-			animateUploading(0, getMeasuredWidth() - imgUploading.getMeasuredWidth());
+			animateUploading();
 			break;
 		case OutgoingVideoStatus.UPLOADED:
 			imgUploading.setVisibility(View.INVISIBLE);
@@ -151,7 +150,7 @@ public class FriendView extends FrameLayout {
 	}
 
 	
-	private void animateUploading(float fromXDelta, float toXDelta) {
+	private void animateUploading() {
 		
 		int durationMillis = 500;
 
@@ -171,6 +170,9 @@ public class FriendView extends FrameLayout {
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
+		float fromXDelta = 0;
+		float toXDelta = getMeasuredWidth() - imgUploading.getMeasuredWidth();
+		
 		TranslateAnimation trAn = new TranslateAnimation(
 				Animation.RELATIVE_TO_SELF, fromXDelta, 
 				Animation.ABSOLUTE,toXDelta, 
@@ -194,7 +196,7 @@ public class FriendView extends FrameLayout {
 		progressUploading.startAnimation(scale);
 	}
 	
-	private void animateDownloading(float fromXDelta, float toXDelta) {
+	private void animateDownloading() {
 		int durationMillis = 500;
 		int width = getMeasuredWidth();
 		progressDownloading.setBackgroundColor(getContext().getResources().getColor(R.color.bg_unread_msg));
@@ -211,6 +213,9 @@ public class FriendView extends FrameLayout {
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
+		float fromXDelta = 0;
+		float toXDelta = -getMeasuredWidth() + imgDownloading.getMeasuredWidth();
+		
 		TranslateAnimation trAn = new TranslateAnimation(
 				Animation.RELATIVE_TO_SELF, fromXDelta, 
 				Animation.ABSOLUTE,	toXDelta, 

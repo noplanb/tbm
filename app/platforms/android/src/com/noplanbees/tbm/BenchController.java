@@ -3,10 +3,6 @@ package com.noplanbees.tbm;
 import java.util.ArrayList;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -28,6 +24,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
 	public interface Callbacks {
 		void onHide();
+		void showNoValidPhonesDialog(Contact contact);
 	}
 
 	private Activity activity;
@@ -196,7 +193,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		}
 
 		if (contact.phoneObjects.size() == 0) {
-			showNoValidPhonesDialog(contact);
+			benchControllerCallbacks.showNoValidPhonesDialog(contact);
 			return;
 		}
 
@@ -211,19 +208,6 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	@Override
 	public void phoneSelected(Contact contact, int phoneIndex) {
 		invite(contact, contact.phoneObjects.get(phoneIndex));
-	}
-
-	private void showNoValidPhonesDialog(Contact contact) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-		builder.setTitle("No Mobile Number")
-				.setMessage(
-						"I could not find a valid mobile number for " + contact.getDisplayName()
-								+ ".\n\nPlease add a mobile number for " + contact.getFirstName()
-								+ " in your device contacts and try again.")
-				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-					}
-				}).create().show();
 	}
 
 	private void invite(Contact contact, LinkedTreeMap<String, String> mobileNumber) {

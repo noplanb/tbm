@@ -21,6 +21,7 @@ import android.widget.ImageView;
 
 import com.noplanbees.tbm.ActiveModelsHandler;
 import com.noplanbees.tbm.BenchController;
+import com.noplanbees.tbm.Contact;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.GcmHandler;
 import com.noplanbees.tbm.NotificationAlertManager;
@@ -29,6 +30,7 @@ import com.noplanbees.tbm.RegisterActivity;
 import com.noplanbees.tbm.User;
 import com.noplanbees.tbm.UserFactory;
 import com.noplanbees.tbm.VersionHandler;
+import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 
 public class MainActivity extends Activity implements GridViewFragment.Callbacks, BenchController.Callbacks {
 	private final static String TAG = "MainActivity";
@@ -195,5 +197,16 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	public void onHide() {
 		body.closeDrawers();
 	}
-	
+
+	@Override
+	public void showNoValidPhonesDialog(Contact contact) {
+		InfoDialogFragment info = new InfoDialogFragment();
+		Bundle args = new Bundle();
+		args.putString(InfoDialogFragment.TITLE, "No Mobile Number");
+		args.putString(InfoDialogFragment.MSG, "I could not find a valid mobile number for " + contact.getDisplayName()
+				+ ".\n\nPlease add a mobile number for " + contact.getFirstName()
+				+ " in your device contacts and try again.");
+		info.setArguments(args );
+	}
+
 }
