@@ -71,11 +71,8 @@ public class PreviewTextureView extends FrameLayout {
 		borderPath.lineTo(0, c.getHeight());
 		borderPath.lineTo(0, 0);
 		Paint paint = new Paint();
-		paint.setStrokeWidth(Convenience.dpToPx(getContext(), 2));
 		paint.setStyle(Paint.Style.FILL);
 
-		
-		
 		paint.setTextSize(Convenience.dpToPx(getContext(), 13)); //some size
 		paint.setAntiAlias(true);
 		paint.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
@@ -108,6 +105,7 @@ public class PreviewTextureView extends FrameLayout {
 		
 		//draw borders
 		paint.setStyle(Paint.Style.STROKE);
+		paint.setStrokeWidth(2*Convenience.dpToPx(getContext(), 2.5f));
 		c.drawPath(borderPath, paint);
 
 	}

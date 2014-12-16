@@ -189,6 +189,8 @@ final String TAG = this.getClass().getSimpleName();
 		// Order of our preference is: OFF, AUTO, NULL as available.
 		String r = null;
 		List <String> abSettings = cparams.getSupportedAntibanding();
+		if(abSettings == null)
+			return null;
 		for (String setting : abSettings){
 			if (setting.equals(Camera.Parameters.ANTIBANDING_AUTO))
 				r = Camera.Parameters.ANTIBANDING_AUTO;
