@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">Zazo</string>
-    <string name="nudge">NUDGE</string>
-    <string name="record">RECORD</string>
+    <string name="nudge">Nudge</string>
+    <string name="record">Record</string>
 
 </resources>
