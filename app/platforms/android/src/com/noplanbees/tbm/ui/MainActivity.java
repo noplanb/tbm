@@ -167,18 +167,18 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 			else
 				body.openDrawer(Gravity.RIGHT);
 			return true;
-		case R.id.action_get_contacts:
-			UserFactory.current_user().getCountryCode();
-			return true;
-		case R.id.action_get_sms:
-			benchController.callSms();
-			return true;
-		case R.id.action_reset:
-			ActiveModelsHandler.getInstance(this).destroyAll();
-			finish();
-			return true;
-		case R.id.action_crash:
-			throw new NullPointerException("simulate exception");
+//		case R.id.action_get_contacts:
+//			UserFactory.current_user().getCountryCode();
+//			return true;
+//		case R.id.action_get_sms:
+//			benchController.callSms();
+//			return true;
+//		case R.id.action_reset:
+//			ActiveModelsHandler.getInstance(this).destroyAll();
+//			finish();
+//			return true;
+//		case R.id.action_crash:
+//			throw new NullPointerException("simulate exception");
 		default:
 			return super.onOptionsItemSelected(item);
 		}

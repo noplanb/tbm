@@ -6,6 +6,7 @@
         android:icon="@drawable/drawer"
         android:showAsAction="always"
         android:title="Bench"/>
+<!-- 
     <item
         android:id="@+id/action_get_contacts"
         android:icon="@drawable/ic_action_view_as_list"
@@ -25,5 +26,5 @@
         android:id="@+id/action_crash"
         android:showAsAction="never"
         android:title="Crash"/>
-
+ -->
 </menu>
