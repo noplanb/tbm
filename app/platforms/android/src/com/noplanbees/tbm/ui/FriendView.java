@@ -2,6 +2,7 @@ package com.noplanbees.tbm.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -13,6 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.noplanbees.tbm.Convenience;
 import com.noplanbees.tbm.Friend;
 import com.noplanbees.tbm.Friend.OutgoingVideoStatus;
 import com.noplanbees.tbm.R;
@@ -21,7 +23,7 @@ import com.noplanbees.tbm.Video;
 public class FriendView extends FrameLayout {
 
 	private static final String TAG = "FriendView";
-	
+		
 	private Friend friend;
 	private TextView twName;
 	private TextView twUnreadCount;
@@ -32,6 +34,8 @@ public class FriendView extends FrameLayout {
 	private View progressUploading;
 	private View progressDownloading;
 	private View body;
+
+	private int indicatorMaxWidth;
 
 	public FriendView(Context context) {
 		super(context);
@@ -47,22 +51,11 @@ public class FriendView extends FrameLayout {
 		super(context, attrs, defStyleAttr);
 		init();
 	}
-
-	@Override
-	protected void onAttachedToWindow() {
-		super.onAttachedToWindow();
-		updateVideoStatus();
-	}
-
-	@Override
-	protected void onDetachedFromWindow() {
-		super.onDetachedFromWindow();
-	}
-
+	
 	private void init() {
 		LayoutInflater.from(getContext()).inflate(R.layout.friendview_item, this, true);
 		body  = findViewById(R.id.body);
-
+	
 		twName = (TextView) findViewById(R.id.tw_name);
 		twUnreadCount = (TextView) findViewById(R.id.tw_unread_count);
 		imgThumb = (ImageView) findViewById(R.id.img_thumb);
@@ -71,6 +64,79 @@ public class FriendView extends FrameLayout {
 		imgUploading = (ImageView) findViewById(R.id.img_uploading);
 		progressUploading = findViewById(R.id.line);
 		progressDownloading = findViewById(R.id.line2);
+		
+		indicatorMaxWidth = Convenience.dpToPx(getContext(), 40);
+		
+		//allow childrens to extends parent border
+		setClipChildren(false);
+		setClipToPadding(false);
+
+	}
+
+	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+		int width = MeasureSpec.getSize(widthMeasureSpec);
+		int height = MeasureSpec.getSize(heightMeasureSpec);
+		
+		Log.d(TAG, "onMeasure: " + width + ", " + height);
+		
+		//setIndicatorsSize(width, height);
+		
+	}
+
+//	private void setIndicatorsSize(int width, int height) {
+//		
+//		FrameLayout.LayoutParams params = (LayoutParams) imgUploading.getLayoutParams();
+//		int neededWidth = (int) (width);
+//		//neededWidth = (neededWidth>indicatorMaxWidth)?indicatorMaxWidth:neededWidth;
+//		params.width = neededWidth;
+//		params.height = neededWidth;
+//		imgUploading.setLayoutParams(params );
+//		imgDownloading.setLayoutParams(params );
+//		imgViewed.setLayoutParams(params );
+//		imgUploading.requestLayout();
+//		Log.d(TAG, "setIndicatorsSize: " +imgUploading.getLayoutParams().width);
+//	}
+
+	@Override
+	protected void onAttachedToWindow() {
+		Log.d(TAG, "onAttachedToWindow: " +imgUploading.getLayoutParams().width);
+		super.onAttachedToWindow();
+		updateVideoStatus();
+		moveUnviewCountToPosition();
+
+	}
+
+	//	private void setIndicatorsSize(int width, int height) {
+	//		
+	//		FrameLayout.LayoutParams params = (LayoutParams) imgUploading.getLayoutParams();
+	//		int neededWidth = (int) (width);
+	//		//neededWidth = (neededWidth>indicatorMaxWidth)?indicatorMaxWidth:neededWidth;
+	//		params.width = neededWidth;
+	//		params.height = neededWidth;
+	//		imgUploading.setLayoutParams(params );
+	//		imgDownloading.setLayoutParams(params );
+	//		imgViewed.setLayoutParams(params );
+	//		imgUploading.requestLayout();
+	//		Log.d(TAG, "setIndicatorsSize: " +imgUploading.getLayoutParams().width);
+	//	}
+	
+		private void moveUnviewCountToPosition() {
+			int dpToPx = Convenience.dpToPx(getContext(), 5);
+			TranslateAnimation trAn = new TranslateAnimation(
+					Animation.ABSOLUTE, 0, 
+					Animation.ABSOLUTE, dpToPx, 
+					Animation.ABSOLUTE, 0, 
+					Animation.ABSOLUTE, -dpToPx);
+			trAn.setDuration(0);
+			trAn.setFillAfter(true);
+			twUnreadCount.startAnimation(trAn);
+		}
+
+	@Override
+	protected void onDetachedFromWindow() {
+		super.onDetachedFromWindow();
 	}
 
 	public void setFriend(Friend friend) {
@@ -182,18 +248,11 @@ public class FriendView extends FrameLayout {
 		trAn.setInterpolator(new AccelerateDecelerateInterpolator());
 		trAn.setDuration(durationMillis);
 		trAn.setFillAfter(true);
-		AnimationListener listener = new AnimationListener() {
-			@Override
-			public void onAnimationStart(Animation animation) {}
-			@Override
-			public void onAnimationRepeat(Animation animation) {}
-			@Override
-			public void onAnimationEnd(Animation animation) {
-			}
-		};
-		trAn.setAnimationListener(listener);
 		imgUploading.startAnimation(trAn);
 		progressUploading.startAnimation(scale);
+		
+		Log.d(TAG, "anima: " +imgUploading.getLayoutParams().width);
+
 	}
 	
 	private void animateDownloading() {
@@ -225,19 +284,6 @@ public class FriendView extends FrameLayout {
 		trAn.setInterpolator(new AccelerateDecelerateInterpolator());
 		trAn.setDuration(durationMillis);
 		trAn.setFillAfter(true);
-		AnimationListener listener = new AnimationListener() {
-			@Override
-			public void onAnimationStart(Animation animation) {
-			}
-			
-			@Override
-			public void onAnimationRepeat(Animation animation) {}
-			
-			@Override
-			public void onAnimationEnd(Animation animation) {
-			}
-		};
-		trAn.setAnimationListener(listener);
 		imgDownloading.startAnimation(trAn);
 		progressDownloading.startAnimation(scale);
 	}

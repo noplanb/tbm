@@ -97,14 +97,23 @@ public class NineViewGroup extends ViewGroup {
 
 	public NineViewGroup(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
+		init();
 	}
 
 	public NineViewGroup(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		init();
 	}
 
 	public NineViewGroup(Context context) {
 		super(context);
+		init();
+	}
+
+	private void init() {
+		//allow childrens to extends parent border
+		setClipChildren(false);
+		setClipToPadding(false);
 	}
 
 	public void setAdapter(BaseAdapter adapter) {
