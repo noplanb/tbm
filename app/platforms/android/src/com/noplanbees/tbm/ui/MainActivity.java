@@ -62,6 +62,7 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 		
 		body = (DrawerLayout)findViewById(R.id.drawer_layout);
 		
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		
 		gcmHandler = new GcmHandler(this);
