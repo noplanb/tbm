@@ -45,8 +45,8 @@ public class NineViewGroup extends ViewGroup {
 
 	private static final float ASPECT = 240F / 320F;
 	
-	private static final int MARGIN_DP = 6;
-	private static final int PADDING_DP = 3;
+	private static final int MIN_MARGIN_DP = 10;
+	private static final int PADDING_DP = 5;
 	
 	private static final int TOTAL_CHILD_COUNT = 9;
 	private static final int CENTRAL_VIEW_POSITION = TOTAL_CHILD_COUNT/2;
@@ -196,7 +196,7 @@ public class NineViewGroup extends ViewGroup {
 						addAndMeasureChild(newChild, position);
 					}
 					rightEdge += newChild.getMeasuredWidth();
-					measuredHeight = getHeight() / MATRIX_DIMENSIONS;//newChild.getMeasuredHeight();
+					measuredHeight = getHeight() / MATRIX_DIMENSIONS;
 					position++;
 				}
 				bottomEdge += measuredHeight;
@@ -219,8 +219,8 @@ public class NineViewGroup extends ViewGroup {
 		}
 		addViewInLayout(child, position, params, true);
 
-		int frameWidth = (getWidth() - 2*Convenience.dpToPx(getContext(), MARGIN_DP))/ MATRIX_DIMENSIONS;
-		int itemWidth = frameWidth - 2*Convenience.dpToPx(getContext(), PADDING_DP);
+		int itemWidth = (getWidth() - 2*Convenience.dpToPx(getContext(), MIN_MARGIN_DP)- 2*Convenience.dpToPx(getContext(), PADDING_DP))
+				/ MATRIX_DIMENSIONS;
 		int itemHeight = (int) ((float) itemWidth / ASPECT);
 		child.measure(MeasureSpec.EXACTLY | itemWidth, MeasureSpec.EXACTLY | itemHeight);
 	}
@@ -231,21 +231,20 @@ public class NineViewGroup extends ViewGroup {
 	private void layoutChildren() {
 		View child = getChildAt(0);
 		int numCol = getWidth()/child.getMeasuredWidth();
-
-		int width=0, height=0;
-		int margin_px = Convenience.dpToPx(getContext(), MARGIN_DP);
-		int widthFrame = (getWidth() - 2*margin_px)/MATRIX_DIMENSIONS;
-		int heightFrame = (getHeight() - 2*margin_px)/MATRIX_DIMENSIONS;
-		int paddingHor = (widthFrame - child.getMeasuredWidth())/2;
-		int paddingVert = (heightFrame - child.getMeasuredHeight())/2;
+		
+		int padding_px = Convenience.dpToPx(getContext(), PADDING_DP);
+		int startX = (getWidth() - 3*child.getMeasuredWidth()-2*padding_px)/2;
+		startX = (startX<MIN_MARGIN_DP)?MIN_MARGIN_DP:startX;
+		int startY = (getHeight() - (child.getMeasuredHeight()+padding_px)*3)/2;
+		startY = (startY<MIN_MARGIN_DP)?MIN_MARGIN_DP:startY;
 		
 		for (int index = 0; index < getChildCount(); index++) {
 			child = getChildAt(index);
-			width = child.getMeasuredWidth();
-			height = child.getMeasuredHeight();
+			int width = child.getMeasuredWidth();
+			int height = child.getMeasuredHeight();
 			int mod = index / numCol;
-			int left = (index - mod * numCol) * widthFrame + paddingHor + margin_px;
-			int top = mod * heightFrame + paddingVert + margin_px;
+			int left = startX + (index - mod * numCol) * (width + padding_px);
+			int top = startY + mod * (height + padding_px);
 
 			child.layout(left, top, left + width, top + height);
 		}
@@ -255,7 +254,38 @@ public class NineViewGroup extends ViewGroup {
 		}
 
 		Log.d(TAG, "layoutChildren");
-	}
+	}	
+//	/**
+//	 * Positions the children at the "correct" positions
+//	 */
+//	private void layoutChildren() {
+//		View child = getChildAt(0);
+//		int numCol = getWidth()/child.getMeasuredWidth();
+//
+//		int width=0, height=0;
+//		int margin_px = Convenience.dpToPx(getContext(), MARGIN_DP);
+//		int widthFrame = (getWidth() - 2*margin_px)/MATRIX_DIMENSIONS;
+//		int heightFrame = (getHeight() - 2*margin_px)/MATRIX_DIMENSIONS;
+//		int paddingHor = (widthFrame - child.getMeasuredWidth())/2;
+//		int paddingVert = (heightFrame - child.getMeasuredHeight())/2;
+//		
+//		for (int index = 0; index < getChildCount(); index++) {
+//			child = getChildAt(index);
+//			width = child.getMeasuredWidth();
+//			height = child.getMeasuredHeight();
+//			int mod = index / numCol;
+//			int left = (index - mod * numCol) * widthFrame + paddingHor + margin_px;
+//			int top = mod * heightFrame + paddingVert + margin_px;
+//
+//			child.layout(left, top, left + width, top + height);
+//		}
+//		
+//		if(childLayoutCompleteListener!=null){
+//			childLayoutCompleteListener.onChildLayoutComplete();
+//		}
+//
+//		Log.d(TAG, "layoutChildren");
+//	}
 	
 	@Override
 	protected void onAttachedToWindow() {
