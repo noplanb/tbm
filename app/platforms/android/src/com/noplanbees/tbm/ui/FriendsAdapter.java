@@ -31,7 +31,27 @@ public class FriendsAdapter extends BaseAdapter {
 
 	@Override
 	public GridElement getItem(int position) {
-		return list.get(position);
+		switch(position){
+		case 0:
+			return list.get(7);
+		case 1:
+			return list.get(6);
+		case 2:
+			return list.get(4);
+		case 3:
+			return list.get(5);
+		case 4:
+			return list.get(0);
+		case 5:
+			return list.get(3);
+		case 6:
+			return list.get(1);
+		case 7:
+			return list.get(2);
+		default:
+			return list.get(position);
+		}
+		
 	}
 
 	@Override
