@@ -33,4 +33,6 @@
     <color name="dialog_btn_body_bg">#ddd9ce</color>
     <color name="dialog_border">#86837b</color>
     <color name="dialog_textcolor">#2f2e28</color>
+    
+    <color name="empty_bg">#F48A31</color>
 </resources>
