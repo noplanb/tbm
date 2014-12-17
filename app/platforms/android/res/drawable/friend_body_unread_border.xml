@@ -3,5 +3,5 @@
     android:shape="rectangle" >
     <stroke
         android:width="2.5dp"
-        android:color="@color/bg_unread_msg" />
+        android:color="@color/green" />
 </shape>

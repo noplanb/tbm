@@ -22,7 +22,7 @@
             android:background="@color/bg_empty_friend"
             android:gravity="center"
             android:text="@string/nudge"
-            android:textColor="@color/bg_uploading"
+            android:textColor="@color/orange"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -74,25 +74,6 @@
         android:src="@drawable/viewed"
         android:visibility="gone" />
 
-    <ImageView
-        android:id="@+id/img_downloading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:background="@color/bg_unread_msg"
-        android:scaleType="center"
-        android:src="@drawable/downloading"
-        android:visibility="invisible" />
-
-    <ImageView
-        android:id="@+id/img_uploading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/bg_uploading"
-        android:scaleType="center"
-        android:src="@drawable/uploading"
-        android:visibility="invisible" />
-
     <TextView
         android:id="@+id/tw_unread_count"
         android:layout_width="wrap_content"
@@ -110,15 +91,27 @@
 
     <View
         android:id="@+id/line"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
         android:visibility="invisible" />
 
-    <View
-        android:id="@+id/line2"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
+    <ImageView
+        android:id="@+id/img_uploading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_uploading"
+        android:scaleType="center"
         android:layout_gravity="right"
+        android:src="@drawable/uploading"
+        android:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/img_downloading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_downloading"
+        android:scaleType="center"
+        android:src="@drawable/downloading"
         android:visibility="invisible" />
 
 </FrameLayout>

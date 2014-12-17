@@ -1,7 +1,5 @@
 <resources>
 
-    <color name="white">#ffff</color>
-    <color name="black">#f000</color>
     <color name="black_overlay">#66000000</color>
     <color name="grey_background">#faaa</color>
     <color name="beige_background">#ffF7F2DF</color>
@@ -9,11 +7,14 @@
     <color name="charcoal">#f444</color>
     <color name="yellow">#ffFAF538</color>
     
+    <color name="orange">#f68b1f</color>
+    <color name="green">#9ac23b</color>
+    
     
     <color name="bg_name">#4e4d42</color>
     <color name="color_name">#ffffff</color>
     
-    <color name="bg_unread_msg">#9ac23b</color>
+    <color name="bg_unread_msg">@color/green</color>
     <color name="bg_unread_msg_count">#dc0505</color>
     
     <color name="actionbar_bg">#1c1c19</color>
@@ -21,14 +22,15 @@
     
     <color name="recording_border_color">#dc0505</color>
     
-    <color name="bg_uploading">#f68b1f</color>
+    <color name="bg_uploading">@color/green</color>
+    <color name="bg_downloading">@color/orange</color>
     
     <color name="bg_empty_friend">#1c1c19</color>
     
     <color name="bg_bench">#2f2e28</color>
     
     <color name="light_grey">#a8a294</color>
-    <color name="dialog_title_bg">#f68b1f</color>
+    <color name="dialog_title_bg">@color/green</color>
     <color name="dialog_body_bg">#f1efe9</color>
     <color name="dialog_btn_body_bg">#ddd9ce</color>
     <color name="dialog_border">#86837b</color>

@@ -2,10 +2,8 @@ package com.noplanbees.tbm.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
@@ -30,8 +28,7 @@ public class FriendView extends FrameLayout {
 	private ImageView imgViewed;
 	private ImageView imgDownloading;
 	private ImageView imgUploading;
-	private View progressUploading;
-	private View progressDownloading;
+	private View progressLine;
 	private View body;
 
 	public FriendView(Context context) {
@@ -59,22 +56,18 @@ public class FriendView extends FrameLayout {
 		imgViewed = (ImageView) findViewById(R.id.img_viewed);
 		imgDownloading = (ImageView) findViewById(R.id.img_downloading);
 		imgUploading = (ImageView) findViewById(R.id.img_uploading);
-		progressUploading = findViewById(R.id.line);
-		progressDownloading = findViewById(R.id.line2);
+		progressLine = findViewById(R.id.line);
 
 		// allow childrens to extends parent border
 		setClipChildren(false);
 		setClipToPadding(false);
-
 	}
 
 	@Override
 	protected void onAttachedToWindow() {
-		Log.d(TAG, "onAttachedToWindow: " + imgUploading.getLayoutParams().width);
 		super.onAttachedToWindow();
 		updateVideoStatus();
 		moveUnviewCountToPosition();
-
 	}
 
 	private void moveUnviewCountToPosition() {
@@ -123,6 +116,13 @@ public class FriendView extends FrameLayout {
 			imgThumb.setImageBitmap(friend.lastThumbBitmap());
 
 		twName.setText(friend.getStatusString());
+		
+		
+		if(friend.getOutgoingVideoStatus() == OutgoingVideoStatus.UPLOADED && 
+				friend.getIncomingVideoStatus() != Video.IncomingVideoStatus.DOWNLOADING)
+			imgUploading.setVisibility(View.VISIBLE);
+		else
+			imgUploading.setVisibility(View.INVISIBLE);
 	}
 
 	private void updateVideoStatus() {
@@ -138,8 +138,7 @@ public class FriendView extends FrameLayout {
 			animateDownloading();
 			break;
 		case Video.IncomingVideoStatus.DOWNLOADED:
-			imgDownloading.setVisibility(View.INVISIBLE);
-			progressDownloading.setVisibility(View.INVISIBLE);
+			progressLine.setVisibility(View.INVISIBLE);
 			break;
 		case Video.IncomingVideoStatus.VIEWED:
 			break;
@@ -156,8 +155,7 @@ public class FriendView extends FrameLayout {
 			animateUploading();
 			break;
 		case OutgoingVideoStatus.UPLOADED:
-			imgUploading.setVisibility(View.INVISIBLE);
-			progressUploading.setVisibility(View.INVISIBLE);
+			progressLine.setVisibility(View.INVISIBLE);
 			break;
 		case OutgoingVideoStatus.DOWNLOADED:
 			break;
@@ -166,66 +164,61 @@ public class FriendView extends FrameLayout {
 		case OutgoingVideoStatus.FAILED_PERMANENTLY:
 			break;
 		}
-
 	}
 
 	private void animateUploading() {
 
-		int durationMillis = 500;
-
-		int width = getMeasuredWidth();
-		progressUploading.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
-
-		ScaleAnimation scale = new ScaleAnimation(0f, width, 1f, 1f, Animation.RELATIVE_TO_SELF, (float) 0.5,
-				Animation.RELATIVE_TO_SELF, (float) 0.5);
+		int durationMillis = 400;
+		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
+		ScaleAnimation scale = new ScaleAnimation(
+				0f, 1f, 
+				1f, 1f, 
+				Animation.RELATIVE_TO_SELF, (float) 0,
+				Animation.RELATIVE_TO_SELF, (float) 0);
 		scale.setDuration(durationMillis);
 		scale.setFillAfter(true);
-		// scale.setInterpolator(new AccelerateInterpolator(1.0f));
-		scale.setInterpolator(new AccelerateDecelerateInterpolator());
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
-		float fromXDelta = 0;
-		float toXDelta = getMeasuredWidth() - imgUploading.getMeasuredWidth();
+		float fromXDelta = -getMeasuredWidth() + imgUploading.getMeasuredWidth();
+		float toXDelta = 0;
 
-		TranslateAnimation trAn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, fromXDelta, Animation.ABSOLUTE,
-				toXDelta, Animation.RELATIVE_TO_SELF, fromYDelta, Animation.RELATIVE_TO_SELF, toYDelta);
-		// trAn.setInterpolator(new AccelerateInterpolator(1.0f));
-		trAn.setInterpolator(new AccelerateDecelerateInterpolator());
+		TranslateAnimation trAn = new TranslateAnimation(
+				Animation.ABSOLUTE, fromXDelta, 
+				Animation.RELATIVE_TO_SELF,	toXDelta, 
+				Animation.RELATIVE_TO_SELF, fromYDelta, 
+				Animation.RELATIVE_TO_SELF, toYDelta);
 		trAn.setDuration(durationMillis);
 		trAn.setFillAfter(true);
 		imgUploading.startAnimation(trAn);
-		progressUploading.startAnimation(scale);
-
-		Log.d(TAG, "anima: " + imgUploading.getLayoutParams().width);
-
+		progressLine.startAnimation(scale);
 	}
 
 	private void animateDownloading() {
 		int durationMillis = 500;
-		int width = getMeasuredWidth();
-		progressDownloading.setBackgroundColor(getContext().getResources().getColor(R.color.bg_unread_msg));
+		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_downloading));
 
-		ScaleAnimation scale = new ScaleAnimation(0f, width, 1f, 1f, Animation.RELATIVE_TO_SELF, (float) 0.5,
-				Animation.RELATIVE_TO_SELF, (float) 0.5);
+		ScaleAnimation scale = new ScaleAnimation(
+				0f, 1f, 
+				1f, 1f, 
+				Animation.RELATIVE_TO_SELF, (float) 1.0f,
+				Animation.RELATIVE_TO_SELF, (float) 0);
 		scale.setDuration(durationMillis);
 		scale.setFillAfter(true);
-		// scale.setInterpolator(new AccelerateInterpolator(1.0f));
-		scale.setInterpolator(new AccelerateDecelerateInterpolator());
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
-		float fromXDelta = 0;
-		float toXDelta = -getMeasuredWidth() + imgDownloading.getMeasuredWidth();
+		float fromXDelta = getMeasuredWidth() - imgDownloading.getMeasuredWidth();
+		float toXDelta = 0;
 
-		TranslateAnimation trAn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, fromXDelta, Animation.ABSOLUTE,
-				toXDelta, Animation.RELATIVE_TO_SELF, fromYDelta, Animation.RELATIVE_TO_SELF, toYDelta);
-		// trAn.setInterpolator(new AccelerateInterpolator(1.0f));
-		trAn.setInterpolator(new AccelerateDecelerateInterpolator());
+		TranslateAnimation trAn = new TranslateAnimation(
+				Animation.ABSOLUTE, fromXDelta, 
+				Animation.RELATIVE_TO_SELF,	toXDelta, 
+				Animation.RELATIVE_TO_SELF, fromYDelta, 
+				Animation.RELATIVE_TO_SELF, toYDelta);
 		trAn.setDuration(durationMillis);
 		trAn.setFillAfter(true);
 		imgDownloading.startAnimation(trAn);
-		progressDownloading.startAnimation(scale);
+		progressLine.startAnimation(scale);
 	}
-
 }

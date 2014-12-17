@@ -6,7 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.FontMetrics;
-import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -65,11 +65,8 @@ public class PreviewTextureView extends FrameLayout {
 	}
 	
 	private void drawIndicator(Canvas c){
-		Path borderPath = new Path();
-		borderPath.lineTo(c.getWidth(), 0);
-		borderPath.lineTo(c.getWidth(), c.getHeight());
-		borderPath.lineTo(0, c.getHeight());
-		borderPath.lineTo(0, 0);
+		Rect border = new Rect(0, 0, c.getWidth(), c.getHeight());
+		
 		Paint paint = new Paint();
 		paint.setStyle(Paint.Style.FILL);
 
@@ -105,8 +102,8 @@ public class PreviewTextureView extends FrameLayout {
 		
 		//draw borders
 		paint.setStyle(Paint.Style.STROKE);
-		paint.setStrokeWidth(2*Convenience.dpToPx(getContext(), 2.5f));
-		c.drawPath(borderPath, paint);
+		paint.setStrokeWidth(Convenience.dpToPx(getContext(), 2.5f));
+		c.drawRect(border, paint);
 
 	}
 }

@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
-import com.noplanbees.tbm.ActiveModelsHandler;
 import com.noplanbees.tbm.BenchController;
 import com.noplanbees.tbm.Contact;
 import com.noplanbees.tbm.DataHolderService;
@@ -28,7 +27,6 @@ import com.noplanbees.tbm.NotificationAlertManager;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.RegisterActivity;
 import com.noplanbees.tbm.User;
-import com.noplanbees.tbm.UserFactory;
 import com.noplanbees.tbm.VersionHandler;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 

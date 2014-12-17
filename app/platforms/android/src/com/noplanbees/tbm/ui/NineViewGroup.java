@@ -44,12 +44,12 @@ public class NineViewGroup extends ViewGroup {
 	private static final int MATRIX_DIMENSIONS = 3;
 
 	private static final float ASPECT = 240F / 320F;
-	
+
 	private static final int MIN_MARGIN_DP = 10;
 	private static final int PADDING_DP = 5;
-	
+
 	private static final int TOTAL_CHILD_COUNT = 9;
-	private static final int CENTRAL_VIEW_POSITION = TOTAL_CHILD_COUNT/2;
+	private static final int CENTRAL_VIEW_POSITION = TOTAL_CHILD_COUNT / 2;
 
 	/**
 	 * Represents an invalid position. All valid positions are in the range 0 to
@@ -60,21 +60,25 @@ public class NineViewGroup extends ViewGroup {
 	// -----
 	// State
 	// -----
-	private static final class State{
+	private static final class State {
 		public static final int IDLE = 0;
 		public static final int DOWN = 1;
 		public static final int LONGPRESS = 2;
 	}
-	
+
 	public interface OnItemTouchListener {
 		boolean onItemClick(NineViewGroup parent, View view, int position, long id);
+
 		boolean onItemLongClick(NineViewGroup parent, View view, int position, long id);
+
 		boolean onItemStopTouch();
+
 		boolean onCancelTouch();
+
 		boolean onCancelTouch(String reason);
 	}
-	
-	public interface OnChildLayoutCompleteListener{
+
+	public interface OnChildLayoutCompleteListener {
 		void onChildLayoutComplete();
 	}
 
@@ -82,7 +86,6 @@ public class NineViewGroup extends ViewGroup {
 	private float[] downPosition = new float[2];
 	private Timer longPressTimer;
 
-	
 	private BaseAdapter adapter;
 	private OnItemTouchListener itemClickListener;
 	private OnChildLayoutCompleteListener childLayoutCompleteListener;
@@ -92,8 +95,8 @@ public class NineViewGroup extends ViewGroup {
 	private boolean isDirty;
 
 	private VideoRecorder videoRecorder;
-	
-	private SparseArray<View> recycleBin; 
+
+	private SparseArray<View> recycleBin;
 
 	public NineViewGroup(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
@@ -111,7 +114,7 @@ public class NineViewGroup extends ViewGroup {
 	}
 
 	private void init() {
-		//allow childrens to extends parent border
+		// allow childrens to extends parent border
 		setClipChildren(false);
 		setClipToPadding(false);
 	}
@@ -120,7 +123,7 @@ public class NineViewGroup extends ViewGroup {
 		if (this.adapter != null) {
 			this.adapter.unregisterDataSetObserver(dataSetObserver);
 		}
-		if(recycleBin==null){
+		if (recycleBin == null) {
 			recycleBin = new SparseArray<View>(TOTAL_CHILD_COUNT);
 		}
 		recycleBin.clear();
@@ -134,8 +137,8 @@ public class NineViewGroup extends ViewGroup {
 	public BaseAdapter getAdapter() {
 		return adapter;
 	}
-	
-	public void setVideoRecorder(VideoRecorder videoRecorder){
+
+	public void setVideoRecorder(VideoRecorder videoRecorder) {
 		this.videoRecorder = videoRecorder;
 	}
 
@@ -146,32 +149,32 @@ public class NineViewGroup extends ViewGroup {
 	public void setItemClickListener(OnItemTouchListener itemClickListener) {
 		this.itemClickListener = itemClickListener;
 	}
-	
+
 	public void setChildLayoutCompleteListener(OnChildLayoutCompleteListener childLayoutCompleteListener) {
 		this.childLayoutCompleteListener = childLayoutCompleteListener;
 	}
 
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		if (adapter == null  || videoRecorder == null)
+		if (adapter == null || videoRecorder == null)
 			return;
-		
-		View  preview = videoRecorder.getView();
+
+		View preview = videoRecorder.getView();
 		int childCount = getChildCount();
 		if (isDirty == true && childCount > 0) {
 			// = getChildAt(CENTRAL_VIEW_POSITION);
-			int j=0;
-			while(getChildCount()>1){
+			int j = 0;
+			while (getChildCount() > 1) {
 				View child = getChildAt(j);
-				if(preview!=null && child.equals(preview)){
+				if (preview != null && child.equals(preview)) {
 					j++;
 					continue;
 				}
 				removeView(child);
 			}
 			Log.d(TAG, "removed all childs");
-		} 
-		
+		}
+
 		if (childCount < adapter.getCount() || isDirty) {
 			int position = 0;
 			int bottomEdge = 0;
@@ -180,18 +183,18 @@ public class NineViewGroup extends ViewGroup {
 				int measuredHeight = 0;
 				while (rightEdge < getWidth() && position < TOTAL_CHILD_COUNT) {
 					View newChild;
-					if(position == CENTRAL_VIEW_POSITION){
+					if (position == CENTRAL_VIEW_POSITION) {
 						newChild = videoRecorder.getView();
-						if(!isDirty)
+						if (!isDirty)
 							addAndMeasureChild(newChild, position);
-					}else{
+					} else {
 						int childPos;
-						if(position>CENTRAL_VIEW_POSITION)
-							childPos = position-1;
+						if (position > CENTRAL_VIEW_POSITION)
+							childPos = position - 1;
 						else
 							childPos = position;
 						View convertView = recycleBin.get(childPos);
-						newChild = adapter.getView(childPos, convertView , this);
+						newChild = adapter.getView(childPos, convertView, this);
 						recycleBin.put(childPos, newChild);
 						addAndMeasureChild(newChild, position);
 					}
@@ -219,8 +222,8 @@ public class NineViewGroup extends ViewGroup {
 		}
 		addViewInLayout(child, position, params, true);
 
-		int itemWidth = (getWidth() - 2*Convenience.dpToPx(getContext(), MIN_MARGIN_DP)- 2*Convenience.dpToPx(getContext(), PADDING_DP))
-				/ MATRIX_DIMENSIONS;
+		int itemWidth = (getWidth() - 2 * Convenience.dpToPx(getContext(), MIN_MARGIN_DP) - 2 * Convenience.dpToPx(
+				getContext(), PADDING_DP)) / MATRIX_DIMENSIONS;
 		int itemHeight = (int) ((float) itemWidth / ASPECT);
 		child.measure(MeasureSpec.EXACTLY | itemWidth, MeasureSpec.EXACTLY | itemHeight);
 	}
@@ -230,14 +233,14 @@ public class NineViewGroup extends ViewGroup {
 	 */
 	private void layoutChildren() {
 		View child = getChildAt(0);
-		int numCol = getWidth()/child.getMeasuredWidth();
-		
+		int numCol = getWidth() / child.getMeasuredWidth();
+
 		int padding_px = Convenience.dpToPx(getContext(), PADDING_DP);
-		int startX = (getWidth() - 3*child.getMeasuredWidth()-2*padding_px)/2;
-		startX = (startX<MIN_MARGIN_DP)?MIN_MARGIN_DP:startX;
-		int startY = (getHeight() - (child.getMeasuredHeight()+padding_px)*3)/2;
-		startY = (startY<MIN_MARGIN_DP)?MIN_MARGIN_DP:startY;
-		
+		int startX = (getWidth() - 3 * child.getMeasuredWidth() - 2 * padding_px) / 2;
+		startX = (startX < MIN_MARGIN_DP) ? MIN_MARGIN_DP : startX;
+		int startY = (getHeight() - (child.getMeasuredHeight() + padding_px) * 3) / 2;
+		startY = (startY < MIN_MARGIN_DP) ? MIN_MARGIN_DP : startY;
+
 		for (int index = 0; index < getChildCount(); index++) {
 			child = getChildAt(index);
 			int width = child.getMeasuredWidth();
@@ -248,45 +251,46 @@ public class NineViewGroup extends ViewGroup {
 
 			child.layout(left, top, left + width, top + height);
 		}
-		
-		if(childLayoutCompleteListener!=null){
+
+		if (childLayoutCompleteListener != null) {
 			childLayoutCompleteListener.onChildLayoutComplete();
 		}
 
 		Log.d(TAG, "layoutChildren");
-	}	
-//	/**
-//	 * Positions the children at the "correct" positions
-//	 */
-//	private void layoutChildren() {
-//		View child = getChildAt(0);
-//		int numCol = getWidth()/child.getMeasuredWidth();
-//
-//		int width=0, height=0;
-//		int margin_px = Convenience.dpToPx(getContext(), MARGIN_DP);
-//		int widthFrame = (getWidth() - 2*margin_px)/MATRIX_DIMENSIONS;
-//		int heightFrame = (getHeight() - 2*margin_px)/MATRIX_DIMENSIONS;
-//		int paddingHor = (widthFrame - child.getMeasuredWidth())/2;
-//		int paddingVert = (heightFrame - child.getMeasuredHeight())/2;
-//		
-//		for (int index = 0; index < getChildCount(); index++) {
-//			child = getChildAt(index);
-//			width = child.getMeasuredWidth();
-//			height = child.getMeasuredHeight();
-//			int mod = index / numCol;
-//			int left = (index - mod * numCol) * widthFrame + paddingHor + margin_px;
-//			int top = mod * heightFrame + paddingVert + margin_px;
-//
-//			child.layout(left, top, left + width, top + height);
-//		}
-//		
-//		if(childLayoutCompleteListener!=null){
-//			childLayoutCompleteListener.onChildLayoutComplete();
-//		}
-//
-//		Log.d(TAG, "layoutChildren");
-//	}
-	
+	}
+
+	// /**
+	// * Positions the children at the "correct" positions
+	// */
+	// private void layoutChildren() {
+	// View child = getChildAt(0);
+	// int numCol = getWidth()/child.getMeasuredWidth();
+	//
+	// int width=0, height=0;
+	// int margin_px = Convenience.dpToPx(getContext(), MARGIN_DP);
+	// int widthFrame = (getWidth() - 2*margin_px)/MATRIX_DIMENSIONS;
+	// int heightFrame = (getHeight() - 2*margin_px)/MATRIX_DIMENSIONS;
+	// int paddingHor = (widthFrame - child.getMeasuredWidth())/2;
+	// int paddingVert = (heightFrame - child.getMeasuredHeight())/2;
+	//
+	// for (int index = 0; index < getChildCount(); index++) {
+	// child = getChildAt(index);
+	// width = child.getMeasuredWidth();
+	// height = child.getMeasuredHeight();
+	// int mod = index / numCol;
+	// int left = (index - mod * numCol) * widthFrame + paddingHor + margin_px;
+	// int top = mod * heightFrame + paddingVert + margin_px;
+	//
+	// child.layout(left, top, left + width, top + height);
+	// }
+	//
+	// if(childLayoutCompleteListener!=null){
+	// childLayoutCompleteListener.onChildLayoutComplete();
+	// }
+	//
+	// Log.d(TAG, "layoutChildren");
+	// }
+
 	@Override
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
@@ -309,46 +313,52 @@ public class NineViewGroup extends ViewGroup {
 
 		if (!isAttach)
 			return false;
-		
+
 		int action = event.getAction();
 		int maskedAction = event.getActionMasked();
 		int x = (int) event.getX();
 		int y = (int) event.getY();
 
-		if (state == State.IDLE){
-			switch (action){
+		if (state == State.IDLE) {
+			switch (action) {
 			case MotionEvent.ACTION_DOWN:
-					state = State.DOWN;
-					setDownPosition(event);
-					startLongpressTimer(x, y);
-					//targetView = v;
+				state = State.DOWN;
+				setDownPosition(event);
+				startLongpressTimer(x, y);
+				// targetView = v;
 				return true;
 			case MotionEvent.ACTION_CANCEL:
-				// Safe to ignore since we would just stay in IDLE and do nothing.
+				// Safe to ignore since we would just stay in IDLE and do
+				// nothing.
 				return true;
 			case MotionEvent.ACTION_MOVE:
-				// Should never happen we should always get a ACTION_DOWN first which would move us out of IDLE.
+				// Should never happen we should always get a ACTION_DOWN first
+				// which would move us out of IDLE.
 				return true;
 			case MotionEvent.ACTION_UP:
-				// Should never happen we should always get a ACTION_DOWN first which would move us out of IDLE.
+				// Should never happen we should always get a ACTION_DOWN first
+				// which would move us out of IDLE.
 				return true;
 			}
 
-			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN){
-				// Should never happen we should always get a ACTION_DOWN first which would move us out of IDLE.
+			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN) {
+				// Should never happen we should always get a ACTION_DOWN first
+				// which would move us out of IDLE.
 				return true;
 			}
 			return true;
 		}
 
-		if (state == State.DOWN){
-			switch (action){
+		if (state == State.DOWN) {
+			switch (action) {
 			case MotionEvent.ACTION_DOWN:
-				// Happens when the backing window view gets the down event. Just ignore.
+				// Happens when the backing window view gets the down event.
+				// Just ignore.
 				return true;
 			case MotionEvent.ACTION_MOVE:
-				if (isBigMove(event)){
-					// Do not output our bigMove event here since we have not started a longPress. 
+				if (isBigMove(event)) {
+					// Do not output our bigMove event here since we have not
+					// started a longPress.
 					state = State.IDLE;
 				}
 				return true;
@@ -360,28 +370,29 @@ public class NineViewGroup extends ViewGroup {
 				runClick(event);
 				return true;
 			}
-			
-			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN){
+
+			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN) {
 				state = State.IDLE;
 				return true;
 			}
 			return true;
 		}
 
-		if (state == State.LONGPRESS){
-			switch (action){
+		if (state == State.LONGPRESS) {
+			switch (action) {
 			case MotionEvent.ACTION_DOWN:
 				// This should never happen but ignore rather than abort..
 				return true;
 			case MotionEvent.ACTION_MOVE:
-				if (isBigMove(event)){
+				if (isBigMove(event)) {
 					state = State.IDLE;
 					runBigMove(event);
 				}
 				return true;
 			case MotionEvent.ACTION_CANCEL:
 				state = State.IDLE;
-                // This should never happen but endLongPress and send the video rather than abort and lose it.
+				// This should never happen but endLongPress and send the video
+				// rather than abort and lose it.
 				runEndLongpress(event);
 				return true;
 			case MotionEvent.ACTION_UP:
@@ -389,11 +400,11 @@ public class NineViewGroup extends ViewGroup {
 				runEndLongpress(event);
 				return true;
 			}
-			
+
 			// Second finger down aborts.
-			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN){
+			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN) {
 				state = State.IDLE;
-				runAbort(event, "Two Finger Touch");				
+				runAbort(event, "Two Finger Touch");
 				return true;
 			}
 			return true;
@@ -401,35 +412,38 @@ public class NineViewGroup extends ViewGroup {
 
 		return false;
 	}
+
 	private boolean isBigMove(MotionEvent event) {
 		double a2 = Math.pow(downPosition[0] - (double) event.getRawX(), 2D);
 		double b2 = Math.pow(downPosition[1] - (double) event.getRawY(), 2D);
 		double limit = (double) Convenience.dpToPx(getContext(), (int) Math.pow(BIG_MOVE_DISTANCE, 2D));
-		if (a2+b2 > limit){
+		if (a2 + b2 > limit) {
 			return true;
 		} else {
 			return false;
-		}	
+		}
 	}
 
 	private void longPressTimerFired(int x, int y) {
-		if (state == State.IDLE){
-			// This should never happen because any action that starts the timer should move us out of IDLE
+		if (state == State.IDLE) {
+			// This should never happen because any action that starts the timer
+			// should move us out of IDLE
 			return;
 		}
 
-		if (state == State.DOWN){
+		if (state == State.DOWN) {
 			state = State.LONGPRESS;
 			runStartLongpress(x, y);
 			return;
 		}
 
-		if (state == State.LONGPRESS){
-			// This should never happen because we should only get put in LONGPRESS as a result of the timer firing.
+		if (state == State.LONGPRESS) {
+			// This should never happen because we should only get put in
+			// LONGPRESS as a result of the timer firing.
 			return;
 		}
 	}
-	
+
 	private void startLongpressTimer(final int x, final int y) {
 		cancelLongpressTimer();
 
@@ -452,7 +466,7 @@ public class NineViewGroup extends ViewGroup {
 		downPosition[0] = event.getRawX();
 		downPosition[1] = event.getRawY();
 	}
-	
+
 	/**
 	 * Maps a point to a position in the list.
 	 * 
@@ -465,7 +479,7 @@ public class NineViewGroup extends ViewGroup {
 	 *         item.
 	 */
 	public int pointToPosition(int x, int y) {
-		Rect frame =  new Rect();
+		Rect frame = new Rect();
 
 		final int count = getChildCount();
 		for (int i = count - 1; i >= 0; i--) {
@@ -473,23 +487,26 @@ public class NineViewGroup extends ViewGroup {
 			if (child.getVisibility() == View.VISIBLE) {
 				child.getHitRect(frame);
 				if (frame.contains(x, y)) {
-					if(i == CENTRAL_VIEW_POSITION)
-						return INVALID_POSITION;
-					else if(i<CENTRAL_VIEW_POSITION)
-						return i;
-					else
-						return i-1;
+					return i;
 				}
 			}
 		}
 		return INVALID_POSITION;
 	}
-	
-	private void runClick(MotionEvent ev){
+
+	private void runClick(MotionEvent ev) {
 		int x = (int) ev.getX();
 		int y = (int) ev.getY();
-		final int motionPosition = pointToPosition(x, y);
-		final View child = getChildAt(motionPosition);
+		int _motionPosition = pointToPosition(x, y);
+		final int motionPosition;
+		if(_motionPosition == CENTRAL_VIEW_POSITION)
+			motionPosition = INVALID_POSITION;
+		else if(_motionPosition>CENTRAL_VIEW_POSITION)
+			motionPosition = _motionPosition - 1;
+		else
+			motionPosition = _motionPosition;
+
+		final View child = getChildAt(_motionPosition);
 		final long id = adapter.getItemId(motionPosition);
 		post(new Runnable() {
 			@Override
@@ -499,50 +516,58 @@ public class NineViewGroup extends ViewGroup {
 		});
 	}
 
-	private void runStartLongpress(int x, int y){
+	private void runStartLongpress(int x, int y) {
 
-		final int motionPosition = pointToPosition(x, y);
-		final View child = getChildAt(motionPosition);
+		int _motionPosition = pointToPosition(x, y);
+		final int motionPosition;
+		if(_motionPosition == CENTRAL_VIEW_POSITION)
+			motionPosition = INVALID_POSITION;
+		else if(_motionPosition>CENTRAL_VIEW_POSITION)
+			motionPosition = _motionPosition - 1;
+		else
+			motionPosition = _motionPosition;
+		final View child = getChildAt(_motionPosition);
 		final long id = adapter.getItemId(motionPosition);
 		post(new Runnable() {
 			@Override
 			public void run() {
-				if(itemClickListener!=null)
+				if (itemClickListener != null)
 					itemClickListener.onItemLongClick(NineViewGroup.this, child, motionPosition, id);
 			}
 		});
 	}
 
-	private void runEndLongpress(MotionEvent ev){
+	private void runEndLongpress(MotionEvent ev) {
 		cancelLongpressTimer();
 		post(new Runnable() {
 			@Override
 			public void run() {
-				if(itemClickListener!=null)
+				if (itemClickListener != null)
 					itemClickListener.onItemStopTouch();
 			}
 		});
 	}
 
-	private void runBigMove(MotionEvent ev){
+	private void runBigMove(MotionEvent ev) {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				if(itemClickListener!=null)
+				if (itemClickListener != null)
 					itemClickListener.onCancelTouch();
 			}
 		});
 	}
 
-	private void runAbort(MotionEvent ev, final String reason){
+	private void runAbort(MotionEvent ev, final String reason) {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				if(itemClickListener!=null)
+				if (itemClickListener != null)
 					itemClickListener.onCancelTouch(reason);
 			}
 		});
 	}
+
 	private class AdapterDataSetObserver extends DataSetObserver {
 		@Override
 		public void onChanged() {

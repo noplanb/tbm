@@ -84,7 +84,8 @@ public class VideoPlayer implements OnCompletionListener{
 			videoView.setVideoPath(f.videoFromPath(videoId));
 			AudioManager am = (AudioManager) this.context.getSystemService(Activity.AUDIO_SERVICE);
 			am.setBluetoothScoOn(true);
-			videoView.start();		
+			videoView.start();
+			f.setAndNotifyIncomingVideoViewed(videoId);
 		} else {
 			onCompletion(null);
 		}
@@ -107,7 +108,7 @@ public class VideoPlayer implements OnCompletionListener{
 	public void onCompletion(MediaPlayer mp) {
 		Log.i(TAG, "play complete.");
 		Friend friend = (Friend) FriendFactory.instance.find(friendId);
-		friend.setAndNotifyIncomingVideoViewed(videoId);
+//		friend.setAndNotifyIncomingVideoViewed(videoId);
 		videoId = friend.nextPlayableVideoId(videoId);
 		if (videoId != null){
 			play(friend);
