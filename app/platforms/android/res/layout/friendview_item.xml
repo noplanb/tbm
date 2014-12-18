@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/body"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,6 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@+id/tw_name"
         android:orientation="vertical" >
 
         <TextView
@@ -40,11 +41,6 @@
             android:textColor="@color/bg_unread_msg_count"
             android:textSize="16sp"
             android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="invisible" />
     </LinearLayout>
 
     <ImageView
@@ -58,9 +54,12 @@
         android:id="@+id/tw_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_gravity="bottom"
         android:background="@color/bg_name"
         android:gravity="center_horizontal"
+        android:paddingBottom="2dp"
+        android:paddingTop="2dp"
         android:text="TextView"
         android:textColor="@color/color_name" />
 
@@ -68,6 +67,7 @@
         android:id="@+id/img_viewed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
         android:layout_gravity="right"
         android:background="@color/bg_unread_msg"
         android:scaleType="center"
@@ -78,6 +78,7 @@
         android:id="@+id/tw_unread_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
         android:layout_gravity="right"
         android:background="@drawable/bg_red_circle"
         android:paddingBottom="2dp"
@@ -99,9 +100,10 @@
         android:id="@+id/img_uploading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="right"
         android:background="@color/bg_uploading"
         android:scaleType="center"
-        android:layout_gravity="right"
         android:src="@drawable/uploading"
         android:visibility="invisible" />
 
@@ -114,4 +116,4 @@
         android:src="@drawable/downloading"
         android:visibility="invisible" />
 
-</FrameLayout>
+</RelativeLayout>

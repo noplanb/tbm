@@ -8,8 +8,8 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.noplanbees.tbm.Convenience;
@@ -20,7 +20,7 @@ import com.noplanbees.tbm.Video.IncomingVideoStatus;
 import com.noplanbees.tbm.VideoPlayer;
 import com.noplanbees.tbm.VideoPlayer.StatusCallbacks;
 
-public class FriendView extends FrameLayout implements StatusCallbacks {
+public class FriendView extends RelativeLayout implements StatusCallbacks {
 
 	private static final String TAG = "FriendView";
 
@@ -75,6 +75,7 @@ public class FriendView extends FrameLayout implements StatusCallbacks {
 		super.onAttachedToWindow();
 		updateVideoStatus();
 		moveUnviewCountToPosition();
+		
 		videoPlayer = VideoPlayer.getInstance(getContext());
 		videoPlayer.registerStatusCallbacks(this);
 	}
