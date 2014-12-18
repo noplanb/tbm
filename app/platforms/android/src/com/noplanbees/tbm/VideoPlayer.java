@@ -1,4 +1,7 @@
 package com.noplanbees.tbm;
+import java.util.HashSet;
+import java.util.Set;
+
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
@@ -12,7 +15,15 @@ import android.widget.VideoView;
 
 
 public class VideoPlayer implements OnCompletionListener{
-	String TAG = this.getClass().getSimpleName();
+	
+	private String TAG = this.getClass().getSimpleName();
+
+	public interface StatusCallbacks{
+		void onVideoPlaying(String friendId, String videoId);
+		void onVideoStopPlaying();
+	}
+	
+	private static VideoPlayer videoPlayer;
 	
 	private Context context;
 	private String videoId;
@@ -20,6 +31,39 @@ public class VideoPlayer implements OnCompletionListener{
 	private VideoView videoView;
 	private View videoBody;
 	
+	private Set<StatusCallbacks> statusCallbacks;
+	
+	private VideoPlayer(Context context) {
+		this.context = context;
+		statusCallbacks = new HashSet<StatusCallbacks>();
+	}
+	
+	public static VideoPlayer getInstance(Context context){
+		if(videoPlayer == null)
+			videoPlayer = new VideoPlayer(context);
+		return videoPlayer;
+	}
+	
+	public void registerStatusCallbacks(StatusCallbacks statusCallback){
+		this.statusCallbacks.add(statusCallback);
+	}
+	
+	public void unregisterStatusCallbacks(StatusCallbacks statusCallback){
+		this.statusCallbacks.remove(statusCallback);
+	}
+	
+	private void notifyStartPlaying(){
+		for (StatusCallbacks callbacks : statusCallbacks) {
+			callbacks.onVideoPlaying(friendId, videoId);
+		}
+	}
+	
+	private void notifyStopPlaying(){
+		for (StatusCallbacks callbacks : statusCallbacks) {
+			callbacks.onVideoStopPlaying();
+		}
+	}
+
 	public static void bypassExistingBluetooth(Context context){
 		((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(true);
 	}
@@ -28,12 +72,8 @@ public class VideoPlayer implements OnCompletionListener{
 		((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(false);
 	}
 	
-	public Boolean isPlaying(){
+	public boolean isPlaying(){
 		return videoView.isPlaying();
-	}
-	
-	public VideoPlayer(Context context) {
-		this.context = context;
 	}
 	
 	public void setVideoView(VideoView videoView){
@@ -80,12 +120,13 @@ public class VideoPlayer implements OnCompletionListener{
 	
 	private void play(Friend f){
 		if (f.videoFromFile(videoId).length() > 100){
+			f.setAndNotifyIncomingVideoViewed(videoId);
 			videoBody.setVisibility(View.VISIBLE);
 			videoView.setVideoPath(f.videoFromPath(videoId));
 			AudioManager am = (AudioManager) this.context.getSystemService(Activity.AUDIO_SERVICE);
 			am.setBluetoothScoOn(true);
 			videoView.start();
-			f.setAndNotifyIncomingVideoViewed(videoId);
+			notifyStartPlaying();
 		} else {
 			onCompletion(null);
 		}
@@ -107,8 +148,8 @@ public class VideoPlayer implements OnCompletionListener{
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.i(TAG, "play complete.");
+		notifyStopPlaying();
 		Friend friend = (Friend) FriendFactory.instance.find(friendId);
-//		friend.setAndNotifyIncomingVideoViewed(videoId);
 		videoId = friend.nextPlayableVideoId(videoId);
 		if (videoId != null){
 			play(friend);

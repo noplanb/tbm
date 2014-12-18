@@ -60,7 +60,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		activeModelsHandler = ActiveModelsHandler.getActiveModelsHandler();
 		activeModelsHandler.getFf().addVideoStatusChangedCallbackDelegate(this);
 
-		videoPlayer = new VideoPlayer(getActivity());
+		videoPlayer = VideoPlayer.getInstance(getActivity());
 
 		CameraManager.addExceptionHandlerDelegate(this);
 		videoRecorder = new VideoRecorder(getActivity());

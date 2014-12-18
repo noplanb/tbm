@@ -9,7 +9,7 @@
     
     <color name="orange">#f68b1f</color>
     <color name="green">#9ac23b</color>
-    
+    <color name="light_grey_new">#2f2e28</color>
     
     <color name="bg_name">#4e4d42</color>
     <color name="color_name">#ffffff</color>
@@ -27,7 +27,8 @@
     
     <color name="bg_empty_friend">#1c1c19</color>
     
-    <color name="bg_bench">#2f2e28</color>
+    <color name="bg_bench">@color/light_grey_new</color>
+    <color name="bg_main">@color/light_grey_new</color>
     
     <color name="light_grey">#a8a294</color>
     <color name="dialog_title_bg">@color/green</color>

@@ -2,6 +2,7 @@ package com.noplanbees.tbm.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
@@ -15,9 +16,11 @@ import com.noplanbees.tbm.Convenience;
 import com.noplanbees.tbm.Friend;
 import com.noplanbees.tbm.Friend.OutgoingVideoStatus;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.Video;
+import com.noplanbees.tbm.Video.IncomingVideoStatus;
+import com.noplanbees.tbm.VideoPlayer;
+import com.noplanbees.tbm.VideoPlayer.StatusCallbacks;
 
-public class FriendView extends FrameLayout {
+public class FriendView extends FrameLayout implements StatusCallbacks {
 
 	private static final String TAG = "FriendView";
 
@@ -30,6 +33,10 @@ public class FriendView extends FrameLayout {
 	private ImageView imgUploading;
 	private View progressLine;
 	private View body;
+
+	private VideoPlayer videoPlayer;
+
+	private boolean needToHideIndicators;
 
 	public FriendView(Context context) {
 		super(context);
@@ -68,22 +75,20 @@ public class FriendView extends FrameLayout {
 		super.onAttachedToWindow();
 		updateVideoStatus();
 		moveUnviewCountToPosition();
+		videoPlayer = VideoPlayer.getInstance(getContext());
+		videoPlayer.registerStatusCallbacks(this);
 	}
 
 	private void moveUnviewCountToPosition() {
-		if (twUnreadCount.getVisibility() == View.VISIBLE) {
-			int dpToPx = Convenience.dpToPx(getContext(), 5);
-			TranslateAnimation trAn = new TranslateAnimation(Animation.ABSOLUTE, 0, Animation.ABSOLUTE, dpToPx,
-					Animation.ABSOLUTE, 0, Animation.ABSOLUTE, -dpToPx);
-			trAn.setDuration(0);
-			trAn.setFillAfter(true);
-			twUnreadCount.startAnimation(trAn);
-		}
+		int dpToPx = Convenience.dpToPx(getContext(), 5);
+		twUnreadCount.setX(getWidth() - twUnreadCount.getMeasuredWidth() + dpToPx);
+		twUnreadCount.setY(- dpToPx);
 	}
 
 	@Override
 	protected void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
+		videoPlayer.unregisterStatusCallbacks(this);
 	}
 
 	public void setFriend(Friend friend) {
@@ -92,15 +97,16 @@ public class FriendView extends FrameLayout {
 	}
 
 	private void updateContent() {
+		
 		int unreadMsgCount = friend.incomingVideoNotViewedCount();
 
-		if (friend.getOutgoingVideoStatus() == OutgoingVideoStatus.VIEWED) {
+		if (friend.getOutgoingVideoStatus() == OutgoingVideoStatus.VIEWED && !needToHideIndicators) {
 			imgViewed.setVisibility(View.VISIBLE);
 		} else {
 			imgViewed.setVisibility(View.INVISIBLE);
 		}
 
-		if (unreadMsgCount > 0) {
+		if (unreadMsgCount > 0 && !needToHideIndicators) {
 			body.setBackgroundResource(R.drawable.friend_body_unread_border);
 			twName.setBackgroundColor(getResources().getColor(R.color.bg_unread_msg));
 
@@ -119,7 +125,7 @@ public class FriendView extends FrameLayout {
 		
 		
 		if(friend.getOutgoingVideoStatus() == OutgoingVideoStatus.UPLOADED && 
-				friend.getIncomingVideoStatus() != Video.IncomingVideoStatus.DOWNLOADING)
+				friend.getIncomingVideoStatus() != IncomingVideoStatus.DOWNLOADING)
 			imgUploading.setVisibility(View.VISIBLE);
 		else
 			imgUploading.setVisibility(View.INVISIBLE);
@@ -130,19 +136,19 @@ public class FriendView extends FrameLayout {
 		int outgoingStatus = friend.getOutgoingVideoStatus();
 
 		switch (incomingStatus) {
-		case Video.IncomingVideoStatus.NEW:
+		case IncomingVideoStatus.NEW:
 			break;
-		case Video.IncomingVideoStatus.QUEUED:
+		case IncomingVideoStatus.QUEUED:
 			break;
-		case Video.IncomingVideoStatus.DOWNLOADING:
+		case IncomingVideoStatus.DOWNLOADING:
 			animateDownloading();
 			break;
-		case Video.IncomingVideoStatus.DOWNLOADED:
+		case IncomingVideoStatus.DOWNLOADED:
 			progressLine.setVisibility(View.INVISIBLE);
 			break;
-		case Video.IncomingVideoStatus.VIEWED:
+		case IncomingVideoStatus.VIEWED:
 			break;
-		case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
+		case IncomingVideoStatus.FAILED_PERMANENTLY:
 			break;
 		}
 
@@ -220,5 +226,19 @@ public class FriendView extends FrameLayout {
 		trAn.setFillAfter(true);
 		imgDownloading.startAnimation(trAn);
 		progressLine.startAnimation(scale);
+	}
+
+	@Override
+	public void onVideoPlaying(String friendId, String videoId) {
+		Log.d(TAG, "onVideoPlaying " + friend.getId() + " ? " + friendId);
+		needToHideIndicators = friend.getId().equals(friendId);
+		updateContent();
+		invalidate();
+	}
+
+	@Override
+	public void onVideoStopPlaying() {
+		Log.d(TAG, "onVideoStopPlaying");
+		needToHideIndicators = false;
 	}
 }

@@ -259,38 +259,6 @@ public class NineViewGroup extends ViewGroup {
 		Log.d(TAG, "layoutChildren");
 	}
 
-	// /**
-	// * Positions the children at the "correct" positions
-	// */
-	// private void layoutChildren() {
-	// View child = getChildAt(0);
-	// int numCol = getWidth()/child.getMeasuredWidth();
-	//
-	// int width=0, height=0;
-	// int margin_px = Convenience.dpToPx(getContext(), MARGIN_DP);
-	// int widthFrame = (getWidth() - 2*margin_px)/MATRIX_DIMENSIONS;
-	// int heightFrame = (getHeight() - 2*margin_px)/MATRIX_DIMENSIONS;
-	// int paddingHor = (widthFrame - child.getMeasuredWidth())/2;
-	// int paddingVert = (heightFrame - child.getMeasuredHeight())/2;
-	//
-	// for (int index = 0; index < getChildCount(); index++) {
-	// child = getChildAt(index);
-	// width = child.getMeasuredWidth();
-	// height = child.getMeasuredHeight();
-	// int mod = index / numCol;
-	// int left = (index - mod * numCol) * widthFrame + paddingHor + margin_px;
-	// int top = mod * heightFrame + paddingVert + margin_px;
-	//
-	// child.layout(left, top, left + width, top + height);
-	// }
-	//
-	// if(childLayoutCompleteListener!=null){
-	// childLayoutCompleteListener.onChildLayoutComplete();
-	// }
-	//
-	// Log.d(TAG, "layoutChildren");
-	// }
-
 	@Override
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
