@@ -10,6 +10,7 @@
     <color name="orange">#f68b1f</color>
     <color name="green">#9ac23b</color>
     <color name="light_grey_new">#2f2e28</color>
+    <color name="dlg_inpt_grey">#cfcbc0</color>
     
     <color name="bg_name">#4e4d42</color>
     <color name="color_name">#ffffff</color>
@@ -31,7 +32,7 @@
     <color name="bg_main">@color/light_grey_new</color>
     
     <color name="light_grey">#a8a294</color>
-    <color name="dialog_title_bg">@color/green</color>
+    <color name="dialog_title_bg">@color/orange</color>
     <color name="dialog_body_bg">#f1efe9</color>
     <color name="dialog_btn_body_bg">#ddd9ce</color>
     <color name="dialog_border">#86837b</color>

@@ -8,7 +8,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.noplanbees.tbm.R;
@@ -88,7 +87,7 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 			btnCancel.setOnClickListener(clickListener);
 	}
 	
-	protected void setCustomView(LinearLayout ll) {
-		body.addView(ll, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT));
+	protected void setCustomView(View ll) {
+		body.addView(ll, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT));
 	}
 }

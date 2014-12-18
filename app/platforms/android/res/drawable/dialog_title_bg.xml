@@ -4,4 +4,5 @@
         android:bottomLeftRadius="0dp" android:bottomRightRadius="0dp"/>
 
     <solid android:color="@color/dialog_title_bg"/>
+    
 </shape>

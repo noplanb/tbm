@@ -5,23 +5,16 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.text.InputType;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
@@ -32,8 +25,9 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.noplanbees.tbm.DataHolderService.LocalBinder;
 import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
 import com.noplanbees.tbm.ui.MainActivity;
+import com.noplanbees.tbm.ui.dialogs.EnterCodeDialogFragment;
 
-public class RegisterActivity extends Activity{
+public class RegisterActivity extends Activity implements EnterCodeDialogFragment.Callbacks{
 	private final String TAG = this.getClass().getSimpleName();
 	private UserFactory userFactory;
 	private User user;
@@ -69,6 +63,7 @@ public class RegisterActivity extends Activity{
 			onLoadComplete();
 		}
 	};
+	private EnterCodeDialogFragment enterCodeDialog;
 
 	//----------
 	// LifeCycle
@@ -275,44 +270,17 @@ public class RegisterActivity extends Activity{
 	}
 
 	private void showVerificationDialog() {
-		LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-		LinearLayout ll = new LinearLayout(this);
-		ll.setLayoutParams(lp);
-		ll.setOrientation(LinearLayout.VERTICAL);
-		ll.setPadding(20, 20, 20, 20);
-
-		TextView msgTxt = new TextView(this);
-		msgTxt.setText("We sent a code via text message to\n\n" + phoneWithFormat(e164, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL) + ".");
-		msgTxt.setLayoutParams(lp);
-		msgTxt.setPadding(15, 20, 15, 50);
-		msgTxt.setTextSize(17);
-		msgTxt.setGravity(Gravity.CENTER);
-
-		verificationCodeTxt = new EditText(this);
-		verificationCodeTxt.setLayoutParams(lp);
-		verificationCodeTxt.setHint("Enter code");
-		msgTxt.setGravity(Gravity.CENTER_HORIZONTAL);
-		verificationCodeTxt.setInputType(InputType.TYPE_CLASS_NUMBER);
-
-		ll.addView(msgTxt);
-		ll.addView(verificationCodeTxt);
-
-		new AlertDialog.Builder(this)
-		.setTitle("Enter Code")
-		.setView(ll)
-		.setPositiveButton("Enter", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				didEnterCode();
-			}
-		})
-		.setNegativeButton("Cancel", null)
-		.show();
+		if(enterCodeDialog == null)
+			enterCodeDialog = new EnterCodeDialogFragment();
+		Bundle args = new Bundle();
+		args.putString(EnterCodeDialogFragment.PHONE_NUMBER, e164);
+		enterCodeDialog.setArguments(args );
+		enterCodeDialog.show(getFragmentManager(), "enterCdDlg");
 	}
 
-	protected void didEnterCode() {
-		verificationCode = verificationCodeTxt.getText().toString().replaceAll("\\s+", "");
+	@Override
+	public void didEnterCode(String code) {
+		verificationCode = code;
 		Uri.Builder ub = new Uri.Builder();
 		String uri = ub.appendPath("reg") .appendPath("verify_code").build().toString();
 		new SendCode(uri, userParams());

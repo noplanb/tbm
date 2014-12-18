@@ -2,20 +2,17 @@ package com.noplanbees.tbm.ui.dialogs;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.text.InputType;
-import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.noplanbees.tbm.R;
 
 public class EnterCodeDialogFragment extends AbstractDialogFragment {
 
@@ -25,7 +22,6 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment {
 		void didEnterCode(String code);
 	} 
 	
-	private EditText verificationCodeTxt;
 	private Callbacks callbacks;
 	
 	@Override
@@ -40,37 +36,22 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment {
 		
 		String e164 = getArguments().getString(PHONE_NUMBER);
 		
-		setTitle("Enter code");
+		setTitle("Enter Code");
 		
-		LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-		LinearLayout ll = new LinearLayout(getActivity());
-		ll.setLayoutParams(lp);
-		ll.setOrientation(LinearLayout.VERTICAL);
-		ll.setPadding(20, 20, 20, 20);
-
-		TextView msgTxt = new TextView(getActivity());
-		msgTxt.setText("We sent a code via text message to\n\n" + phoneWithFormat(e164, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL) + ".");
-		msgTxt.setLayoutParams(lp);
-		msgTxt.setPadding(15, 20, 15, 50);
-		msgTxt.setTextSize(17);
-		msgTxt.setGravity(Gravity.CENTER);
-
-		verificationCodeTxt = new EditText(getActivity());
-		verificationCodeTxt.setLayoutParams(lp);
-		verificationCodeTxt.setHint("Enter code");
-		msgTxt.setGravity(Gravity.CENTER_HORIZONTAL);
-		verificationCodeTxt.setInputType(InputType.TYPE_CLASS_NUMBER);
-
-		ll.addView(msgTxt);
-		ll.addView(verificationCodeTxt);
+		View v = LayoutInflater.from(getActivity()).inflate(R.layout.enter_code_dialog, 
+				null, false);
+		TextView twMsg = (TextView) v.findViewById(R.id.tw_msg);
+		final EditText edtVerificationCode = (EditText) v.findViewById(R.id.edt_code);
 		
-		setCustomView(ll);
+		twMsg.setText(getString(R.string.enter_code_dlg_msg, 
+				phoneWithFormat(e164, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL)));
+		
+		setCustomView(v);
 		
 		setPositiveButton("Enter", new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				callbacks.didEnterCode(verificationCodeTxt.getText().toString().replaceAll("\\s+", ""));
+				callbacks.didEnterCode(edtVerificationCode.getText().toString().replaceAll("\\s+", ""));
 				dismiss();
 			}
 		});
