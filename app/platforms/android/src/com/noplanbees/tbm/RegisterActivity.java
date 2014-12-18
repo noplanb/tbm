@@ -1,7 +1,6 @@
 package com.noplanbees.tbm;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ComponentName;
@@ -20,12 +19,12 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.noplanbees.tbm.DataHolderService.LocalBinder;
 import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
 import com.noplanbees.tbm.ui.MainActivity;
 import com.noplanbees.tbm.ui.dialogs.EnterCodeDialogFragment;
+import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 
 public class RegisterActivity extends Activity implements EnterCodeDialogFragment.Callbacks{
 	private final String TAG = this.getClass().getSimpleName();
@@ -416,28 +415,29 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	}
 
 	private void showErrorDialog(String title, String message){
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(title)
-		.setMessage(message)
-		.setPositiveButton("Ok", null)
-		.create().show();
+		InfoDialogFragment info = new InfoDialogFragment();
+		Bundle args = new Bundle();
+		args.putString(InfoDialogFragment.TITLE, title);
+		args.putString(InfoDialogFragment.MSG, message);
+		info.setArguments(args );
+		info.show(getFragmentManager(), null);
 	}
 
 	//-------------
 	// Convenience
 	//-------------
-	private String phoneWithFormat(String phone, PhoneNumberFormat format){
-		if (phone == null)
-			return null;
-
-		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
-		try {
-			PhoneNumber pn = pu.parse(phone, "US");
-			return pu.format(pn, format);
-		} catch (NumberParseException e) {
-			return null;
-		}
-	}
+//	private String phoneWithFormat(String phone, PhoneNumberFormat format){
+//		if (phone == null)
+//			return null;
+//
+//		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
+//		try {
+//			PhoneNumber pn = pu.parse(phone, "US");
+//			return pu.format(pn, format);
+//		} catch (NumberParseException e) {
+//			return null;
+//		}
+//	}
 
 	//-------------
 	// Add shortcut

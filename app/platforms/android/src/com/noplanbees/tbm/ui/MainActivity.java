@@ -206,6 +206,7 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 				+ ".\n\nPlease add a mobile number for " + contact.getFirstName()
 				+ " in your device contacts and try again.");
 		info.setArguments(args );
+		info.show(getFragmentManager(), null);
 	}
 
 }
