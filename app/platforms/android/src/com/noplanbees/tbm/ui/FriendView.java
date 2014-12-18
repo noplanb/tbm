@@ -125,7 +125,8 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		twName.setText(friend.getStatusString());
 		
 		
-		if(friend.getOutgoingVideoStatus() == OutgoingVideoStatus.UPLOADED && 
+		if(friend.getOutgoingVideoStatus() != OutgoingVideoStatus.NONE &&
+				friend.getOutgoingVideoStatus() != OutgoingVideoStatus.VIEWED &&
 				friend.getIncomingVideoStatus() != IncomingVideoStatus.DOWNLOADING)
 			imgUploading.setVisibility(View.VISIBLE);
 		else
@@ -142,9 +143,12 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		case IncomingVideoStatus.QUEUED:
 			break;
 		case IncomingVideoStatus.DOWNLOADING:
+			needToHideIndicators = true;
+			updateContent();
 			animateDownloading();
 			break;
 		case IncomingVideoStatus.DOWNLOADED:
+			needToHideIndicators = false;
 			progressLine.setVisibility(View.INVISIBLE);
 			break;
 		case IncomingVideoStatus.VIEWED:
@@ -159,10 +163,13 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		case OutgoingVideoStatus.QUEUED:
 			break;
 		case OutgoingVideoStatus.UPLOADING:
+			needToHideIndicators = true;
+			updateContent();
 			animateUploading();
 			break;
 		case OutgoingVideoStatus.UPLOADED:
 			progressLine.setVisibility(View.INVISIBLE);
+			needToHideIndicators = false;
 			break;
 		case OutgoingVideoStatus.DOWNLOADED:
 			break;
@@ -234,12 +241,13 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		Log.d(TAG, "onVideoPlaying " + friend.getId() + " ? " + friendId);
 		needToHideIndicators = friend.getId().equals(friendId);
 		updateContent();
-		invalidate();
+//		invalidate();
 	}
 
 	@Override
 	public void onVideoStopPlaying() {
 		Log.d(TAG, "onVideoStopPlaying");
 		needToHideIndicators = false;
+		updateContent();
 	}
 }
