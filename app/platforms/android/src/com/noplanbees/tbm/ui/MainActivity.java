@@ -23,6 +23,7 @@ import com.noplanbees.tbm.BenchController;
 import com.noplanbees.tbm.BenchObject;
 import com.noplanbees.tbm.Contact;
 import com.noplanbees.tbm.DataHolderService;
+import com.noplanbees.tbm.Friend;
 import com.noplanbees.tbm.GcmHandler;
 import com.noplanbees.tbm.InviteManager;
 import com.noplanbees.tbm.NotificationAlertManager;
@@ -33,8 +34,8 @@ import com.noplanbees.tbm.VersionHandler;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 
-public class MainActivity extends Activity implements GridViewFragment.Callbacks, BenchController.Callbacks,
-ActionInfoDialogFragment.Callbacks{
+public class MainActivity extends Activity implements GridViewFragment.Callbacks, 
+BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 	private final static String TAG = "MainActivity";
 	
 
@@ -164,7 +165,6 @@ ActionInfoDialogFragment.Callbacks{
 		return super.onCreateOptionsMenu(menu);
 	}
 
-	@SuppressWarnings("null")
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle presses on the action bar items
@@ -241,5 +241,20 @@ ActionInfoDialogFragment.Callbacks{
 	@Override
 	public void inviteFriend(BenchObject bo) {
 		inviteManager.invite(bo);
+	}
+
+	@Override
+	public void onNudgeFriend(Friend f) {
+		inviteManager.nudge(f);
+	}
+
+	@Override
+	public void showRecordDialog() {
+		InfoDialogFragment info = new InfoDialogFragment();
+		Bundle args = new Bundle();
+		args.putString(InfoDialogFragment.TITLE, "Hold to Record");
+		args.putString(InfoDialogFragment.MSG, "Press and hold the RECORD button to record.");
+		info.setArguments(args );
+		info.show(getFragmentManager(), null);
 	}
 }

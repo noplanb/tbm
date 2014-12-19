@@ -23,20 +23,29 @@ import com.noplanbees.tbm.VideoPlayer.StatusCallbacks;
 public class FriendView extends RelativeLayout implements StatusCallbacks {
 
 	private static final String TAG = "FriendView";
+	
+	public interface ClickListener{
+		void onNudgeClicked(Friend f);
+		void onRecordClicked(Friend f);
+	}
 
 	private Friend friend;
 	private TextView twName;
 	private TextView twUnreadCount;
+	private TextView twNundge;
+	private TextView twRecord;
 	private ImageView imgThumb;
 	private ImageView imgViewed;
 	private ImageView imgDownloading;
 	private ImageView imgUploading;
 	private View progressLine;
 	private View body;
+	
+	private ClickListener clickListener;
 
 	private VideoPlayer videoPlayer;
-
 	private boolean needToHideIndicators;
+	private View buttonsBody;
 
 	public FriendView(Context context) {
 		super(context);
@@ -52,22 +61,42 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		super(context, attrs, defStyleAttr);
 		init();
 	}
+	
+	public void setOnClickListener(ClickListener clickListener){
+		this.clickListener = clickListener;
+	}
 
 	private void init() {
 		LayoutInflater.from(getContext()).inflate(R.layout.friendview_item, this, true);
 		body = findViewById(R.id.body);
 
 		twName = (TextView) findViewById(R.id.tw_name);
+		twNundge = (TextView) findViewById(R.id.tw_nudge);
+		twRecord = (TextView) findViewById(R.id.tw_record);
 		twUnreadCount = (TextView) findViewById(R.id.tw_unread_count);
 		imgThumb = (ImageView) findViewById(R.id.img_thumb);
 		imgViewed = (ImageView) findViewById(R.id.img_viewed);
 		imgDownloading = (ImageView) findViewById(R.id.img_downloading);
 		imgUploading = (ImageView) findViewById(R.id.img_uploading);
 		progressLine = findViewById(R.id.line);
+		buttonsBody = findViewById(R.id.buttons_body);
 
 		// allow childrens to extends parent border
 		setClipChildren(false);
 		setClipToPadding(false);
+		
+		twNundge.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				clickListener.onNudgeClicked(friend);
+			}
+		});
+		twRecord.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				clickListener.onRecordClicked(friend);
+			}
+		});
 	}
 
 	@Override
@@ -100,6 +129,12 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 	private void updateContent() {
 		
 		int unreadMsgCount = friend.incomingVideoNotViewedCount();
+		
+		if(friend.hasApp()){
+			twNundge.setVisibility(View.GONE);
+		}else{
+			twNundge.setVisibility(View.VISIBLE);
+		}
 
 		if (friend.getOutgoingVideoStatus() == OutgoingVideoStatus.VIEWED && !needToHideIndicators) {
 			imgViewed.setVisibility(View.VISIBLE);
@@ -119,8 +154,12 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 			twUnreadCount.setVisibility(View.INVISIBLE);
 		}
 
-		if (friend.thumbExists())
+		if (friend.thumbExists()){
 			imgThumb.setImageBitmap(friend.lastThumbBitmap());
+			buttonsBody.setVisibility(View.GONE);
+		}else{
+			buttonsBody.setVisibility(View.VISIBLE);
+		}
 
 		twName.setText(friend.getStatusString());
 		

@@ -272,6 +272,11 @@ public class NineViewGroup extends ViewGroup {
 	}
 
 	@Override
+	public boolean onInterceptTouchEvent(MotionEvent ev) {
+		return true;
+	}
+	
+	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		if (!isEnabled()) {
 			// A disabled view that is clickable still consumes the touch
@@ -286,11 +291,18 @@ public class NineViewGroup extends ViewGroup {
 		int maskedAction = event.getActionMasked();
 		int x = (int) event.getX();
 		int y = (int) event.getY();
+		int motionPosition = pointToPosition(x, y);
+		View child = getChildAt(motionPosition);
 
 		if (state == State.IDLE) {
 			switch (action) {
 			case MotionEvent.ACTION_DOWN:
 				state = State.DOWN;
+				if(child != null){
+					MotionEvent cp = MotionEvent.obtain(event);
+					cp.offsetLocation(-child.getLeft(), -child.getTop());
+					boolean consumed = child.dispatchTouchEvent(cp);
+				}
 				setDownPosition(event);
 				startLongpressTimer(x, y);
 				// targetView = v;
@@ -335,6 +347,11 @@ public class NineViewGroup extends ViewGroup {
 				return true;
 			case MotionEvent.ACTION_UP:
 				state = State.IDLE;
+				if(child != null){
+					MotionEvent cp = MotionEvent.obtain(event);
+					cp.offsetLocation(-child.getLeft(), -child.getTop());
+					boolean consumed = child.dispatchTouchEvent(cp);
+				}
 				runClick(event);
 				return true;
 			}
@@ -392,6 +409,24 @@ public class NineViewGroup extends ViewGroup {
 		}
 	}
 
+	private void startLongpressTimer(final int x, final int y) {
+		cancelLongpressTimer();
+	
+		longPressTimer = new Timer();
+		longPressTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				Log.d(TAG, "startLongpressTimer.run");
+				longPressTimerFired(x, y);
+			}
+		}, ViewConfiguration.getLongPressTimeout());
+	}
+
+	private void cancelLongpressTimer() {
+		if (longPressTimer != null)
+			longPressTimer.cancel();
+	}
+
 	private void longPressTimerFired(int x, int y) {
 		if (state == State.IDLE) {
 			// This should never happen because any action that starts the timer
@@ -410,24 +445,6 @@ public class NineViewGroup extends ViewGroup {
 			// LONGPRESS as a result of the timer firing.
 			return;
 		}
-	}
-
-	private void startLongpressTimer(final int x, final int y) {
-		cancelLongpressTimer();
-
-		longPressTimer = new Timer();
-		longPressTimer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				Log.d(TAG, "startLongpressTimer.run");
-				longPressTimerFired(x, y);
-			}
-		}, ViewConfiguration.getLongPressTimeout());
-	}
-
-	private void cancelLongpressTimer() {
-		if (longPressTimer != null)
-			longPressTimer.cancel();
 	}
 
 	private void setDownPosition(MotionEvent event) {

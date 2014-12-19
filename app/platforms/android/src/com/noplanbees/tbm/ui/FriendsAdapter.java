@@ -11,6 +11,7 @@ import android.widget.BaseAdapter;
 import com.noplanbees.tbm.Friend;
 import com.noplanbees.tbm.GridElement;
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.ui.FriendView.ClickListener;
 
 public class FriendsAdapter extends BaseAdapter {
 
@@ -19,9 +20,12 @@ public class FriendsAdapter extends BaseAdapter {
 	private Context context;
 	private List<GridElement> list;
 
-	public FriendsAdapter(Context context, List<GridElement> arrayList) {
+	private ClickListener clickListener;
+
+	public FriendsAdapter(Context context, List<GridElement> arrayList, ClickListener clickListener) {
 		this.context = context;
 		this.list = arrayList;
+		this.clickListener = clickListener;
 	}
 
 	@Override
@@ -78,9 +82,10 @@ public class FriendsAdapter extends BaseAdapter {
 	
 	private View getFriendView(final ViewGroup parent, View convertView, Friend f) {
 		FriendView fv;
-		if(convertView==null || !(convertView instanceof FriendView))
+		if(convertView==null || !(convertView instanceof FriendView)){
 			fv = new FriendView(context);
-		else{
+			fv.setOnClickListener(clickListener);
+		}else{
 			fv = (FriendView) convertView;
 		}
 		fv.setFriend(f);

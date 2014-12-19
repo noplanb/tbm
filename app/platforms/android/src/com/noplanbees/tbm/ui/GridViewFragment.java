@@ -31,16 +31,19 @@ import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.VideoPlayer;
 import com.noplanbees.tbm.VideoRecorder;
+import com.noplanbees.tbm.ui.FriendView.ClickListener;
 import com.noplanbees.tbm.ui.NineViewGroup.OnChildLayoutCompleteListener;
 import com.noplanbees.tbm.utilities.Logger;
 
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
-		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback {
+		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback, ClickListener {
 	private static final String TAG = "GridViewFragment";
 
 	public interface Callbacks {
 		void onFinish();
 		void onBenchRequest(int pos);
+		void onNudgeFriend(Friend f);
+		void showRecordDialog();
 	}
 
 	private NineViewGroup gridView;
@@ -161,7 +164,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		adapter = new FriendsAdapter(getActivity(), activeModelsHandler.getGf().all());
+		adapter = new FriendsAdapter(getActivity(), activeModelsHandler.getGf().all(), this);
 		gridView.setAdapter(adapter);
 		gridView.setVideoRecorder(videoRecorder);
 	
@@ -442,5 +445,15 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 			currentIntent.setAction(IntentHandler.IntentActions.NONE);
 			Log.i(TAG, currentIntent.toString());
 		}
+	}
+
+	@Override
+	public void onNudgeClicked(Friend f) {
+		callbacks.onNudgeFriend(f);
+	}
+
+	@Override
+	public void onRecordClicked(Friend f) {
+		callbacks.showRecordDialog();
 	}
 }
