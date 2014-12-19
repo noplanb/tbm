@@ -72,9 +72,8 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		Log.i(TAG, "Postion:" + position + " " + bo.displayName);
 
 		Friend friend = (Friend) friendFactory.find(bo.friendId);
-
-		if (friend == null || !friend.hasApp()) {
-			new InviteManager(activity, bo);
+		if (friend == null) {
+			new InviteManager(activity).invite(bo);
 			return;
 		}
 
@@ -212,7 +211,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
 	private void invite(Contact contact, LinkedTreeMap<String, String> mobileNumber) {
 		BenchObject bo = benchObjectWithContact(contact, mobileNumber);
-		new InviteManager(activity, bo);
+		new InviteManager(activity).invite(bo);
 	}
 
 	private BenchObject benchObjectWithContact(Contact contact, LinkedTreeMap<String, String> mobileNumber) {

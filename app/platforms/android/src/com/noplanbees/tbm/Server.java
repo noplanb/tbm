@@ -9,16 +9,26 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 
+import android.app.Activity;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 import com.noplanbees.tbm.utilities.AsyncTaskManager;
 
 public abstract class Server {
 	private static String STAG = Server.class.getSimpleName();
-
+	private String TAG = this.getClass().getSimpleName();
+	private String uri;
+	private String method;
+	private String sParams;
+	
+	//------------------------------------------------------------------
+	// Application level success and failure handling (not http failure)
+	//------------------------------------------------------------------
 	public static class ParamKeys{
 		public static final String RESPONSE_STATUS = "status";
 		public static final String ERROR_TITLE = "title";
@@ -32,23 +42,42 @@ public abstract class Server {
 
 	public static boolean isSuccess(String status){
 		Log.i(STAG, "is isSuccess:" + status);
+		// If no status parameter is given then assume success.
 		if (status == null)
-			return false;
+			return true;
 		if (status.equals(StatusValues.STATUS_SUCCESS))
 			return true;
 		else
 			return false;
 	}
-
+	
 	public static boolean isFailure(String status){
 		return !isSuccess(status);
 	}
+	
+	public static void showFailureDialog(Activity activity, LinkedTreeMap<String, String>params){
+		InfoDialogFragment info = new InfoDialogFragment();
+		Bundle args = new Bundle();
+		args.putString(InfoDialogFragment.TITLE, params.get(ParamKeys.ERROR_TITLE));
+		args.putString(InfoDialogFragment.MSG, params.get(ParamKeys.ERROR_MSG));
+		info.setArguments(args );
+		info.show(activity.getFragmentManager(), null);
+	}
+	
+	public static boolean checkIsFailureAndShowDialog(Activity activity, LinkedTreeMap<String, String>params){
+		String status = params.get(ParamKeys.RESPONSE_STATUS);
+		if (isFailure(status)){
+			showFailureDialog(activity, params);
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-	private String TAG = this.getClass().getSimpleName();
-	private String uri;
-	private String method;
-	private String sParams;
 
+	//--------------
+	// Instantiation
+	//--------------
 	public Server(String uri, LinkedTreeMap<String, String> params, String method){
 		this.uri = uri;
 		this.method = method;
@@ -70,9 +99,16 @@ public abstract class Server {
 		AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
 	}
 
+	//-----------------
+	// Abstract methods
+	//-----------------
 	public abstract void success(String response);
 	public abstract void error(String errorString);
 
+	
+	//-----
+	// Http 
+	//-----
 	public String paramsToString(LinkedTreeMap<String, String> params){
 		String s = "";
 		for (String k: params.keySet()){

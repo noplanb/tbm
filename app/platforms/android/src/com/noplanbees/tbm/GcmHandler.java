@@ -29,7 +29,8 @@ public class GcmHandler {
 	private Activity activity;
 	private final String TAG = "GCM";
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-	private String SENDER_ID = "550639704405";
+//	private String SENDER_ID = "550639704405"; // ThreeByMe on console.developers.google.com
+	private String SENDER_ID = "462139407481"; // Zazo on console.developers.google.com
 	private GoogleCloudMessaging gcm;
 	private AtomicInteger msgId = new AtomicInteger();
 	private SharedPreferences prefs;
