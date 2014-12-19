@@ -20,18 +20,29 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.noplanbees.tbm.BenchController;
+import com.noplanbees.tbm.BenchObject;
 import com.noplanbees.tbm.Contact;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.GcmHandler;
+import com.noplanbees.tbm.InviteManager;
 import com.noplanbees.tbm.NotificationAlertManager;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.RegisterActivity;
 import com.noplanbees.tbm.User;
 import com.noplanbees.tbm.VersionHandler;
+import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 
-public class MainActivity extends Activity implements GridViewFragment.Callbacks, BenchController.Callbacks {
+public class MainActivity extends Activity implements GridViewFragment.Callbacks, BenchController.Callbacks,
+ActionInfoDialogFragment.Callbacks{
 	private final static String TAG = "MainActivity";
+	
+
+	public static final int CONNECTED_DIALOG = 0;
+	public static final int NUDGE_DIALOG = 1;
+	public static final int SMS_DIALOG = 2;
+	public static final int SENDLINK_DIALOG = 3;
+
 
 	private ServiceConnection conn = new ServiceConnection() {
 		@Override
@@ -47,12 +58,10 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 
 	private GcmHandler gcmHandler;
 	private BenchController benchController;
-
 	private VersionHandler versionHandler;
-
 	private Fragment mainFragment;
-
 	private DrawerLayout body;
+	private InviteManager inviteManager;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -65,6 +74,8 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 		
 		gcmHandler = new GcmHandler(this);
 		versionHandler = new VersionHandler(this);
+		
+		inviteManager = InviteManager.getInstance(this);
 		
 		setupActionBar();
 		
@@ -209,4 +220,26 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 		info.show(getFragmentManager(), null);
 	}
 
+	@Override
+	public void onActionClicked(int id) {
+		switch(id){
+		case CONNECTED_DIALOG:
+			inviteManager.moveFriendToGrid();
+			break;
+		case NUDGE_DIALOG:
+			inviteManager.showSms();
+			break;
+		case SMS_DIALOG: 
+			inviteManager.showSms();
+			break;
+		case SENDLINK_DIALOG:
+			inviteManager.sendLink();
+			break;
+		}
+	}
+
+	@Override
+	public void inviteFriend(BenchObject bo) {
+		inviteManager.invite(bo);
+	}
 }

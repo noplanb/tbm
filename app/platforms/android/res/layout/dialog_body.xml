@@ -55,13 +55,15 @@
             android:background="@android:color/transparent"
             android:text="@android:string/cancel"
             android:textColor="@color/dialog_textcolor"
-            android:textSize="18sp" />
+            android:textSize="18sp" 
+            android:visibility="gone"/>
 
         <View
             android:id="@+id/divider"
             android:layout_width="1dp"
             android:layout_height="45dp"
-            android:background="@color/dialog_border" />
+            android:background="@color/dialog_border" 
+            android:visibility="invisible"/>
 
         <Button
             android:id="@+id/btn_dialog_ok"

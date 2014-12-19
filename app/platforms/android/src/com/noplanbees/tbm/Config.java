@@ -10,7 +10,7 @@ import android.util.Log;
 public class Config {
 
 //	public final static String serverUri = "http://192.168.1.82:3000";
-	public final static String serverUri = "http://tbm-andrey.elasticbeanstalk.com";
+	public final static String serverUri = "http://staging-tbm.elasticbeanstalk.com";
 //	public final static String serverUri = "http:s//www.threebyme.com";
 	
 	public final static String appName = "Zazo";

@@ -25,6 +25,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	public interface Callbacks {
 		void onHide();
 		void showNoValidPhonesDialog(Contact contact);
+		void inviteFriend(BenchObject bo);
 	}
 
 	private Activity activity;
@@ -73,7 +74,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
 		Friend friend = (Friend) friendFactory.find(bo.friendId);
 		if (friend == null) {
-			new InviteManager(activity).invite(bo);
+			benchControllerCallbacks.inviteFriend(bo);
 			return;
 		}
 
@@ -211,7 +212,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
 	private void invite(Contact contact, LinkedTreeMap<String, String> mobileNumber) {
 		BenchObject bo = benchObjectWithContact(contact, mobileNumber);
-		new InviteManager(activity).invite(bo);
+		benchControllerCallbacks.inviteFriend(bo);
 	}
 
 	private BenchObject benchObjectWithContact(Contact contact, LinkedTreeMap<String, String> mobileNumber) {

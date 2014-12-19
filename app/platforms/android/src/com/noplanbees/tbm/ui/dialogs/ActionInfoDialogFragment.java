@@ -10,9 +10,11 @@ public class ActionInfoDialogFragment extends AbstractDialogFragment {
 	public static final String TITLE = "title";
 	public static final String MSG = "msg";
 	public static final String ACTION = "action";
+	public static final String ID = "dialog_id";
+	public static final String NEED_CANCEL = "need_cancel";
 	
 	public interface Callbacks{
-		void onActionClicked();
+		void onActionClicked(int id);
 	}
 	
 	private Callbacks callbacks;
@@ -29,15 +31,19 @@ public class ActionInfoDialogFragment extends AbstractDialogFragment {
 		String title = getArguments().getString(TITLE);
 		String msg = getArguments().getString(MSG);
 		String action = getArguments().getString(ACTION);
+		final int id = getArguments().getInt(ID);
+		boolean needCancel = getArguments().getBoolean(NEED_CANCEL, true);
+		
 		setTitle(title);
 		setMessage(msg);
 		setPositiveButton(action, new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				callbacks.onActionClicked();
+				callbacks.onActionClicked(id);
 				dismiss();
 			}
 		});
-		setPositiveButton("Cancel", null);
+		
+		setNegativeButton(needCancel?"Cancel":null, null);
 	}
 }
