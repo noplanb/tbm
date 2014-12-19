@@ -2,18 +2,23 @@ TODO
     
          
 Release Notes for Andrey
-------------------------
-- New server being set up by Alexander
+========================
+
+New server being set up by Alexander
+------------------------------------
   - My changes to invite will not run against your server. 
   - Alexander should be putting a server online for you in the morning. Please have him let you know when it is ready.
   - You will need to point to it in config.java so get the url from him for that.
   
-- InfoDialogFragment
+InfoDialogFragment
+------------------
   - I tried to use your InfoDialogFragment but found that I could not control the labels and number of buttons. 
   - I used it in only one place Server.showFailureDialog and it is not correct as it requires only a single button labeled "Ok" and preferably settable by the caller.
   - Please fix this error dialog. 
   - I did not attempt to convert the rest of the dialogs in InvitationManager to your new format.
 
+Bugs
+----
 - Bug (in your code?)
   - The line:  GridManager.moveFriendToGrid(activity, friend);  in InvitationManager.connectedDailog() throws an exception trying to move the friend to grid after invitation is complete.
   12-18 18:16:54.613: W/UnexpectedTerminationHelper(2481): java.lang.ClassCastException: android.widget.FrameLayout cannot be cast to com.noplanbees.tbm.ui.FriendView
@@ -23,6 +28,13 @@ Release Notes for Andrey
 - Bug (in your code?)
   - Friends with hasApp=true are showing NUDGE/RECORD. They should only show RECORD. To test you can easily change a friend from hasApp to !hasApp on the server admin screen by setting the device_platform field for the user to ios or android.
 
+- Bug (in your code)
+  - After first message is received the sender hasApp should be set to true so that the Nudge/record button dissapears and the thumbnail for incoming video is shown. 
+  
+- Andrey - Please check all the cases for uploading, downloading, hasApp, !hasApp, playing a video while a new one comes in,  etc. Some of these cases are listed in zazo.testrail.com. I must say that IOS is in much better shape as far as handling all the corner cases at this point. 
+
+Incomplete
+----------
 - I could not see where you added a click handler for nudge button. I added: new InvitationManager(activity).nudge(friend). Please wire it to the nudge button.
 
 - Additional features you need to add:
@@ -31,7 +43,11 @@ Release Notes for Andrey
                                   message:@"Press and hold the RECORD button to record."
                         cancelButtonTitle:@"Ok"
 
-Tested cases:
+- Please note all the graphical assets including the thumbMising Z are now on gitHub at: https://github.com/noplanb/Artwork
+
+
+Test Cases
+----------
   # The test cases below marked with "-" have not been tested. Please test them.
   # The ones marked with "!" have a problem that needs to be addressed.
   # The ones marked with x were tested as ok by me.
@@ -75,4 +91,4 @@ Tested cases:
          x cancel (did cancel dialog)
          x send
 
-- PushNotifications   
+x PushNotifications  Note that push notifications are now going through a different account at google than before. 
