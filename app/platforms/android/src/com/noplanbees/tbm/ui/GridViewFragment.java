@@ -31,8 +31,9 @@ import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.VideoPlayer;
 import com.noplanbees.tbm.VideoRecorder;
-import com.noplanbees.tbm.ui.FriendView.ClickListener;
-import com.noplanbees.tbm.ui.NineViewGroup.OnChildLayoutCompleteListener;
+import com.noplanbees.tbm.ui.view.NineViewGroup;
+import com.noplanbees.tbm.ui.view.FriendView.ClickListener;
+import com.noplanbees.tbm.ui.view.NineViewGroup.OnChildLayoutCompleteListener;
 import com.noplanbees.tbm.utilities.Logger;
 
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,

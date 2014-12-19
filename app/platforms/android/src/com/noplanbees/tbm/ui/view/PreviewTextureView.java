@@ -1,4 +1,4 @@
-package com.noplanbees.tbm.ui;
+package com.noplanbees.tbm.ui.view;
 
 import android.content.Context;
 import android.graphics.Canvas;

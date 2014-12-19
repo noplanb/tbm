@@ -5,7 +5,7 @@
     android:background="@color/bg_main"
     android:orientation="vertical" >
 
-    <com.noplanbees.tbm.ui.NineViewGroup
+    <com.noplanbees.tbm.ui.view.NineViewGroup
         android:id="@+id/grid_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

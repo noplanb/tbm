@@ -11,7 +11,7 @@ import android.util.Log;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 
-import com.noplanbees.tbm.ui.PreviewTextureView;
+import com.noplanbees.tbm.ui.view.PreviewTextureView;
 
 public class VideoRecorder implements SurfaceTextureListener {
 

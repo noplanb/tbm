@@ -11,7 +11,8 @@ import android.widget.BaseAdapter;
 import com.noplanbees.tbm.Friend;
 import com.noplanbees.tbm.GridElement;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.ui.FriendView.ClickListener;
+import com.noplanbees.tbm.ui.view.FriendView;
+import com.noplanbees.tbm.ui.view.FriendView.ClickListener;
 
 public class FriendsAdapter extends BaseAdapter {
 

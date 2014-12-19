@@ -30,16 +30,15 @@
         android:padding="5dp"
         android:layout_gravity="end" >
 
-        <AutoCompleteTextView
+        <com.noplanbees.tbm.ui.view.ClearableAutoCompleteTextView
             android:id="@+id/contacts_auto_complete_text_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:completionThreshold="1"
             android:ems="10"
-            android:drawableLeft="@android:drawable/ic_search_category_default"
+            android:padding="10dp"
             android:background="@drawable/search_border" 
-            android:hint="Search"
             android:textColor="@android:color/white" />
 
         <ListView

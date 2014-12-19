@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.noplanbees.tbm.ui;
+package com.noplanbees.tbm.ui.view;
 
 import java.util.Timer;
 import java.util.TimerTask;

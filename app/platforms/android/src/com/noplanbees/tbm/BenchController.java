@@ -1,15 +1,22 @@
 package com.noplanbees.tbm;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Friend.Attributes;
@@ -85,26 +92,13 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	// Populate
 	// ---------
 	private void populate() {
-		ArrayAdapter<String> ad = new ArrayAdapter<String>(activity, 
-				R.layout.bench_list_item,
-				R.id.text1,
-				nameArray());
-		listView.setAdapter(ad);
+		listView.setAdapter(new BenchAdapter(activity, allOnBench()));
 	}
 
 	private ArrayList<BenchObject> allOnBench() {
 		currentAllOnBench = benchFriendsAsBenchObjects();
 		currentAllOnBench.addAll(dedupedSmsBenchObjects());
 		return currentAllOnBench;
-	}
-
-	private String[] nameArray() {
-		ArrayList<BenchObject> all = allOnBench();
-		String[] na = new String[all.size()];
-		for (int i = 0; i < all.size(); i++) {
-			na[i] = all.get(i).displayName;
-		}
-		return na;
 	}
 
 	// --------------------------
@@ -222,5 +216,59 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		boParams.put(BenchObject.Keys.LAST_NAME, contact.getLastName());
 		boParams.put(BenchObject.Keys.MOBILE_NUMBER, mobileNumber.get(Contact.PhoneNumberKeys.E164));
 		return new BenchObject(boParams);
+	}
+	
+	private class BenchAdapter extends BaseAdapter{
+
+		private Context context;
+		private List<BenchObject> list;
+
+		public BenchAdapter(Context context, List<BenchObject> list) {
+			this.context = context;
+			this.list = list;
+		}
+		
+		@Override
+		public int getCount() {
+			return list.size();
+		}
+
+		@Override
+		public BenchObject getItem(int position) {
+			return list.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			ViewHolder holder = null;
+			View v = null; 
+			if(convertView == null){
+				v = LayoutInflater.from(context).inflate(R.layout.bench_list_item, parent, false);
+				holder = new ViewHolder();
+				holder.name = (TextView) v.findViewById(R.id.name); 
+				holder.thumb = (ImageView) v.findViewById(R.id.thumb);
+				v.setTag(holder);
+			}else{
+				v = convertView;
+				holder = (ViewHolder) v.getTag();
+			}
+			
+			BenchObject item = list.get(position);
+			holder.name.setText(item.displayName);
+			holder.thumb.setImageResource(R.drawable.ic_no_pic_z);
+			
+			return v;
+		}
+		
+		private class ViewHolder{
+			ImageView thumb;
+			TextView name;
+		}
+		
 	}
 }
