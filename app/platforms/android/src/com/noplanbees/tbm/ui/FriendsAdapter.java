@@ -78,7 +78,7 @@ public class FriendsAdapter extends BaseAdapter {
 	
 	private View getFriendView(final ViewGroup parent, View convertView, Friend f) {
 		FriendView fv;
-		if(convertView==null)
+		if(convertView==null || !(convertView instanceof FriendView))
 			fv = new FriendView(context);
 		else{
 			fv = (FriendView) convertView;
