@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
@@ -45,7 +46,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	private EditText lastNameTxt;
 	private EditText countryCodeTxt;
 	private EditText mobileNumberTxt;
-	private EditText verificationCodeTxt;
 
 	private ProgressDialog pd;
 	protected ActiveModelsHandler activeModelsHandler;
@@ -71,6 +71,10 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+		getActionBar().hide();
+		
 		setContentView(R.layout.register);
 		setupListeners();
 		setupProgressDialog();

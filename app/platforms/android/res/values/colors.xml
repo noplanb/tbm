@@ -43,4 +43,9 @@
     <color name="dialog_textcolor">#2f2e28</color>
     
     <color name="empty_bg">#F48A31</color>
+    
+    <color name="register_bg">#9ac23b</color>
+    <color name="register_input_border">#c2e179</color>
+    <color name="register_input_bg">#a9cb58</color>
+    <color name="register_btn_bg">#2f2e28</color>
 </resources>
