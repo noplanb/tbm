@@ -3,13 +3,13 @@
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
+            backward-compatibility can go here.
         -->
     </style>
 
@@ -18,7 +18,9 @@
 
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
         <item name="android:actionBarStyle">@style/ZazoActionBar</item>
-         <item name="android:actionBarSize">55dp</item>
+        <item name="android:actionBarSize">55dp</item>
+        <item name="android:dropDownListViewStyle">@style/DropDownListViewStyle</item>
+        
     </style>
 
     <style name="ZazoActionBar" parent="@android:style/Widget.Holo.ActionBar">
@@ -49,6 +51,12 @@
 
     <style name="base_dialog" parent="@android:style/Theme.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+
+    <style name="DropDownListViewStyle" parent="@android:style/Widget.ListView">
+        <item name="android:divider">#FF000000</item>
+        <item name="android:dividerHeight">1px</item>
     </style>
 
 </resources>
