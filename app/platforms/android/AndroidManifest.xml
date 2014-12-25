@@ -99,6 +99,14 @@
                 <service
             android:name="com.noplanbees.tbm.DataHolderService" />
         
+        <service
+            android:name="com.noplanbees.tbm.network.FileUploadService"
+            android:process=":FileUploadService" />
+        <service
+            android:name="com.noplanbees.tbm.network.FileDownloadService"
+            android:process=":FileDownloadService" />
+                
+                
     </application>
 
 </manifest>

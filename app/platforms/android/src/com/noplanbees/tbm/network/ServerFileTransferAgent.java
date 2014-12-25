@@ -1,4 +1,4 @@
-package com.noplanbees.tbm;
+package com.noplanbees.tbm.network;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -11,38 +11,47 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 
+import com.noplanbees.tbm.Config;
+import com.noplanbees.tbm.DataHolderService;
+import com.noplanbees.tbm.Video;
+import com.noplanbees.tbm.FileTransferService.IntentFields;
+import com.noplanbees.tbm.Friend;
 
-@Deprecated
-public class FileUploadService extends FileTransferService {
+public class ServerFileTransferAgent implements IFileTransferAgent {
 	private final String TAG = getClass().getSimpleName();
-	private static final String STAG = FileTransferService.class.getSimpleName();
 	
 	private final String boundary =  "*****";
+
+	private Context context;
+	protected String id;
+	protected String filePath;
+	protected Bundle params;
+
+	private Intent intent;
 	
-	
-	public static void restartTransfersPendingRetry(Context context) {
-		Intent intent = new Intent(context, FileUploadService.class);
-		intent.setAction("INTERRUPT");
-		context.startService(intent);
-	}	
-	
-	public FileUploadService() {
-		super("FileUploadService");
+	public ServerFileTransferAgent(Context context) {
+		this.context = context;
 	}
 	
 	@Override
-	protected Boolean doTransfer(Intent intent)throws InterruptedException{	
-		intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_UPLOAD);
-		reportStatus(intent, Friend.OutgoingVideoStatus.UPLOADING);
-		return upload(intent);
+	public void setInstanceVariables(Intent intent) {
+		this.intent = intent;
+		filePath = intent.getStringExtra(IntentFields.FILE_PATH_KEY);
+		params = intent.getBundleExtra(IntentFields.PARAMS_KEY);
 	}
 	
-	private Boolean upload(Intent intent) throws InterruptedException{
+	@Override
+	public boolean upload() {
+		String urlWithParams = Config.fileUploadUrl() + stringifyParams(params);
 		Log.i(TAG, "upload: " + urlWithParams);
 
 		HttpURLConnection con = null;
@@ -99,7 +108,7 @@ public class FileUploadService extends FileTransferService {
 			Log.e(TAG, "IOException..." + e.toString());
 			if (e.getClass().equals(FileNotFoundException.class)){
 				reportStatus(intent, Friend.OutgoingVideoStatus.FAILED_PERMANENTLY);
-				return true;
+				return false;
 			} else {
 				return false;
 			}
@@ -111,9 +120,50 @@ public class FileUploadService extends FileTransferService {
 	}
 
 	@Override
-	protected void maxRetriesReached(Intent intent) throws InterruptedException{
-		reportStatus(intent, Friend.OutgoingVideoStatus.FAILED_PERMANENTLY);
+	public boolean download() {
+		Log.e(TAG, "download videoId=" + intent.getStringExtra(IntentFields.VIDEO_ID_KEY) + " params=" + params.toString());
+		File f = FileUtils.getFile(Config.downloadingFilePath(context));
+		try {
+			String urlWithParams = Config.fileDownloadUrl() + stringifyParams(params);
+			URL url = new URL(urlWithParams);
+			FileUtils.copyURLToFile(url, f, 60000, 60000);
+		} catch (MalformedURLException e) {
+			Log.e(TAG, "download2: MalformedURLException: " + e.getMessage() + e.toString());
+			return false;
+		} catch (IOException e) {
+			Log.e(TAG, "download: IOException: e.tostring " +  e.toString() );
+			if (e.getClass().equals(FileNotFoundException.class)){
+				reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
+				return false;
+			} else {
+				return false;
+			}
+		}
+		f.renameTo(FileUtils.getFile(filePath));
+		Log.e(TAG, "download SUCCESS" + params.toString());
+		reportStatus(intent, Video.IncomingVideoStatus.DOWNLOADED);
+		return true;
+	}
+	
+	protected void reportStatus(Intent intent, int status){
+		Log.i(TAG, "reportStatus");
+		intent.setClass(context, DataHolderService.class);
+		intent.putExtra(IntentFields.STATUS_KEY, status);
+		context.startService(intent);
 	}
 
 
+	private String stringifyParams(Bundle params){
+		Set<String> keys = params.keySet();
+		if (keys.isEmpty())
+			return "";
+
+		String result = "?";
+		for (String key : keys){
+			if (!result.equals("?"))
+				result += "&";
+			result += (key + "=" + params.getString(key));
+		}
+		return result;
+	}	
 }

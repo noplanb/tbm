@@ -12,7 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-
+@Deprecated
 public class FileDownloadService extends FileTransferService {
 	private final static String STAG = FileDownloadService.class.getSimpleName();
 	private final String TAG = getClass().getSimpleName();
@@ -62,5 +62,4 @@ public class FileDownloadService extends FileTransferService {
 	protected void maxRetriesReached(Intent intent) throws InterruptedException{
 		reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
 	}
-	
 }

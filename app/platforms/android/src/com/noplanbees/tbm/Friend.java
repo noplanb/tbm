@@ -21,6 +21,9 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
+import com.noplanbees.tbm.network.FileDownloadService;
+import com.noplanbees.tbm.network.FileUploadService;
+import com.noplanbees.tbm.network.FileTransferService;
 
 public class Friend extends ActiveModel{
 
@@ -344,13 +347,10 @@ public static interface VideoStatusChangedCallback{
 		Intent i = new Intent(context, FileUploadService.class);
 		i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
 		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath());
-		i.putExtra(FileTransferService.IntentFields.URL_KEY, Config.fileUploadUrl());
 		i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, get(Attributes.OUTGOING_VIDEO_ID));
 		Bundle params = new Bundle();
 		params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
-		i.addFlags(Intent.FLAG_FROM_BACKGROUND);
-		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); 	// See doc/task_manager_bug.txt for the reason for this flag.
 		context.startService(i);
 	}
 
@@ -364,12 +364,9 @@ public static interface VideoStatusChangedCallback{
 		i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
 		i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
 		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
-		i.putExtra(FileTransferService.IntentFields.URL_KEY, Config.fileDownloadUrl());
 		Bundle params = new Bundle();
 		params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
-		i.addFlags(Intent.FLAG_FROM_BACKGROUND);
-		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS); 	// See doc/task_manager_bug.txt for the reason for this flag.
 		context.startService(i);
 	}
 

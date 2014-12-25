@@ -14,7 +14,7 @@ public class Video extends ActiveModel {
 		public static final int DOWNLOADING = 3;
 		public static final int DOWNLOADED = 4;
 		public static final int VIEWED = 5;
-		public static final int FAILED_PERMANENTLY = 6;
+		public static final int FAILED_PERMANENTLY = 7;
 	}
 	
 	public static class Attributes{
