@@ -181,6 +181,10 @@ final String TAG = this.getClass().getSimpleName();
 //		if (Build.VERSION.SDK_INT >= 14)
 //			cparams.setRecordingHint(true);
 		
+		//cparams.setPreviewFpsRange( 30000, 30000 ); // 30 fps
+		//if ( cparams.isAutoExposureLockSupported() )
+		//     cparams.setAutoExposureLock( true );
+		
 		camera.setParameters(cparams);
 		return true;
 	}
