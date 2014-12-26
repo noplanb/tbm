@@ -48,7 +48,6 @@
         android:id="@+id/img_thumb"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="2.5dp"
         android:scaleType="centerCrop" />
 
     <TextView
@@ -63,6 +62,12 @@
         android:paddingTop="2dp"
         android:text="TextView"
         android:textColor="@color/color_name" />
+    
+    <View
+        android:id="@+id/unread_border"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:background="@drawable/friend_body_unread_border"/>
 
     <ImageView
         android:id="@+id/img_viewed"

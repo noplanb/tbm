@@ -39,7 +39,7 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 	private ImageView imgDownloading;
 	private ImageView imgUploading;
 	private View progressLine;
-	private View body;
+	private View unreadBorder;
 	
 	private ClickListener clickListener;
 
@@ -68,7 +68,7 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 
 	private void init() {
 		LayoutInflater.from(getContext()).inflate(R.layout.friendview_item, this, true);
-		body = findViewById(R.id.body);
+		unreadBorder = findViewById(R.id.unread_border);
 
 		twName = (TextView) findViewById(R.id.tw_name);
 		twNundge = (TextView) findViewById(R.id.tw_nudge);
@@ -127,7 +127,6 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 	}
 
 	private void updateContent() {
-		
 		int unreadMsgCount = friend.incomingVideoNotViewedCount();
 		
 		if(friend.hasApp()){
@@ -143,14 +142,13 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		}
 
 		if (unreadMsgCount > 0 && !needToHideIndicators) {
-			body.setBackgroundResource(R.drawable.friend_body_unread_border);
 			twName.setBackgroundColor(getResources().getColor(R.color.bg_unread_msg));
-
+			unreadBorder.setVisibility(View.VISIBLE);
 			twUnreadCount.setVisibility(View.VISIBLE);
 			twUnreadCount.setText("" + unreadMsgCount);
 		} else {
-			body.setBackgroundColor(getResources().getColor(R.color.bg_name));
 			twName.setBackgroundColor(getResources().getColor(R.color.bg_name));
+			unreadBorder.setVisibility(View.INVISIBLE);
 			twUnreadCount.setVisibility(View.INVISIBLE);
 		}
 
@@ -163,9 +161,10 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 
 		twName.setText(friend.getStatusString());
 		
-		
 		if(friend.getOutgoingVideoStatus() != OutgoingVideoStatus.NONE &&
 				friend.getOutgoingVideoStatus() != OutgoingVideoStatus.VIEWED &&
+				friend.getOutgoingVideoStatus() != OutgoingVideoStatus.QUEUED &&
+				friend.getOutgoingVideoStatus() != OutgoingVideoStatus.UPLOADING &&
 				friend.getIncomingVideoStatus() != IncomingVideoStatus.DOWNLOADING)
 			imgUploading.setVisibility(View.VISIBLE);
 		else
@@ -280,7 +279,6 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		Log.d(TAG, "onVideoPlaying " + friend.getId() + " ? " + friendId);
 		needToHideIndicators = friend.getId().equals(friendId);
 		updateContent();
-//		invalidate();
 	}
 
 	@Override
