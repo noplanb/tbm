@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -257,10 +256,17 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 				v = convertView;
 				holder = (ViewHolder) v.getTag();
 			}
-			
+
 			BenchObject item = list.get(position);
+
+			Friend friend = (Friend) FriendFactory.getFactoryInstance().find(item.friendId);
+			if (friend!=null && friend.thumbExists()){
+				holder.thumb.setImageBitmap(friend.lastThumbBitmap());
+			}else{
+				holder.thumb.setImageResource(R.drawable.ic_no_pic_z);
+			}
+			
 			holder.name.setText(item.displayName);
-			holder.thumb.setImageResource(R.drawable.ic_no_pic_z);
 			
 			return v;
 		}

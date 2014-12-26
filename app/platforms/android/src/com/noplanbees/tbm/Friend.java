@@ -20,10 +20,9 @@ import android.util.Log;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-
 import com.noplanbees.tbm.network.FileDownloadService;
-import com.noplanbees.tbm.network.FileUploadService;
 import com.noplanbees.tbm.network.FileTransferService;
+import com.noplanbees.tbm.network.FileUploadService;
 
 public class Friend extends ActiveModel{
 

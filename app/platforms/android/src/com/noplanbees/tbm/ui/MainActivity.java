@@ -38,12 +38,10 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 	private final static String TAG = "MainActivity";
 	
-
 	public static final int CONNECTED_DIALOG = 0;
 	public static final int NUDGE_DIALOG = 1;
 	public static final int SMS_DIALOG = 2;
 	public static final int SENDLINK_DIALOG = 3;
-
 
 	private ServiceConnection conn = new ServiceConnection() {
 		@Override
@@ -52,7 +50,6 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-
 			onLoadComplete();
 		}
 	};
@@ -79,7 +76,6 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 		inviteManager = InviteManager.getInstance(this);
 		
 		setupActionBar();
-		
 	}
 
 	private void setupActionBar() {
@@ -102,28 +98,14 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 	@Override
 	protected void onStart() {
 		super.onStart();
-		Log.d(TAG, "onStart");
 		versionHandler.checkVersionCompatibility();		
 		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 		NotificationAlertManager.cancelNativeAlerts(this);
 	}
-	
-	@Override
-	protected void onResume() {
-		Log.d(TAG, "onResume");
-		super.onResume();
-	}
-	
-	@Override
-	protected void onPause() {
-		Log.d(TAG, "onPause");
-		super.onPause();
-	}
-	
+
 	@Override
 	protected void onStop() {
 		super.onStop();
-		Log.d(TAG, "onStop");
 		unbindService(conn);
 	}
 	
@@ -134,8 +116,6 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 			Log.i(TAG, "Not registered. Starting RegisterActivty");
 			Intent i = new Intent(this, RegisterActivity.class);
 			startActivity(i);
-			Log.i(TAG, "Exiting boot");
-			Log.i(TAG, "Finish HomeActivity");
 			finish();
 			return;
 		} else {
@@ -170,24 +150,11 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 		// Handle presses on the action bar items
 		switch (item.getItemId()) {
 		case R.id.action_bench:
-			//benchController.toggle();
 			if(body.isDrawerOpen(Gravity.RIGHT))
 				body.closeDrawers();
 			else
 				body.openDrawer(Gravity.RIGHT);
 			return true;
-//		case R.id.action_get_contacts:
-//			UserFactory.current_user().getCountryCode();
-//			return true;
-//		case R.id.action_get_sms:
-//			benchController.callSms();
-//			return true;
-//		case R.id.action_reset:
-//			ActiveModelsHandler.getInstance(this).destroyAll();
-//			finish();
-//			return true;
-//		case R.id.action_crash:
-//			throw new NullPointerException("simulate exception");
 		default:
 			return super.onOptionsItemSelected(item);
 		}

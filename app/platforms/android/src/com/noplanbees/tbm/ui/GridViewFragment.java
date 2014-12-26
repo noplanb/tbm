@@ -22,6 +22,7 @@ import android.widget.VideoView;
 import com.noplanbees.tbm.ActiveModelsHandler;
 import com.noplanbees.tbm.CameraManager;
 import com.noplanbees.tbm.CameraManager.CameraExceptionHandler;
+import com.noplanbees.tbm.Convenience;
 import com.noplanbees.tbm.Friend;
 import com.noplanbees.tbm.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.GridElement;
@@ -31,8 +32,8 @@ import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.VideoPlayer;
 import com.noplanbees.tbm.VideoRecorder;
-import com.noplanbees.tbm.ui.view.NineViewGroup;
 import com.noplanbees.tbm.ui.view.FriendView.ClickListener;
+import com.noplanbees.tbm.ui.view.NineViewGroup;
 import com.noplanbees.tbm.ui.view.NineViewGroup.OnChildLayoutCompleteListener;
 import com.noplanbees.tbm.utilities.Logger;
 
@@ -156,8 +157,6 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 			}
 		});
 		
-		Log.d(TAG, "onCreateView");
-
 		return v;
 	}
 
@@ -355,7 +354,8 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		handler.post(new Runnable() {
 			@Override
 			public void run() {
-				GridManager.moveFriendToGrid(getActivity(), friend);
+				if(getActivity()!=null)
+					GridManager.moveFriendToGrid(getActivity(), friend);
 				adapter.notifyDataSetChanged();
 			}
 		});
@@ -401,8 +401,11 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				break;
 			i++;
 		}
-		
-		View view = gridView.getChildAt(i);
+		//TODO: remove this ugly hack with magic number
+		int uiPosForFriendPos = Convenience.getUiPosForFriendPos(i);
+		if(uiPosForFriendPos>=4)
+			uiPosForFriendPos++;
+		View view = gridView.getChildAt(uiPosForFriendPos);
 		videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth(), view.getHeight());
 		videoPlayer.play(friendId);
 	}
@@ -416,11 +419,13 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		// got here by clicking a notification.
 		// 2) to notify the user if there was a problem sending Sms invite to a
 		// friend. (Not used as decided this is unnecessarily disruptive)
-		Log.i(TAG, "handleIntentAction: " + currentIntent .toString());
 		if (currentIntent == null) {
 			Log.i(TAG, "handleIntentAction: no intent. Exiting.");
 			return;
 		}
+		
+		Log.i(TAG, "handleIntentAction: " + currentIntent .toString());
+
 		String action = currentIntent.getAction();
 		Uri data = currentIntent.getData();
 		if (action == null || data == null) {
