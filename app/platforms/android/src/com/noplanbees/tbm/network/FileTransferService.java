@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.NonStopIntentService;
+import com.noplanbees.tbm.network.aws.S3FileTransferAgent;
 
 
 
@@ -40,7 +41,7 @@ public abstract class FileTransferService extends NonStopIntentService {
 	public FileTransferService(String name) {
 		super(name);
 		if(NetworkConfig.IS_AWS_USING){
-			
+			fileTransferAgent = new S3FileTransferAgent(this);
 		}else{
 			fileTransferAgent = new ServerFileTransferAgent(this);
 		}
