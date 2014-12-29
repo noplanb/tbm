@@ -6,6 +6,7 @@ import java.io.IOException;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.util.Log;
 import android.view.TextureView.SurfaceTextureListener;
@@ -14,6 +15,8 @@ import android.view.View;
 import com.noplanbees.tbm.ui.view.PreviewTextureView;
 
 public class VideoRecorder implements SurfaceTextureListener {
+
+	private final static String TAG = VideoRecorder.class.getSimpleName();
 
 	// Even though I set up this exception handling interface to be complete I
 	// probably wont use it the failure cause of failure
@@ -24,27 +27,19 @@ public class VideoRecorder implements SurfaceTextureListener {
 	// make the app unusable back to our servers for analysis.
 	public interface VideoRecorderExceptionHandler {
 		public void unableToSetPrievew();
-
 		public void unableToPrepareMediaRecorder();
-
 		public void recordingAborted();
-
 		public void recordingTooShort();
-
 		public void illegalStateOnStart();
-
 		public void runntimeErrorOnStart();
 	}
 
-	private final String TAG = this.getClass().getSimpleName();
-
 	private Context context;
-
 	private MediaRecorder mediaRecorder;
-
 	private Friend currentFriend;
-
 	private PreviewTextureView preview;
+	// Allow registration of a single delegate to handle exceptions.
+	private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
 
 	public VideoRecorder(Context c) {
 		context = c;
@@ -54,20 +49,17 @@ public class VideoRecorder implements SurfaceTextureListener {
 		return currentFriend;
 	}
 
-	// --------------
-	// Public Methods
-	// --------------
-
-
-	// Allow registration of a single delegate to handle exceptions.
-	private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
-
 	public void addExceptionHandlerDelegate(VideoRecorderExceptionHandler handler) {
 		videoRecorderExceptionHandler = handler;
 	}
 
 	public boolean stopRecording() {
 		Log.i(TAG, "stopRecording");
+		
+		//restore playback if needed
+		AudioManager am = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+		am.setStreamMute(AudioManager.STREAM_MUSIC, false);
+		
 		boolean rval = false;
 		hideRecordingIndicator(); // It should be safe to call this even if the
 									// sufraces have already been destroyed.
@@ -115,6 +107,10 @@ public class VideoRecorder implements SurfaceTextureListener {
 			prepareMediaRecorder();
 			return false;
 		}
+		
+		//stop playback
+		AudioManager am = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+		am.setStreamMute(AudioManager.STREAM_MUSIC, true);
 
 		try {
 			mediaRecorder.start();
@@ -155,9 +151,6 @@ public class VideoRecorder implements SurfaceTextureListener {
 		releaseMediaRecorder();
 		if (abortedRecording && videoRecorderExceptionHandler != null)
 			videoRecorderExceptionHandler.recordingAborted();
-
-
-
 	}
 
 	public void dispose() {
@@ -218,7 +211,6 @@ public class VideoRecorder implements SurfaceTextureListener {
 		mediaRecorder.setVideoEncodingBitRate(150000);
 		mediaRecorder.setVideoFrameRate(15);
 
-
 		Camera.Size size = CameraManager.getPreviewSize();
 		if (size == null) {
 			notifyUnableToPrepare();
@@ -230,13 +222,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 		Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
 		mediaRecorder.setOutputFile(ofile);
 
-
 		mediaRecorder.setOrientationHint(270);
-
-		// Step 5: Set the preview output
-		// Log.i(TAG, "prepareMediaRecorder: mediaRecorder.setPreviewDisplay");
-		// mediaRecorder.setPreviewDisplay(previewSurfaceHolder.getSurface());
-
 
 		// Step 6: Prepare configured MediaRecorder
 		try {
@@ -288,7 +274,6 @@ public class VideoRecorder implements SurfaceTextureListener {
 			preview.setSurfaceTextureListener(this);
 		}
 		return preview;
-
 	}
 
 	@Override
