@@ -22,9 +22,9 @@ import android.util.Log;
 
 import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.DataHolderService;
-import com.noplanbees.tbm.FileTransferService.IntentFields;
 import com.noplanbees.tbm.Friend;
 import com.noplanbees.tbm.Video;
+import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 
 public class ServerFileTransferAgent implements IFileTransferAgent {
 	private final String TAG = getClass().getSimpleName();

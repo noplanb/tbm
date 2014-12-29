@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.noplanbees.tbm.RemoteStorageHandler.GetRemoteIncomingVideoIds;
+import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.ui.MainActivity;
 
 // Polls for new videos and schedules downloads.

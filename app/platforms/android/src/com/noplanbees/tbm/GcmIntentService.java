@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.noplanbees.tbm.network.FileTransferService;
 
 /**
  * This IntentService handles push notifications. It is called by

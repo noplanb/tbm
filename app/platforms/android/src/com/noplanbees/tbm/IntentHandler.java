@@ -10,6 +10,7 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
+import com.noplanbees.tbm.network.FileTransferService;
 
 public class IntentHandler {
 	
