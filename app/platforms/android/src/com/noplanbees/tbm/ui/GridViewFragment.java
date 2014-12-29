@@ -43,8 +43,11 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 	public interface Callbacks {
 		void onFinish();
+
 		void onBenchRequest(int pos);
+
 		void onNudgeFriend(Friend f);
+
 		void showRecordDialog();
 	}
 
@@ -96,23 +99,23 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		gridView.setItemClickListener(new NineViewGroup.OnItemTouchListener() {
 			@Override
 			public boolean onItemClick(NineViewGroup parent, View view, int position, long id) {
-				Log.d(TAG, "onItemClick: " +position + ", " + id);
+				Log.d(TAG, "onItemClick: " + position + ", " + id);
 				if (id == -1)
 					return false;
-					GridElement ge = (GridElement) ((FriendsAdapter) parent.getAdapter()).getItem(position);
-					String friendId = ge.getFriendId();
-					if (friendId != null && !friendId.equals("")) {
-						videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth()+1, view.getHeight()+1);
-						videoPlayer.play(friendId);
-					} else {
-						callbacks.onBenchRequest(position);
-					}
+				GridElement ge = (GridElement) ((FriendsAdapter) parent.getAdapter()).getItem(position);
+				String friendId = ge.getFriendId();
+				if (friendId != null && !friendId.equals("")) {
+					videoPlayer.playAtPos(view.getX(), view.getY(), 
+							view.getWidth() + 1, view.getHeight() + 1, friendId);
+				} else {
+					callbacks.onBenchRequest(position);
+				}
 				return true;
 			}
 
 			@Override
 			public boolean onItemLongClick(NineViewGroup parent, View view, int position, long id) {
-				Log.d(TAG, "onItemLongClick: " +position + ", " + id);
+				Log.d(TAG, "onItemLongClick: " + position + ", " + id);
 				if (id == -1)
 					return false;
 
@@ -128,35 +131,35 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 			@Override
 			public boolean onItemStopTouch() {
-					Logger.d("STOP RECORD");
-					onRecordStop();
+				Logger.d("STOP RECORD");
+				onRecordStop();
 				return false;
 			}
 
 			@Override
 			public boolean onCancelTouch() {
 				Log.d(getTag(), "onCancelTouch");
-					toast("Dragged Finger Away.");
-					Logger.d("STOP RECORD");
-					onRecordCancel();
+				toast("Dragged Finger Away.");
+				Logger.d("STOP RECORD");
+				onRecordCancel();
 				return false;
 			}
 
 			@Override
 			public boolean onCancelTouch(String reason) {
-					toast(reason);
-					onRecordCancel();
+				toast(reason);
+				onRecordCancel();
 				return false;
 			}
 		});
-		
+
 		gridView.setChildLayoutCompleteListener(new OnChildLayoutCompleteListener() {
 			@Override
 			public void onChildLayoutComplete() {
 				handleIntentAction(getActivity().getIntent());
 			}
 		});
-		
+
 		return v;
 	}
 
@@ -167,7 +170,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		adapter = new FriendsAdapter(getActivity(), activeModelsHandler.getGf().all(), this);
 		gridView.setAdapter(adapter);
 		gridView.setVideoRecorder(videoRecorder);
-	
+
 		Log.d(TAG, "View created");
 	}
 
@@ -298,7 +301,8 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				"Quit", "Try Again");
 	}
 
-	private void showCameraExceptionDialog(final String title, final String message, final String negativeButton, final String positiveButton) {
+	private void showCameraExceptionDialog(final String title, final String message, final String negativeButton,
+			final String positiveButton) {
 		handler.post(new Runnable() {
 			@Override
 			public void run() {
@@ -310,8 +314,8 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 							}
 						}).setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id) {
-								 videoRecorder.dispose();
-								 videoRecorder.restore();
+								videoRecorder.dispose();
+								videoRecorder.restore();
 							}
 						});
 				AlertDialog alertDialog = builder.create();
@@ -354,7 +358,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		handler.post(new Runnable() {
 			@Override
 			public void run() {
-				if(getActivity()!=null)
+				if (getActivity() != null)
 					GridManager.moveFriendToGrid(getActivity(), friend);
 				adapter.notifyDataSetChanged();
 			}
@@ -369,7 +373,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		private Thread.UncaughtExceptionHandler mUncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
 			// gets called on the same (main) thread
 			@Override
-			public void uncaughtException(Thread thread, Throwable ex) { 
+			public void uncaughtException(Thread thread, Throwable ex) {
 				Log.w("UnexpectedTerminationHelper", "uncaughtException", ex);
 				CameraManager.releaseCamera();
 				if (mOldUncaughtExceptionHandler != null) {
@@ -401,15 +405,15 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 				break;
 			i++;
 		}
-		//TODO: remove this ugly hack with magic number
+		// TODO: remove this ugly hack with magic number
 		int uiPosForFriendPos = Convenience.getUiPosForFriendPos(i);
-		if(uiPosForFriendPos>=4)
+		if (uiPosForFriendPos >= 4)
 			uiPosForFriendPos++;
 		View view = gridView.getChildAt(uiPosForFriendPos);
 		videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth(), view.getHeight());
 		videoPlayer.play(friendId);
 	}
-	
+
 	// -------------------
 	// HandleIntentAction
 	// -------------------
@@ -423,8 +427,8 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 			Log.i(TAG, "handleIntentAction: no intent. Exiting.");
 			return;
 		}
-		
-		Log.i(TAG, "handleIntentAction: " + currentIntent .toString());
+
+		Log.i(TAG, "handleIntentAction: " + currentIntent.toString());
 
 		String action = currentIntent.getAction();
 		Uri data = currentIntent.getData();

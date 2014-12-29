@@ -95,6 +95,19 @@ public class VideoPlayer implements OnCompletionListener{
 	public String getFriendId() {
 		return friendId;
 	}
+
+	public void playAtPos(float x, float y, int width, int height, String friendId){
+		
+		boolean needToPlay = !(videoView.isPlaying() && friendId.equals(this.friendId));
+		
+		if (videoView.isPlaying())
+			stop();
+		
+		if(needToPlay) {
+			setVideoViewSize(x, y, width, height);
+			start(friendId);
+		}
+	}
 	
 	public void play(String friendId){
 		
