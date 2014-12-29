@@ -26,6 +26,7 @@ public abstract class FileTransferService extends NonStopIntentService {
 		public final static String TRANSFER_TYPE_KEY = "transferType";
 		public final static String RETRY_COUNT_KEY = "retryCount";
 		public final static String FILE_PATH_KEY = "filePath";
+		public final static String FILE_NAME_KEY = "filename";
 		public final static String PARAMS_KEY = "params";
 		public final static String STATUS_KEY = "status";
 		public final static String VIDEO_ID_KEY = "videoIdKey";

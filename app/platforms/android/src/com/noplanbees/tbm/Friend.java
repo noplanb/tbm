@@ -347,6 +347,7 @@ public static interface VideoStatusChangedCallback{
 		i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
 		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath());
 		i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, get(Attributes.OUTGOING_VIDEO_ID));
+		i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this));
 		Bundle params = new Bundle();
 		params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -363,6 +364,7 @@ public static interface VideoStatusChangedCallback{
 		i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
 		i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
 		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
+		i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
 		Bundle params = new Bundle();
 		params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);

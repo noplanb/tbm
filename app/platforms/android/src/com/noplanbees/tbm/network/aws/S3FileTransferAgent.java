@@ -18,9 +18,9 @@ import com.amazonaws.mobileconnectors.s3.transfermanager.internal.S3ProgressList
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.noplanbees.tbm.DataHolderService;
-import com.noplanbees.tbm.FileTransferService.IntentFields;
 import com.noplanbees.tbm.Friend;
 import com.noplanbees.tbm.Video;
+import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 import com.noplanbees.tbm.network.IFileTransferAgent;
 
 public class S3FileTransferAgent implements IFileTransferAgent {
@@ -29,7 +29,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	private TransferManager tm;
 	private Intent intent;
 	private File file;
-	private String id;
+	private String filename;
 	private Context context;
 
 	public S3FileTransferAgent(Context context) {
@@ -39,7 +39,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	
 	@Override
 	public void setInstanceVariables(Intent intent) throws InterruptedException {
-		this.id = intent.getStringExtra(IntentFields.VIDEO_ID_KEY);
+		this.filename = intent.getStringExtra(IntentFields.FILE_NAME_KEY);
 		this.intent = intent;
 		String filePath = intent.getStringExtra(IntentFields.FILE_PATH_KEY);
 		this.file = new File(filePath);
@@ -47,10 +47,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean upload() {
-		Log.d(TAG, "upload " + Config.BUCKET_NAME + ", " + id);
-		PutObjectRequest _putObjectRequest = new PutObjectRequest(Config.BUCKET_NAME, id, file);
-		//_putObjectRequest.set
-		//_putObjectRequest.setCannedAcl(CannedAccessControlList.PublicRead);
+		Log.d(TAG, "upload " + Config.BUCKET_NAME + ", " + filename);
+		PutObjectRequest _putObjectRequest = new PutObjectRequest(Config.BUCKET_NAME, filename, file);
 		Upload upload = tm.upload(_putObjectRequest, new S3ProgressListener() {
 			
 			@Override
@@ -81,8 +79,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean download() {
-		Log.d(TAG, "download " + Config.BUCKET_NAME + ", " + id);
-		GetObjectRequest _getObjectRequest = new GetObjectRequest(Config.BUCKET_NAME, id);
+		Log.d(TAG, "download " + Config.BUCKET_NAME + ", " + filename);
+		GetObjectRequest _getObjectRequest = new GetObjectRequest(Config.BUCKET_NAME, filename);
 		Download download = tm.download(_getObjectRequest,	file, new S3ProgressListener() {
 			
 			@Override
