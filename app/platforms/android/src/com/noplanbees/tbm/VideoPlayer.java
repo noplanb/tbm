@@ -65,11 +65,11 @@ public class VideoPlayer implements OnCompletionListener{
 	}
 
 	public static void bypassExistingBluetooth(Context context){
-		((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(true);
+		//((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(true);
 	}
 	
 	public static void restoreExistingBluetooth(Context context){
-		((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(false);
+		//((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(false);
 	}
 	
 	public boolean isPlaying(){
@@ -105,6 +105,14 @@ public class VideoPlayer implements OnCompletionListener{
 		}
 	}
 	
+	public void stop(){
+		Log.i(TAG, "stop");
+		VideoPlayer.restoreExistingBluetooth(context);
+		videoView.stopPlayback();
+		videoView.suspend();
+		videoBody.setVisibility(View.GONE);
+	}
+
 	private void start(String friendId){
 		Log.i(TAG, "start");
 		this.friendId = friendId;
@@ -123,8 +131,8 @@ public class VideoPlayer implements OnCompletionListener{
 			f.setAndNotifyIncomingVideoViewed(videoId);
 			videoBody.setVisibility(View.VISIBLE);
 			videoView.setVideoPath(f.videoFromPath(videoId));
-			AudioManager am = (AudioManager) this.context.getSystemService(Activity.AUDIO_SERVICE);
-			am.setBluetoothScoOn(true);
+			//AudioManager am = (AudioManager) this.context.getSystemService(Activity.AUDIO_SERVICE);
+			//am.setBluetoothScoOn(true);
 			videoView.start();
 			notifyStartPlaying();
 		} else {
@@ -132,14 +140,6 @@ public class VideoPlayer implements OnCompletionListener{
 		}
 	}
 	
-	public void stop(){
-		Log.i(TAG, "stop");
-		VideoPlayer.restoreExistingBluetooth(context);
-		videoView.stopPlayback();
-		videoView.suspend();
-		videoBody.setVisibility(View.GONE);
-	}
-
 	public void release(Context context){
 		restoreExistingBluetooth(context);
 		stop();
