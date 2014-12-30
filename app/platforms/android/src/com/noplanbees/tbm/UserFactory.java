@@ -15,7 +15,7 @@ public class UserFactory extends ActiveModelFactory {
 		public static final String VERIFICATION_CODE = "verification_code";
 	}
 	
-	public static UserFactory instance = null;
+	private static UserFactory instance = null;
 	
 	public static UserFactory getFactoryInstance(){
 		if ( instance == null ) 

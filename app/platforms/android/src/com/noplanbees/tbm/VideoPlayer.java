@@ -111,9 +111,12 @@ public class VideoPlayer implements OnCompletionListener{
 	
 	public void play(String friendId){
 		
-		if (videoView.isPlaying() && friendId.equals(this.friendId)){
+		boolean needToPlay = !(videoView.isPlaying() && friendId.equals(this.friendId));
+		
+		if (videoView.isPlaying())
 			stop();
-		} else {
+		
+		if(needToPlay) {
 			start(friendId);
 		}
 	}
@@ -130,7 +133,7 @@ public class VideoPlayer implements OnCompletionListener{
 		Log.i(TAG, "start");
 		this.friendId = friendId;
 		
-	    Friend friend = (Friend) FriendFactory.instance.find(friendId);
+	    Friend friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
 		videoId = friend.firstPlayableVideoId();
 		
 		if (videoId == null)
@@ -162,7 +165,7 @@ public class VideoPlayer implements OnCompletionListener{
 	public void onCompletion(MediaPlayer mp) {
 		Log.i(TAG, "play complete.");
 		notifyStopPlaying();
-		Friend friend = (Friend) FriendFactory.instance.find(friendId);
+		Friend friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
 		videoId = friend.nextPlayableVideoId(videoId);
 		if (videoId != null){
 			play(friend);

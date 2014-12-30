@@ -23,7 +23,7 @@ public class FriendFactory extends ActiveModelFactory{
 		public static final String HAS_APP = "has_app";
 	}
 		
-	public static FriendFactory instance = null;
+	private static FriendFactory instance = null;
 
 	public static FriendFactory getFactoryInstance(){
 		if ( instance == null ) 

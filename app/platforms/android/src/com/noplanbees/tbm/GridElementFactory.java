@@ -7,7 +7,7 @@ import android.content.Context;
 
 public class GridElementFactory extends ActiveModelFactory {
 
-	public static GridElementFactory instance = null;
+	private static GridElementFactory instance = null;
 
 	public static GridElementFactory getFactoryInstance(){
 		if ( instance == null ) 

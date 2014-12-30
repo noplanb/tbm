@@ -7,7 +7,7 @@ import android.content.Context;
 public class VideoFactory extends ActiveModelFactory {
 	private final String TAG = getClass().getSimpleName();
 	
-	public static VideoFactory instance = null;
+	private static VideoFactory instance = null;
 
 	public static VideoFactory getFactoryInstance(){
 		if ( instance == null ) 
