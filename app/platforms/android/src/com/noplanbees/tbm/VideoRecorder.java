@@ -92,7 +92,8 @@ public class VideoRecorder implements SurfaceTextureListener {
 				rval = false;
 				releaseMediaRecorder();
 			}
-			prepareMediaRecorder();
+			releaseMediaRecorder();
+			//prepareMediaRecorder();
 		}
 		return rval;
 	}
@@ -105,7 +106,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 		if (mediaRecorder == null) {
 			Log.e(TAG, "startRecording: ERROR no mediaRecorder this should never happen.");
 			prepareMediaRecorder();
-			return false;
+			//return false;
 		}
 		
 		//stop playback
@@ -294,11 +295,12 @@ public class VideoRecorder implements SurfaceTextureListener {
 		}
 
 		camera.startPreview();
-		prepareMediaRecorder();
+		//prepareMediaRecorder();
 	}
 
 	@Override
 	public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+		Log.i(TAG, "onSurfaceTextureDestroyed ");
 		stopRecording();
 		Camera camera = CameraManager.getCamera(context);
 		if (camera == null)

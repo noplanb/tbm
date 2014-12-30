@@ -43,11 +43,8 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 
 	public interface Callbacks {
 		void onFinish();
-
 		void onBenchRequest(int pos);
-
 		void onNudgeFriend(Friend f);
-
 		void showRecordDialog();
 	}
 
