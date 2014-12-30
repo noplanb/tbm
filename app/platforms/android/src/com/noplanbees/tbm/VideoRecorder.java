@@ -6,6 +6,11 @@ import java.io.IOException;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.Camera.Parameters;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.util.Log;
@@ -27,10 +32,15 @@ public class VideoRecorder implements SurfaceTextureListener {
 	// make the app unusable back to our servers for analysis.
 	public interface VideoRecorderExceptionHandler {
 		public void unableToSetPrievew();
+
 		public void unableToPrepareMediaRecorder();
+
 		public void recordingAborted();
+
 		public void recordingTooShort();
+
 		public void illegalStateOnStart();
+
 		public void runntimeErrorOnStart();
 	}
 
@@ -40,10 +50,68 @@ public class VideoRecorder implements SurfaceTextureListener {
 	private PreviewTextureView preview;
 	// Allow registration of a single delegate to handle exceptions.
 	private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
+	private Sensor lightSensor;
+	private SensorManager mySensorManager;
 
 	public VideoRecorder(Context c) {
 		context = c;
+		mySensorManager = (SensorManager) c.getSystemService(Context.SENSOR_SERVICE);
+
+		lightSensor = mySensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
 	}
+
+	public void onResume() {
+		if (lightSensor != null)
+			mySensorManager.registerListener(lightSensorListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+	}
+
+	public void onPause() {
+		if (lightSensor != null)
+			mySensorManager.unregisterListener(lightSensorListener);
+	}
+
+	private SensorEventListener lightSensorListener = new SensorEventListener() {
+		private int prevStatus = -1;
+
+		@Override
+		public void onSensorChanged(SensorEvent event) {
+			final float maxvalue = 200;// lightSensor.getMaximumRange();
+			final float minvalue = 0;
+
+			float f = event.values[0];
+			if (preview != null) {
+				// int exp = (int) ((-1f)*(24f*f/maxvalue - 12f));
+				if (f < 20 && prevStatus != 1) {
+					setExposure(12);
+					prevStatus = 1;
+				} else if (f > 20 && f < 40 && prevStatus != 2) {
+					setExposure(0);
+					prevStatus = 2;
+				} else if (prevStatus != 3) {
+					setExposure(-12);
+					prevStatus = 3;
+				}
+			}
+		}
+
+		private void setExposure(int exp) {
+			Camera camera = CameraManager.getCamera(context);
+			Parameters parameters = camera.getParameters();
+			parameters.setExposureCompensation(exp);
+			try {
+				camera.setParameters(parameters);
+				Log.d(TAG, "done");
+			} catch (RuntimeException e) {
+				Log.d(TAG, "failed to set parameters");
+				e.printStackTrace();
+			}
+		}
+
+		@Override
+		public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		}
+
+	};
 
 	public Friend getCurrentFriend() {
 		return currentFriend;
@@ -55,11 +123,11 @@ public class VideoRecorder implements SurfaceTextureListener {
 
 	public boolean stopRecording() {
 		Log.i(TAG, "stopRecording");
-		
-		//restore playback if needed
-		AudioManager am = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+
+		// restore playback if needed
+		AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 		am.setStreamMute(AudioManager.STREAM_MUSIC, false);
-		
+
 		boolean rval = false;
 		hideRecordingIndicator(); // It should be safe to call this even if the
 									// sufraces have already been destroyed.
@@ -93,7 +161,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 				releaseMediaRecorder();
 			}
 			releaseMediaRecorder();
-			//prepareMediaRecorder();
+			// prepareMediaRecorder();
 		}
 		return rval;
 	}
@@ -106,11 +174,11 @@ public class VideoRecorder implements SurfaceTextureListener {
 		if (mediaRecorder == null) {
 			Log.e(TAG, "startRecording: ERROR no mediaRecorder this should never happen.");
 			prepareMediaRecorder();
-			//return false;
+			// return false;
 		}
-		
-		//stop playback
-		AudioManager am = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+
+		// stop playback
+		AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 		am.setStreamMute(AudioManager.STREAM_MUSIC, true);
 
 		try {
@@ -135,7 +203,6 @@ public class VideoRecorder implements SurfaceTextureListener {
 		showRecordingIndicator();
 		return true;
 	}
-
 
 	public void release() {
 		Log.i(TAG, "dispose");
@@ -172,7 +239,6 @@ public class VideoRecorder implements SurfaceTextureListener {
 		ing.renameTo(ed);
 	}
 
-
 	// ---------------------------------
 	// Prepare and release MediaRecorder
 	// ---------------------------------
@@ -199,11 +265,15 @@ public class VideoRecorder implements SurfaceTextureListener {
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 		// mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_QVGA));
 
-
 		// Set format and encoder see tbm-ios/docs/video_recorder.txt for the
 		// research that lead to these settings for compatability with IOS.
 		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very tinny but plays on ios
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very
+																		// tinny
+																		// but
+																		// plays
+																		// on
+																		// ios
 		mediaRecorder.setAudioChannels(2);
 		mediaRecorder.setAudioEncodingBitRate(96000);
 		mediaRecorder.setAudioSamplingRate(48000);
@@ -230,7 +300,8 @@ public class VideoRecorder implements SurfaceTextureListener {
 			Log.i(TAG, "prepareMediaRecorder: mediaRecorder.prepare");
 			mediaRecorder.prepare();
 		} catch (IllegalStateException e) {
-			Log.e(TAG, "ERROR: IllegalStateException preparing MediaRecorder: This should never happen" + e.getMessage());
+			Log.e(TAG,
+					"ERROR: IllegalStateException preparing MediaRecorder: This should never happen" + e.getMessage());
 			releaseMediaRecorder();
 			notifyUnableToPrepare();
 			return;
@@ -295,7 +366,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 		}
 
 		camera.startPreview();
-		//prepareMediaRecorder();
+		// prepareMediaRecorder();
 	}
 
 	@Override

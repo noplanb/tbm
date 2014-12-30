@@ -174,6 +174,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	@Override
 	public void onResume() {
 		Logger.d(TAG, "onResume");
+		videoRecorder.onResume();
 		super.onResume();
 	}
 
@@ -181,6 +182,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	public void onPause() {
 		Logger.d(TAG, "onPause");
 		super.onPause();
+		videoRecorder.onPause();
 		videoRecorder.stopRecording();
 		videoPlayer.release(getActivity());
 	}
