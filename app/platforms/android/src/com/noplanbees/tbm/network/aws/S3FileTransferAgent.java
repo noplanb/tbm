@@ -9,12 +9,9 @@ import android.util.Log;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.event.ProgressEvent;
 import com.amazonaws.mobileconnectors.s3.transfermanager.Download;
-import com.amazonaws.mobileconnectors.s3.transfermanager.PersistableTransfer;
 import com.amazonaws.mobileconnectors.s3.transfermanager.TransferManager;
 import com.amazonaws.mobileconnectors.s3.transfermanager.Upload;
-import com.amazonaws.mobileconnectors.s3.transfermanager.internal.S3ProgressListener;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -48,28 +45,15 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean upload() {
-		Log.d(TAG, "upload " + Config.BUCKET_NAME + ", " + filename);
 		PutObjectRequest _putObjectRequest = new PutObjectRequest(Config.BUCKET_NAME, filename, file);
-		Upload upload = tm.upload(_putObjectRequest, new S3ProgressListener() {
-			
-			@Override
-			public void progressChanged(ProgressEvent arg0) {
-				Log.d(TAG, "progressChanged: " + arg0.getEventCode() + " : " + arg0.getBytesTransferred());
-			}
-			
-			@Override
-			public void onPersistableTransfer(PersistableTransfer arg0) {
-				Log.d(TAG, "onPersistableTransfer " + arg0);
-			}
-		});
 		try {
+			Upload upload = tm.upload(_putObjectRequest);
 			upload.waitForUploadResult();
 		} catch (AmazonServiceException e) {
-			e.printStackTrace();
+			checkServiceException(e);
 			return false;
 		} catch (AmazonClientException e) {
-			e.printStackTrace();
-			return false;
+			return checkClientException(e);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;
@@ -80,36 +64,44 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean download() {
-		Log.d(TAG, "download " + Config.BUCKET_NAME + ", " + filename);
 		GetObjectRequest _getObjectRequest = new GetObjectRequest(Config.BUCKET_NAME, filename);
-		Download download = tm.download(_getObjectRequest,	file, new S3ProgressListener() {
-			
-			@Override
-			public void progressChanged(ProgressEvent arg0) {
-				Log.d(TAG, "progressChanged: " + arg0.getEventCode() + " : " + arg0.getBytesTransferred());
-			}
-			
-			@Override
-			public void onPersistableTransfer(PersistableTransfer arg0) {
-				Log.d(TAG, "onPersistableTransfer " + arg0);
-			}
-		});
-		
 		try {
+			Download download = tm.download(_getObjectRequest,	file);
 			download.waitForCompletion();
 		} catch (AmazonServiceException e) {
-			e.printStackTrace();
+			checkServiceException(e);
 			return false;
 		} catch (AmazonClientException e) {
-			e.printStackTrace();
-			return false;
+			return checkClientException(e);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;
 		}
-		
 		reportStatus(intent, Video.IncomingVideoStatus.DOWNLOADED);
 		return true;
+	}
+
+	private boolean checkClientException(AmazonClientException e) {
+		Log.e(TAG, "AmazonClientException[ " + e.isRetryable()+"]: " +e.getLocalizedMessage());
+		if(e.isRetryable())
+			return false;
+		else
+			throw new IllegalStateException("Client problem. Need to be reworked");
+	}
+
+	private void checkServiceException(AmazonServiceException e) {
+		switch(e.getErrorType()){
+		case Client:
+			Log.e(TAG, "AmazonServiceException(Client)["+e.isRetryable()+"]: " + e.getErrorMessage() + ": " + e.getErrorCode());
+			break;
+		case Service:
+			Log.e(TAG, "AmazonServiceException(Service)["+e.isRetryable()+"]: " + e.getErrorMessage() + ": " + e.getErrorCode());
+		case Unknown:
+			Log.e(TAG, "AmazonServiceException(Unknown)["+e.isRetryable()+"]: " + e.getErrorMessage() + ": " + e.getErrorCode());
+			break;
+		}
+		if(e.isRetryable())
+			throw new IllegalStateException("Service problem. Need to be reworked");
 	}
 	
 	protected void reportStatus(Intent intent, int status){
@@ -125,11 +117,10 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		try {
 			tm.getAmazonS3Client().deleteObject(_deleteObjectRequest );
 		} catch (AmazonServiceException e) {
-			e.printStackTrace();
+			checkServiceException(e);
 			return false;
 		} catch (AmazonClientException e) {
-			e.printStackTrace();
-			return false;
+			return checkClientException(e);
 		}
 		return true;
 	}
