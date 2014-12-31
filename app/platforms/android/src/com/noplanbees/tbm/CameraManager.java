@@ -3,8 +3,6 @@ package com.noplanbees.tbm;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Vector;
-
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -12,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
-import android.media.CamcorderProfile;
 import android.util.Log;
 
 
