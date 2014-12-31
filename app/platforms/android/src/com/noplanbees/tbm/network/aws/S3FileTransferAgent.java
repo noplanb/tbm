@@ -15,6 +15,7 @@ import com.amazonaws.mobileconnectors.s3.transfermanager.PersistableTransfer;
 import com.amazonaws.mobileconnectors.s3.transfermanager.TransferManager;
 import com.amazonaws.mobileconnectors.s3.transfermanager.Upload;
 import com.amazonaws.mobileconnectors.s3.transfermanager.internal.S3ProgressListener;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.noplanbees.tbm.DataHolderService;
@@ -118,4 +119,18 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		context.startService(intent);
 	}
 
+	@Override
+	public boolean delete() {
+		DeleteObjectRequest _deleteObjectRequest = new DeleteObjectRequest(Config.BUCKET_NAME, filename);
+		try {
+			tm.getAmazonS3Client().deleteObject(_deleteObjectRequest );
+		} catch (AmazonServiceException e) {
+			e.printStackTrace();
+			return false;
+		} catch (AmazonClientException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
 }

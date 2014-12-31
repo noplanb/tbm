@@ -6,5 +6,6 @@ public interface IFileTransferAgent {
 
 	boolean upload();
 	boolean download();
+	boolean delete();
 	void setInstanceVariables(Intent intent) throws InterruptedException;
 }

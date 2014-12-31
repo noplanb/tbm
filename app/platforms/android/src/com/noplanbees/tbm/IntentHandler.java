@@ -13,21 +13,21 @@ import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
 import com.noplanbees.tbm.network.FileTransferService;
 
 public class IntentHandler {
-	
-	public class IntentParamKeys{
+
+	public class IntentParamKeys {
 		public static final String FRIEND_ID = "friendId";
 		public static final String ACTION = "action";
 	}
-	
-	public class IntentActions{
+
+	public class IntentActions {
 		public static final String NONE = "none";
 		public static final String PLAY_VIDEO = "playVideo";
 		public static final String SMS_RESULT = "smsResult";
 	}
-	
+
 	private final String TAG = this.getClass().getSimpleName();
 	private final static String STAG = IntentHandler.class.getSimpleName();
-	
+
 	private Context context;
 	private Intent intent;
 	private Friend friend;
@@ -36,7 +36,7 @@ public class IntentHandler {
 	private RemoteStorageHandler rSHandler;
 	private int status;
 
-	public IntentHandler(Context context, Intent i){
+	public IntentHandler(Context context, Intent i) {
 		// Convenience.printBundle(i.getExtras());
 		this.context = context;
 		intent = i;
@@ -47,15 +47,15 @@ public class IntentHandler {
 		rSHandler = new RemoteStorageHandler();
 		Log.e(TAG, status + "");
 	}
-	
-	public Integer handle(){
+
+	public Integer handle() {
 		Log.i(TAG, "handle:");
 		printState();
-		if (isDownloadIntent()){
+		if (isDownloadIntent()) {
 			handleDownloadIntent();
-		} else if (isUploadIntent()){
+		} else if (isUploadIntent()) {
 			handleUploadIntent();
-		} 
+		}
 		return getReturnResult();
 	}
 
@@ -63,13 +63,13 @@ public class IntentHandler {
 		return null;
 	}
 
-	//------------
+	// ------------
 	// Convenience
-	//------------
+	// ------------
 	private Boolean isUploadIntent() {
 		if (transferType == null)
 			return false;
-		return  transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
+		return transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
 	}
 
 	private Boolean isDownloadIntent() {
@@ -77,127 +77,115 @@ public class IntentHandler {
 			return false;
 		return transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
 	}
-	
+
 	private Boolean isBackgroundIntent() {
 		return isUploadIntent() || isDownloadIntent();
 	}
-	
-	private Boolean screenIsOff(){
+
+	private Boolean screenIsOff() {
 		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
 		return !pm.isScreenOn();
 	}
-	
-	private Boolean screenIsLocked(){
+
+	private Boolean screenIsLocked() {
 		KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
 		return (Boolean) km.inKeyguardRestrictedInputMode();
 	}
-	
-	private Boolean screenIsLockedOrOff(){
+
+	private Boolean screenIsLockedOrOff() {
 		return screenIsLocked() || screenIsOff();
 	}
 
-	private void printState(){
-		//Convenience.printRunningTaskInfo(homeActivity);
-		Log.i(TAG,"isForeground=" + TbmApplication.getInstance().isForeground());
+	private void printState() {
+		// Convenience.printRunningTaskInfo(homeActivity);
+		Log.i(TAG, "isForeground=" + TbmApplication.getInstance().isForeground());
 		Log.e(TAG, "is Background intent=" + isBackgroundIntent().toString());
-		Log.i(TAG,"screenIsOff=" + screenIsOff().toString());
-		Log.i(TAG,"screenIsLocked=" + screenIsLocked().toString());
-		Log.i(TAG,"numActivities=" + Convenience.numActivitiesInOurTask(context));
+		Log.i(TAG, "screenIsOff=" + screenIsOff().toString());
+		Log.i(TAG, "screenIsLocked=" + screenIsLocked().toString());
+		Log.i(TAG, "numActivities=" + Convenience.numActivitiesInOurTask(context));
 	}
-	
 
-	//---------------------
-	// Handle upload intent 
-	//---------------------
+	// ---------------------
+	// Handle upload intent
+	// ---------------------
 	private void handleUploadIntent() {
 		Log.i(TAG, "handleUploadIntent");
 		friend.updateStatus(intent);
-		if (status == Friend.OutgoingVideoStatus.UPLOADED){
-            // Set remote videoIdKV	
+		if (status == Friend.OutgoingVideoStatus.UPLOADED) {
+			// Set remote videoIdKV
 			rSHandler.addRemoteOutgoingVideoId(friend, videoId);
-			
+
 			// Send outgoing notification
 			NotificationHandler.sendForVideoReceived(friend, videoId);
 		}
 	}
-	
 
-	//-------------------------
+	// -------------------------
 	// Handle Download Intent
-	//-------------------------
-	private synchronized void handleDownloadIntent(){
+	// -------------------------
+	private synchronized void handleDownloadIntent() {
 		Log.i(TAG, "handleDownloadIntent");
-		
-//		if (VideoIdUtils.isOlderThanOldestIncomingVideo(friend, videoId)){
-//			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that is older than the current incoming video.");
-//			rSHandler.deleteRemoteVideoIdAndFile(friend, videoId);
-//			return;
-//		}
-		
-		// We may be getting a message from someone who is not a friend yet. Get new friends and poll them all.
-		if (friend == null){
+
+		// if (VideoIdUtils.isOlderThanOldestIncomingVideo(friend, videoId)){
+		// Log.w(TAG,
+		// "handleDownloadIntent: Ignoring download intent for video id that is older than the current incoming video.");
+		// rSHandler.deleteRemoteVideoIdAndFile(friend, videoId);
+		// return;
+		// }
+
+		// We may be getting a message from someone who is not a friend yet. Get
+		// new friends and poll them all.
+		if (friend == null) {
 			Log.i(TAG, "Got Video from a user who is not currently a friend. Getting friends.");
-			new FriendGetter(context, false, new FriendGetterCallback(){
+			new FriendGetter(context, false, new FriendGetterCallback() {
 				@Override
 				public void gotFriends() {
 					new Poller(context).pollAll();
-				}	
+				}
 			});
 			return;
 		}
-		
-		if (friend.hasIncomingVideoId(videoId) && status == Video.IncomingVideoStatus.NEW){
+
+		if (friend.hasIncomingVideoId(videoId) && status == Video.IncomingVideoStatus.NEW) {
 			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");
 			return;
 		}
-		
-		if (status == Video.IncomingVideoStatus.NEW){
+
+		if (status == Video.IncomingVideoStatus.NEW) {
 			// Create the video
-			friend.createIncomingVideo(context, videoId);	
+			friend.createIncomingVideo(context, videoId);
 			// Download only if we did not have this videoId before this intent.
 			friend.downloadVideo(intent);
 		}
-		
+
 		friend.updateStatus(intent);
 
-		if (status == Video.IncomingVideoStatus.DOWNLOADED){
+		if (status == Video.IncomingVideoStatus.DOWNLOADED) {
 			friend.createThumb(videoId);
-			
-      // if (!VideoPlayer.isPlaying(friend.getId()))
-      //   friend.deleteAllViewedVideos();
 
-			//TODO: may be fail
-			//if(!TbmApplication.getInstance().isForeground()){
-				friend.deleteAllViewedVideos();
-			//}
-			
-			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()){
+			friend.deleteAllViewedVideos();
+
+			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()) {
 				NotificationAlertManager.alert(context, friend, videoId);
 			} else {
 				FriendFactory.getFactoryInstance().notifyStatusChanged(friend);
-//				if (!VideoPlayer.isPlaying(friend.getId())){
-//					VideoPlayer.refreshThumbWithFriendId(friend.getId());
-//					playNotificationTone();
-//				}
 
 				playNotificationTone();
 			}
-			
-			rSHandler.deleteRemoteVideoIdAndFile(friend, videoId);
+
+			friend.deleteRemoteVideo(videoId);
 			// Update RemoteStorage status as downloaded.
 			rSHandler.setRemoteIncomingVideoStatus(friend, videoId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
-			
+
 			// Send outgoing notification
 			NotificationHandler.sendForVideoStatusUpdate(friend, videoId, NotificationHandler.StatusEnum.DOWNLOADED);
 		}
 	}
-	
-	
-	private void playNotificationTone(){
+
+	private void playNotificationTone() {
 		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 		Ringtone r = RingtoneManager.getRingtone(context.getApplicationContext(), notification);
 		r.play();
 	}
-	
 
 }

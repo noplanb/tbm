@@ -80,19 +80,11 @@ public class RemoteStorageHandler {
 		if (key2 != null)
 			params.put("key2", key2);
 		params.put("value", value);
-		new SetOrDeleteRemote("kvstore/set", params, "POST");
+		new SetRemote("kvstore/set", params, "POST");
 	}
 	
-	public void deleteRemoteKV(String key1, String key2){
-		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		params.put("key1", key1);
-		if (key2 != null)
-			params.put("key2", key2);
-		new SetOrDeleteRemote("kvstore/delete", params, "GET");
-	}
-	
-	private class SetOrDeleteRemote extends Server{
-		SetOrDeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){		
+	private class SetRemote extends Server{
+		public SetRemote (String uri, LinkedTreeMap<String, String> params, String method){		
 			super(uri, params, method);
 		}
 		@Override
@@ -115,10 +107,7 @@ public class RemoteStorageHandler {
 		data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, videoId);
 		setRemoteKV(RemoteStorageHandler.outgoingVideoIdsRemoteKVKey(friend), videoId, data);
 	}
-	
-	public void deleteRemoteIncomingVideoId(Friend friend, String videoId){
-		deleteRemoteKV(RemoteStorageHandler.incomingVideoIdsRemoteKVKey(friend), videoId);
-	}
+
 	
 	public void setRemoteIncomingVideoStatus(Friend friend, String videoId, String status){
 		LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
@@ -216,26 +205,6 @@ public class RemoteStorageHandler {
 		}
 	}
 	
-	
-	//-----------------
-	// DeleteRemoteFile
-	//-----------------
-	public void deleteRemoteFile(String filename){
-		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		params.put("filename", filename);
-		new SetOrDeleteRemote("videos/delete", params, "GET");
-	}
-	
-	// Convenience
-	public void deleteRemoteVideoFile(Friend friend, String videoId){
-		deleteRemoteFile(RemoteStorageHandler.incomingVideoRemoteFilename(friend, videoId));
-	}
-	
-	public void deleteRemoteVideoIdAndFile(Friend friend, String videoId){
-		// GARF: TODO: We should delete the remoteVideoId from remoteVideoIds only if file deletion is successful so we dont leave hanging
-		// files.
-		deleteRemoteVideoFile(friend, videoId);
-		deleteRemoteIncomingVideoId(friend, videoId);
-	}
+
 
 }

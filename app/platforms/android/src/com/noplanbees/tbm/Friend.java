@@ -20,6 +20,7 @@ import android.util.Log;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.noplanbees.tbm.network.FileDeleteService;
 import com.noplanbees.tbm.network.FileDownloadService;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.network.FileUploadService;
@@ -365,6 +366,19 @@ public static interface VideoStatusChangedCallback{
 		i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
 		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
 		i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
+		Bundle params = new Bundle();
+		params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
+		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
+		context.startService(i);
+	}
+	
+	public void deleteRemoteVideo(String videoId){
+		Intent i = new Intent(context, FileDeleteService.class);
+		i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
+		i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
+		i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
+		i.putExtra(FileTransferService.IntentFields.VIDEOIDS_REMOTE_KV_KEY, RemoteStorageHandler.incomingVideoIdsRemoteKVKey(this));
 		Bundle params = new Bundle();
 		params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
