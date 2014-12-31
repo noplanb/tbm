@@ -258,7 +258,7 @@ public static interface CameraExceptionHandler{
 //	    	cparams.setPreviewFpsRange(selected_min_fps, selected_max_fps);
 //        }
 //		
-//		camera.setParameters(cparams);
+		camera.setParameters(cparams);
 		return true;
 	}
 	
