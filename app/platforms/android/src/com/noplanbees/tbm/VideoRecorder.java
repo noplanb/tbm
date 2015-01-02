@@ -1,16 +1,8 @@
 package com.noplanbees.tbm;
 
-import java.io.File;
-import java.io.IOException;
-
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.hardware.Camera.Parameters;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.util.Log;
@@ -18,6 +10,9 @@ import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 
 import com.noplanbees.tbm.ui.view.PreviewTextureView;
+
+import java.io.File;
+import java.io.IOException;
 
 public class VideoRecorder implements SurfaceTextureListener {
 
@@ -52,70 +47,18 @@ public class VideoRecorder implements SurfaceTextureListener {
 	private PreviewTextureView preview;
 	// Allow registration of a single delegate to handle exceptions.
 	private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
-	private Sensor lightSensor;
-	private SensorManager mySensorManager;
 
 	public VideoRecorder(Context c) {
 		context = c;
-		mySensorManager = (SensorManager) c.getSystemService(Context.SENSOR_SERVICE);
-
-		lightSensor = mySensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
 	}
 
 	public void onResume() {
         startPreview(holder);
-		if (lightSensor != null)
-			mySensorManager.registerListener(lightSensorListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	public void onPause() {
         stopPreview();
-		if (lightSensor != null)
-			mySensorManager.unregisterListener(lightSensorListener);
 	}
-
-	private SensorEventListener lightSensorListener = new SensorEventListener() {
-		private int prevStatus = -1;
-
-		@Override
-		public void onSensorChanged(SensorEvent event) {
-			final float maxvalue = 200;// lightSensor.getMaximumRange();
-			final float minvalue = 0;
-
-			float f = event.values[0];
-			if (preview != null) {
-				// int exp = (int) ((-1f)*(24f*f/maxvalue - 12f));
-				if (f < 20 && prevStatus != 1) {
-					setExposure(12);
-					prevStatus = 1;
-				} else if (f > 20 && f < 40 && prevStatus != 2) {
-					setExposure(0);
-					prevStatus = 2;
-				} else if (prevStatus != 3) {
-					setExposure(-12);
-					prevStatus = 3;
-				}
-			}
-		}
-
-		private void setExposure(int exp) {
-			Camera camera = CameraManager.getCamera(context);
-			Parameters parameters = camera.getParameters();
-			parameters.setExposureCompensation(exp);
-			try {
-				camera.setParameters(parameters);
-				Log.d(TAG, "done");
-			} catch (RuntimeException e) {
-				Log.d(TAG, "failed to set parameters");
-				e.printStackTrace();
-			}
-		}
-
-		@Override
-		public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		}
-
-	};
 
 	public Friend getCurrentFriend() {
 		return currentFriend;

@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
+import android.os.Build;
 import android.util.Log;
 
 
@@ -176,85 +177,33 @@ public static interface CameraExceptionHandler{
 		String ab = getAppropriateAntibandingSetting(cparams);
 		if (ab != null)
 			cparams.setAntibanding(ab);
-		
-//		if(cparams.)
-		
-//		THIS FUCKING BREAKS RECORDING ON MOTOG RUNNING 4.4.2 What a pain to find this. Need to get into the driver code to report a bug to android / moto!
-//		if (Build.VERSION.SDK_INT >= 14)
-//			cparams.setRecordingHint(true);
-		
-		//cparams.setPreviewFpsRange( 30000, 30000 ); // 30 fps
-		//if ( cparams.isAutoExposureLockSupported() )
-		//    cparams.setAutoExposureLock( true );
-		
-//		int minExpComp = cparams.getMinExposureCompensation();
-//		int maxExpComp = cparams.getMaxExposureCompensation();
-//		Log.d(TAG, "before minExpComp: " + minExpComp);
-//		Log.d(TAG, "before maxExpComp: " + maxExpComp);
-//		
-//		if( minExpComp != 0 || maxExpComp != 0 ) {
-//			Vector<String> exposures = new Vector<String>();
-//			for(int i=minExpComp;i<=maxExpComp;i++) {
-//				exposures.add("" + i);
-//			}
-//
-//			int exposure = 0;
-//			if( exposure < minExpComp || exposure > maxExpComp ) {
-//				exposure = 0;
-//					Log.d(TAG, "saved exposure not supported, reset to 0");
-//				if( exposure < minExpComp || exposure > maxExpComp ) {
-//						Log.d(TAG, "zero isn't an allowed exposure?! reset to min " + minExpComp);
-//					exposure = minExpComp;
-//				}
-//			}
-//			cparams.setExposureCompensation(exposure);
-//		}
-		
-//		CamcorderProfile profile = CamcorderProfile.get(frontCameraNum(), CamcorderProfile.QUALITY_HIGH);//getCamcorderProfile();
-//		List<int []> fps_ranges = cparams.getSupportedPreviewFpsRange();
-//		int selected_min_fps = -1, selected_max_fps = -1, selected_diff = -1;
-//        for(int [] fps_range : fps_ranges) {
-//    			Log.d(TAG, "    supported fps range: " + fps_range[0] + " to " + fps_range[1]);
-//	    	
-//			int min_fps = fps_range[0];
-//			int max_fps = fps_range[1];
-//			if( min_fps <= profile.videoFrameRate*1000 && max_fps >= profile.videoFrameRate*1000 ) {
-//    			int diff = max_fps - min_fps;
-//    			if( selected_diff == -1 || diff < selected_diff ) {
-//    				selected_min_fps = min_fps;
-//    				selected_max_fps = max_fps;
-//    				selected_diff = diff;
-//    			}
-//			}
-//        }
-//        if( selected_min_fps == -1 ) {
-//        	selected_diff = -1;
-//        	int selected_dist = -1;
-//            for(int [] fps_range : fps_ranges) {
-//    			int min_fps = fps_range[0];
-//    			int max_fps = fps_range[1];
-//    			int diff = max_fps - min_fps;
-//    			int dist = -1;
-//    			if( max_fps < profile.videoFrameRate*1000 )
-//    				dist = profile.videoFrameRate*1000 - max_fps;
-//    			else
-//    				dist = min_fps - profile.videoFrameRate*1000;
-//        			Log.d(TAG, "    supported fps range: " + min_fps + " to " + max_fps + " has dist " + dist + " and diff " + diff);
-//    			if( selected_dist == -1 || dist < selected_dist || ( dist == selected_dist && diff < selected_diff ) ) {
-//    				selected_min_fps = min_fps;
-//    				selected_max_fps = max_fps;
-//    				selected_dist = dist;
-//    				selected_diff = diff;
-//    			}
-//            }
-//	    		Log.d(TAG, "    can't find match for fps range, so choose closest: " + selected_min_fps + " to " + selected_max_fps);
-//	        cparams.setPreviewFpsRange(selected_min_fps, selected_max_fps);
-//        }
-//        else {
-//    			Log.d(TAG, "    chosen fps range: " + selected_min_fps + " to " + selected_max_fps);
-//	    	cparams.setPreviewFpsRange(selected_min_fps, selected_max_fps);
-//        }
-//		
+
+
+        //http://stackoverflow.com/questions/22639336/android-mediacodec-and-camera-how-to-achieve-a-higher-frame-rate-to-get-frame-r/22645327#22645327
+        List<int[]> fpsRanges = cparams.getSupportedPreviewFpsRange();
+        boolean isSupportedMaxPreviewFpsRange = false;
+        for (int[] fpsRange : fpsRanges) {
+            if(fpsRange[0] == 30 && fpsRange[1] == 30){
+                isSupportedMaxPreviewFpsRange = true;
+                break;
+            }
+        }
+
+        if(isSupportedMaxPreviewFpsRange)
+            cparams.setPreviewFpsRange(30, 30);
+        else{
+            List<Integer> suppFrameRates = cparams.getSupportedPreviewFrameRates();
+            for (Integer suppFrameRate : suppFrameRates) {
+                if(suppFrameRate.equals(30)){
+                    cparams.setPreviewFrameRate(30);
+                    //		THIS FUCKING BREAKS RECORDING ON MOTOG RUNNING 4.4.2 What a pain to find this. Need to get into the driver code to report a bug to android / moto!
+                    if (Build.VERSION.SDK_INT >= 14)
+                        cparams.setRecordingHint(true);
+                    break;
+                }
+            }
+        }
+
 		camera.setParameters(cparams);
 		return true;
 	}
