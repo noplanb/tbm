@@ -22,8 +22,10 @@ import com.noplanbees.tbm.ui.view.PreviewTextureView;
 public class VideoRecorder implements SurfaceTextureListener {
 
 	private final static String TAG = VideoRecorder.class.getSimpleName();
+    private SurfaceTexture holder;
+    private boolean isPreviewSet;
 
-	// Even though I set up this exception handling interface to be complete I
+    // Even though I set up this exception handling interface to be complete I
 	// probably wont use it the failure cause of failure
 	// for all of these errors will not be something that the user can do
 	// anything about. And the result of the failure will
@@ -61,11 +63,13 @@ public class VideoRecorder implements SurfaceTextureListener {
 	}
 
 	public void onResume() {
+        startPreview(holder);
 		if (lightSensor != null)
 			mySensorManager.registerListener(lightSensorListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	public void onPause() {
+        stopPreview();
 		if (lightSensor != null)
 			mySensorManager.unregisterListener(lightSensorListener);
 	}
@@ -352,36 +356,54 @@ public class VideoRecorder implements SurfaceTextureListener {
 	public void onSurfaceTextureAvailable(SurfaceTexture holder, int width, int height) {
 		Log.i(TAG, "cameraPreviewSurfaceCreated + " + holder);
 
-		Camera camera = CameraManager.getCamera(context);
-		if (camera == null)
-			return;
 
-		try {
-			camera.setPreviewTexture(holder);
-		} catch (IOException e) {
-			Log.e(TAG, "Error setting camera preview: " + e.getMessage());
-			if (videoRecorderExceptionHandler != null)
-				videoRecorderExceptionHandler.unableToSetPrievew();
-			return;
-		}
-
-		camera.startPreview();
+        startPreview(holder);
 		// prepareMediaRecorder();
 	}
 
-	@Override
+    private void startPreview(SurfaceTexture holder) {
+        if(holder!=null && !isPreviewSet){
+
+            this.holder = holder;
+            Camera camera = CameraManager.getCamera(context);
+            if (camera == null)
+                return;
+
+            try {
+                camera.setPreviewTexture(holder);
+            } catch (IOException e) {
+                Log.e(TAG, "Error setting camera preview: " + e.getMessage());
+                if (videoRecorderExceptionHandler != null)
+                    videoRecorderExceptionHandler.unableToSetPrievew();
+                return;
+            }
+
+            camera.startPreview();
+
+            isPreviewSet = true;
+        }
+    }
+
+    @Override
 	public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
 		Log.i(TAG, "onSurfaceTextureDestroyed ");
-		stopRecording();
-		Camera camera = CameraManager.getCamera(context);
-		if (camera == null)
-			return false;
-		camera.stopPreview();
-		release();
-		return true;
+        return stopPreview();
 	}
 
-	@Override
+    private boolean stopPreview() {
+        if(isPreviewSet){
+            stopRecording();
+            Camera camera = CameraManager.getCamera(context);
+            if (camera == null)
+                return false;
+            camera.stopPreview();
+            release();
+            isPreviewSet = false;
+        }
+        return true;
+    }
+
+    @Override
 	public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
 	}
 
