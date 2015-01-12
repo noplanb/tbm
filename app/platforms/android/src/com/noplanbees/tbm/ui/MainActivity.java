@@ -31,6 +31,7 @@ import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.RegisterActivity;
 import com.noplanbees.tbm.User;
 import com.noplanbees.tbm.VersionHandler;
+import com.noplanbees.tbm.network.aws.CredentialsGetter;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 
@@ -134,6 +135,13 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 
 			benchController = new BenchController(this);
 			benchController.onDataLoaded();
+
+            new CredentialsGetter(this, false, new CredentialsGetter.CredentialsGetterCallback() {
+                @Override
+                public void gotCredentials() {
+
+                }
+            });
 		}
 	}
 

@@ -23,6 +23,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.noplanbees.tbm.DataHolderService.LocalBinder;
 import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
+import com.noplanbees.tbm.network.aws.CredentialsGetter;
 import com.noplanbees.tbm.ui.MainActivity;
 import com.noplanbees.tbm.ui.dialogs.EnterCodeDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
@@ -363,10 +364,19 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		new FriendGetter(this, true, new FriendGetterCallback(){
 			@Override
 			public void gotFriends() {
-				regComplete();
+				getAWSCredentials();
 			}
 		});
 	}
+
+    private void getAWSCredentials(){
+        new CredentialsGetter(this, true, new CredentialsGetter.CredentialsGetterCallback() {
+            @Override
+            public void gotCredentials() {
+                regComplete();
+            }
+        });
+    }
 
 	private void setupListeners(){
 		Button enterBtn = (Button) findViewById(R.id.enter_btn);
@@ -463,4 +473,4 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	}
 
 
-}
+}

@@ -42,14 +42,19 @@ public abstract class FileTransferService extends NonStopIntentService {
 	
 	public FileTransferService(String name) {
 		super(name);
-		if(NetworkConfig.IS_AWS_USING){
-			fileTransferAgent = new S3FileTransferAgent(this);
-		}else{
-			fileTransferAgent = new ServerFileTransferAgent(this);
-		}
 	}
 
-	@Override
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if(NetworkConfig.IS_AWS_USING){
+            fileTransferAgent = new S3FileTransferAgent(this);
+        }else{
+            fileTransferAgent = new ServerFileTransferAgent(this);
+        }
+    }
+
+    @Override
 	protected void onHandleIntent(Intent intent, int startId) {
 		if (intent.getAction() != null && intent.getAction().equals("INTERRUPT")){
 			// Non stop intent service has already acted on the interrupt when it got it possibly out of order.

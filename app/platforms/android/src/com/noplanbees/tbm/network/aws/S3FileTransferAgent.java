@@ -12,6 +12,9 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.mobileconnectors.s3.transfermanager.Download;
 import com.amazonaws.mobileconnectors.s3.transfermanager.TransferManager;
 import com.amazonaws.mobileconnectors.s3.transfermanager.Upload;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -24,7 +27,9 @@ import com.noplanbees.tbm.network.IFileTransferAgent;
 public class S3FileTransferAgent implements IFileTransferAgent {
 	private static final String TAG = S3FileTransferAgent.class.getSimpleName();
 
-	private TransferManager tm;
+    private final String s3Bucket;
+
+    private TransferManager tm;
 	private Intent intent;
 	private File file;
 	private String filename;
@@ -32,8 +37,13 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	public S3FileTransferAgent(Context context) {
 		this.context = context;
-		tm = new TransferManager(new BasicAWSCredentials(Config.ACCESS_KEY_ID, Config.SECRET_KEY));
-	}
+        SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getSharedPreferenceManager(context);
+        tm = new TransferManager(new BasicAWSCredentials(sharedPreferenceManager.getS3AccessKey(),
+                sharedPreferenceManager.getS3SecretKey()));
+        s3Bucket = sharedPreferenceManager.getS3Bucket();
+        AmazonS3 client = tm.getAmazonS3Client();
+        client.setRegion(Region.getRegion(Regions.valueOf(sharedPreferenceManager.getS3Region().toUpperCase())));
+    }
 	
 	@Override
 	public void setInstanceVariables(Intent intent) throws InterruptedException {
@@ -45,7 +55,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean upload() {
-		PutObjectRequest _putObjectRequest = new PutObjectRequest(Config.BUCKET_NAME, filename, file);
+        PutObjectRequest _putObjectRequest = new PutObjectRequest(s3Bucket, filename, file);
 		try {
 			Upload upload = tm.upload(_putObjectRequest);
 			upload.waitForUploadResult();
@@ -64,7 +74,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean download() {
-		GetObjectRequest _getObjectRequest = new GetObjectRequest(Config.BUCKET_NAME, filename);
+		GetObjectRequest _getObjectRequest = new GetObjectRequest(s3Bucket, filename);
 		try {
 			Download download = tm.download(_getObjectRequest,	file);
 			download.waitForCompletion();
@@ -100,7 +110,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			Log.e(TAG, "AmazonServiceException(Unknown)["+e.isRetryable()+"]: " + e.getErrorMessage() + ": " + e.getErrorCode());
 			break;
 		}
-		if(e.isRetryable())
+		if(!e.isRetryable())
 			throw new IllegalStateException("Service problem. Need to be reworked");
 	}
 	
@@ -113,7 +123,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean delete() {
-		DeleteObjectRequest _deleteObjectRequest = new DeleteObjectRequest(Config.BUCKET_NAME, filename);
+		DeleteObjectRequest _deleteObjectRequest = new DeleteObjectRequest(s3Bucket, filename);
 		try {
 			tm.getAmazonS3Client().deleteObject(_deleteObjectRequest );
 		} catch (AmazonServiceException e) {
