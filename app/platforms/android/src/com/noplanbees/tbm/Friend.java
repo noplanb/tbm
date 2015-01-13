@@ -44,7 +44,8 @@ public static interface VideoStatusChangedCallback{
 
 	public static class Attributes{
 		public static final String ID  = "id";
-		public static final String MKEY  = "mkey";
+        public static final String MKEY  = "mkey";
+        public static final String CKEY  = "ckey";
 		public static final String FIRST_NAME  = "firstName";
 		public static final String LAST_NAME  = "lastName";
 		public static final String OUTGOING_VIDEO_ID = "outgoingVideoId";
@@ -64,9 +65,10 @@ public static interface VideoStatusChangedCallback{
 	@Override
 	public String[] attributeList() {
 		final String[] a = {	
-				Attributes.ID, 
-				Attributes.MKEY,
-				Attributes.FIRST_NAME, 
+				Attributes.ID,
+                Attributes.MKEY,
+                Attributes.CKEY,
+				Attributes.FIRST_NAME,
 				Attributes.LAST_NAME, 
 				Attributes.OUTGOING_VIDEO_ID,
 				Attributes.OUTGOING_VIDEO_STATUS,

@@ -56,11 +56,13 @@ public class RemoteStorageHandler {
 	}
 	
 	private static String outgoingConnectionKey(Friend friend){
-		return UserFactory.current_user().get(User.Attributes.MKEY) + "-" + friend.get(Friend.Attributes.MKEY);
+		return UserFactory.current_user().get(User.Attributes.MKEY) + "-" + friend.get(Friend.Attributes.MKEY)
+                + "-" + friend.get(Friend.Attributes.CKEY);
 	}
 	
 	private static String incomingConnectionKey(Friend friend){
-		return friend.get(Friend.Attributes.MKEY) + "-" + UserFactory.current_user().get(User.Attributes.MKEY);
+		return friend.get(Friend.Attributes.MKEY) + "-" + UserFactory.current_user().get(User.Attributes.MKEY)
+                + "-" + friend.get(Friend.Attributes.CKEY);
 	}
 	
 
