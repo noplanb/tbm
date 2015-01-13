@@ -1,9 +1,9 @@
 package com.noplanbees.tbm;
 
-import java.util.Random;
-
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+
+import java.util.Random;
 
 public class StringUtils {
 

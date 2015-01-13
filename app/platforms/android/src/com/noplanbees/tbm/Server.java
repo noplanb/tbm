@@ -1,14 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-
 import android.app.Activity;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -18,6 +9,15 @@ import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 import com.noplanbees.tbm.utilities.AsyncTaskManager;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
 
 public abstract class Server {
 	private static String STAG = Server.class.getSimpleName();

@@ -1,11 +1,12 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+
+import java.util.ArrayList;
 
 
 public class RemoteStorageHandler {
@@ -200,7 +201,7 @@ public class RemoteStorageHandler {
 			}
 			@Override
 			public void error(String errorString) {	
-				Log.e(TAG, "GetRemoteKVs: " + errorString);
+				Dispatch.dispatch("GetRemoteKVs: " + errorString);
 			}
 		}
 	}

@@ -11,7 +11,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
-
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 
 
 // GARF: note that since the register activity is called in HomeActivity onCreate (boot) it is out of the loop of versionHandler which is
@@ -87,7 +87,7 @@ public class VersionHandler {
 		}
 		@Override
 		public void error(String errorString) {	
-			Log.e(TAG, "checkCompatibility: ERROR: " + errorString);
+			Dispatch.dispatch("checkCompatibility: ERROR: " + errorString);
 		}	
 	}
 	
@@ -96,7 +96,7 @@ public class VersionHandler {
 		try {
 			info = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
 		} catch (NameNotFoundException e) {
-			Log.e(TAG, "version: ERROR: " + e.toString());
+			Dispatch.dispatch("version: ERROR: " + e.toString());
 		}
 		return info;
 	}
@@ -114,7 +114,7 @@ public class VersionHandler {
 		} else if (VersionHandler.updateOptional(result)) {
 			showVersionHandlerDialog("Your " + Config.appName + " app is out of date. Please update.", true);
 		} else if (!VersionHandler.current(result)){
-			Log.e(TAG, "Version compatibilityCheckCallback: Unknow result: " + result.toString());
+			Dispatch.dispatch("Version compatibilityCheckCallback: Unknow result: " + result.toString());
 		}
 	}
 	

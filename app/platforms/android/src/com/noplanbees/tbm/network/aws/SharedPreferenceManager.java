@@ -2,7 +2,6 @@ package com.noplanbees.tbm.network.aws;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 /**
  * Created by User on 1/12/2015.

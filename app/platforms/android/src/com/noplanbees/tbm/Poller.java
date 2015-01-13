@@ -1,7 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -9,6 +7,8 @@ import android.util.Log;
 import com.noplanbees.tbm.RemoteStorageHandler.GetRemoteIncomingVideoIds;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.ui.MainActivity;
+
+import java.util.ArrayList;
 
 // Polls for new videos and schedules downloads.
 public class Poller {

@@ -1,12 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.List;
-
-import org.apache.commons.io.FileUtils;
-
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.res.Resources;
@@ -17,6 +10,13 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
 
 public class Convenience {
 	public final static String STAG = Convenience.class.getSimpleName();

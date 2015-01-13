@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.ui.MainActivity;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
@@ -76,7 +77,7 @@ public class InviteManager{
 		}
 		@Override
 		public void error(String errorString) {		
-			Log.e(TAG, "Error: " + errorString);
+			Dispatch.dispatch("Error: " + errorString);
 			progress.hide();
 			serverError();
 		}
@@ -128,7 +129,7 @@ public class InviteManager{
 		}
 		@Override
 		public void error(String errorString) {
-			Log.e(TAG, "Error: " + errorString);
+			Dispatch.dispatch("Error: " + errorString);
 			progress.hide();
 			serverError();
 		}	

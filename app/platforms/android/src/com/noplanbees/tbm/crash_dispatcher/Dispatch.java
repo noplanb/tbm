@@ -15,7 +15,7 @@ import com.noplanbees.tbm.UserFactory;
 public class Dispatch {
     private static final String TAG = Dispatch.class.getSimpleName();
 
-    private static boolean isEnabled;
+    private static boolean isEnabled = true;
 
     public static void enable(){
         isEnabled = true;
@@ -26,6 +26,7 @@ public class Dispatch {
     }
 
     public static void dispatch(String msg){
+        Log.e(TAG, msg);
         if(isEnabled){
             LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
             params.put(User.Attributes.MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
@@ -61,7 +62,7 @@ public class Dispatch {
 
         @Override
         public void error(String errorString){
-            Log.e(TAG, "ERROR: DispatchPost: " + errorString);
+            Dispatch.dispatch("ERROR: DispatchPost: " + errorString);
         }
     }
 

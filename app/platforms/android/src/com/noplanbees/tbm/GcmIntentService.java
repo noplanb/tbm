@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.network.FileTransferService;
 
 /**
@@ -46,7 +47,7 @@ public class GcmIntentService extends IntentService {
 				} else if (extras.getString(NotificationHandler.DataKeys.TYPE).equalsIgnoreCase(NotificationHandler.TypeEnum.VIDEO_STATUS_UPDATE)) {
 					handleVideoStatusUpdate(intent);
 				} else {
-					Log.e(TAG, "onHandleIntent: ERROR: unknown intent type in notification payload.");
+					Dispatch.dispatch("onHandleIntent: ERROR: unknown intent type in notification payload.");
 				}
 			}
 		}
@@ -69,7 +70,7 @@ public class GcmIntentService extends IntentService {
 		} else if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.VIEWED)) {
 			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.OutgoingVideoStatus.VIEWED);
 		} else {
-			Log.e(TAG, "handleVideoStatusUpdate: ERROR got unknow sent video status");
+			Dispatch.dispatch("handleVideoStatusUpdate: ERROR got unknow sent video status");
 		}
 		startDataHolderService(intent);
 	}

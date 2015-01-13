@@ -16,9 +16,6 @@
 
 package com.noplanbees.tbm.ui.view;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.Rect;
@@ -33,6 +30,9 @@ import android.widget.BaseAdapter;
 
 import com.noplanbees.tbm.Convenience;
 import com.noplanbees.tbm.VideoRecorder;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class NineViewGroup extends ViewGroup {
 	// ---------

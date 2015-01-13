@@ -1,11 +1,12 @@
 package com.noplanbees.tbm;
 
-import java.io.File;
-import java.util.regex.Pattern;
-
 import android.content.Context;
 import android.os.Environment;
-import android.util.Log;
+
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+
+import java.io.File;
+import java.util.regex.Pattern;
 
 public class Config {
 
@@ -26,7 +27,7 @@ public class Config {
 		File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),"tbm");
 		if (!dir.exists()) {
 			if (!dir.mkdirs()) {
-				Log.e(TAG, "ERROR: This should never happen. getHomeDir: Failed to create storage directory.");
+				Dispatch.dispatch("ERROR: This should never happen. getHomeDir: Failed to create storage directory.");
 				throw new RuntimeException();
 			}
 		}

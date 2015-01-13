@@ -1,6 +1,4 @@
 package com.noplanbees.tbm;
-import java.util.HashSet;
-import java.util.Set;
 
 import android.content.Context;
 import android.media.MediaPlayer;
@@ -10,6 +8,9 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class VideoPlayer implements OnCompletionListener{

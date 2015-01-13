@@ -1,7 +1,5 @@
 package com.noplanbees.tbm.ui;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -32,10 +30,13 @@ import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.VideoPlayer;
 import com.noplanbees.tbm.VideoRecorder;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.ui.view.FriendView.ClickListener;
 import com.noplanbees.tbm.ui.view.NineViewGroup;
 import com.noplanbees.tbm.ui.view.NineViewGroup.OnChildLayoutCompleteListener;
 import com.noplanbees.tbm.utilities.Logger;
+
+import java.util.ArrayList;
 
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
 		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback, ClickListener {
@@ -207,7 +208,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		if (videoRecorder.startRecording(f)) {
 			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
 		} else {
-			Log.e(TAG, "onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
+			Dispatch.dispatch("onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
 		}
 	}
 

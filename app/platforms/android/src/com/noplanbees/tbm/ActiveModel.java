@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
-
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 
 
 public abstract class ActiveModel {
@@ -43,7 +43,7 @@ public abstract class ActiveModel {
 			attributes.put(a, v);
 		} else {
 			result = null;
-			Log.e(TAG, "ERROR: set: " + a + " is not an attr. This should neve happen");
+            Dispatch.dispatch("ERROR: set: " + a + " is not an attr. This should neve happen");
 			throw new RuntimeException();
 		}
 		return result;

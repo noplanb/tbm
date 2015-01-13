@@ -1,7 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -10,6 +8,8 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+
+import java.util.ArrayList;
 
 public class FriendGetter {
 	

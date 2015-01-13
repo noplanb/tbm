@@ -1,7 +1,5 @@
 package com.noplanbees.tbm.network;
 
-import java.util.Set;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +7,8 @@ import android.util.Log;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.NonStopIntentService;
 import com.noplanbees.tbm.network.aws.S3FileTransferAgent;
+
+import java.util.Set;
 
 
 

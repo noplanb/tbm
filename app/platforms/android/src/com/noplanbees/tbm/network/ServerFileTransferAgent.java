@@ -1,5 +1,21 @@
 package com.noplanbees.tbm.network;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.Config;
+import com.noplanbees.tbm.DataHolderService;
+import com.noplanbees.tbm.Friend;
+import com.noplanbees.tbm.Server;
+import com.noplanbees.tbm.Video;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.network.FileTransferService.IntentFields;
+
+import org.apache.commons.io.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,21 +28,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
-
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
-
-import com.google.gson.internal.LinkedTreeMap;
-import com.noplanbees.tbm.Config;
-import com.noplanbees.tbm.DataHolderService;
-import com.noplanbees.tbm.Friend;
-import com.noplanbees.tbm.Server;
-import com.noplanbees.tbm.Video;
-import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 
 public class ServerFileTransferAgent implements IFileTransferAgent {
 	private final String TAG = getClass().getSimpleName();
@@ -111,10 +112,10 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 			in.close();
 			
 		} catch (MalformedURLException e) {
-			Log.e(TAG, "MalformedURLException " + e.toString());
+			Dispatch.dispatch("MalformedURLException " + e.toString());
 			return false;
 		} catch (IOException e) {
-			Log.e(TAG, "IOException..." + e.toString());
+			Dispatch.dispatch("IOException..." + e.toString());
 			if (e.getClass().equals(FileNotFoundException.class)){
 				reportStatus(intent, Friend.OutgoingVideoStatus.FAILED_PERMANENTLY);
 				return false;
@@ -130,17 +131,17 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean download() {
-		Log.e(TAG, "download videoId=" + intent.getStringExtra(IntentFields.VIDEO_ID_KEY) + " params=" + params.toString());
+		Log.i(TAG, "download videoId=" + intent.getStringExtra(IntentFields.VIDEO_ID_KEY) + " params=" + params.toString());
 		File f = FileUtils.getFile(Config.downloadingFilePath(context));
 		try {
 			String urlWithParams = Config.fileDownloadUrl() + stringifyParams(params);
 			URL url = new URL(urlWithParams);
 			FileUtils.copyURLToFile(url, f, 60000, 60000);
 		} catch (MalformedURLException e) {
-			Log.e(TAG, "download2: MalformedURLException: " + e.getMessage() + e.toString());
+			Dispatch.dispatch("download2: MalformedURLException: " + e.getMessage() + e.toString());
 			return false;
 		} catch (IOException e) {
-			Log.e(TAG, "download: IOException: e.tostring " +  e.toString() );
+			Dispatch.dispatch("download: IOException: e.tostring " + e.toString());
 			if (e.getClass().equals(FileNotFoundException.class)){
 				reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
 				return false;
@@ -149,7 +150,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 			}
 		}
 		f.renameTo(FileUtils.getFile(filePath));
-		Log.e(TAG, "download SUCCESS" + params.toString());
+		Log.i(TAG, "download SUCCESS" + params.toString());
 		reportStatus(intent, Video.IncomingVideoStatus.DOWNLOADED);
 		return true;
 	}

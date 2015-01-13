@@ -1,8 +1,8 @@
 package com.noplanbees.tbm;
 
-import java.util.Comparator;
-
 import android.content.Context;
+
+import java.util.Comparator;
 
 
 public class Video extends ActiveModel {

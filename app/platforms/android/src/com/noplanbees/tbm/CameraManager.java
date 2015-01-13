@@ -1,9 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -12,6 +8,12 @@ import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
 import android.os.Build;
 import android.util.Log;
+
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 
 // Queries, gets, and sets parameters for the camera we use.
@@ -70,7 +72,7 @@ public static interface CameraExceptionHandler{
 		try{
 			camera.unlock();
 		} catch (RuntimeException e) {
-			Log.e(TAG, String.format("unlockCamera: ERROR: %s this should never happen!", e.toString()));
+			Dispatch.dispatch(String.format("unlockCamera: ERROR: %s this should never happen!"));
 			notifyCameraInUse();
 			return false;
 		}
@@ -84,7 +86,7 @@ public static interface CameraExceptionHandler{
 		try{
 			camera.lock();
 		} catch (RuntimeException e) {
-			Log.e(TAG, String.format("lockCamera: ERROR: %s this should never happen!", e.toString()));
+			Dispatch.dispatch(String.format("lockCamera: ERROR: %s this should never happen!"));
 			return false;
 		}
 		return true;
@@ -110,7 +112,7 @@ public static interface CameraExceptionHandler{
 		try {
 			camera = Camera.open(cameraNum);
 		} catch (Exception e) {
-			Log.e(TAG, "getFrontCamera: ERROR: camera not available.");
+			Dispatch.dispatch("getFrontCamera: ERROR: camera not available.");
 			notifyCameraInUse();
 		}	
 		if (camera == null){

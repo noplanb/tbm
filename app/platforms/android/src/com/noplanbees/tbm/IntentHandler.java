@@ -10,6 +10,7 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.network.FileTransferService;
 
 public class IntentHandler {
@@ -45,7 +46,7 @@ public class IntentHandler {
 		videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
 		status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
 		rSHandler = new RemoteStorageHandler();
-		Log.e(TAG, status + "");
+		Log.i(TAG, status + "");
 	}
 
 	public Integer handle() {
@@ -99,7 +100,7 @@ public class IntentHandler {
 	private void printState() {
 		// Convenience.printRunningTaskInfo(homeActivity);
 		Log.i(TAG, "isForeground=" + TbmApplication.getInstance().isForeground());
-		Log.e(TAG, "is Background intent=" + isBackgroundIntent().toString());
+        Log.i(TAG, "is Background intent=" + isBackgroundIntent().toString());
 		Log.i(TAG, "screenIsOff=" + screenIsOff().toString());
 		Log.i(TAG, "screenIsLocked=" + screenIsLocked().toString());
 		Log.i(TAG, "numActivities=" + Convenience.numActivitiesInOurTask(context));

@@ -1,10 +1,10 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-
 import android.provider.ContactsContract;
 
 import com.google.gson.internal.LinkedTreeMap;
+
+import java.util.ArrayList;
 
 public class Contact {
 	

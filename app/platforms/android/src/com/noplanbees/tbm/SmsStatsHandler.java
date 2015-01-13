@@ -1,10 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -15,7 +10,13 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.utilities.AsyncTaskManager;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Map;
 
 public class SmsStatsHandler {
 
@@ -137,7 +138,7 @@ public class SmsStatsHandler {
 
 	private void setNumMessages(){
 		if (messagesCursor == null || messagesCursor.getCount() == 0){
-			Log.e(TAG, "setNumMessages: Got no SMS messages");
+            Log.e(TAG, "setNumMessages: Got no SMS messages");
 			return;
 		}
 
@@ -168,7 +169,7 @@ public class SmsStatsHandler {
 			if (pu.isValidNumber(pn))
 				r = pu.format(pn, PhoneNumberUtil.PhoneNumberFormat.E164);
 		} catch (NumberParseException e) {
-			Log.e(TAG, "ERROR: found sms number not valid. Not expected to ever happen.");
+            Log.e(TAG, "ERROR: found sms number not valid. Not expected to ever happen.");
 		}
 		return r;
 	}

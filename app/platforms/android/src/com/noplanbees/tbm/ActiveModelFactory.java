@@ -1,5 +1,12 @@
 package com.noplanbees.tbm;
 
+import android.content.Context;
+import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,12 +16,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-
-import android.content.Context;
-import android.util.Log;
-
-import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 
 public abstract class ActiveModelFactory {
 	private String TAG = this.getClass().getSimpleName();
@@ -58,10 +59,10 @@ public abstract class ActiveModelFactory {
 			osw.close();
 			fos.close();
 		} catch (FileNotFoundException e) {
-			Log.e(TAG, "ERROR: This should never happen." + e.getMessage() + e.toString());
+			Dispatch.dispatch("ERROR: This should never happen." + e.getMessage() + e.toString());
 			throw new RuntimeException();
 		} catch (IOException e) {
-			Log.e(TAG, "ERROR: This shold never happen. " + e.getMessage() + e.toString());
+            Dispatch.dispatch("ERROR: This shold never happen. " + e.getMessage() + e.toString());
 			throw new RuntimeException();
 		}
 		return j;
@@ -86,10 +87,10 @@ public abstract class ActiveModelFactory {
 			fis.close();
 		}
 		catch (FileNotFoundException e) {
-			Log.e(TAG, e.getMessage() + e.toString());
+            Log.e(TAG, e.getMessage() + e.toString());
 			return false;
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage() + e.toString());
+            Log.e(TAG, e.getMessage() + e.toString());
 			return false;
 		}
 		Log.i(TAG, "retrieve(): retrieved from file.");

@@ -9,12 +9,9 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Config;
-import com.noplanbees.tbm.FriendFactory;
 import com.noplanbees.tbm.Server;
 import com.noplanbees.tbm.User;
 import com.noplanbees.tbm.UserFactory;
-
-import java.util.ArrayList;
 
 public class CredentialsGetter {
 

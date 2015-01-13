@@ -1,7 +1,5 @@
 package com.noplanbees.tbm.network.aws;
 
-import java.io.File;
-
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -21,8 +19,11 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.Friend;
 import com.noplanbees.tbm.Video;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 import com.noplanbees.tbm.network.IFileTransferAgent;
+
+import java.io.File;
 
 public class S3FileTransferAgent implements IFileTransferAgent {
 	private static final String TAG = S3FileTransferAgent.class.getSimpleName();
@@ -92,7 +93,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	}
 
 	private boolean checkClientException(AmazonClientException e) {
-		Log.e(TAG, "AmazonClientException[ " + e.isRetryable()+"]: " +e.getLocalizedMessage());
+		Dispatch.dispatch("AmazonClientException[ " + e.isRetryable() + "]: " + e.getLocalizedMessage());
 		if(e.isRetryable())
 			return false;
 		else
@@ -102,12 +103,12 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	private void checkServiceException(AmazonServiceException e) {
 		switch(e.getErrorType()){
 		case Client:
-			Log.e(TAG, "AmazonServiceException(Client)["+e.isRetryable()+"]: " + e.getErrorMessage() + ": " + e.getErrorCode());
+			Dispatch.dispatch("AmazonServiceException(Client)[" + e.isRetryable() + "]: " + e.getErrorMessage() + ": " + e.getErrorCode());
 			break;
 		case Service:
-			Log.e(TAG, "AmazonServiceException(Service)["+e.isRetryable()+"]: " + e.getErrorMessage() + ": " + e.getErrorCode());
+			Dispatch.dispatch("AmazonServiceException(Service)[" + e.isRetryable() + "]: " + e.getErrorMessage() + ": " + e.getErrorCode());
 		case Unknown:
-			Log.e(TAG, "AmazonServiceException(Unknown)["+e.isRetryable()+"]: " + e.getErrorMessage() + ": " + e.getErrorCode());
+			Dispatch.dispatch("AmazonServiceException(Unknown)[" + e.isRetryable() + "]: " + e.getErrorMessage() + ": " + e.getErrorCode());
 			break;
 		}
 		if(!e.isRetryable())

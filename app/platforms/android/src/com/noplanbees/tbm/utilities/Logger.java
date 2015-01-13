@@ -1,8 +1,8 @@
 package com.noplanbees.tbm.utilities;
 
-import java.io.FileWriter;
-
 import android.util.Log;
+
+import java.io.FileWriter;
 
 public class Logger {
 

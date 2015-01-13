@@ -66,7 +66,7 @@ public class User extends ActiveModel{
     	try {
     		r = PhoneNumberUtil.getInstance().parse(get(Attributes.MOBILE_NUMBER), "US");
     	} catch (NumberParseException e) {
-			//Log.e(TAG, "ERROR: " + get(Attributes.MOBILE_NUMBER) + ":  NumberParseException was thrown: " + e.toString());
+			//Dispatch.dispatch("ERROR: " + get(Attributes.MOBILE_NUMBER) + ":  NumberParseException was thrown: " + e.toString());
     	}
     	return r;
     }

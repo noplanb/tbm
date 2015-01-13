@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.ui.view.PreviewTextureView;
 
 import java.io.File;
@@ -95,12 +96,12 @@ public class VideoRecorder implements SurfaceTextureListener {
 				if (currentFriend != null)
 					moveRecordingToFriend(currentFriend);
 			} catch (IllegalStateException e) {
-				Log.e(TAG, "stopRecording: IllegalStateException: " + e.toString());
+				Dispatch.dispatch("stopRecording: IllegalStateException: " + e.toString());
 
 				rval = false;
 				releaseMediaRecorder();
 			} catch (RuntimeException e) {
-				Log.e(TAG, "stopRecording: Recording to short. No output file " + e.toString());
+				Dispatch.dispatch("stopRecording: Recording to short. No output file " + e.toString());
 				if (videoRecorderExceptionHandler != null) {
 					videoRecorderExceptionHandler.recordingTooShort();
 				}
@@ -119,9 +120,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 		this.currentFriend = f;
 
 		if (mediaRecorder == null) {
-			Log.e(TAG, "startRecording: ERROR no mediaRecorder this should never happen.");
 			prepareMediaRecorder();
-			// return false;
 		}
 
 		// stop playback
@@ -131,7 +130,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 		try {
 			mediaRecorder.start();
 		} catch (IllegalStateException e) {
-			Log.e(TAG, "startRecording: called in illegal state.");
+			Dispatch.dispatch("startRecording: called in illegal state.");
 			releaseMediaRecorder();
 			if (videoRecorderExceptionHandler != null)
 				videoRecorderExceptionHandler.illegalStateOnStart();
@@ -140,8 +139,8 @@ public class VideoRecorder implements SurfaceTextureListener {
 		} catch (RuntimeException e) {
 			// Since this seems to get the media recorder into a wedged state I
 			// will just finish the app here.
-			Log.e(TAG, "ERROR: RuntimeException: this should never happen according to google. But I have seen it. "
-					+ e.toString());
+			Dispatch.dispatch("ERROR: RuntimeException: this should never happen according to google. But I have seen it. "
+                    + e.toString());
 			releaseMediaRecorder();
 			if (videoRecorderExceptionHandler != null)
 				videoRecorderExceptionHandler.runntimeErrorOnStart();
@@ -196,12 +195,12 @@ public class VideoRecorder implements SurfaceTextureListener {
 
 		Camera camera = CameraManager.getCamera(context);
 		if (camera == null) {
-			Log.e(TAG, "prepareMediaRecorde: ERROR: No camera this should never happen!");
+			Dispatch.dispatch("prepareMediaRecorde: ERROR: No camera this should never happen!");
 			return;
 		}
 
 		if (!CameraManager.unlockCamera()) {
-			Log.e(TAG, "prepareMediaRecorde: ERROR: cant unlock camera this should never happen!");
+			Dispatch.dispatch("prepareMediaRecorde: ERROR: cant unlock camera this should never happen!");
 			return;
 		}
 
@@ -253,7 +252,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 			notifyUnableToPrepare();
 			return;
 		} catch (IOException e) {
-			Log.e(TAG, "ERROR: IOException preparing MediaRecorder: This should never happen" + e.getMessage());
+			Dispatch.dispatch("ERROR: IOException preparing MediaRecorder: This should never happen" + e.getMessage());
 			releaseMediaRecorder();
 			notifyUnableToPrepare();
 			return;
@@ -315,7 +314,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             try {
                 camera.setPreviewTexture(holder);
             } catch (IOException e) {
-                Log.e(TAG, "Error setting camera preview: " + e.getMessage());
+                Dispatch.dispatch("Error setting camera preview: " + e.getMessage());
                 if (videoRecorderExceptionHandler != null)
                     videoRecorderExceptionHandler.unableToSetPrievew();
                 return;

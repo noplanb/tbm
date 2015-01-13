@@ -1,8 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
@@ -19,6 +16,10 @@ import android.widget.TextView;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Friend.Attributes;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnItemClickListener,
 		ContactsManager.ContactSelected, SelectPhoneNumberDialog.SelectPhoneNumberDelegate {
@@ -51,7 +52,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		try {
 			benchControllerCallbacks = (Callbacks) a;
 		} catch (ClassCastException e) {
-			Log.e(TAG, "Your activity must implemnets BenchController.Callbacks", e);
+			Dispatch.dispatch("Your activity must implemnets BenchController.Callbacks");
 		}
 		friendFactory = FriendFactory.getFactoryInstance();
 

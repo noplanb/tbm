@@ -1,9 +1,6 @@
 package com.noplanbees.tbm;
 
 
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -17,7 +14,11 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.utilities.AsyncTaskManager;
+
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GcmHandler {
 
@@ -150,7 +151,7 @@ public class GcmHandler {
 				storeRegistrationId(activity, regid);
 			} catch (IOException ex) {
 				// If there is an error wait for the user to turn off the app to try again.
-				Log.e(TAG, "Error :" + ex.getMessage());
+				Dispatch.dispatch("Error :" + ex.getMessage());
 			}
 			return null;
 		}
@@ -174,7 +175,7 @@ public class GcmHandler {
 		}
 		@Override
 		public void error(String errorString) {
-			Log.e(TAG, "ERROR: postPushToken: " + errorString);
+			Dispatch.dispatch("ERROR: postPushToken: " + errorString);
 		}
 	}
 	
@@ -211,7 +212,7 @@ public class GcmHandler {
                     gcm.send(SENDER_ID + "@gcm.googleapis.com", id, data);
                     Log.i(TAG, "Sent message");
             } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
+                Dispatch.dispatch(e.getMessage());
             }
 			return null;
 		}

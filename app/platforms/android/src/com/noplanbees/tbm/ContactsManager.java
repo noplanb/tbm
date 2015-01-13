@@ -1,12 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
@@ -37,7 +30,15 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.utilities.AsyncTaskManager;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ContactsManager implements OnItemClickListener {
 
@@ -94,7 +95,7 @@ public class ContactsManager implements OnItemClickListener {
 			// String selection = Contacts.HAS_PHONE_NUMBER + "=1";
 			Cursor c = context.getContentResolver().query(Contacts.CONTENT_URI, projection, null, null, null);
 			if (c == null || c.getCount() == 0) {
-				Log.e(TAG, "ERROR: setAutoCompleteData: got null cursor from contacs query");
+                Log.e(TAG, "ERROR: setAutoCompleteData: got null cursor from contacs query");
 				if (c != null)
 					c.close();
 				return null;

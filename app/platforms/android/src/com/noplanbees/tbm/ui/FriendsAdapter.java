@@ -1,7 +1,5 @@
 package com.noplanbees.tbm.ui;
 
-import java.util.List;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +12,8 @@ import com.noplanbees.tbm.GridElement;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.ui.view.FriendView;
 import com.noplanbees.tbm.ui.view.FriendView.ClickListener;
+
+import java.util.List;
 
 public class FriendsAdapter extends BaseAdapter {
 

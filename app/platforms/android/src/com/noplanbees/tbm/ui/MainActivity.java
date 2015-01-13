@@ -131,7 +131,7 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 			if (gcmHandler.checkPlayServices()){
 				gcmHandler.registerGcm();
 			} else {
-				Log.e(TAG, "No valid Google Play Services APK found.");
+				Dispatch.dispatch("No valid Google Play Services APK found.");
 			}
 
 			benchController = new BenchController(this);
@@ -143,9 +143,6 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 
                 }
             });
-
-            Dispatch.enable();
-            Dispatch.dispatch("test");
 		}
 	}
 

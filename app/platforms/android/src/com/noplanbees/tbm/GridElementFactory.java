@@ -1,8 +1,8 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-
 import android.content.Context;
+
+import java.util.ArrayList;
 
 
 public class GridElementFactory extends ActiveModelFactory {

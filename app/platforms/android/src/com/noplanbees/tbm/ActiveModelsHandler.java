@@ -3,6 +3,8 @@ package com.noplanbees.tbm;
 import android.content.Context;
 import android.util.Log;
 
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+
 
 public class ActiveModelsHandler {
 	public static String TAG = "ActiveModelsHandler";
@@ -81,7 +83,7 @@ public class ActiveModelsHandler {
 			Log.i(TAG, "Retrieved Friend from local storage.");
 			r = ff;
 		} else {
-			Log.e(TAG, "Friend not retrievable from local storage.");
+            Log.d(TAG, "Friend not retrievable from local storage.");
 			r = null;
 		}
 		return r;
@@ -97,7 +99,7 @@ public class ActiveModelsHandler {
 			Log.i(TAG, "Retrieved Video from local storage.");
 			r = vf;
 		} else {
-			Log.e(TAG, "Video not retrievable from local storage");
+            Log.e(TAG, "Video not retrievable from local storage");
 			r = null;
 		}
 		return r;
@@ -113,7 +115,7 @@ public class ActiveModelsHandler {
 			Log.i(TAG, "Retrieved GrideElement from local storage.");
 			r = gf;
 		} else {
-			Log.e(TAG, "GridElement not retrievable from local storage");
+            Log.e(TAG, "GridElement not retrievable from local storage");
 			r = null;
 		}
 		return r;

@@ -127,7 +127,7 @@ public class LogCatCollector {
             }
 
         } catch (IOException e) {
-            Log.e(TAG, "LogCatCollector.collectLogCat could not retrieve data.", e);
+            Log.e(TAG, "LogCatCollector.collectLogCat could not retrieve data.");
         }
 
         return logcatBuf.toString();

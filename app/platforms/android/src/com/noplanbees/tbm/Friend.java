@@ -1,13 +1,5 @@
 package com.noplanbees.tbm;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-
-import org.apache.commons.io.FileUtils;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -20,10 +12,19 @@ import android.util.Log;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.network.FileDeleteService;
 import com.noplanbees.tbm.network.FileDownloadService;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.network.FileUploadService;
+
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class Friend extends ActiveModel{
 
@@ -108,7 +109,7 @@ public static interface VideoStatusChangedCallback{
 		try {
 			pn = pu.parse(get(Attributes.MOBILE_NUMBER), UserFactory.current_user().getRegion());
 		} catch (NumberParseException e) {
-			Log.e(TAG, "ERROR: Could not get phone nubmer object for friends phone this should never happen.");
+			Dispatch.dispatch("ERROR: Could not get phone number object for friends phone this should never happen.");
 		}
 		return pn;
 	}
@@ -297,7 +298,7 @@ public static interface VideoStatusChangedCallback{
 
 	public void setIncomingVideoViewed(String videoId){
 		if (!hasIncomingVideoId(videoId)){
-			Log.e(TAG, "setIncomingVideoViewed: ERROR: incoming video doesnt exist");
+            Log.e(TAG, "setIncomingVideoViewed: ERROR: incoming video doesnt exist");
 			return;
 		}
 
@@ -312,7 +313,7 @@ public static interface VideoStatusChangedCallback{
 		Log.i(TAG, "createThumb for friend=" + get(Attributes.FIRST_NAME));
 
 		if( !videoFromFile(videoId).exists() || videoFromFile(videoId).length() == 0 ){
-			Log.e(TAG, "createThumb: no video file found for friend=" + get(Attributes.FIRST_NAME));
+			Dispatch.dispatch("createThumb: no video file found for friend=" + get(Attributes.FIRST_NAME));
 			return;
 		}
 
@@ -326,7 +327,7 @@ public static interface VideoStatusChangedCallback{
 			FileOutputStream fos = FileUtils.openOutputStream(thumbFile);
 			thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
 		} catch (IOException e) {
-			Log.e(TAG, "createThumb: IOException " + e.getMessage() + e.toString());
+			Dispatch.dispatch("createThumb: IOException " + e.getMessage() + e.toString());
 		}
 	}
 
@@ -440,7 +441,7 @@ public static interface VideoStatusChangedCallback{
 		setHasApp(); // If we have gotten a video from a friend then he has the app.
 		Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
 		if (v == null){
-			Log.e(TAG, "setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
+            Log.e(TAG, "setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
 			return;
 		}
 
@@ -469,7 +470,7 @@ public static interface VideoStatusChangedCallback{
 	private void setAndNotifyDownloadRetryCount(String videoId, int retryCount){
 		Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
 		if (v == null){
-			Log.e(TAG, "setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
+            Log.e(TAG, "setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
 			return;
 		}
 
@@ -513,7 +514,7 @@ public static interface VideoStatusChangedCallback{
 				setAndNotifyUploadRetryCount(retryCount);
 			}
 		} else {
-			Log.e(TAG, "ERROR: updateStatus: unknown TransferType passed in intent. This should never happen.");
+			Dispatch.dispatch("ERROR: updateStatus: unknown TransferType passed in intent. This should never happen.");
 			throw new RuntimeException();
 		}
 	}
