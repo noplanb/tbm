@@ -1,6 +1,7 @@
 package com.noplanbees.tbm.ui.dialogs;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,8 +30,14 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment {
 		super.onAttach(activity);
 		callbacks = (Callbacks) activity;
 	}
-	
-	@Override
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        setCancelable(false);
+        return super.onCreateDialog(savedInstanceState);
+    }
+
+    @Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		

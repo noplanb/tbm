@@ -78,7 +78,7 @@ public class VersionHandler {
 	
 	private class CheckVersionCompatibility extends Server{
 		public CheckVersionCompatibility(String uri, LinkedTreeMap<String, String> params, String method) {
-			super(uri, params, method);
+			super(uri, params, false);
 		}
 		@Override
 		public void success(String response) {

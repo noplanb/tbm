@@ -69,7 +69,7 @@ public class CredentialsGetter {
 
         if(response.getStatus().equals("“failure”")){
             if(isRetryable) {
-                //TODO:need to retry
+                serverError();
             }else{
                //TODO:do not retry
             }

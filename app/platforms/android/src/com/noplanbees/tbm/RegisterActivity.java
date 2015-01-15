@@ -237,7 +237,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	class Register extends Server{
 
 		public Register(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params);
+			super(uri, params, false);
 			progress.show();
 		}
 		@Override
@@ -287,13 +287,13 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		verificationCode = code;
 		Uri.Builder ub = new Uri.Builder();
 		String uri = ub.appendPath("reg") .appendPath("verify_code").build().toString();
-		new SendCode(uri, userParams());
+		new SendCode(uri, userParams(), mkey, auth);
 	}
 
 
 	private class SendCode extends Server{
-		public SendCode(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params);
+		public SendCode(String uri, LinkedTreeMap<String, String> params, String mkey, String auth) {
+			super(uri, params, mkey, auth);
 			progress.show();
 		}
 		@Override
@@ -334,7 +334,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	
 	private class DebugGetUser extends Server{
 		public DebugGetUser(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params);
+			super(uri, params, false);
 			progress.show();
 		}
 		@Override

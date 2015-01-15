@@ -11,7 +11,8 @@ import java.util.regex.Pattern;
 public class Config {
 
 //	public final static String serverUri = "http://192.168.1.82:3000";
-    public final static String serverUri = "http://zazo-dev1-4.elasticbeanstalk.com";
+//    public final static String serverUri = "http://zazo-dev1-4.elasticbeanstalk.com";
+    public final static String serverUri = "http://zazo-dev1-5.elasticbeanstalk.com";
 //	public final static String serverUri = "http://staging-tbm.elasticbeanstalk.com";
 //	public final static String serverUri = "http:s//www.threebyme.com";
 	
