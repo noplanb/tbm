@@ -61,6 +61,7 @@ public class FriendGetter {
 
 	@SuppressWarnings("unchecked")
 	public void gotFriends(Context context, String r) {
+        Log.i(TAG, "gotRegResponse: " + r);
 		Gson g = new Gson();
 		friendList = g.fromJson(r, friendList.getClass());
 		Log.i(TAG, "gotRegResponse: " + friendList.toString());

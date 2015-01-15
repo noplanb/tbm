@@ -41,7 +41,7 @@ public abstract class Server {
     private String uri;
     private String method;
     private LinkedTreeMap<String, String> sParams;
-    private boolean isDigestAuth = true;
+    private boolean isDigestAuth = false;
 
     //------------------------------------------------------------------
     // Application level success and failure handling (not http failure)

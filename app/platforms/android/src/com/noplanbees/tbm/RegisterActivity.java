@@ -93,7 +93,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	protected void onResume(){
 		super.onResume();
 		setUpView();
-		new VersionHandler(this);
+		//new VersionHandler(this);
 	}
 	
 	@Override

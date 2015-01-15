@@ -2,12 +2,15 @@ package com.noplanbees.tbm.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.Service;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.widget.DrawerLayout;
@@ -35,9 +38,11 @@ import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.network.aws.CredentialsGetter;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
+import com.noplanbees.tbm.ui.dialogs.VersionDialogFragment;
 
 public class MainActivity extends Activity implements GridViewFragment.Callbacks, 
-BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
+BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Callback,
+        VersionDialogFragment.Callbacks{
 	private final static String TAG = "MainActivity";
 	
 	public static final int CONNECTED_DIALOG = 0;
@@ -233,4 +238,29 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks{
 		info.setArguments(args );
 		info.show(getFragmentManager(), null);
 	}
+
+    @Override
+    public void showVersionHandlerDialog(String message, boolean negativeButton) {
+        DialogFragment d = new VersionDialogFragment();
+        Bundle b = new Bundle();
+        b.putBoolean(VersionDialogFragment.IS_NEGATIVE_BUTTON, negativeButton);
+        b.putString(VersionDialogFragment.MESSAGE, message);
+        d.setArguments(b);
+        d.show(getFragmentManager(),null);
+    }
+
+    @Override
+    public void onPositiveButtonClicked() {
+        goToPlayStore();
+        finish();
+    }
+
+    private void goToPlayStore(){
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
+        } catch (ActivityNotFoundException anfe) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id="
+                    + getPackageName())));
+        }
+    }
 }
