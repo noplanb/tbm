@@ -38,8 +38,8 @@ public class CredentialsGetter {
 
 	private void getFriends(){
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-		params.put(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
-		params.put(UserFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
+		//params.put(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
+		//params.put(UserFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
 		String uri = new Uri.Builder().appendPath("s3_infos").appendPath("info").build().toString();
 		new GetCredentials(uri, params);
 	}

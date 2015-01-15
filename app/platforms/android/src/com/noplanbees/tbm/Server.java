@@ -18,6 +18,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
@@ -31,6 +32,7 @@ import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 public abstract class Server {
@@ -41,7 +43,7 @@ public abstract class Server {
     private String uri;
     private String method;
     private LinkedTreeMap<String, String> sParams;
-    private boolean isDigestAuth = false;
+    private boolean isDigestAuth = true;
 
     //------------------------------------------------------------------
     // Application level success and failure handling (not http failure)
@@ -161,57 +163,12 @@ public abstract class Server {
 
     public String httpReq() throws IOException, MalformedURLException{
         String sUrl = Config.fullUrl(uri);
-        if ( !isPost() && sParams.size() > 0){
-            sUrl+="?";
-            for (String s : sParams.keySet()) {
-                sUrl+=s+"="+sParams.get(s);
-            }
-        }
-
-
-        Log.i(TAG, "httpReq " + method + " url=" + sUrl +"  params=" + sParams);
         String result = "";
-
-
-//        if(isDigestAuth)
-//            Authenticator.setDefault(new Authenticator() {
-//                protected PasswordAuthentication getPasswordAuthentication() {
-//                    Log.d(TAG, "!!!! " + login + ":" + pass);
-//
-//                    PasswordAuthentication pa = new PasswordAuthentication(
-//                            login,
-//                            pass.toCharArray());
-//                    Log.d(TAG, "!!!! " + pa.getUserName() + ":" + new String(pa.getPassword()));
-//                    return pa;
-//                }
-//            });
-
-//        URL url = new URL(sUrl);
-//        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-//        con.setDoInput(true);
-//        con.setInstanceFollowRedirects(false);
-//        con.setUseCaches (false);
-//        con.setRequestMethod(method);
-//        con.setRequestProperty("Accept-Charset", "UTF-8");
-//
-//        if ( isPost() ){
-//            con.setDoOutput(true);
-//            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-//            con.setRequestProperty("Content-Length", "" + Integer.toString(sParams.getBytes().length));
-//        } else {
-//            con.setRequestProperty("Content-Length", "0");
-//        }
-//        if ( isPost() ){
-//            DataOutputStream wr = new DataOutputStream(con.getOutputStream ());
-//            wr.writeBytes(sParams);
-//            wr.flush();
-//            wr.close();
-//        }
 
         DefaultHttpClient http = new DefaultHttpClient();
         http.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Android");
+        http.getParams().setParameter("Accept-Charset", "UTF-8");
         if(isDigestAuth) {
-            Log.d(TAG, "!!!! " + login + ":" + pass);
 
             if(login==null || pass == null){
                 login = UserFactory.current_user().get(User.Attributes.MKEY);
@@ -221,37 +178,41 @@ public abstract class Server {
             Log.d(TAG, isDigestAuth+ "!!!! " + login + ":" + pass);
 
             http.getCredentialsProvider().setCredentials(
-                    new AuthScope(Config.serverUri, AuthScope.ANY_PORT, "zazo.com"),
+                    new AuthScope(Config.SERVER_HOST, AuthScope.ANY_PORT, "zazo.com"),
                     new UsernamePasswordCredentials(login, pass)
             );
         }
         HttpUriRequest request;
         if(isPost()){
             request = new HttpPost(sUrl);
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+            List<NameValuePair> nameValuePairs = new LinkedList<NameValuePair>();
             for (String s : sParams.keySet()) {
                 nameValuePairs.add(new BasicNameValuePair(s, sParams.get(s)));
             }
             ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
         }else{
+            if (sParams.size() > 0){
+                sUrl+="?";
+                List<NameValuePair> params = new LinkedList<NameValuePair>();
+                for (String s : sParams.keySet()) {
+                    params.add(new BasicNameValuePair(s, sParams.get(s)));
+                    sUrl+= URLEncodedUtils.format(params, "utf-8");
+                }
+            }
             request = new HttpGet(sUrl);
         }
+        Log.i(TAG, "httpReq " + method + " url=" + sUrl +"  params=" + sParams);
+
         HttpResponse response = http.execute(request);
 
 
         if (response.getStatusLine().getStatusCode() != 200) {
-            return result;
+            Log.e(TAG, sUrl + "\n" + response.getStatusLine().getStatusCode() + " "
+                    + response.getStatusLine().getReasonPhrase());
+            throw new IOException(response.getStatusLine().getStatusCode() + " "
+                    + response.getStatusLine().getReasonPhrase());
         }
-
-
-
-//        if ( isPost() ){
-//            DataOutputStream wr = new DataOutputStream(con.getOutputStream ());
-//            wr.writeBytes(sParams);
-//            wr.flush();
-//            wr.close();
-//        }
 
         BufferedReader br = new BufferedReader( new InputStreamReader(/*con.getInputStream()*/response.getEntity().getContent()) );
         String l;

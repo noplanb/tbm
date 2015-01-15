@@ -78,7 +78,7 @@ public class VersionHandler {
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
 		params.put("device_platform", "android");
 		params.put("version", versionCode() + "");
-		new CheckVersionCompatibility("version/check_compatibility_", params, "GET");
+		new CheckVersionCompatibility("version/check_compatibility", params, "GET");
 	}
 	
 	private class CheckVersionCompatibility extends Server{

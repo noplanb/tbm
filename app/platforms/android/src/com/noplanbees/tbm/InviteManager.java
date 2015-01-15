@@ -58,8 +58,8 @@ public class InviteManager{
 		Uri.Builder builder = new Uri.Builder();
 		builder.appendPath("invitation")
 		.appendPath("has_app")
-		.appendQueryParameter(UserFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY))
-		.appendQueryParameter(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH))
+		//.appendQueryParameter(UserFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY))
+		//.appendQueryParameter(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH))
 		.appendQueryParameter(FriendFactory.ServerParamKeys.MOBILE_NUMBER, benchObject.mobileNumber);
 		String url = builder.build().toString();
 		new checkHasApp(url);
@@ -106,8 +106,8 @@ public class InviteManager{
 		Uri.Builder builder = new Uri.Builder();
 		builder.appendPath("invitation")
 		.appendPath("invite")
-		.appendQueryParameter(UserFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY))
-		.appendQueryParameter(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH))
+//		.appendQueryParameter(UserFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY))
+//		.appendQueryParameter(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH))
 		.appendQueryParameter(FriendFactory.ServerParamKeys.MOBILE_NUMBER, benchObject.mobileNumber)
 		.appendQueryParameter(FriendFactory.ServerParamKeys.FIRST_NAME, benchObject.firstName)
 		.appendQueryParameter(FriendFactory.ServerParamKeys.LAST_NAME, benchObject.lastName);

@@ -228,8 +228,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		r.put(UserFactory.ServerParamKeys.FIRST_NAME, firstName);
 		r.put(UserFactory.ServerParamKeys.LAST_NAME, lastName);
 		r.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, e164);
-		r.put(UserFactory.ServerParamKeys.AUTH, auth);
-		r.put(UserFactory.ServerParamKeys.MKEY, mkey);
+//		r.put(UserFactory.ServerParamKeys.AUTH, auth);
+//		r.put(UserFactory.ServerParamKeys.MKEY, mkey);
 		r.put(UserFactory.ServerParamKeys.VERIFICATION_CODE, verificationCode);
 		return r;
 	}

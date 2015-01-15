@@ -36,8 +36,8 @@ public class FriendGetter {
 	
 	private void getFriends(){
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-		params.put(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
-		params.put(UserFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
+//		params.put(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
+//		params.put(UserFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
 		String uri = new Uri.Builder().appendPath("reg").appendPath("get_friends").build().toString();
 		new GetFriends(uri, params);
 	}
