@@ -43,7 +43,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
                 sharedPreferenceManager.getS3SecretKey()));
         s3Bucket = sharedPreferenceManager.getS3Bucket();
         AmazonS3 client = tm.getAmazonS3Client();
-        client.setRegion(Region.getRegion(Regions.valueOf(sharedPreferenceManager.getS3Region().toUpperCase())));
+        client.setRegion(Region.getRegion(Regions.valueOf(sharedPreferenceManager.getS3Region().toUpperCase()
+                .replace('-','_'))));
     }
 	
 	@Override
