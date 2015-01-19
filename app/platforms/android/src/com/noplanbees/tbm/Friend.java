@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -315,20 +317,33 @@ public static interface VideoStatusChangedCallback{
 		Log.i(TAG, "createThumb for friend=" + get(Attributes.FIRST_NAME));
 
 		if( !videoFromFile(videoId).exists() || videoFromFile(videoId).length() == 0 ){
+            setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
 			Dispatch.dispatch("createThumb: no video file found for friend=" + get(Attributes.FIRST_NAME));
 			return;
 		}
 
+        
 		String vidPath = videoFromPath(videoId);
+
+        MediaPlayer mp = MediaPlayer.create(context, Uri.parse(vidPath));
+        long duration = mp.getDuration();
+        Log.d(TAG, "createThumb: duration = " + duration);
+        long pos;
+        if(duration>1)
+            pos = duration - 1000;
+        else
+            pos = duration;
+
 		MediaMetadataRetriever r = new MediaMetadataRetriever();
 		r.setDataSource(vidPath);
 		// Get the last frame.
-		Bitmap thumb = r.getFrameAtTime(240*1000000, MediaMetadataRetriever.OPTION_CLOSEST);
+		Bitmap thumb = r.getFrameAtTime(pos, MediaMetadataRetriever.OPTION_CLOSEST);
 		File thumbFile = thumbFile(videoId);
 		try {
 			FileOutputStream fos = FileUtils.openOutputStream(thumbFile);
 			thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
 		} catch (IOException e) {
+            setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
 			Dispatch.dispatch("createThumb: IOException " + e.getMessage() + e.toString());
 		}
 	}
