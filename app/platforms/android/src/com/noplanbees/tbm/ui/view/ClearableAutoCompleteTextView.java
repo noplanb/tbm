@@ -7,7 +7,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 
-import com.noplanbees.tbm.Convenience;
+import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.R;
 
 public class ClearableAutoCompleteTextView extends AutoCompleteTextView {

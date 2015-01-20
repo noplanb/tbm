@@ -6,9 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.noplanbees.tbm.Convenience;
-import com.noplanbees.tbm.Friend;
-import com.noplanbees.tbm.GridElement;
+import com.noplanbees.tbm.utilities.Convenience;
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.ui.view.FriendView;
 import com.noplanbees.tbm.ui.view.FriendView.ClickListener;

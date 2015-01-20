@@ -12,11 +12,11 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.noplanbees.tbm.Convenience;
-import com.noplanbees.tbm.Friend;
-import com.noplanbees.tbm.Friend.OutgoingVideoStatus;
+import com.noplanbees.tbm.utilities.Convenience;
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.Friend.OutgoingVideoStatus;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.Video.IncomingVideoStatus;
+import com.noplanbees.tbm.model.Video.IncomingVideoStatus;
 import com.noplanbees.tbm.VideoPlayer;
 import com.noplanbees.tbm.VideoPlayer.StatusCallbacks;
 

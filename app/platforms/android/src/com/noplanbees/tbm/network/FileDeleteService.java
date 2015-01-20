@@ -3,7 +3,7 @@ package com.noplanbees.tbm.network;
 import android.content.Context;
 import android.content.Intent;
 
-import com.noplanbees.tbm.Video;
+import com.noplanbees.tbm.model.Video;
 
 
 public class FileDeleteService extends FileTransferService {

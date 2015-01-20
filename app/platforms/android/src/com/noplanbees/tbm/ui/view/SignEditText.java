@@ -13,7 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.EditText;
 
-import com.noplanbees.tbm.Convenience;
+import com.noplanbees.tbm.utilities.Convenience;
 
 public class SignEditText extends EditText {
 

@@ -30,7 +30,8 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.model.Contact;
+import com.noplanbees.tbm.model.UserFactory;
 import com.noplanbees.tbm.utilities.AsyncTaskManager;
 
 import java.util.ArrayList;

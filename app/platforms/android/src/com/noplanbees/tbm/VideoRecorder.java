@@ -10,6 +10,7 @@ import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.ui.view.PreviewTextureView;
 
 import java.io.File;

@@ -8,9 +8,8 @@ import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.DataHolderService;
-import com.noplanbees.tbm.Friend;
-import com.noplanbees.tbm.Server;
-import com.noplanbees.tbm.Video;
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 

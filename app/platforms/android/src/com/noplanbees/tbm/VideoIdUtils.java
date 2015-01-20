@@ -2,6 +2,9 @@ package com.noplanbees.tbm;
 
 import android.util.Log;
 
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.Video;
+
 
 public class VideoIdUtils {
 	private static final String STAG = VideoIdUtils.class.getSimpleName();

@@ -3,7 +3,7 @@ package com.noplanbees.tbm.network;
 import android.content.Context;
 import android.content.Intent;
 
-import com.noplanbees.tbm.Friend;
+import com.noplanbees.tbm.model.Friend;
 
 
 public class FileUploadService extends FileTransferService {

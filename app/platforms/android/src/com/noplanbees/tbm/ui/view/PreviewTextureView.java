@@ -15,7 +15,7 @@ import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
 import android.widget.FrameLayout;
 
-import com.noplanbees.tbm.Convenience;
+import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.R;
 
 public class PreviewTextureView extends FrameLayout {

@@ -1,8 +1,6 @@
 package com.noplanbees.tbm;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -11,6 +9,8 @@ import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.utilities.StringUtils;
 
 
 // GARF: note that since the register context is called in HomeActivity onCreate (boot) it is out of the loop of versionHandler which is
@@ -81,7 +81,7 @@ public class VersionHandler {
 		new CheckVersionCompatibility("version/check_compatibility", params, "GET");
 	}
 	
-	private class CheckVersionCompatibility extends Server{
+	private class CheckVersionCompatibility extends Server {
 		public CheckVersionCompatibility(String uri, LinkedTreeMap<String, String> params, String method) {
 			super(uri, params, false);
 		}

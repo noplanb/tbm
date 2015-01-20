@@ -9,6 +9,9 @@ import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
 
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.FriendFactory;
+
 import java.util.HashSet;
 import java.util.Set;
 

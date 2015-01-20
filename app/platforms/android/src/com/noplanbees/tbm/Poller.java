@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.noplanbees.tbm.RemoteStorageHandler.GetRemoteIncomingVideoIds;
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.FriendFactory;
+import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.ui.MainActivity;
 
@@ -50,7 +53,6 @@ public class Poller {
 			intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId); 	
 			intent.putExtra("friendId", friend.getId());
 			context.startService(intent);
-			//(new IntentHandler(context, intent)).handle();
 		}
 	}
 	

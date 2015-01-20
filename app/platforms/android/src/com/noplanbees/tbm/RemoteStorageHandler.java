@@ -5,6 +5,10 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.User;
+import com.noplanbees.tbm.model.UserFactory;
+import com.noplanbees.tbm.network.Server;
 
 import java.util.ArrayList;
 
@@ -86,7 +90,7 @@ public class RemoteStorageHandler {
 		new SetRemote("kvstore/set", params, "POST");
 	}
 	
-	private class SetRemote extends Server{
+	private class SetRemote extends Server {
 		public SetRemote (String uri, LinkedTreeMap<String, String> params, String method){		
 			super(uri, params, method);
 		}
