@@ -23,8 +23,9 @@ import com.noplanbees.tbm.VideoPlayer.StatusCallbacks;
 public class FriendView extends RelativeLayout implements StatusCallbacks {
 
 	private static final String TAG = "FriendView";
-	
-	public interface ClickListener{
+    private boolean isAlterName;
+
+    public interface ClickListener{
 		void onNudgeClicked(Friend f);
 		void onRecordClicked(Friend f);
 	}
@@ -52,9 +53,10 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		init();
 	}
 
-	public FriendView(Context context, AttributeSet attrs) {
-		super(context, attrs);
+	public FriendView(Context context, boolean isAlterName) {
+		super(context);
 		init();
+        this.isAlterName = isAlterName;
 	}
 
 	public FriendView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -159,7 +161,8 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 			buttonsBody.setVisibility(View.VISIBLE);
 		}
 
-		twName.setText(friend.getStatusString());
+        twName.setText(isAlterName?friend.getDisplayNameAlternative():friend.getDisplayName());
+		//twName.setText(friend.getStatusString());
 		
 		if(friend.getOutgoingVideoStatus() != OutgoingVideoStatus.NONE &&
 				friend.getOutgoingVideoStatus() != OutgoingVideoStatus.VIEWED &&

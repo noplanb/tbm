@@ -618,9 +618,17 @@ public static interface VideoStatusChangedCallback{
 	private String shortFirstName(){
 		String fn = get(Attributes.FIRST_NAME);
 		int shortLen = Math.min(7, fn.length());
-		return fn.substring(0, shortLen);	
+		return fn.substring(0, shortLen);
 	}
-	
+
+    public String getDisplayName(){
+        return get(Attributes.FIRST_NAME);
+    }
+
+    public String getDisplayNameAlternative(){
+        return get(Attributes.FIRST_NAME).charAt(0) + ". " + get(Attributes.LAST_NAME);
+    }
+
 	public int getIncomingVideoStatus(){
 		Video v = newestIncomingVideo();
 		if (v == null)

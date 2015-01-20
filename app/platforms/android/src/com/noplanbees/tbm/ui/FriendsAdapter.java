@@ -65,7 +65,15 @@ public class FriendsAdapter extends BaseAdapter {
 	private View getFriendView(final ViewGroup parent, View convertView, Friend f) {
 		FriendView fv;
 		if(convertView==null || !(convertView instanceof FriendView)){
-			fv = new FriendView(context);
+            boolean isAlterName = false;
+            for (GridElement gridElement : list) {
+                Friend _f = gridElement.friend();
+                if(_f!=null && !(_f.equals(f)) && _f.getDisplayName().equals(f.getDisplayName())){
+                   isAlterName = true;
+                    break;
+                }
+            }
+            fv = new FriendView(context, isAlterName);
 			fv.setOnClickListener(clickListener);
 		}else{
 			fv = (FriendView) convertView;
