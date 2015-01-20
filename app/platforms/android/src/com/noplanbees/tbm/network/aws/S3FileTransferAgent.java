@@ -44,7 +44,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         s3Bucket = sharedPreferenceManager.getS3Bucket();
         AmazonS3 client = tm.getAmazonS3Client();
         client.setRegion(Region.getRegion(Regions.valueOf(sharedPreferenceManager.getS3Region().toUpperCase()
-                .replace('-','_'))));
+                .replace('-', '_'))));
     }
 	
 	@Override
@@ -75,7 +75,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	}
 
 	@Override
-	public boolean download() {
+	public boolean download() throws IllegalStateException{
 		GetObjectRequest _getObjectRequest = new GetObjectRequest(s3Bucket, filename);
 		try {
 			Download download = tm.download(_getObjectRequest,	file);
@@ -112,8 +112,10 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			Dispatch.dispatch("AmazonServiceException(Unknown)[" + e.isRetryable() + "]: " + e.getErrorMessage() + ": " + e.getErrorCode());
 			break;
 		}
-		if(!e.isRetryable())
-			throw new IllegalStateException("Service problem. Need to be reworked");
+		if(!e.isRetryable()) {
+            reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
+            throw new IllegalStateException("Service problem. Need to be reworked");
+        }
 	}
 	
 	protected void reportStatus(Intent intent, int status){

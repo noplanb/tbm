@@ -37,7 +37,7 @@ public abstract class FileTransferService extends NonStopIntentService {
 	}
 
 	protected abstract void maxRetriesReached(Intent intent) throws InterruptedException;
-	protected abstract Boolean doTransfer(Intent intent) throws InterruptedException;
+	protected abstract boolean doTransfer(Intent intent) throws InterruptedException;
 
 	
 	public FileTransferService(String name) {

@@ -24,7 +24,7 @@ public class FileUploadService extends FileTransferService {
 	}
 	
 	@Override
-	protected Boolean doTransfer(Intent intent)throws InterruptedException{	
+	protected boolean doTransfer(Intent intent)throws InterruptedException{
 		intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_UPLOAD);
 		reportStatus(intent, Friend.OutgoingVideoStatus.UPLOADING);
 		return fileTransferAgent.upload();

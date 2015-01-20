@@ -21,7 +21,7 @@ public class FileDeleteService extends FileTransferService {
 	}
 	
 	@Override
-	protected Boolean doTransfer(Intent intent) throws InterruptedException{
+	protected boolean doTransfer(Intent intent) throws InterruptedException{
 		return fileTransferAgent.delete();
 	}
 	
