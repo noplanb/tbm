@@ -1,6 +1,7 @@
 package com.noplanbees.tbm;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.util.Log;
@@ -34,11 +35,31 @@ public class VideoPlayer implements OnCompletionListener{
 	private View videoBody;
 	
 	private Set<StatusCallbacks> statusCallbacks;
-	
-	private VideoPlayer(Context context) {
+
+    private AudioManager am;
+    private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
+
+    private VideoPlayer(Context context) {
 		this.context = context;
 		statusCallbacks = new HashSet<StatusCallbacks>();
-	}
+
+        am = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
+        audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+            public void onAudioFocusChange(int focusChange) {
+                if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                    // Pause playback
+                } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                    // Resume playback
+                } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                    //am.unregisterMediaButtonEventReceiver(RemoteControlReceiver);
+                    am.abandonAudioFocus(audioFocusChangeListener);
+                    // Stop playback
+                }
+            }
+        };
+
+
+    }
 	
 	public static VideoPlayer getInstance(Context context){
 		if(videoPlayer == null)
@@ -143,7 +164,7 @@ public class VideoPlayer implements OnCompletionListener{
 		
 		play(friend);
 	}
-	
+
 	private void play(Friend f){
 		if (f.videoFromFile(videoId).length() > 100){
 			f.setAndNotifyIncomingVideoViewed(videoId);
@@ -151,8 +172,20 @@ public class VideoPlayer implements OnCompletionListener{
 			videoView.setVideoPath(f.videoFromPath(videoId));
 			//AudioManager am = (AudioManager) this.context.getSystemService(Activity.AUDIO_SERVICE);
 			//am.setBluetoothScoOn(true);
-			videoView.start();
-			notifyStartPlaying();
+
+            // Request audio focus for playback
+
+            int result = am.requestAudioFocus(audioFocusChangeListener,
+                    // Use the music stream.
+                    AudioManager.STREAM_MUSIC,
+                    // Request permanent focus.
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                videoView.start();
+                notifyStartPlaying();
+            }
+
 		} else {
 			onCompletion(null);
 		}
@@ -166,6 +199,7 @@ public class VideoPlayer implements OnCompletionListener{
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.i(TAG, "play complete.");
+        am.abandonAudioFocus(audioFocusChangeListener);
 		notifyStopPlaying();
 		Friend friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
 		videoId = friend.nextPlayableVideoId(videoId);
