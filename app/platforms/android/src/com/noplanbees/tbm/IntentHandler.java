@@ -57,7 +57,6 @@ public class IntentHandler {
 
 	public Integer handle() {
 		Log.i(TAG, "handle:");
-		printState();
 		if (isDownloadIntent()) {
 			handleDownloadIntent();
 		} else if (isUploadIntent()) {
@@ -103,16 +102,7 @@ public class IntentHandler {
 		return screenIsLocked() || screenIsOff();
 	}
 
-	private void printState() {
-		// Convenience.printRunningTaskInfo(homeActivity);
-		Log.i(TAG, "isForeground=" + TbmApplication.getInstance().isForeground());
-        Log.i(TAG, "is Background intent=" + isBackgroundIntent().toString());
-		Log.i(TAG, "screenIsOff=" + screenIsOff().toString());
-		Log.i(TAG, "screenIsLocked=" + screenIsLocked().toString());
-		Log.i(TAG, "numActivities=" + Convenience.numActivitiesInOurTask(context));
-	}
-
-	// ---------------------
+    // ---------------------
 	// Handle upload intent
 	// ---------------------
 	private void handleUploadIntent() {

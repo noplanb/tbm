@@ -347,9 +347,9 @@ public static interface VideoStatusChangedCallback{
 		try {
 			FileOutputStream fos = FileUtils.openOutputStream(thumbFile);
 			thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
-		} catch (IOException e) {
+		} catch (IOException| NullPointerException e) {
             setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
-			Dispatch.dispatch("createThumb: IOException " + e.getMessage() + e.toString());
+			Dispatch.dispatch("createThumb: " + e.getMessage() + e.toString());
 		}
 	}
 
@@ -372,6 +372,8 @@ public static interface VideoStatusChangedCallback{
 		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath());
 		i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, get(Attributes.OUTGOING_VIDEO_ID));
 		i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this));
+        i.putExtra(FileTransferService.IntentFields.USER_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
+        i.putExtra(FileTransferService.IntentFields.USER_AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
 		Bundle params = new Bundle();
 		params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -389,6 +391,9 @@ public static interface VideoStatusChangedCallback{
 		i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
 		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
 		i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
+        i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
+        i.putExtra(FileTransferService.IntentFields.USER_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
+        i.putExtra(FileTransferService.IntentFields.USER_AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
 		Bundle params = new Bundle();
 		params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -402,6 +407,8 @@ public static interface VideoStatusChangedCallback{
 		i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
 		i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
 		i.putExtra(FileTransferService.IntentFields.VIDEOIDS_REMOTE_KV_KEY, RemoteStorageHandler.incomingVideoIdsRemoteKVKey(this));
+        i.putExtra(FileTransferService.IntentFields.USER_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
+        i.putExtra(FileTransferService.IntentFields.USER_AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
 		Bundle params = new Bundle();
 		params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
 		i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);

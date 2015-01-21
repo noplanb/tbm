@@ -62,7 +62,7 @@ public class Dispatch {
 
         @Override
         public void error(String errorString){
-            Dispatch.dispatch("ERROR: DispatchPost: " + errorString);
+            //Dispatch.dispatch("ERROR: DispatchPost: " + errorString);
         }
     }
 

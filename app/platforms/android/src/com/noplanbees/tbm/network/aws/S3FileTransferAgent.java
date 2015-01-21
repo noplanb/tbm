@@ -64,8 +64,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		} catch (AmazonServiceException e) {
 			checkServiceException(e);
 			return false;
-		} catch (AmazonClientException e) {
-			return checkClientException(e);
+//		} catch (AmazonClientException e) {
+//			return checkClientException(e);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;
@@ -83,8 +83,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		} catch (AmazonServiceException e) {
 			checkServiceException(e);
 			return false;
-		} catch (AmazonClientException e) {
-			return checkClientException(e);
+//		} catch (AmazonClientException e) {
+//			return checkClientException(e);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;
@@ -93,13 +93,10 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		return true;
 	}
 
-	private boolean checkClientException(AmazonClientException e) {
-		Dispatch.dispatch("AmazonClientException[ " + e.isRetryable() + "]: " + e.getLocalizedMessage());
-		if(e.isRetryable())
-			return false;
-		else
-			throw new IllegalStateException("Client problem. Need to be reworked");
-	}
+//	private boolean checkClientException(AmazonClientException e) {
+//		Dispatch.dispatch("AmazonClientException[ " + e.isRetryable() + "]: " + e.getLocalizedMessage());
+//        return checkErrorCode(e.getStatusCode());
+//	}
 
 	private void checkServiceException(AmazonServiceException e) {
 		switch(e.getErrorType()){
@@ -112,11 +109,20 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			Dispatch.dispatch("AmazonServiceException(Unknown)[" + e.isRetryable() + "]: " + e.getErrorMessage() + ": " + e.getErrorCode());
 			break;
 		}
-		if(!e.isRetryable()) {
-            reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
-            throw new IllegalStateException("Service problem. Need to be reworked");
-        }
+        checkErrorCode(e.getStatusCode());
 	}
+
+    private void checkErrorCode(int code){
+        if((code>399 && code<500 && code!=404 || (code == 501) || code == 301)){
+            reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
+            throw new IllegalStateException("S3 problem. Need to be reworked");
+        }else if (code == 404){
+            reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
+            throw new IllegalStateException("S3 problem. Need to be reworked");
+        }else if((code>499 && code<600 && code!=501) || (code>299 && code<400 && code!=301)){
+            return;
+        }
+    }
 	
 	protected void reportStatus(Intent intent, int status){
 		Log.i(TAG, "reportStatus");
@@ -133,8 +139,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		} catch (AmazonServiceException e) {
 			checkServiceException(e);
 			return false;
-		} catch (AmazonClientException e) {
-			return checkClientException(e);
+//		} catch (AmazonClientException e) {
+//			return checkClientException(e);
 		}
 		return true;
 	}
