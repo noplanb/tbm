@@ -11,11 +11,9 @@ import java.util.regex.Pattern;
 public class Config {
 
     public final static String SERVER_HOST = "zazo-dev1-5.elasticbeanstalk.com";
-//	public final static String SERVER_URI = "http://192.168.1.82:3000";
-//    public final static String SERVER_URI = "http://zazo-dev1-4.elasticbeanstalk.com";
+//	public final static String SERVER_HOST = "192.168.1.82:3000";
     public final static String SERVER_URI = "http://"+SERVER_HOST;
-//	public final static String SERVER_URI = "http://staging-tbm.elasticbeanstalk.com";
-//	public final static String SERVER_URI = "http:s//www.threebyme.com";
+
 	
 	public final static String appName = "Zazo";
 	
