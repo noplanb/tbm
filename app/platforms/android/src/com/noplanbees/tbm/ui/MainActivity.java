@@ -27,7 +27,7 @@ import com.noplanbees.tbm.bench.BenchObject;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.gcm.GcmHandler;
+import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.bench.InviteManager;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.R;
@@ -147,7 +147,10 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 
                 }
             });
-		}
+
+           // Dispatch.dispatch("_________________-----------------_______________");
+
+        }
 	}
 
 	@Override

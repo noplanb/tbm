@@ -1,4 +1,4 @@
-package com.noplanbees.tbm.gcm;
+package com.noplanbees.tbm;
 
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
-import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.GridElement;

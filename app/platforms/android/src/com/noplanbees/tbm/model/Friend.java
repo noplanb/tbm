@@ -18,7 +18,7 @@ import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.notification.NotificationHandler;
 import com.noplanbees.tbm.RemoteStorageHandler;
-import com.noplanbees.tbm.VideoIdUtils;
+import com.noplanbees.tbm.multimedia.VideoIdUtils;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.network.FileDeleteService;
 import com.noplanbees.tbm.network.FileDownloadService;

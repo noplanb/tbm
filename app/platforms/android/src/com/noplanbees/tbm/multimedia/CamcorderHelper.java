@@ -1,4 +1,4 @@
-package com.noplanbees.tbm;
+package com.noplanbees.tbm.multimedia;
 
 import android.media.CamcorderProfile;
 import android.util.Log;

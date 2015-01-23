@@ -29,8 +29,8 @@ public class Dispatch {
         Log.e(TAG, msg);
         if(isEnabled){
             LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-            params.put(User.Attributes.MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
-            params.put(User.Attributes.AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
+            //params.put(User.Attributes.MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
+            //params.put(User.Attributes.AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
             params.put("msg", msg+"\n" + LogCatCollector.collectLogCat(null));
             String uri = new Uri.Builder().appendPath("dispatch").appendPath("post_dispatch").build().toString();
             new DispatchPost(uri, params);

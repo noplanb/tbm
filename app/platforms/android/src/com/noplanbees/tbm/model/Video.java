@@ -2,7 +2,7 @@ package com.noplanbees.tbm.model;
 
 import android.content.Context;
 
-import com.noplanbees.tbm.VideoIdUtils;
+import com.noplanbees.tbm.multimedia.VideoIdUtils;
 
 import java.util.Comparator;
 

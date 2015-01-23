@@ -27,7 +27,6 @@
 
     <uses-permission android:name="com.noplanbees.tbm.permission.C2D_MESSAGE" />
     <uses-permission android:name="com.google.android.c2dm.SEND" />
-    <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
@@ -57,7 +56,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="TouchTestActivity" />
         <activity
             android:name=".ui.RegisterActivity"
             android:screenOrientation="portrait" 
@@ -68,22 +66,8 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Black.NoTitleBar" />
 
-        <service
-            android:name="FileUploadService"
-            android:process=":FileUploadService" />
-        <!--
-                 I had upload and download services running in a different process so that termination of 
-                 HomeActivity would not interfere but that made it difficult to reach the class method
-                 restartTransfersPendingRetry in FileTransferService from the HomeActivity.
-        -->
-        <!-- android:process=":FileUploadService" -->
-        <service
-            android:name=".FileDownloadService"
-            android:process=":FileDownloadService" />
-        <!-- android:process=":FileDownloadService" -->
-
         <receiver
-            android:name=".gcm.GcmBroadcastReceiver"
+            android:name=".notification.gcm.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -92,7 +76,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".gcm.GcmIntentService" />
+        <service android:name=".notification.gcm.GcmIntentService" />
         
                 <service
             android:name="com.noplanbees.tbm.DataHolderService" />

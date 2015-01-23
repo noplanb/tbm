@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.ContactsManager;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.gcm.GridManager;
+import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.Attributes;

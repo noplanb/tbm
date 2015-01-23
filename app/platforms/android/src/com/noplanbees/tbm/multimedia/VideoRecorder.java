@@ -1,4 +1,4 @@
-package com.noplanbees.tbm;
+package com.noplanbees.tbm.multimedia;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 
+import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.ui.view.PreviewTextureView;
