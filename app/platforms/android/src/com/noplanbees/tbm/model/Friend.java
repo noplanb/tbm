@@ -32,6 +32,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public class Friend extends ActiveModel{
 
@@ -126,27 +128,46 @@ public static interface VideoStatusChangedCallback{
 	//----------------
 	// Incoming Videos
 	//----------------
-	public ArrayList<Video>incomingVideos(){
-		VideoFactory vf = VideoFactory.getFactoryInstance();
-		return vf.allWithFriendId(getId());
-	}
+    public ArrayList<Video> getIncomingVideos(){
+        VideoFactory vf = VideoFactory.getFactoryInstance();
+        return vf.allWithFriendId(getId());
+    }
 
-	public ArrayList<Video>sortedIncomingVideos(){
-		ArrayList<Video> vids = incomingVideos();
+    public ArrayList<Video> getIncomingNotViewedVideos(){
+        VideoFactory vf = VideoFactory.getFactoryInstance();
+        //List
+        ArrayList<Video> videos = vf.allWithFriendId(getId());
+        Iterator<Video> i = videos.iterator();
+        while (i.hasNext()){
+            Video video = i.next();
+            if(video.getIncomingVideoStatus() != Video.IncomingVideoStatus.DOWNLOADED)
+                i.remove();
+        }
+        return videos;
+    }
+
+    public ArrayList<Video> getSortedIncomingNotViewedVideos(){
+        ArrayList<Video> vids = getIncomingNotViewedVideos();
+        Collections.sort(vids, new Video.VideoTimestampComparator());
+        return vids;
+    }
+
+	public ArrayList<Video> getSortedIncomingVideos(){
+		ArrayList<Video> vids = getIncomingVideos();
 		Collections.sort(vids, new Video.VideoTimestampComparator());
 		return vids;
 	}
 
 	public Video oldestIncomingVideo(){
-		ArrayList<Video> vids = sortedIncomingVideos();
+		ArrayList<Video> vids = getSortedIncomingVideos();
 		if (vids.isEmpty()){
 			return null;
 		} 
-		return sortedIncomingVideos().get(0);
+		return getSortedIncomingVideos().get(0);
 	}
 
 	public Video newestIncomingVideo(){
-		ArrayList <Video> vids = sortedIncomingVideos();
+		ArrayList <Video> vids = getSortedIncomingVideos();
 		Video v = null;
 		if (!vids.isEmpty())
 			v = vids.get(vids.size() -1);
@@ -154,7 +175,7 @@ public static interface VideoStatusChangedCallback{
 	}
 
 	public Boolean hasIncomingVideoId(String videoId){
-		for (Video v : incomingVideos()){
+		for (Video v : getIncomingVideos()){
 			if (v.getId().equals(videoId))
 				return true;
 		}
@@ -181,7 +202,7 @@ public static interface VideoStatusChangedCallback{
 	}
 
 	public void deleteAllViewedVideos(){
-		for (Video v : incomingVideos()){
+		for (Video v : getIncomingVideos()){
 			if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.VIEWED)
 				deleteVideo(v.getId());
 		}
@@ -201,7 +222,11 @@ public static interface VideoStatusChangedCallback{
 
 	public String firstPlayableVideoId(){
 		String vid = null;
-		for (Video v : sortedIncomingVideos()){
+        List<Video> videoList = getSortedIncomingNotViewedVideos();
+        if(videoList.size()==0){
+            videoList = getSortedIncomingVideos();
+        }
+		for (Video v : videoList){
 			if (videoFromFile(v.getId()).exists()){
 				vid = v.getId();
 				break;
@@ -212,7 +237,7 @@ public static interface VideoStatusChangedCallback{
 
 	public String nextPlayableVideoId(String videoId){
 		Boolean found = false;
-		for (Video v : sortedIncomingVideos()){
+		for (Video v : getSortedIncomingVideos()){
 			if (found && videoFromFile(v.getId()).exists()){
 				return v.getId();
 			}
@@ -240,7 +265,7 @@ public static interface VideoStatusChangedCallback{
 
 	public File lastThumbFile(){
 		File f = null;
-		for (Video v: sortedIncomingVideos()){
+		for (Video v: getSortedIncomingVideos()){
 			if (thumbFile(v.getId()).exists()){
 				f = thumbFile(v.getId());
 			}
@@ -273,7 +298,7 @@ public static interface VideoStatusChangedCallback{
 
 	public Boolean thumbExists(){
 		Boolean r = false;
-		for (Video v : incomingVideos()){
+		for (Video v : getIncomingVideos()){
 			if (thumbFile(v.getId()).exists()){
 				r = true;
 				break;
@@ -285,7 +310,7 @@ public static interface VideoStatusChangedCallback{
 	public Boolean incomingVideoNotViewed(){
 		// Return true if any of the incoming videos are status DOWNLOADED
 		Boolean r = false;
-		for (Video v : incomingVideos()){
+		for (Video v : getIncomingVideos()){
 			if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED){
 				r = true;
 				break;
@@ -297,7 +322,7 @@ public static interface VideoStatusChangedCallback{
 	public int incomingVideoNotViewedCount(){
 		// Return true if any of the incoming videos are status DOWNLOADED
 		int i =0;
-		for (Video v : incomingVideos()){
+		for (Video v : getIncomingVideos()){
 			if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED){
 				i++;
 			}

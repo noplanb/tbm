@@ -290,4 +290,10 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		needToHideIndicators = false;
 		updateContent();
 	}
+
+    @Override
+    public void onFileDownloading() {    }
+
+    @Override
+    public void onFileDownloadingRetry() {   }
 }

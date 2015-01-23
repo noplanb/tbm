@@ -64,8 +64,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		} catch (AmazonServiceException e) {
 			checkServiceException(e);
 			return false;
-//		} catch (AmazonClientException e) {
-//			return checkClientException(e);
+		} catch (AmazonClientException e) {
+			return checkClientException(e);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;
@@ -83,8 +83,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		} catch (AmazonServiceException e) {
 			checkServiceException(e);
 			return false;
-//		} catch (AmazonClientException e) {
-//			return checkClientException(e);
+		} catch (AmazonClientException e) {
+			return checkClientException(e);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;
@@ -93,10 +93,11 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		return true;
 	}
 
-//	private boolean checkClientException(AmazonClientException e) {
-//		Dispatch.dispatch("AmazonClientException[ " + e.isRetryable() + "]: " + e.getLocalizedMessage());
-//        return checkErrorCode(e.getStatusCode());
-//	}
+	private boolean checkClientException(AmazonClientException e) {
+        //e.g
+		//Dispatch.dispatch("AmazonClientException[ " + e.isRetryable() + "]: " + e.getLocalizedMessage());
+        return true;//checkErrorCode(e.getStatusCode());
+	}
 
 	private void checkServiceException(AmazonServiceException e) {
 		switch(e.getErrorType()){
@@ -139,8 +140,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		} catch (AmazonServiceException e) {
 			checkServiceException(e);
 			return false;
-//		} catch (AmazonClientException e) {
-//			return checkClientException(e);
+		} catch (AmazonClientException e) {
+			return checkClientException(e);
 		}
 		return true;
 	}

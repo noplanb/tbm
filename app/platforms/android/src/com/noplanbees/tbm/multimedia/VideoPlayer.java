@@ -12,6 +12,8 @@ import android.widget.VideoView;
 
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
+import com.noplanbees.tbm.model.Video;
+import com.noplanbees.tbm.model.VideoFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,6 +26,8 @@ public class VideoPlayer implements OnCompletionListener{
 	public interface StatusCallbacks{
 		void onVideoPlaying(String friendId, String videoId);
 		void onVideoStopPlaying();
+        void onFileDownloading();
+        void onFileDownloadingRetry();
 	}
 	
 	private static VideoPlayer videoPlayer;
@@ -86,6 +90,18 @@ public class VideoPlayer implements OnCompletionListener{
 			callbacks.onVideoStopPlaying();
 		}
 	}
+
+    private void notifyFileDownloading(){
+        for (StatusCallbacks callbacks : statusCallbacks) {
+            callbacks.onFileDownloading();
+        }
+    }
+
+    private void notifyFileDownloadingRetry(){
+        for (StatusCallbacks callbacks : statusCallbacks) {
+            callbacks.onFileDownloadingRetry();
+        }
+    }
 
 	public static void bypassExistingBluetooth(Context context){
 		//((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(true);
@@ -150,7 +166,8 @@ public class VideoPlayer implements OnCompletionListener{
 		videoView.stopPlayback();
 		videoView.suspend();
 		videoBody.setVisibility(View.GONE);
-	}
+        notifyStopPlaying();
+    }
 
 	private void start(String friendId){
 		Log.i(TAG, "start");
@@ -161,12 +178,28 @@ public class VideoPlayer implements OnCompletionListener{
 		
 		if (videoId == null)
 			return;
-		
+
 		play(friend);
 	}
 
 	private void play(Friend f){
-		if (f.videoFromFile(videoId).length() > 100){
+
+        int unreadMsgCount = f.incomingVideoNotViewedCount();
+        Video video = (Video) VideoFactory.getFactoryInstance().find(videoId);
+
+        int retryCount = video.getDownloadRetryCount();
+
+        if(f.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING && unreadMsgCount==0){
+            if(retryCount == 0){
+                notifyFileDownloading();
+            }else{
+                notifyFileDownloadingRetry();
+            }
+            notifyStopPlaying();
+            return;
+        }
+
+        if (f.videoFromFile(videoId).length() > 100){
 			f.setAndNotifyIncomingVideoViewed(videoId);
 			videoBody.setVisibility(View.VISIBLE);
 			videoView.setVideoPath(f.videoFromPath(videoId));

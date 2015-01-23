@@ -103,7 +103,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 				rval = false;
 				releaseMediaRecorder();
 			} catch (RuntimeException e) {
-				Dispatch.dispatch("stopRecording: Recording to short. No output file " + e.toString());
+				Log.d(TAG, "stopRecording: Recording to short. No output file " + e.toString());
 				if (videoRecorderExceptionHandler != null) {
 					videoRecorderExceptionHandler.recordingTooShort();
 				}
@@ -316,7 +316,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             try {
                 camera.setPreviewTexture(holder);
             } catch (IOException e) {
-                Dispatch.dispatch("Error setting camera preview: " + e.getMessage());
+                Dispatch.dispatch("Error setting camera preview: " + e.getLocalizedMessage());
                 if (videoRecorderExceptionHandler != null)
                     videoRecorderExceptionHandler.unableToSetPrievew();
                 return;

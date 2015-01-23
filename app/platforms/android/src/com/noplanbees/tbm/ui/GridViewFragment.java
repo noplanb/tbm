@@ -39,15 +39,17 @@ import com.noplanbees.tbm.utilities.Logger;
 import java.util.ArrayList;
 
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
-		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback, ClickListener {
+		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback, ClickListener,
+VideoPlayer.StatusCallbacks{
 	private static final String TAG = "GridViewFragment";
 
-	public interface Callbacks {
+    public interface Callbacks {
 		void onFinish();
 		void onBenchRequest(int pos);
 		void onNudgeFriend(Friend f);
 		void showRecordDialog();
-	}
+        void showBadConnectionDialog();
+    }
 
 	private NineViewGroup gridView;
 	private FriendsAdapter adapter;
@@ -176,6 +178,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	public void onResume() {
 		Logger.d(TAG, "onResume");
 		videoRecorder.onResume();
+        videoPlayer.registerStatusCallbacks(this);
 		super.onResume();
 	}
 
@@ -185,6 +188,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		super.onPause();
 		videoRecorder.onPause();
 		videoRecorder.stopRecording();
+        videoPlayer.unregisterStatusCallbacks(this);
 		videoPlayer.release(getActivity());
 	}
 
@@ -466,4 +470,22 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	public void onRecordClicked(Friend f) {
 		callbacks.showRecordDialog();
 	}
+
+
+    @Override
+    public void onVideoPlaying(String friendId, String videoId) {   }
+
+    @Override
+    public void onVideoStopPlaying() {    }
+
+    @Override
+    public void onFileDownloading() {
+        toast("Downloading...");
+    }
+
+    @Override
+    public void onFileDownloadingRetry() {
+        callbacks.showBadConnectionDialog();
+    }
+
 }
