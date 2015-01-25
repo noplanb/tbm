@@ -196,8 +196,8 @@ public abstract class Server {
                 List<NameValuePair> params = new LinkedList<NameValuePair>();
                 for (String s : sParams.keySet()) {
                     params.add(new BasicNameValuePair(s, sParams.get(s)));
-                    sUrl+= URLEncodedUtils.format(params, "utf-8");
                 }
+                sUrl+= URLEncodedUtils.format(params, "utf-8");
             }
             request = new HttpGet(sUrl);
         }

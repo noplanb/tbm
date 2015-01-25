@@ -17,8 +17,8 @@ import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.OutgoingVideoStatus;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.model.Video.IncomingVideoStatus;
-import com.noplanbees.tbm.VideoPlayer;
-import com.noplanbees.tbm.VideoPlayer.StatusCallbacks;
+import com.noplanbees.tbm.multimedia.VideoPlayer;
+import com.noplanbees.tbm.multimedia.VideoPlayer.StatusCallbacks;
 
 public class FriendView extends RelativeLayout implements StatusCallbacks {
 
@@ -290,4 +290,10 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		needToHideIndicators = false;
 		updateContent();
 	}
+
+    @Override
+    public void onFileDownloading() {    }
+
+    @Override
+    public void onFileDownloadingRetry() {   }
 }

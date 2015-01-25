@@ -1,4 +1,4 @@
-package com.noplanbees.tbm.gcm;
+package com.noplanbees.tbm.notification.gcm;
 
 
 import android.app.Activity;

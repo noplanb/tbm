@@ -1,4 +1,4 @@
-package com.noplanbees.tbm;
+package com.noplanbees.tbm.multimedia;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 
+import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.ui.view.PreviewTextureView;
@@ -102,7 +103,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 				rval = false;
 				releaseMediaRecorder();
 			} catch (RuntimeException e) {
-				Dispatch.dispatch("stopRecording: Recording to short. No output file " + e.toString());
+				Log.d(TAG, "stopRecording: Recording to short. No output file " + e.toString());
 				if (videoRecorderExceptionHandler != null) {
 					videoRecorderExceptionHandler.recordingTooShort();
 				}
@@ -315,7 +316,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             try {
                 camera.setPreviewTexture(holder);
             } catch (IOException e) {
-                Dispatch.dispatch("Error setting camera preview: " + e.getMessage());
+                Dispatch.dispatch("Error setting camera preview: " + e.getLocalizedMessage());
                 if (videoRecorderExceptionHandler != null)
                     videoRecorderExceptionHandler.unableToSetPrievew();
                 return;

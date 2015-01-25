@@ -29,7 +29,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 import com.noplanbees.tbm.utilities.Convenience;
-import com.noplanbees.tbm.VideoRecorder;
+import com.noplanbees.tbm.multimedia.VideoRecorder;
 
 import java.util.Timer;
 import java.util.TimerTask;

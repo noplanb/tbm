@@ -18,18 +18,18 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.noplanbees.tbm.ActiveModelsHandler;
-import com.noplanbees.tbm.CameraManager;
-import com.noplanbees.tbm.CameraManager.CameraExceptionHandler;
+import com.noplanbees.tbm.multimedia.CameraManager;
+import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.model.GridElement;
-import com.noplanbees.tbm.gcm.GridManager;
-import com.noplanbees.tbm.gcm.GridManager.GridEventNotificationDelegate;
+import com.noplanbees.tbm.GridManager;
+import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.VideoPlayer;
-import com.noplanbees.tbm.VideoRecorder;
+import com.noplanbees.tbm.multimedia.VideoPlayer;
+import com.noplanbees.tbm.multimedia.VideoRecorder;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.ui.view.FriendView.ClickListener;
 import com.noplanbees.tbm.ui.view.NineViewGroup;
@@ -39,15 +39,17 @@ import com.noplanbees.tbm.utilities.Logger;
 import java.util.ArrayList;
 
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
-		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback, ClickListener {
+		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback, ClickListener,
+VideoPlayer.StatusCallbacks{
 	private static final String TAG = "GridViewFragment";
 
-	public interface Callbacks {
+    public interface Callbacks {
 		void onFinish();
 		void onBenchRequest(int pos);
 		void onNudgeFriend(Friend f);
 		void showRecordDialog();
-	}
+        void showBadConnectionDialog();
+    }
 
 	private NineViewGroup gridView;
 	private FriendsAdapter adapter;
@@ -176,6 +178,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	public void onResume() {
 		Logger.d(TAG, "onResume");
 		videoRecorder.onResume();
+        videoPlayer.registerStatusCallbacks(this);
 		super.onResume();
 	}
 
@@ -185,6 +188,7 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 		super.onPause();
 		videoRecorder.onPause();
 		videoRecorder.stopRecording();
+        videoPlayer.unregisterStatusCallbacks(this);
 		videoPlayer.release(getActivity());
 	}
 
@@ -466,4 +470,22 @@ public class GridViewFragment extends Fragment implements GridEventNotificationD
 	public void onRecordClicked(Friend f) {
 		callbacks.showRecordDialog();
 	}
+
+
+    @Override
+    public void onVideoPlaying(String friendId, String videoId) {   }
+
+    @Override
+    public void onVideoStopPlaying() {    }
+
+    @Override
+    public void onFileDownloading() {
+        toast("Downloading...");
+    }
+
+    @Override
+    public void onFileDownloadingRetry() {
+        callbacks.showBadConnectionDialog();
+    }
+
 }

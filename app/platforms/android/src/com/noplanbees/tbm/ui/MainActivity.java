@@ -27,7 +27,7 @@ import com.noplanbees.tbm.bench.BenchObject;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.gcm.GcmHandler;
+import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.bench.InviteManager;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.R;
@@ -147,7 +147,10 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 
                 }
             });
-		}
+
+           // Dispatch.dispatch("_________________-----------------_______________");
+
+        }
 	}
 
 	@Override
@@ -237,6 +240,18 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 		info.setArguments(args );
 		info.show(getFragmentManager(), null);
 	}
+
+    @Override
+    public void showBadConnectionDialog() {
+        ActionInfoDialogFragment actionDialogFragment = new ActionInfoDialogFragment();
+        Bundle args = new Bundle();
+        args.putString(ActionInfoDialogFragment.TITLE, "Bad Connection");
+        args.putString(ActionInfoDialogFragment.MSG, "Trouble downloading. Check your connection");
+        args.putString(ActionInfoDialogFragment.ACTION, "Try Again");
+        args.putBoolean(ActionInfoDialogFragment.NEED_CANCEL, false);
+        actionDialogFragment.setArguments(args );
+        actionDialogFragment.show(getFragmentManager(), null);
+    }
 
     @Override
     public void showVersionHandlerDialog(String message, boolean negativeButton) {
