@@ -161,8 +161,8 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 			buttonsBody.setVisibility(View.VISIBLE);
 		}
 
-        twName.setText(isAlterName?friend.getDisplayNameAlternative():friend.getDisplayName());
-		//twName.setText(friend.getStatusString());
+        //twName.setText(isAlterName?friend.getDisplayNameAlternative():friend.getDisplayName());
+		twName.setText(friend.getStatusString());
 		
 		if(friend.getOutgoingVideoStatus() != OutgoingVideoStatus.NONE &&
 				friend.getOutgoingVideoStatus() != OutgoingVideoStatus.VIEWED &&

@@ -220,20 +220,33 @@ public static interface VideoStatusChangedCallback{
 		return new File(videoFromPath(videoId));
 	}
 
-	public String firstPlayableVideoId(){
-		String vid = null;
+    public String getFirstPlayableVideoId(){
+        String vid = null;
         List<Video> videoList = getSortedIncomingNotViewedVideos();
         if(videoList.size()==0){
             videoList = getSortedIncomingVideos();
         }
-		for (Video v : videoList){
-			if (videoFromFile(v.getId()).exists()){
-				vid = v.getId();
-				break;
-			}
-		}
-		return vid;
-	}
+        for (Video v : videoList){
+            if (videoFromFile(v.getId()).exists()){
+                vid = v.getId();
+                break;
+            }
+        }
+        return vid;
+    }
+
+    public String getFirstIncomingVideoId(){
+        String vid = null;
+        List<Video> videoList = getSortedIncomingNotViewedVideos();
+        if(videoList.size()==0){
+            videoList = getSortedIncomingVideos();
+        }
+
+        if(videoList.size()!=0)
+            vid = videoList.get(videoList.size()-1).getId();
+
+        return vid;
+    }
 
 	public String nextPlayableVideoId(String videoId){
 		Boolean found = false;

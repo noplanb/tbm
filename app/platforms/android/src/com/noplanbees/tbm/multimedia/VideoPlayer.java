@@ -174,7 +174,7 @@ public class VideoPlayer implements OnCompletionListener{
 		this.friendId = friendId;
 		
 	    Friend friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
-		videoId = friend.firstPlayableVideoId();
+		videoId = friend.getFirstIncomingVideoId();
 		
 		if (videoId == null)
 			return;
