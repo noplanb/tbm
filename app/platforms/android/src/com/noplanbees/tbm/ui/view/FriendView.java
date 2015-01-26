@@ -105,13 +105,13 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
 		updateVideoStatus();
-		moveUnviewCountToPosition();
+		moveUnviewedCountToPosition();
 		
 		videoPlayer = VideoPlayer.getInstance(getContext());
 		videoPlayer.registerStatusCallbacks(this);
 	}
 
-	private void moveUnviewCountToPosition() {
+	private void moveUnviewedCountToPosition() {
 		int dpToPx = Convenience.dpToPx(getContext(), 5);
 		twUnreadCount.setX(getWidth() - twUnreadCount.getMeasuredWidth() + dpToPx);
 		twUnreadCount.setY(- dpToPx);
@@ -178,6 +178,8 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		int incomingStatus = friend.getIncomingVideoStatus();
 		int outgoingStatus = friend.getOutgoingVideoStatus();
 
+        Log.d(TAG, this + "| incomingStatus="+incomingStatus+", outgoingStatus="+outgoingStatus);
+
 		switch (incomingStatus) {
 		case IncomingVideoStatus.NEW:
 			break;
@@ -222,6 +224,7 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 	}
 
 	private void animateUploading() {
+        Log.d(TAG, this + "animateUploading");
 
 		int durationMillis = 400;
 		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
@@ -245,6 +248,22 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 				Animation.RELATIVE_TO_SELF, toYDelta);
 		trAn.setDuration(durationMillis);
 		trAn.setFillAfter(true);
+        trAn.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                Log.d(TAG, "onAnimationStart");
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                Log.d(TAG, "onAnimationEnd");
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                Log.d(TAG, "");
+            }
+        });
 		imgUploading.startAnimation(trAn);
 		progressLine.startAnimation(scale);
 	}
@@ -256,8 +275,8 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		ScaleAnimation scale = new ScaleAnimation(
 				0f, 1f, 
 				1f, 1f, 
-				Animation.RELATIVE_TO_SELF, (float) 1.0f,
-				Animation.RELATIVE_TO_SELF, (float) 0);
+				Animation.RELATIVE_TO_SELF, 1.0f,
+				Animation.RELATIVE_TO_SELF, 0.0f);
 		scale.setDuration(durationMillis);
 		scale.setFillAfter(true);
 

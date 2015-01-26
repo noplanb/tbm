@@ -235,7 +235,7 @@ public class VideoPlayer implements OnCompletionListener{
         am.abandonAudioFocus(audioFocusChangeListener);
 		notifyStopPlaying();
 		Friend friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
-		videoId = friend.nextPlayableVideoId(videoId);
+		videoId = friend.getNextIncomingVideoId(videoId);
 		if (videoId != null){
 			play(friend);
 		} else {

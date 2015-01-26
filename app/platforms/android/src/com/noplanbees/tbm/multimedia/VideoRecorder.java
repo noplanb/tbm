@@ -316,13 +316,19 @@ public class VideoRecorder implements SurfaceTextureListener {
             try {
                 camera.setPreviewTexture(holder);
             } catch (IOException e) {
+                e.printStackTrace();
                 Dispatch.dispatch("Error setting camera preview: " + e.getLocalizedMessage());
                 if (videoRecorderExceptionHandler != null)
                     videoRecorderExceptionHandler.unableToSetPrievew();
                 return;
             }
 
-            camera.startPreview();
+            try {
+                camera.startPreview();
+            }catch (RuntimeException e){
+                e.printStackTrace();
+                Dispatch.dispatch("Error starting camera preview: " + e.getLocalizedMessage());
+            }
 
             isPreviewSet = true;
         }

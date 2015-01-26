@@ -248,17 +248,34 @@ public static interface VideoStatusChangedCallback{
         return vid;
     }
 
-	public String nextPlayableVideoId(String videoId){
-		Boolean found = false;
-		for (Video v : getSortedIncomingVideos()){
-			if (found && videoFromFile(v.getId()).exists()){
-				return v.getId();
-			}
-			if (v.getId().equals(videoId))
-				found = true;
-		}
-		return null;
-	}
+    public String getNextPlayableVideoId(String videoId){
+        Boolean found = false;
+        for (Video v : getSortedIncomingVideos()){
+            if (found && videoFromFile(v.getId()).exists()){
+                return v.getId();
+            }
+            if (v.getId().equals(videoId))
+                found = true;
+        }
+        return null;
+    }
+
+    public String getNextIncomingVideoId(String videoId){
+        Boolean found = false;
+        List<Video> videoList = getSortedIncomingNotViewedVideos();
+        if(videoList.size()==0){
+            videoList = getSortedIncomingVideos();
+        }
+
+        for (Video v : videoList){
+            if (found){
+                return v.getId();
+            }
+            if (v.getId().equals(videoId))
+                found = true;
+        }
+        return null;
+    }
 
 	public String videoToPath(){
 		return Config.homeDirPath(context) + "/vid_to_" + getId() + ".mp4";		
