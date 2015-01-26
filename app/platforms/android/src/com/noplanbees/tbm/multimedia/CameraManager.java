@@ -72,7 +72,7 @@ public static interface CameraExceptionHandler{
 		try{
 			camera.unlock();
 		} catch (RuntimeException e) {
-			Dispatch.dispatch(String.format("unlockCamera: ERROR: %s this should never happen!"));
+			Dispatch.dispatch(String.format("unlockCamera: ERROR: %s this should never happen!", e.getLocalizedMessage()));
 			notifyCameraInUse();
 			return false;
 		}
@@ -86,7 +86,7 @@ public static interface CameraExceptionHandler{
 		try{
 			camera.lock();
 		} catch (RuntimeException e) {
-			Dispatch.dispatch(String.format("lockCamera: ERROR: %s this should never happen!"));
+			Dispatch.dispatch(String.format("lockCamera: ERROR: %s this should never happen!", e.getLocalizedMessage()));
 			return false;
 		}
 		return true;
