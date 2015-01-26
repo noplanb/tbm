@@ -1,4 +1,4 @@
-Fixed and tested in Git sha: d75bddb
+Fixed and tested in Git sha: 6f410e8
 
 PROBLEM: On certain phones when the context of the SurfaceTexture pauses the SurfaceTexture is destroyed and on other phones it is not destroyed. In cases where the the surface texture is not destroyed the cameraPreview is stopped by the system and must be restarted onResume. In cases where the surfaceTexture is destroyed the cameraPreview must also be restarted but after the surfaceTexture becomes available again.
 
@@ -20,18 +20,18 @@ x onPause
 x onResume
     x startPreview()
 
-- release()
-    - unset isPreviewing
-    - stopRecording() recording noting abort
-    - releaseMediaRecorder()
-    - cameraManager.releaseCamera()
-        - camera.stopPreview() (I move this to camera manager. There is no harm in calling stop preview if it is not started.)
-        - camera.lock
-        - camera.release
+x release()
+    x unset isPreviewing
+    x stopRecording() recording noting abort
+    x releaseMediaRecorder()
+    x cameraManager.releaseCamera()
+        x camera.stopPreview() (I move this to camera manager. There is no harm in calling stop preview if it is not stared.)
+        x camera.lock
+        x camera.release
     
-- startPreview()
-    - attempt only if isSurfaceAvailable && ! isCameraPreview
-    - set isCameraPreview if successful
+x startPreview()
+    x attempt only if isSurfaceAvailable && ! isCameraPreview
+    x set isCameraPreview if successful
 
 
 QUESTION:
@@ -61,7 +61,7 @@ SOLUTION:
 
 TEST CASES:
 
-Camera preview works after resume and after startup
+Camera preview works after resume and after startup after use by other app
 - Launch the app
 - EXPECT:
   - Camera preview works 

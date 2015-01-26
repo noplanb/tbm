@@ -120,7 +120,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 	public boolean startRecording(Friend f) {
 		Log.i(TAG, "startRecording");
 
-		this.currentFriend = f;
+		currentFriend = f;
 
 		if (mediaRecorder == null) {
 			prepareMediaRecorder();

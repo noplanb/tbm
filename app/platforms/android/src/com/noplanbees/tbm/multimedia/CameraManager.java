@@ -200,9 +200,9 @@ public static interface CameraExceptionHandler{
                 if(suppFrameRate.equals(30)){
                     cparams.setPreviewFrameRate(30);
                     //		THIS FUCKING BREAKS RECORDING ON MOTOG RUNNING 4.4.2 What a pain to find this. Need to get into the driver code to report a bug to android / moto!
-                    if (Build.VERSION.SDK_INT >= 14)
-                        cparams.setRecordingHint(true);
-                    break;
+//                    if (Build.VERSION.SDK_INT >= 14)
+//                        cparams.setRecordingHint(true);
+//                    break;
                 }
             }
         }
