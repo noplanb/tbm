@@ -57,6 +57,7 @@ public static interface CameraExceptionHandler{
 	public static void releaseCamera(){
 		Log.i(TAG, "releaseCamera");
 		if (camera != null){
+			camera.stopPreview();
 			lockCamera(); // lock camera in case it was unlocked by the VideoRecorder.
 			camera.release();
 		}

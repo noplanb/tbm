@@ -61,7 +61,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 	}
 
 	public void onPause() {
-        stopPreview();
+        release();
 	}
 
 	public Friend getCurrentFriend() {
@@ -155,6 +155,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 
 	public void release() {
 		Log.i(TAG, "dispose");
+		isPreviewing = false;
 		Boolean abortedRecording = false;
 		if (mediaRecorder != null) {
 			try {
@@ -164,8 +165,8 @@ public class VideoRecorder implements SurfaceTextureListener {
 			} catch (RuntimeException e) {
 			}
 		}
-		CameraManager.releaseCamera();
 		releaseMediaRecorder();
+		CameraManager.releaseCamera();
 		if (abortedRecording && videoRecorderExceptionHandler != null)
 			videoRecorderExceptionHandler.recordingAborted();
 	}
@@ -275,7 +276,6 @@ public class VideoRecorder implements SurfaceTextureListener {
 			mediaRecorder.release(); // release the recorder object
 			mediaRecorder = null;
 		}
-		CameraManager.lockCamera();
 	}
 
 	// -------------------
@@ -343,21 +343,9 @@ public class VideoRecorder implements SurfaceTextureListener {
 	public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
 		Log.i(TAG, "onSurfaceTextureDestroyed ");
 		isSurfaceAvailable = false;
-        stopPreview();
         return true;
 	}
 
-    private void stopPreview() {
-        if(isPreviewing){
-            stopRecording();
-            Camera camera = CameraManager.getCamera(context);
-            if (camera == null)
-                return;
-            camera.stopPreview();
-            release();
-        }
-        isPreviewing = false;
-    }
 
     @Override
 	public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
