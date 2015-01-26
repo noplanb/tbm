@@ -20,8 +20,6 @@ import java.io.IOException;
 public class VideoRecorder implements SurfaceTextureListener {
 
 	private final static String TAG = VideoRecorder.class.getSimpleName();
-    private SurfaceTexture holder;
-    private boolean isPreviewSet;
 
     // Even though I set up this exception handling interface to be complete I
 	// probably wont use it the failure cause of failure
@@ -44,6 +42,9 @@ public class VideoRecorder implements SurfaceTextureListener {
 		public void runntimeErrorOnStart();
 	}
 
+    private SurfaceTexture holder;
+    private boolean isPreviewing = false;
+    private boolean isSurfaceAvailable = false;
 	private Context context;
 	private MediaRecorder mediaRecorder;
 	private Friend currentFriend;
@@ -148,7 +149,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 				videoRecorderExceptionHandler.runntimeErrorOnStart();
 			return false;
 		}
-		showRecordingIndicator();
+		showRecordingIndicator(); 
 		return true;
 	}
 
@@ -299,52 +300,63 @@ public class VideoRecorder implements SurfaceTextureListener {
 	@Override
 	public void onSurfaceTextureAvailable(SurfaceTexture holder, int width, int height) {
 		Log.i(TAG, "cameraPreviewSurfaceCreated " + width +"x" + height);
-
-
+		isSurfaceAvailable = true;
         startPreview(holder);
-		// prepareMediaRecorder();
 	}
 
-    private void startPreview(SurfaceTexture holder) {
-        if(holder!=null && !isPreviewSet){
+	private void startPreview(SurfaceTexture holder) {
+		if (holder!=null && !isPreviewing && isSurfaceAvailable) {
+			Log.d(TAG, "startPreview: attemtping to start preview");
 
-            this.holder = holder;
-            Camera camera = CameraManager.getCamera(context);
-            if (camera == null)
-                return;
+			this.holder = holder;
+			Camera camera = CameraManager.getCamera(context);
+			if (camera == null){
+				Log.w(TAG, "startPreview: could camera==nul");
+				return;
+			}
 
-            try {
-                camera.setPreviewTexture(holder);
-            } catch (IOException e) {
-                Dispatch.dispatch("Error setting camera preview: " + e.getLocalizedMessage());
-                if (videoRecorderExceptionHandler != null)
-                    videoRecorderExceptionHandler.unableToSetPrievew();
-                return;
-            }
+			try {
+				camera.setPreviewTexture(holder);
+			} catch (IOException e) {
+				Dispatch.dispatch("Error setting camera preview: " + e.getLocalizedMessage());
+				if (videoRecorderExceptionHandler != null)
+					videoRecorderExceptionHandler.unableToSetPrievew();
+				return;
+			}
 
-            camera.startPreview();
+			try {
+				camera.startPreview();
+			} catch (RuntimeException e){
+				Dispatch.dispatch("Error camera.startPreview: " + e.getLocalizedMessage());
+				if (videoRecorderExceptionHandler != null)
+					videoRecorderExceptionHandler.unableToSetPrievew();
+				return;
+			}
 
-            isPreviewSet = true;
-        }
-    }
+			isPreviewing = true;
+		} else {
+			Log.d(TAG, "startPreview: Not starting preview: holder=" + holder + " isPreviewing=" + isPreviewing+ " isSurfaceAvailable=" + isSurfaceAvailable);
+		}    
+	}
 
     @Override
 	public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
 		Log.i(TAG, "onSurfaceTextureDestroyed ");
-        return stopPreview();
+		isSurfaceAvailable = false;
+        stopPreview();
+        return true;
 	}
 
-    private boolean stopPreview() {
-        if(isPreviewSet){
+    private void stopPreview() {
+        if(isPreviewing){
             stopRecording();
             Camera camera = CameraManager.getCamera(context);
             if (camera == null)
-                return false;
+                return;
             camera.stopPreview();
             release();
-            isPreviewSet = false;
         }
-        return true;
+        isPreviewing = false;
     }
 
     @Override
