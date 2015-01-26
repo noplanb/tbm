@@ -306,7 +306,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 
 	private void startPreview(SurfaceTexture holder) {
 		if (holder!=null && !isPreviewing && isSurfaceAvailable) {
-			Log.d(TAG, "startPreview: attemtping to start preview");
+			Log.i(TAG, "startPreview: starting preview");
 
 			this.holder = holder;
 			Camera camera = CameraManager.getCamera(context);
@@ -335,7 +335,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 
 			isPreviewing = true;
 		} else {
-			Log.d(TAG, "startPreview: Not starting preview: holder=" + holder + " isPreviewing=" + isPreviewing+ " isSurfaceAvailable=" + isSurfaceAvailable);
+			Log.w(TAG, "startPreview: Not starting preview: holder=" + holder + " isPreviewing=" + isPreviewing+ " isSurfaceAvailable=" + isSurfaceAvailable);
 		}    
 	}
 
