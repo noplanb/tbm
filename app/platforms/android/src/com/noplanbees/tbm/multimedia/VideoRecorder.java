@@ -298,7 +298,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 
 	@Override
 	public void onSurfaceTextureAvailable(SurfaceTexture holder, int width, int height) {
-		Log.i(TAG, "cameraPreviewSurfaceCreated + " + holder);
+		Log.i(TAG, "cameraPreviewSurfaceCreated " + width +"x" + height);
 
 
         startPreview(holder);
