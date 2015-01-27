@@ -251,7 +251,7 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 
 	private void animateDownloading() {
 		int durationMillis = 500;
-		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_downloading));
+		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
 
 		ScaleAnimation scale = new ScaleAnimation(
 				0f, 1f, 

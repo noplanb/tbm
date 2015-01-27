@@ -106,7 +106,7 @@
         android:id="@+id/img_downloading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/bg_downloading"
+        android:background="@color/bg_uploading"
         android:scaleType="center"
         android:src="@drawable/downloading"
         android:visibility="invisible" />
