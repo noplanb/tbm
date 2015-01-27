@@ -57,6 +57,7 @@ public static interface CameraExceptionHandler{
 	public static void releaseCamera(){
 		Log.i(TAG, "releaseCamera");
 		if (camera != null){
+			camera.stopPreview();
 			lockCamera(); // lock camera in case it was unlocked by the VideoRecorder.
 			camera.release();
 		}
@@ -72,7 +73,7 @@ public static interface CameraExceptionHandler{
 		try{
 			camera.unlock();
 		} catch (RuntimeException e) {
-			Dispatch.dispatch(String.format("unlockCamera: ERROR: %s this should never happen!"));
+			Dispatch.dispatch(String.format("unlockCamera: ERROR: %s this should never happen!", e.getLocalizedMessage()));
 			notifyCameraInUse();
 			return false;
 		}
@@ -86,7 +87,7 @@ public static interface CameraExceptionHandler{
 		try{
 			camera.lock();
 		} catch (RuntimeException e) {
-			Dispatch.dispatch(String.format("lockCamera: ERROR: %s this should never happen!"));
+			Dispatch.dispatch(String.format("lockCamera: ERROR: %s this should never happen!", e.getLocalizedMessage()));
 			return false;
 		}
 		return true;
@@ -199,9 +200,9 @@ public static interface CameraExceptionHandler{
                 if(suppFrameRate.equals(30)){
                     cparams.setPreviewFrameRate(30);
                     //		THIS FUCKING BREAKS RECORDING ON MOTOG RUNNING 4.4.2 What a pain to find this. Need to get into the driver code to report a bug to android / moto!
-                    if (Build.VERSION.SDK_INT >= 14)
-                        cparams.setRecordingHint(true);
-                    break;
+//                    if (Build.VERSION.SDK_INT >= 14)
+//                        cparams.setRecordingHint(true);
+//                    break;
                 }
             }
         }

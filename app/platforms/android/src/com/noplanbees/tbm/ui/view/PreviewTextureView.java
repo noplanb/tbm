@@ -73,7 +73,7 @@ public class PreviewTextureView extends FrameLayout {
 
 		paint.setTextSize(Convenience.dpToPx(getContext(), 13)); //some size
 		paint.setAntiAlias(true);
-		paint.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+		paint.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
 		paint.setTextAlign(Align.CENTER);
 		FontMetrics fm = paint.getFontMetrics();
 		String text = "Recording";

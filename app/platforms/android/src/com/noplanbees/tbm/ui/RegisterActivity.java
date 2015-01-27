@@ -233,12 +233,10 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 
 	private LinkedTreeMap<String, String> userParams(){
 		LinkedTreeMap<String, String> r = new LinkedTreeMap<String, String>();
-		r.put(UserFactory.ServerParamKeys .DEVICE_PLATFORM, "android");
+		r.put(UserFactory.ServerParamKeys.DEVICE_PLATFORM, "android");
 		r.put(UserFactory.ServerParamKeys.FIRST_NAME, firstName);
 		r.put(UserFactory.ServerParamKeys.LAST_NAME, lastName);
 		r.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, e164);
-//		r.put(UserFactory.ServerParamKeys.AUTH, auth);
-//		r.put(UserFactory.ServerParamKeys.MKEY, mkey);
 		r.put(UserFactory.ServerParamKeys.VERIFICATION_CODE, verificationCode);
 		return r;
 	}

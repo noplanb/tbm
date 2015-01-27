@@ -40,6 +40,7 @@ public class NineViewGroup extends ViewGroup {
 	// ---------
 	private static final String TAG = "NineViewGroup";
 	private static final int BIG_MOVE_DISTANCE = 100;
+	private static final int LONGPRESS_TIMEOUT = 175;
 
 	private static final int MATRIX_DIMENSIONS = 3;
 
@@ -419,7 +420,7 @@ public class NineViewGroup extends ViewGroup {
 				Log.d(TAG, "startLongpressTimer.run");
 				longPressTimerFired(x, y);
 			}
-		}, ViewConfiguration.getLongPressTimeout());
+		}, LONGPRESS_TIMEOUT);
 	}
 
 	private void cancelLongpressTimer() {

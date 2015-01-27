@@ -1,0 +1,86 @@
+Fixed and tested in Git sha: 6f410e8
+
+PROBLEM: On certain phones when the context of the SurfaceTexture pauses the SurfaceTexture is destroyed and on other phones it is not destroyed. In cases where the the surface texture is not destroyed the cameraPreview is stopped by the system and must be restarted onResume. In cases where the surfaceTexture is destroyed the cameraPreview must also be restarted but after the surfaceTexture becomes available again.
+
+SOLUTION:
+x Flags
+    x isCameraPreview
+    x isSurfaceAvailable
+
+x onSurfaceAvail
+    x set isSurfaceAvailable
+    x startPreview()
+
+x onSurfaceDestroy
+    x unset isSurfaceAvailable
+  
+x onPause
+    x release()
+
+x onResume
+    x startPreview()
+
+x release()
+    x unset isPreviewing
+    x stopRecording() recording noting abort
+    x releaseMediaRecorder()
+    x cameraManager.releaseCamera()
+        x camera.stopPreview() (I move this to camera manager. There is no harm in calling stop preview if it is not stared.)
+        x camera.lock
+        x camera.release
+    
+x startPreview()
+    x attempt only if isSurfaceAvailable && ! isCameraPreview
+    x set isCameraPreview if successful
+
+
+QUESTION:
+Why do we not always return true for to surfaceTextureDestroyed? We return the result of stopPreview() which may sometimes be false. According to the android documentation: 
+
+"Invoked when the specified SurfaceTexture is about to be destroyed. If returns true, no rendering should happen inside the surface texture after this method is invoked. If returns false, the client needs to call release(). Most applications should return true."
+
+This implies we should always return true as no matter what we will no longer be rendering in the Texture and the Texture should proceed with its own clean up.
+
+I have changed to always return true.
+
+
+QUESTION:
+Why do we call stopRecording() in stopPreview()? In the case where a phonecall for example interrupts our recording we want the recording to abort not stop. Release() takes care of this.
+
+SOLUTION:
+- eliminate stopPreview()
+- call only release()
+- call release only on onPause() since this happens whether or not the surface is destroyed.
+- release algorithm
+    - stop media recorder and fire recordingAborted callback if necessary.
+    - camera.release()
+        - camera.stopPreview() (I moved this to CameraManager)
+        - lockCamera 
+        - etc.
+
+
+TEST CASES:
+
+Camera preview works after resume and after startup after use by other app
+- Launch the app
+- EXPECT:
+  - Camera preview works 
+- Close the app by clicking home screen
+- Use the camera on the phones camera app
+- Launch the app again
+- EXPECT:
+  - Camera preview works
+- Kill the app in the task manager
+- Use the camera on the phones camera app
+- Launch the app again
+- EXPECT:
+  - Camera preview works
+  
+Incoming call aborts recording and notifies user
+- Launch the app
+- Start recording
+- While recording receive a phone call
+- EXPECT: 
+  - Recording to be aborted
+  - User is notified with a toast that recording was aborted.
+  

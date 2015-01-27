@@ -316,7 +316,6 @@ public class VideoRecorder implements SurfaceTextureListener {
             try {
                 camera.setPreviewTexture(holder);
             } catch (IOException e) {
-                e.printStackTrace();
                 Dispatch.dispatch("Error setting camera preview: " + e.getLocalizedMessage());
                 if (videoRecorderExceptionHandler != null)
                     videoRecorderExceptionHandler.unableToSetPrievew();
@@ -325,9 +324,11 @@ public class VideoRecorder implements SurfaceTextureListener {
 
             try {
                 camera.startPreview();
-            }catch (RuntimeException e){
-                e.printStackTrace();
-                Dispatch.dispatch("Error starting camera preview: " + e.getLocalizedMessage());
+            } catch (RuntimeException e){
+                Dispatch.dispatch("Error camera.startPreview: " + e.getLocalizedMessage());
+                if (videoRecorderExceptionHandler != null)
+                    videoRecorderExceptionHandler.unableToSetPrievew();
+                return;
             }
 
             isPreviewSet = true;
