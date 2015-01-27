@@ -243,7 +243,11 @@ public static interface VideoStatusChangedCallback{
         }
 
         if(videoList.size()!=0)
-            vid = videoList.get(videoList.size()-1).getId();
+            if(videoList.get(videoList.size()-1).getIncomingVideoStatus()==Video.IncomingVideoStatus.DOWNLOADING)
+                vid = videoList.get(videoList.size()-1).getId();
+            else{
+                vid = videoList.get(0).getId();
+            }
 
         return vid;
     }
@@ -262,10 +266,7 @@ public static interface VideoStatusChangedCallback{
 
     public String getNextIncomingVideoId(String videoId){
         Boolean found = false;
-        List<Video> videoList = getSortedIncomingNotViewedVideos();
-        if(videoList.size()==0){
-            videoList = getSortedIncomingVideos();
-        }
+        List<Video> videoList =  getSortedIncomingVideos();
 
         for (Video v : videoList){
             if (found){
