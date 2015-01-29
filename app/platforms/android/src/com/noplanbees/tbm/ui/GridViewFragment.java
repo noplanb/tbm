@@ -479,12 +479,12 @@ VideoPlayer.StatusCallbacks{
 
     @Override
     public void onFileDownloading() {
-        FileDownloadService.restartTransfersPendingRetry(getActivity());
         toast("Downloading...");
     }
 
     @Override
     public void onFileDownloadingRetry() {
+        FileDownloadService.restartTransfersPendingRetry(getActivity());
         callbacks.showBadConnectionDialog();
     }
 
