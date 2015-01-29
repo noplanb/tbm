@@ -3,8 +3,14 @@ package com.noplanbees.tbm.ui;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -41,7 +47,7 @@ import java.util.ArrayList;
 
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
 		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback, ClickListener,
-VideoPlayer.StatusCallbacks{
+VideoPlayer.StatusCallbacks, SensorEventListener {
 	private static final String TAG = "GridViewFragment";
 
     public interface Callbacks {
@@ -59,6 +65,9 @@ VideoPlayer.StatusCallbacks{
 	private VideoRecorder videoRecorder;
 	private Callbacks callbacks;
 	private Handler handler = new Handler(Looper.getMainLooper());
+
+    private SensorManager mSensorManager;
+    private Sensor mProximitySensor;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -78,6 +87,12 @@ VideoPlayer.StatusCallbacks{
 		setupGrid();
 
 		mUnexpectedTerminationHelper.init();
+
+        mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        if (mProximitySensor == null) {
+            Log.i(TAG, "Proximity sensor not found");
+        }
 	}
 
 	@Override
@@ -180,6 +195,7 @@ VideoPlayer.StatusCallbacks{
 		Logger.d(TAG, "onResume");
 		videoRecorder.onResume();
         videoPlayer.registerStatusCallbacks(this);
+        mSensorManager.registerListener(this, mProximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
 		super.onResume();
 	}
 
@@ -191,6 +207,7 @@ VideoPlayer.StatusCallbacks{
 		videoRecorder.stopRecording();
         videoPlayer.unregisterStatusCallbacks(this);
 		videoPlayer.release(getActivity());
+        mSensorManager.unregisterListener(this);
 	}
 
 	@Override
@@ -488,4 +505,19 @@ VideoPlayer.StatusCallbacks{
         callbacks.showBadConnectionDialog();
     }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+        if (event.values[0] == 0) {
+            am.setMode(AudioManager.MODE_IN_CALL);
+            am.setSpeakerphoneOn(false);
+        } else {
+            am.setMode(AudioManager.MODE_NORMAL);
+            am.setSpeakerphoneOn(true);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
 }
