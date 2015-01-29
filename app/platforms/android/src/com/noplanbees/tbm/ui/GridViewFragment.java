@@ -78,6 +78,7 @@ VideoPlayer.StatusCallbacks{
 		setupGrid();
 
 		mUnexpectedTerminationHelper.init();
+        throw new RuntimeException("TEST");
 	}
 
 	@Override
