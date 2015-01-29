@@ -77,6 +77,7 @@ VideoPlayer.StatusCallbacks{
 		setupGrid();
 
 		mUnexpectedTerminationHelper.init();
+        throw new RuntimeException("TEST");
 	}
 
 	@Override
@@ -384,8 +385,6 @@ VideoPlayer.StatusCallbacks{
 					// it displays the "force close" dialog
 					mOldUncaughtExceptionHandler.uncaughtException(thread, ex);
 				}
-				android.os.Process.killProcess(android.os.Process.myPid());
-				System.exit(10);
 			}
 		};
 
