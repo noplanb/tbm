@@ -20,6 +20,7 @@ import android.widget.VideoView;
 import com.noplanbees.tbm.ActiveModelsHandler;
 import com.noplanbees.tbm.multimedia.CameraManager;
 import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
+import com.noplanbees.tbm.network.FileDownloadService;
 import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
@@ -384,8 +385,6 @@ VideoPlayer.StatusCallbacks{
 					// it displays the "force close" dialog
 					mOldUncaughtExceptionHandler.uncaughtException(thread, ex);
 				}
-				android.os.Process.killProcess(android.os.Process.myPid());
-				System.exit(10);
 			}
 		};
 
@@ -480,6 +479,7 @@ VideoPlayer.StatusCallbacks{
 
     @Override
     public void onFileDownloading() {
+        FileDownloadService.restartTransfersPendingRetry(getActivity());
         toast("Downloading...");
     }
 
