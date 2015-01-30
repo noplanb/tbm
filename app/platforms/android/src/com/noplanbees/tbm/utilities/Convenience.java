@@ -20,7 +20,9 @@ import java.util.List;
 
 public class Convenience {
 	public final static String STAG = Convenience.class.getSimpleName();
-	
+
+    public static final int FRIENDS_COUNT = 8;
+
 	public static float dpToPx(Context context, float dp){
 		Resources r = context.getResources();
 		return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());

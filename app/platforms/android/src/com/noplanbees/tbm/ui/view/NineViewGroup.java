@@ -24,12 +24,10 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-
-import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.multimedia.VideoRecorder;
+import com.noplanbees.tbm.utilities.Convenience;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -179,9 +177,9 @@ public class NineViewGroup extends ViewGroup {
 		if (childCount < adapter.getCount() || isDirty) {
 			int position = 0;
 			int bottomEdge = 0;
+            final int childHeight = getHeight() / MATRIX_DIMENSIONS;
 			while (bottomEdge < getHeight() && position < TOTAL_CHILD_COUNT) {
 				int rightEdge = 0;
-				int measuredHeight = 0;
 				while (rightEdge < getWidth() && position < TOTAL_CHILD_COUNT) {
 					View newChild;
 					if (position == CENTRAL_VIEW_POSITION) {
@@ -200,10 +198,9 @@ public class NineViewGroup extends ViewGroup {
 						addAndMeasureChild(newChild, position);
 					}
 					rightEdge += newChild.getMeasuredWidth();
-					measuredHeight = getHeight() / MATRIX_DIMENSIONS;
 					position++;
 				}
-				bottomEdge += measuredHeight;
+				bottomEdge += childHeight;
 			}
 		}
 		layoutChildren();
@@ -259,6 +256,25 @@ public class NineViewGroup extends ViewGroup {
 
 		Log.d(TAG, "layoutChildren");
 	}
+
+    public View getMiddleView() {
+        return getChildAt(CENTRAL_VIEW_POSITION);
+    }
+
+    /**
+     * Returns view by its position starts from bottom-right corner by scheme:
+     * <pre>
+     * 7 6 5
+     * 4   3
+     * 2 1 0
+     * </pre>
+     * Views are available only when all child views are located and measured
+     * @param position
+     * @return corresponding view
+     */
+    public View getSurroundedView(int position) {
+        return recycleBin.get(position);
+    }
 
 	@Override
 	protected void onAttachedToWindow() {
