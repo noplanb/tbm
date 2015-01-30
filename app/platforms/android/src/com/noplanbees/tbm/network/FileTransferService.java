@@ -67,7 +67,7 @@ public abstract class FileTransferService extends NonStopIntentService {
 			// Our only job here is to stopSelf for this intent as it has come up in the queue so we are calling 
 			// stop self for this intent in the same order that it came in.
 			Log.i(TAG, "Calling stopSelf for an interrupt intent.");
-			stopSelf(startId);
+			//stopSelf(startId);
 			return;
 		}
 		

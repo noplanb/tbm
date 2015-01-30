@@ -224,6 +224,8 @@ public abstract class Server {
         return result;
     }
 
+    protected void threadTaskDone(){    }
+
     private class BgHttpReq extends AsyncTask<Void, Void, HashMap<String, String>>{
         @Override
         protected HashMap<String, String> doInBackground(Void... params) {
@@ -235,6 +237,8 @@ public abstract class Server {
             } catch (IOException e) {
                 r.put("error", e.toString());
             }
+
+            threadTaskDone();
             return r;
         }
 

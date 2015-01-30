@@ -20,7 +20,8 @@ import com.noplanbees.tbm.R;
 
 public class PreviewTextureView extends FrameLayout {
 
-	private TextureView textureView;
+    private static final String TAG = "PreviewTextureView";
+    private TextureView textureView;
 	private boolean isRecording;
 
 	public PreviewTextureView(Context context, AttributeSet attrs, int defStyle) {
@@ -59,7 +60,7 @@ public class PreviewTextureView extends FrameLayout {
 	@Override
 	protected void dispatchDraw(Canvas canvas) {
 		super.dispatchDraw(canvas);
-		Log.d(VIEW_LOG_TAG, "dispatchDraw " + isRecording);
+		Log.d(TAG, "dispatchDraw " + isRecording);
 		if(isRecording)
 			drawIndicator(canvas);
 	}

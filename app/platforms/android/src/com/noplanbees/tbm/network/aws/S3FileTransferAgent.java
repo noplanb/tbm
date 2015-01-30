@@ -57,8 +57,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean upload() {
-        PutObjectRequest _putObjectRequest = new PutObjectRequest(s3Bucket, filename, file);
 		try {
+            PutObjectRequest _putObjectRequest = new PutObjectRequest(s3Bucket, filename, file);
 			Upload upload = tm.upload(_putObjectRequest);
 			upload.waitForUploadResult();
 		} catch (AmazonServiceException e) {
@@ -76,8 +76,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean download() throws IllegalStateException{
-		GetObjectRequest _getObjectRequest = new GetObjectRequest(s3Bucket, filename);
 		try {
+            GetObjectRequest _getObjectRequest = new GetObjectRequest(s3Bucket, filename);
 			Download download = tm.download(_getObjectRequest,	file);
 			download.waitForCompletion();
 		} catch (AmazonServiceException e) {
@@ -96,7 +96,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	private boolean checkClientException(AmazonClientException e) {
         //e.g
 		//Dispatch.dispatch("AmazonClientException[ " + e.isRetryable() + "]: " + e.getLocalizedMessage());
-        return true;//checkErrorCode(e.getStatusCode());
+        return false;//checkErrorCode(e.getStatusCode());
 	}
 
 	private void checkServiceException(AmazonServiceException e) {
@@ -134,8 +134,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean delete() {
-		DeleteObjectRequest _deleteObjectRequest = new DeleteObjectRequest(s3Bucket, filename);
 		try {
+            DeleteObjectRequest _deleteObjectRequest = new DeleteObjectRequest(s3Bucket, filename);
 			tm.getAmazonS3Client().deleteObject(_deleteObjectRequest );
 		} catch (AmazonServiceException e) {
 			checkServiceException(e);

@@ -3,8 +3,14 @@ package com.noplanbees.tbm.ui;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,32 +22,36 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import android.widget.VideoView;
-
 import com.noplanbees.tbm.ActiveModelsHandler;
-import com.noplanbees.tbm.multimedia.CameraManager;
-import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
-import com.noplanbees.tbm.utilities.Convenience;
-import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
-import com.noplanbees.tbm.model.GridElement;
+import com.noplanbees.tbm.FriendViewController;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.interfaces.FriendViewControllerCallbacks;
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
+import com.noplanbees.tbm.model.GridElement;
+import com.noplanbees.tbm.multimedia.CameraManager;
+import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.multimedia.VideoRecorder;
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
-import com.noplanbees.tbm.ui.view.FriendView.ClickListener;
+import com.noplanbees.tbm.network.FileDownloadService;
+import com.noplanbees.tbm.ui.view.FriendView;
 import com.noplanbees.tbm.ui.view.NineViewGroup;
 import com.noplanbees.tbm.ui.view.NineViewGroup.OnChildLayoutCompleteListener;
+import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.utilities.Logger;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
-		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback, ClickListener,
-VideoPlayer.StatusCallbacks{
+		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback,
+VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks {
 	private static final String TAG = "GridViewFragment";
+    private ArrayList<FriendViewController> mViewControllers;
 
     public interface Callbacks {
 		void onFinish();
@@ -58,6 +68,9 @@ VideoPlayer.StatusCallbacks{
 	private VideoRecorder videoRecorder;
 	private Callbacks callbacks;
 	private Handler handler = new Handler(Looper.getMainLooper());
+
+    private SensorManager mSensorManager;
+    private Sensor mProximitySensor;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -77,6 +90,14 @@ VideoPlayer.StatusCallbacks{
 		setupGrid();
 
 		mUnexpectedTerminationHelper.init();
+
+        mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        if (mProximitySensor == null) {
+            Log.i(TAG, "Proximity sensor not found");
+        }
+
+        mViewControllers = new ArrayList<>(Convenience.FRIENDS_COUNT);
 	}
 
 	@Override
@@ -156,29 +177,39 @@ VideoPlayer.StatusCallbacks{
 		gridView.setChildLayoutCompleteListener(new OnChildLayoutCompleteListener() {
 			@Override
 			public void onChildLayoutComplete() {
-				handleIntentAction(getActivity().getIntent());
+                if (!mViewControllers.isEmpty()) {
+                    mViewControllers.clear();
+                }
+                final List<GridElement> elements = activeModelsHandler.getGf().all();
+                for (int i = 0; i < Convenience.FRIENDS_COUNT; i++) {
+                    mViewControllers.add(new FriendViewController(
+                            elements.get(Convenience.getFriendPosByUiPos(i)),
+                            (FriendView) gridView.getSurroundedView(i),
+                            GridViewFragment.this));
+                }
+                handleIntentAction(getActivity().getIntent());
 			}
 		});
 
 		return v;
 	}
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        adapter = new FriendsAdapter(getActivity(), activeModelsHandler.getGf().all());
+        gridView.setVideoRecorder(videoRecorder);
+        gridView.setAdapter(adapter);
 
-		adapter = new FriendsAdapter(getActivity(), activeModelsHandler.getGf().all(), this);
-		gridView.setAdapter(adapter);
-		gridView.setVideoRecorder(videoRecorder);
-
-		Log.d(TAG, "View created");
-	}
+        Log.d(TAG, "View created");
+    }
 
 	@Override
 	public void onResume() {
 		Logger.d(TAG, "onResume");
 		videoRecorder.onResume();
         videoPlayer.registerStatusCallbacks(this);
+        mSensorManager.registerListener(this, mProximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
 		super.onResume();
 	}
 
@@ -190,6 +221,7 @@ VideoPlayer.StatusCallbacks{
 		videoRecorder.stopRecording();
         videoPlayer.unregisterStatusCallbacks(this);
 		videoPlayer.release(getActivity());
+        mSensorManager.unregisterListener(this);
 	}
 
 	@Override
@@ -234,12 +266,12 @@ VideoPlayer.StatusCallbacks{
 	private void setupGrid() {
 		GridManager.setGridEventNotificationDelegate(this);
 
-		if (activeModelsHandler.getGf().all().size() == 8)
+		if (activeModelsHandler.getGf().all().size() == Convenience.FRIENDS_COUNT)
 			return;
 
 		activeModelsHandler.getGf().destroyAll(getActivity());
 		ArrayList<Friend> allFriends = activeModelsHandler.getFf().all();
-		for (Integer i = 0; i < 8; i++) {
+		for (Integer i = 0; i < Convenience.FRIENDS_COUNT; i++) {
 			GridElement g = activeModelsHandler.getGf().makeInstance(getActivity());
 			if (i < allFriends.size()) {
 				Friend f = allFriends.get(i);
@@ -384,8 +416,6 @@ VideoPlayer.StatusCallbacks{
 					// it displays the "force close" dialog
 					mOldUncaughtExceptionHandler.uncaughtException(thread, ex);
 				}
-				android.os.Process.killProcess(android.os.Process.myPid());
-				System.exit(10);
 			}
 		};
 
@@ -461,16 +491,20 @@ VideoPlayer.StatusCallbacks{
 		}
 	}
 
-	@Override
-	public void onNudgeClicked(Friend f) {
-		callbacks.onNudgeFriend(f);
-	}
+    @Override
+    public void onBenchRequest(int pos) {
+        callbacks.onBenchRequest(pos);
+    }
 
-	@Override
-	public void onRecordClicked(Friend f) {
-		callbacks.showRecordDialog();
-	}
+    @Override
+    public void onNudgeFriend(Friend f) {
+        callbacks.onNudgeFriend(f);
+    }
 
+    @Override
+    public void onRecordDialogRequested() {
+        callbacks.showRecordDialog();
+    }
 
     @Override
     public void onVideoPlaying(String friendId, String videoId) {   }
@@ -485,7 +519,23 @@ VideoPlayer.StatusCallbacks{
 
     @Override
     public void onFileDownloadingRetry() {
+        FileDownloadService.restartTransfersPendingRetry(getActivity());
         callbacks.showBadConnectionDialog();
     }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+        if (event.values[0] == 0) {
+            am.setMode(AudioManager.MODE_IN_CALL);
+            am.setSpeakerphoneOn(false);
+        } else {
+            am.setMode(AudioManager.MODE_NORMAL);
+            am.setSpeakerphoneOn(true);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
 }

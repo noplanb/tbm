@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.utilities.Logger;
 
 
@@ -57,6 +58,8 @@ public class DataHolderService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		Logger.d(TAG, "onCreate");
+
+        mUnexpectedTerminationHelper.init();
 		
         HandlerThread thread = new HandlerThread("IntentService[" + mName + "]");
         thread.start();
@@ -107,10 +110,6 @@ public class DataHolderService extends Service {
         mServiceLooper.quit();
 	}
 
-	private void releaseResources() {
-		dataManager.saveAll();
-		unregisterReceiver(receiver);
-	}
 
 	protected void onHandleIntent(final Intent intent, int startId) {
 		new IntentHandler(DataHolderService.this, intent).handle();
@@ -122,8 +121,7 @@ public class DataHolderService extends Service {
 		Logger.d(TAG, "onTaskRemoved");
 		releaseResources();
 	}
-	
-	
+
 	private class ShutdownReceiver extends BroadcastReceiver {
 
 	    @Override
@@ -133,5 +131,45 @@ public class DataHolderService extends Service {
 	    }
 
 	}
+
+    private void releaseResources() {
+        dataManager.saveAll();
+        unregisterReceiver(receiver);
+        mUnexpectedTerminationHelper.finish();
+    }
+
+    private UnexpectedTerminationHelper mUnexpectedTerminationHelper = new UnexpectedTerminationHelper();
+
+    private class UnexpectedTerminationHelper {
+        private Thread mThread;
+        private Thread.UncaughtExceptionHandler mOldUncaughtExceptionHandler = null;
+        private Thread.UncaughtExceptionHandler mUncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
+            // gets called on the same (main) thread
+            @Override
+            public void uncaughtException(Thread thread, Throwable ex) {
+                Log.w("UnexpectedTerminationHelper", "uncaughtException", ex);
+                releaseResources();
+                Dispatch.dispatch("UnexpectedTerminationHelper: " + ex.getMessage(), true);
+                if (mOldUncaughtExceptionHandler != null) {
+                    // it displays the "force close" dialog
+                    mOldUncaughtExceptionHandler.uncaughtException(thread, ex);
+                }
+                android.os.Process.killProcess(android.os.Process.myPid());
+                System.exit(10);
+            }
+        };
+
+        void init() {
+            mThread = Thread.currentThread();
+            mOldUncaughtExceptionHandler = mThread.getUncaughtExceptionHandler();
+            mThread.setUncaughtExceptionHandler(mUncaughtExceptionHandler);
+        }
+
+        void finish() {
+            mThread.setUncaughtExceptionHandler(mOldUncaughtExceptionHandler);
+            mOldUncaughtExceptionHandler = null;
+            mThread = null;
+        }
+    }
 
 }

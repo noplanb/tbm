@@ -31,7 +31,7 @@ public class ActionInfoDialogFragment extends AbstractDialogFragment {
 		String title = getArguments().getString(TITLE);
 		String msg = getArguments().getString(MSG);
 		String action = getArguments().getString(ACTION);
-		final int id = getArguments().getInt(ID);
+		final int id = getArguments().getInt(ID, -1);
 		boolean needCancel = getArguments().getBoolean(NEED_CANCEL, true);
 		
 		setTitle(title);

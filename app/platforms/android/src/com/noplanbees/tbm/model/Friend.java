@@ -220,32 +220,63 @@ public static interface VideoStatusChangedCallback{
 		return new File(videoFromPath(videoId));
 	}
 
-	public String firstPlayableVideoId(){
-		String vid = null;
+    public String getFirstPlayableVideoId(){
+        String vid = null;
         List<Video> videoList = getSortedIncomingNotViewedVideos();
         if(videoList.size()==0){
             videoList = getSortedIncomingVideos();
         }
-		for (Video v : videoList){
-			if (videoFromFile(v.getId()).exists()){
-				vid = v.getId();
-				break;
-			}
-		}
-		return vid;
-	}
+        for (Video v : videoList){
+            if (videoFromFile(v.getId()).exists()){
+                vid = v.getId();
+                break;
+            }
+        }
+        return vid;
+    }
 
-	public String nextPlayableVideoId(String videoId){
-		Boolean found = false;
-		for (Video v : getSortedIncomingVideos()){
-			if (found && videoFromFile(v.getId()).exists()){
-				return v.getId();
-			}
-			if (v.getId().equals(videoId))
-				found = true;
-		}
-		return null;
-	}
+    public String getFirstIncomingVideoId(){
+        String vid = null;
+        List<Video> videoList = getSortedIncomingNotViewedVideos();
+        if(videoList.size()==0){
+            videoList = getSortedIncomingVideos();
+        }
+
+        if(videoList.size()!=0)
+            if(videoList.get(videoList.size()-1).getIncomingVideoStatus()==Video.IncomingVideoStatus.DOWNLOADING)
+                vid = videoList.get(videoList.size()-1).getId();
+            else{
+                vid = videoList.get(0).getId();
+            }
+
+        return vid;
+    }
+
+    public String getNextPlayableVideoId(String videoId){
+        Boolean found = false;
+        for (Video v : getSortedIncomingVideos()){
+            if (found && videoFromFile(v.getId()).exists()){
+                return v.getId();
+            }
+            if (v.getId().equals(videoId))
+                found = true;
+        }
+        return null;
+    }
+
+    public String getNextIncomingVideoId(String videoId){
+        Boolean found = false;
+        List<Video> videoList =  getSortedIncomingVideos();
+
+        for (Video v : videoList){
+            if (found){
+                return v.getId();
+            }
+            if (v.getId().equals(videoId))
+                found = true;
+        }
+        return null;
+    }
 
 	public String videoToPath(){
 		return Config.homeDirPath(context) + "/vid_to_" + getId() + ".mp4";		

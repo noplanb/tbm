@@ -9,6 +9,8 @@ import com.noplanbees.tbm.network.Server;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  * Created by User on 1/12/2015.
  */
@@ -25,7 +27,13 @@ public class Dispatch {
         isEnabled = false;
     }
 
+    private static CountDownLatch countDownLatch;
+
     public static void dispatch(String msg){
+        dispatch(msg, false);
+    }
+
+    public static void dispatch(String msg, boolean needToWait){
         Log.e(TAG, msg);
         if(isEnabled){
             LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
@@ -33,7 +41,14 @@ public class Dispatch {
             //params.put(User.Attributes.AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
             params.put("msg", msg+"\n" + LogCatCollector.collectLogCat(null));
             String uri = new Uri.Builder().appendPath("dispatch").appendPath("post_dispatch").build().toString();
+            countDownLatch = new CountDownLatch(1);
             new DispatchPost(uri, params);
+            if(needToWait)
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
         }
     }
 
@@ -46,6 +61,12 @@ public class Dispatch {
 
         public DispatchPost(String uri, LinkedTreeMap<String, String> params) {
             super(uri, params, "POST");
+        }
+
+        @Override
+        protected void threadTaskDone() {
+            super.threadTaskDone();
+            countDownLatch.countDown();
         }
 
         @Override

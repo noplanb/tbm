@@ -1,7 +1,7 @@
 package com.noplanbees.tbm.ui.view;
 
 import android.content.Context;
-import android.util.AttributeSet;
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,26 +11,27 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import com.noplanbees.tbm.utilities.Convenience;
-import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.model.Friend.OutgoingVideoStatus;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.model.Video.IncomingVideoStatus;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
-import com.noplanbees.tbm.multimedia.VideoPlayer.StatusCallbacks;
+import com.noplanbees.tbm.utilities.Convenience;
 
-public class FriendView extends RelativeLayout implements StatusCallbacks {
+public class FriendView extends RelativeLayout implements View.OnClickListener {
 
 	private static final String TAG = "FriendView";
     private boolean isAlterName;
+    private FriendViewListener mEventListener;
 
-    public interface ClickListener{
-		void onNudgeClicked(Friend f);
-		void onRecordClicked(Friend f);
+    public interface ClickListener {
+		void onNudgeClicked();
+		void onRecordClicked();
+        void onEmptyViewClicked();
 	}
 
-	private Friend friend;
+    public interface FriendViewListener {
+        void onAttached();
+        void onDetached();
+    }
+
 	private TextView twName;
 	private TextView twUnreadCount;
 	private TextView twNundge;
@@ -41,36 +42,36 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 	private ImageView imgUploading;
 	private View progressLine;
 	private View unreadBorder;
-	
-	private ClickListener clickListener;
+    private View mEmptyView;
+    private View mBody;
+
+    private int mPosition;
+
+	private ClickListener mClickListener;
 
 	private VideoPlayer videoPlayer;
 	private boolean needToHideIndicators;
 	private View buttonsBody;
 
-	public FriendView(Context context) {
-		super(context);
-		init();
-	}
+    public FriendView(Context context, int position) {
+        super(context);
+        mPosition = position;
+        init();
+    }
 
-	public FriendView(Context context, boolean isAlterName) {
-		super(context);
-		init();
-        this.isAlterName = isAlterName;
-	}
+    public void setOnClickListener(ClickListener clickListener) {
+        mClickListener = clickListener;
+    }
 
-	public FriendView(Context context, AttributeSet attrs, int defStyleAttr) {
-		super(context, attrs, defStyleAttr);
-		init();
-	}
-	
-	public void setOnClickListener(ClickListener clickListener){
-		this.clickListener = clickListener;
-	}
-
+    public void setEventListener(FriendViewListener listener) {
+        mEventListener = listener;
+    }
 	private void init() {
 		LayoutInflater.from(getContext()).inflate(R.layout.friendview_item, this, true);
 		unreadBorder = findViewById(R.id.unread_border);
+
+        mEmptyView = findViewById(R.id.empty_view);
+        mBody = findViewById(R.id.body);
 
 		twName = (TextView) findViewById(R.id.tw_name);
 		twNundge = (TextView) findViewById(R.id.tw_nudge);
@@ -86,142 +87,109 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		// allow childrens to extends parent border
 		setClipChildren(false);
 		setClipToPadding(false);
-		
-		twNundge.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				clickListener.onNudgeClicked(friend);
-			}
-		});
-		twRecord.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				clickListener.onRecordClicked(friend);
-			}
-		});
-	}
 
-	@Override
-	protected void onAttachedToWindow() {
-		super.onAttachedToWindow();
-		updateVideoStatus();
-		moveUnviewCountToPosition();
-		
-		videoPlayer = VideoPlayer.getInstance(getContext());
-		videoPlayer.registerStatusCallbacks(this);
-	}
+        twNundge.setOnClickListener(this);
+        twRecord.setOnClickListener(this);
+        mEmptyView.setOnClickListener(this);
+    }
 
-	private void moveUnviewCountToPosition() {
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (mEventListener != null) {
+            mEventListener.onAttached();
+        }
+        moveUnviewedCountToPosition();
+    }
+
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (mEventListener != null) {
+            mEventListener.onDetached();
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.tw_nudge:
+                mClickListener.onNudgeClicked();
+                break;
+            case R.id.tw_record:
+                mClickListener.onRecordClicked();
+                break;
+            case R.id.empty_view:
+                mClickListener.onEmptyViewClicked();
+                break;
+        }
+    }
+
+	private void moveUnviewedCountToPosition() {
 		int dpToPx = Convenience.dpToPx(getContext(), 5);
 		twUnreadCount.setX(getWidth() - twUnreadCount.getMeasuredWidth() + dpToPx);
 		twUnreadCount.setY(- dpToPx);
 	}
 
-	@Override
-	protected void onDetachedFromWindow() {
-		super.onDetachedFromWindow();
-		videoPlayer.unregisterStatusCallbacks(this);
-	}
+    public void showNudge(boolean visible) {
+        twNundge.setVisibility(visible ? View.VISIBLE : View.GONE);
+        twRecord.requestLayout();
+    }
 
-	public void setFriend(Friend friend) {
-		this.friend = friend;
-		updateContent();
-	}
+    public void showEmpty(boolean visible) {
+        mEmptyView.setVisibility(visible ? VISIBLE : GONE);
+        mBody.setVisibility(visible ? GONE : VISIBLE);
+    }
 
-	private void updateContent() {
-		int unreadMsgCount = friend.incomingVideoNotViewedCount();
-		
-		if(friend.hasApp()){
-			twNundge.setVisibility(View.GONE);
-		}else{
-			twNundge.setVisibility(View.VISIBLE);
-		}
+    public boolean isEmpty() {
+        return mEmptyView.getVisibility() == VISIBLE;
+    }
 
-		if (friend.getOutgoingVideoStatus() == OutgoingVideoStatus.VIEWED && !needToHideIndicators) {
-			imgViewed.setVisibility(View.VISIBLE);
-		} else {
-			imgViewed.setVisibility(View.INVISIBLE);
-		}
+    public void setName(String name) {
+        twName.setText(name);
+    }
 
-		if (unreadMsgCount > 0 && !needToHideIndicators) {
-			twName.setBackgroundColor(getResources().getColor(R.color.bg_unread_msg));
-			unreadBorder.setVisibility(View.VISIBLE);
-			twUnreadCount.setVisibility(View.VISIBLE);
-			twUnreadCount.setText("" + unreadMsgCount);
-		} else {
-			twName.setBackgroundColor(getResources().getColor(R.color.bg_name));
-			unreadBorder.setVisibility(View.INVISIBLE);
-			twUnreadCount.setVisibility(View.INVISIBLE);
-		}
+    public int getPosition() {
+        return mPosition;
+    }
 
-		if (friend.thumbExists()){
-			imgThumb.setImageBitmap(friend.lastThumbBitmap());
-			buttonsBody.setVisibility(View.GONE);
-		}else{
-			buttonsBody.setVisibility(View.VISIBLE);
-		}
+    public void setVideoViewed(boolean visible) {
+        imgViewed.setVisibility(visible ? VISIBLE : INVISIBLE);
+    }
 
-        twName.setText(isAlterName?friend.getDisplayNameAlternative():friend.getDisplayName());
-		//twName.setText(friend.getStatusString());
-		
-		if(friend.getOutgoingVideoStatus() != OutgoingVideoStatus.NONE &&
-				friend.getOutgoingVideoStatus() != OutgoingVideoStatus.VIEWED &&
-				friend.getOutgoingVideoStatus() != OutgoingVideoStatus.QUEUED &&
-				friend.getOutgoingVideoStatus() != OutgoingVideoStatus.UPLOADING &&
-				friend.getIncomingVideoStatus() != IncomingVideoStatus.DOWNLOADING)
-			imgUploading.setVisibility(View.VISIBLE);
-		else
-			imgUploading.setVisibility(View.INVISIBLE);
-	}
+    public void setUnreadCount(boolean visible, int unreadMsgCount) {
+        if (visible) {
+            twName.setBackgroundColor(getResources().getColor(R.color.bg_unread_msg));
+            unreadBorder.setVisibility(VISIBLE);
+            twUnreadCount.setVisibility(VISIBLE);
+            twUnreadCount.setText(String.valueOf(unreadMsgCount));
+        } else {
+            twName.setBackgroundColor(getResources().getColor(R.color.bg_name));
+            unreadBorder.setVisibility(INVISIBLE);
+            twUnreadCount.setVisibility(INVISIBLE);
+        }
+    }
 
-	private void updateVideoStatus() {
-		int incomingStatus = friend.getIncomingVideoStatus();
-		int outgoingStatus = friend.getOutgoingVideoStatus();
 
-		switch (incomingStatus) {
-		case IncomingVideoStatus.NEW:
-			break;
-		case IncomingVideoStatus.QUEUED:
-			break;
-		case IncomingVideoStatus.DOWNLOADING:
-			needToHideIndicators = true;
-			updateContent();
-			animateDownloading();
-			break;
-		case IncomingVideoStatus.DOWNLOADED:
-			needToHideIndicators = false;
-			progressLine.setVisibility(View.INVISIBLE);
-			break;
-		case IncomingVideoStatus.VIEWED:
-			break;
-		case IncomingVideoStatus.FAILED_PERMANENTLY:
-			break;
-		}
+    public void setThumbnail(Bitmap bitmap) {
+        imgThumb.setImageBitmap(bitmap);
+    }
 
-		switch (outgoingStatus) {
-		case OutgoingVideoStatus.NEW:
-			break;
-		case OutgoingVideoStatus.QUEUED:
-			break;
-		case OutgoingVideoStatus.UPLOADING:
-			needToHideIndicators = true;
-			updateContent();
-			animateUploading();
-			break;
-		case OutgoingVideoStatus.UPLOADED:
-			progressLine.setVisibility(View.INVISIBLE);
-			needToHideIndicators = false;
-			break;
-		case OutgoingVideoStatus.DOWNLOADED:
-			break;
-		case OutgoingVideoStatus.VIEWED:
-			break;
-		case OutgoingVideoStatus.FAILED_PERMANENTLY:
-			break;
-		}
-	}
+    public void showButtons(boolean visible) {
+        buttonsBody.setVisibility(visible ? VISIBLE : GONE);
+    }
 
-	private void animateUploading() {
+    public void showUploadingMark(boolean visible) {
+        imgUploading.setVisibility(visible ? VISIBLE : GONE);
+    }
+
+    public void showProgressLine(boolean visible) {
+        progressLine.setVisibility(visible ? VISIBLE : INVISIBLE);
+    }
+
+	public void animateUploading() {
+        Log.d(TAG, this + "animateUploading");
 
 		int durationMillis = 400;
 		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
@@ -245,19 +213,35 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 				Animation.RELATIVE_TO_SELF, toYDelta);
 		trAn.setDuration(durationMillis);
 		trAn.setFillAfter(true);
+        trAn.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                Log.d(TAG, "onAnimationStart");
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                Log.d(TAG, "onAnimationEnd");
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                Log.d(TAG, "");
+            }
+        });
 		imgUploading.startAnimation(trAn);
 		progressLine.startAnimation(scale);
 	}
 
-	private void animateDownloading() {
+	public void animateDownloading() {
 		int durationMillis = 500;
 		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
 
 		ScaleAnimation scale = new ScaleAnimation(
 				0f, 1f, 
 				1f, 1f, 
-				Animation.RELATIVE_TO_SELF, (float) 1.0f,
-				Animation.RELATIVE_TO_SELF, (float) 0);
+				Animation.RELATIVE_TO_SELF, 1.0f,
+				Animation.RELATIVE_TO_SELF, 0.0f);
 		scale.setDuration(durationMillis);
 		scale.setFillAfter(true);
 
@@ -277,23 +261,4 @@ public class FriendView extends RelativeLayout implements StatusCallbacks {
 		progressLine.startAnimation(scale);
 	}
 
-	@Override
-	public void onVideoPlaying(String friendId, String videoId) {
-		Log.d(TAG, "onVideoPlaying " + friend.getId() + " ? " + friendId);
-		needToHideIndicators = friend.getId().equals(friendId);
-		updateContent();
-	}
-
-	@Override
-	public void onVideoStopPlaying() {
-		Log.d(TAG, "onVideoStopPlaying");
-		needToHideIndicators = false;
-		updateContent();
-	}
-
-    @Override
-    public void onFileDownloading() {    }
-
-    @Override
-    public void onFileDownloadingRetry() {   }
 }
