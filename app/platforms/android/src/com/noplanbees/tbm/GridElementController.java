@@ -2,7 +2,9 @@ package com.noplanbees.tbm;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.GridElement;
@@ -38,7 +40,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     private void addGridElementView() {
-		
 	}
 
 	@Override

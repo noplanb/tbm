@@ -45,7 +45,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     private View mEmptyView;
     private View mBody;
 
-    private int mPosition;
 
 	private ClickListener mClickListener;
 
@@ -53,9 +52,8 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 	private boolean needToHideIndicators;
 	private View buttonsBody;
 
-    public GridElementView(Context context, int position) {
+    public GridElementView(Context context) {
         super(context);
-        mPosition = position;
         init();
     }
 
@@ -67,7 +65,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         mEventListener = listener;
     }
 	private void init() {
-		LayoutInflater.from(getContext()).inflate(R.layout.friendview_item, this, true);
+		LayoutInflater.from(getContext()).inflate(R.layout.grid_element_view, this, true);
 		unreadBorder = findViewById(R.id.unread_border);
 
         mEmptyView = findViewById(R.id.empty_view);
@@ -148,10 +146,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void setName(String name) {
         twName.setText(name);
-    }
-
-    public int getPosition() {
-        return mPosition;
     }
 
     public void setVideoViewed(boolean visible) {
