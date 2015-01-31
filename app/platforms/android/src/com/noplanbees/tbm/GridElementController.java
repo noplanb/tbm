@@ -1,23 +1,30 @@
 package com.noplanbees.tbm;
 
 import android.util.Log;
-import com.noplanbees.tbm.interfaces.FriendViewControllerCallbacks;
+
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
-import com.noplanbees.tbm.ui.view.FriendView;
+import com.noplanbees.tbm.ui.view.GridElementView;
 
 /**
  * Created by User on 1/30/2015.
  */
-public class FriendViewController implements FriendView.ClickListener, VideoPlayer.StatusCallbacks, FriendView.FriendViewListener {
-    private static final String TAG = FriendViewController.class.getSimpleName();
+public class GridElementController implements GridElementView.ClickListener, VideoPlayer.StatusCallbacks, GridElementView.FriendViewListener {
+    private static final String TAG = GridElementController.class.getSimpleName();
     private GridElement mGridElement;
-    private final FriendView mView;
-    private final FriendViewControllerCallbacks mCallbacks;
+    private final GridElementView mView;
+    private final Callbacks mCallbacks;
 
-    public FriendViewController(GridElement gridElement, FriendView view, FriendViewControllerCallbacks callbacks) {
+    public interface Callbacks {
+        void onBenchRequest(int pos);
+        void onNudgeFriend(Friend f);
+        void onRecordDialogRequested();
+    }
+    
+    public GridElementController(GridElement gridElement, GridElementView view, GridElementController.Callbacks callbacks) {
+    	Log.i(TAG, "instance with view " + view);
         mView = view;
         mGridElement = gridElement;
         mView.setOnClickListener(this);

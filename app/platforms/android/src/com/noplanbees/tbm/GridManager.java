@@ -14,6 +14,7 @@ import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.GridElementFactory;
+import com.noplanbees.tbm.utilities.Convenience;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +23,8 @@ import java.util.Comparator;
 public class GridManager{
 	private static final String STAG = GridManager.class.getSimpleName();
 	
+    public static final int GRID_ELEMENTS_COUNT = 8;
+
 	public static interface GridEventNotificationDelegate{
 		public void gridDidChange();
 	}
@@ -31,6 +34,28 @@ public class GridManager{
 		gridEventDelegate = delegate;
 	}
 	
+	
+	//----------
+	// Init grid
+	//----------
+	public static void initGrid(Context context){
+		if (GridElementFactory.getFactoryInstance().all().size() == GRID_ELEMENTS_COUNT)
+			return;
+
+		GridElementFactory.getFactoryInstance().destroyAll(context);
+		ArrayList<Friend> allFriends = FriendFactory.getFactoryInstance().all();
+		for (Integer i = 0; i < GRID_ELEMENTS_COUNT; i++) {
+			GridElement g = GridElementFactory.getFactoryInstance().makeInstance(context);
+			if (i < allFriends.size()) {
+				Friend f = allFriends.get(i);
+				g.set(GridElement.Attributes.FRIEND_ID, f.getId());
+			}
+		}
+	}
+	
+	//-------------------------
+	// Managing friends on grid
+	//-------------------------
 	public static ArrayList<Friend> friendsOnGrid(){
 		ArrayList<Friend> r = new ArrayList<Friend>();
 		for (GridElement ge : GridElementFactory.getFactoryInstance().all()){

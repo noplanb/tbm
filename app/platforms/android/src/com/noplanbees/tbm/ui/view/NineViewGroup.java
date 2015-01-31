@@ -16,21 +16,23 @@
 
 package com.noplanbees.tbm.ui.view;
 
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.content.Context;
-import android.database.DataSetObserver;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.TextView;
+
 import com.noplanbees.tbm.multimedia.VideoRecorder;
 import com.noplanbees.tbm.utilities.Convenience;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class NineViewGroup extends ViewGroup {
 	// ---------
@@ -40,20 +42,16 @@ public class NineViewGroup extends ViewGroup {
 	private static final int BIG_MOVE_DISTANCE = 100;
 	private static final int LONGPRESS_TIMEOUT = 175;
 
-	private static final int MATRIX_DIMENSIONS = 3;
-
 	private static final float ASPECT = 240F / 320F;
 
-	private static final int MIN_MARGIN_DP = 10;
-	private static final int PADDING_DP = 5;
-
-	private static final int TOTAL_CHILD_COUNT = 9;
-	private static final int CENTRAL_VIEW_POSITION = TOTAL_CHILD_COUNT / 2;
+	private static final float MIN_MARGIN_DP = 10F;
+	private static final float PADDING_DP = 5F;
 
 	/**
 	 * Represents an invalid position. All valid positions are in the range 0 to
 	 * 1 less than the number of items in the current adapter.
 	 */
+	public static final int CENTER_CHILD = 4;
 	public static final int INVALID_POSITION = -1;
 
 	// -----
@@ -65,20 +63,16 @@ public class NineViewGroup extends ViewGroup {
 		public static final int LONGPRESS = 2;
 	}
 
-	public interface OnItemTouchListener {
-		boolean onItemClick(NineViewGroup parent, View view, int position, long id);
-
-		boolean onItemLongClick(NineViewGroup parent, View view, int position, long id);
-
-		boolean onItemStopTouch();
-
-		boolean onCancelTouch();
-
-		boolean onCancelTouch(String reason);
+	public interface GestureListener {
+		boolean onClick(NineViewGroup parent, View view, int position, long id);
+		boolean onStartLongpress(NineViewGroup parent, View view, int position, long id);
+		boolean onEndLongpress();
+		boolean onCancelLongpress();
+		boolean onCancelLongpress(String reason);
 	}
 
-	public interface OnChildLayoutCompleteListener {
-		void onChildLayoutComplete();
+	public interface LayoutCompleteListener {
+		void onLayoutComplete();
 	}
 
 	private Integer state = State.IDLE;
@@ -86,17 +80,17 @@ public class NineViewGroup extends ViewGroup {
 	private Timer longPressTimer;
 
 	private BaseAdapter adapter;
-	private OnItemTouchListener itemClickListener;
-	private OnChildLayoutCompleteListener childLayoutCompleteListener;
+	private GestureListener gestureListener;
+	private LayoutCompleteListener layoutCompleteListener;
 
 	private boolean isAttach;
-	private DataSetObserver dataSetObserver;
-	private boolean isDirty;
-
+	
 	private VideoRecorder videoRecorder;
 
-	private SparseArray<View> recycleBin;
 
+	//-------------
+	// Constructors
+	//-------------
 	public NineViewGroup(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init();
@@ -113,169 +107,166 @@ public class NineViewGroup extends ViewGroup {
 	}
 
 	private void init() {
-		// allow childrens to extends parent border
+		// allow children to extends parent border
 		setClipChildren(false);
 		setClipToPadding(false);
+		addElementViews();
+	}
+	
+	@Override
+	protected void onLayout(boolean changed, int l, int t, int r, int b){
+		layoutElementViews();
 	}
 
-	public void setAdapter(BaseAdapter adapter) {
-		if (this.adapter != null) {
-			this.adapter.unregisterDataSetObserver(dataSetObserver);
-		}
-		if (recycleBin == null) {
-			recycleBin = new SparseArray<View>(TOTAL_CHILD_COUNT);
-		}
-		recycleBin.clear();
-
-		dataSetObserver = new AdapterDataSetObserver();
-		adapter.registerDataSetObserver(dataSetObserver);
-
-		this.adapter = adapter;
-	}
-
-	public BaseAdapter getAdapter() {
-		return adapter;
-	}
-
+	//----------------------
+	// Callback registration
+	//----------------------
 	public void setVideoRecorder(VideoRecorder videoRecorder) {
 		this.videoRecorder = videoRecorder;
 	}
 
-	public OnItemTouchListener getItemClickListener() {
-		return itemClickListener;
+	public GestureListener getGestureListener() {
+		return gestureListener;
 	}
 
-	public void setItemClickListener(OnItemTouchListener itemClickListener) {
-		this.itemClickListener = itemClickListener;
+	public void setGestureListener(GestureListener gl) {
+		this.gestureListener = gl;
 	}
 
-	public void setChildLayoutCompleteListener(OnChildLayoutCompleteListener childLayoutCompleteListener) {
-		this.childLayoutCompleteListener = childLayoutCompleteListener;
+	public void setChildLayoutCompleteListener(LayoutCompleteListener childLayoutCompleteListener) {
+		this.layoutCompleteListener = childLayoutCompleteListener;
 	}
 
-	@Override
-	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		if (adapter == null || videoRecorder == null)
-			return;
-
-		View preview = videoRecorder.getView();
-		int childCount = getChildCount();
-		if (isDirty == true && childCount > 0) {
-			// = getChildAt(CENTRAL_VIEW_POSITION);
-			int j = 0;
-			while (getChildCount() > 1) {
-				View child = getChildAt(j);
-				if (preview != null && child.equals(preview)) {
-					j++;
-					continue;
-				}
-				removeView(child);
+	
+	//-------
+	// Layout
+	//-------
+	private ArrayList<Integer> elementSize(){
+	    float width;
+	    float height;
+	    if (isHeightConstrained()){
+	        height = (getHeight() - 2 * (marginPx() + paddingPx()) );
+	        width = ASPECT * height;
+	    } else {
+	        width = ( getWidth() - 2 * (marginPx() + paddingPx()) ) / 3;
+	        height = width / ASPECT;
+	    }
+	    ArrayList<Integer> r = new ArrayList<Integer>();
+	    r.add(Math.round(width));
+	    r.add(Math.round(height));
+	    return r;
+	}
+	
+	private Integer elementWidth(){
+		return elementSize().get(0);
+	}
+	
+	private Integer elementHeight(){
+		return elementSize().get(1);
+	}
+	
+	private boolean isHeightConstrained() {
+		return !isWidthConstrained();
+	}
+	
+	private boolean isWidthConstrained(){
+		 return (float) getWidth() / (float) getHeight() < ASPECT;
+	}
+	
+	private Integer gutterTop(){		
+		if (isHeightConstrained())
+			return (int) marginPx();
+		else
+			return (int) (( getHeight() - 3*elementHeight() - 2*paddingPx() ) / 2);
+		
+	}
+	
+	private Integer gutterLeft(){
+		if (isWidthConstrained())
+			return (int) marginPx();
+		else
+			return (int) ( ( getWidth() - 3*elementWidth() -2*paddingPx()) / 2); 
+	}
+	
+	private float paddingPx(){
+		return Convenience.dpToPx(getContext(), PADDING_DP);
+	}
+	
+	private float marginPx(){
+		return Convenience.dpToPx(getContext(), MIN_MARGIN_DP);
+	}
+	
+	private void addElementViews(){
+		for (int i=0; i<9; i++){
+			TextView v = new TextView(getContext());
+			v.setBackgroundColor(Color.RED);
+			v.setText("i=" + i);
+			addView(v, i, new LayoutParams(elementWidth(),elementHeight()));
+		}
+	}
+	
+	private void layoutElementViews(){
+		int x;
+		int y;
+		int i = 0;
+		for (int row=0; row<3; row++){
+			for (int col=0; col<3; col++){
+				x = (int) (gutterLeft() + col * (elementWidth() + paddingPx()));
+				y = (int) (gutterTop() + row * (elementHeight() + paddingPx()));
+				TextView v = (TextView) getChildAt(i);
+				v.measure(MeasureSpec.EXACTLY | elementWidth(), MeasureSpec.EXACTLY | elementHeight());
+				v.layout(x, y, x + elementWidth(), y + elementHeight());
+				i++;
 			}
-			Log.d(TAG, "removed all childs");
 		}
-
-		if (childCount < adapter.getCount() || isDirty) {
-			int position = 0;
-			int bottomEdge = 0;
-            final int childHeight = getHeight() / MATRIX_DIMENSIONS;
-			while (bottomEdge < getHeight() && position < TOTAL_CHILD_COUNT) {
-				int rightEdge = 0;
-				while (rightEdge < getWidth() && position < TOTAL_CHILD_COUNT) {
-					View newChild;
-					if (position == CENTRAL_VIEW_POSITION) {
-						newChild = videoRecorder.getView();
-						if (!isDirty)
-							addAndMeasureChild(newChild, position);
-					} else {
-						int childPos;
-						if (position > CENTRAL_VIEW_POSITION)
-							childPos = position - 1;
-						else
-							childPos = position;
-						View convertView = recycleBin.get(childPos);
-						newChild = adapter.getView(childPos, convertView, this);
-						recycleBin.put(childPos, newChild);
-						addAndMeasureChild(newChild, position);
-					}
-					rightEdge += newChild.getMeasuredWidth();
-					position++;
-				}
-				bottomEdge += childHeight;
-			}
-		}
-		layoutChildren();
-		isDirty = false;
 	}
+	
 
-	/**
-	 * Adds a view as a child view and takes care of measuring it
-	 * 
-	 * @param child
-	 *            The view to add
-	 */
-	private void addAndMeasureChild(View child, int position) {
-		LayoutParams params = child.getLayoutParams();
-		if (params == null) {
-			params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-		}
-		addViewInLayout(child, position, params, true);
-
-		int itemWidth = (getWidth() - 2 * Convenience.dpToPx(getContext(), MIN_MARGIN_DP) - 2 * Convenience.dpToPx(
-				getContext(), PADDING_DP)) / MATRIX_DIMENSIONS;
-		int itemHeight = (int) ((float) itemWidth / ASPECT);
-		child.measure(MeasureSpec.EXACTLY | itemWidth, MeasureSpec.EXACTLY | itemHeight);
-	}
-
-	/**
-	 * Positions the children at the "correct" positions
-	 */
-	private void layoutChildren() {
-		View child = getChildAt(0);
-		int numCol = getWidth() / child.getMeasuredWidth();
-
-		int padding_px = Convenience.dpToPx(getContext(), PADDING_DP);
-		int startX = (getWidth() - 3 * child.getMeasuredWidth() - 2 * padding_px) / 2;
-		startX = (startX < MIN_MARGIN_DP) ? MIN_MARGIN_DP : startX;
-		int startY = (getHeight() - (child.getMeasuredHeight() + padding_px) * 3) / 2;
-		startY = (startY < MIN_MARGIN_DP) ? MIN_MARGIN_DP : startY;
-
-		for (int index = 0; index < getChildCount(); index++) {
-			child = getChildAt(index);
-			int width = child.getMeasuredWidth();
-			int height = child.getMeasuredHeight();
-			int mod = index / numCol;
-			int left = startX + (index - mod * numCol) * (width + padding_px);
-			int top = startY + mod * (height + padding_px);
-
-			child.layout(left, top, left + width, top + height);
-		}
-
-		if (childLayoutCompleteListener != null) {
-			childLayoutCompleteListener.onChildLayoutComplete();
-		}
-
-		Log.d(TAG, "layoutChildren");
-	}
-
-    public View getMiddleView() {
-        return getChildAt(CENTRAL_VIEW_POSITION);
+	//---------------
+	// Public getters
+	//---------------
+    public View getCenterView() {
+        return getChildAt(4);
     }
 
     /**
-     * Returns view by its position starts from bottom-right corner by scheme:
+     * Returns view by desired populating order:
      * <pre>
-     * 7 6 5
-     * 4   3
-     * 2 1 0
+     * 7 6 4
+     * 5   0
+     * 3 1 2
      * </pre>
-     * Views are available only when all child views are located and measured
-     * @param position
+     * 
+     * By converting from this internal index order
+     * <pre>
+     * 1 2 3 
+     * 4 5 6 
+     * 7 8 9
+     * </pre>
      * @return corresponding view
      */
-    public View getSurroundedView(int position) {
-        return recycleBin.get(position);
+    public View getSurroundingView(int position) {
+    	return getChildAt(indexFromPosition(position));
     }
-
+    
+    private int indexFromPosition(int position){
+    	switch (position) {
+		case 0: return 6; 
+		case 1: return 8; 
+		case 2: return 9; 
+		case 3: return 7; 
+		case 4: return 3; 
+		case 5: return 4; 
+		case 6: return 2; 
+		case 7: return 1; 
+		default: throw new RuntimeException("Illegal position passed to getSurroundedView");
+    	}
+    }
+    
+    
+    //--------------------------
+    // Longpress gesture handler
+    //--------------------------
 	@Override
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
@@ -501,9 +492,9 @@ public class NineViewGroup extends ViewGroup {
 		int y = (int) ev.getY();
 		int _motionPosition = pointToPosition(x, y);
 		final int motionPosition;
-		if(_motionPosition == CENTRAL_VIEW_POSITION)
+		if(_motionPosition == CENTER_CHILD)
 			motionPosition = INVALID_POSITION;
-		else if(_motionPosition>CENTRAL_VIEW_POSITION)
+		else if(_motionPosition>CENTER_CHILD)
 			motionPosition = _motionPosition - 1;
 		else
 			motionPosition = _motionPosition;
@@ -513,7 +504,7 @@ public class NineViewGroup extends ViewGroup {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				itemClickListener.onItemClick(NineViewGroup.this, child, motionPosition, id);
+				gestureListener.onClick(NineViewGroup.this, child, motionPosition, id);
 			}
 		});
 	}
@@ -522,9 +513,9 @@ public class NineViewGroup extends ViewGroup {
 
 		int _motionPosition = pointToPosition(x, y);
 		final int motionPosition;
-		if(_motionPosition == CENTRAL_VIEW_POSITION)
+		if(_motionPosition == CENTER_CHILD)
 			motionPosition = INVALID_POSITION;
-		else if(_motionPosition>CENTRAL_VIEW_POSITION)
+		else if(_motionPosition>CENTER_CHILD)
 			motionPosition = _motionPosition - 1;
 		else
 			motionPosition = _motionPosition;
@@ -533,8 +524,8 @@ public class NineViewGroup extends ViewGroup {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				if (itemClickListener != null)
-					itemClickListener.onItemLongClick(NineViewGroup.this, child, motionPosition, id);
+				if (gestureListener != null)
+					gestureListener.onStartLongpress(NineViewGroup.this, child, motionPosition, id);
 			}
 		});
 	}
@@ -544,8 +535,8 @@ public class NineViewGroup extends ViewGroup {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				if (itemClickListener != null)
-					itemClickListener.onItemStopTouch();
+				if (gestureListener != null)
+					gestureListener.onEndLongpress();
 			}
 		});
 	}
@@ -554,8 +545,8 @@ public class NineViewGroup extends ViewGroup {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				if (itemClickListener != null)
-					itemClickListener.onCancelTouch();
+				if (gestureListener != null)
+					gestureListener.onCancelLongpress();
 			}
 		});
 	}
@@ -564,22 +555,10 @@ public class NineViewGroup extends ViewGroup {
 		post(new Runnable() {
 			@Override
 			public void run() {
-				if (itemClickListener != null)
-					itemClickListener.onCancelTouch(reason);
+				if (gestureListener != null)
+					gestureListener.onCancelLongpress(reason);
 			}
 		});
 	}
 
-	private class AdapterDataSetObserver extends DataSetObserver {
-		@Override
-		public void onChanged() {
-			isDirty = true && getChildCount() > 0;
-			requestLayout();
-		}
-
-		@Override
-		public void onInvalidated() {
-			requestLayout();
-		}
-	}
 }

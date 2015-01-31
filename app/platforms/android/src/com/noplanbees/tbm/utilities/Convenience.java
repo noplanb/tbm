@@ -21,8 +21,6 @@ import java.util.List;
 public class Convenience {
 	public final static String STAG = Convenience.class.getSimpleName();
 
-    public static final int FRIENDS_COUNT = 8;
-
 	public static float dpToPx(Context context, float dp){
 		Resources r = context.getResources();
 		return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
@@ -54,52 +52,6 @@ public class Convenience {
 			Log.i(STAG, "bitmapWithFile: IOException: " + e.getMessage());
 		}
 		return bmp;
-	}
-	
-	public static int getFriendPosByUiPos(int friendPos){
-		switch(friendPos){
-		case 0:
-			return 7;
-		case 1:
-			return 6;
-		case 2:
-			return 4;
-		case 3:
-			return 5;
-		case 4:
-			return 0;
-		case 5:
-			return 3;
-		case 6:
-			return 1;
-		case 7:
-			return 2;
-		default:
-			return 0;
-		}
-	}
-	
-	public static int getUiPosForFriendPos(int friendPos){
-		switch(friendPos){
-		case 0:
-			return 4;
-		case 1:
-			return 6;
-		case 2:
-			return 7;
-		case 3:
-			return 5;
-		case 4:
-			return 2;
-		case 5:
-			return 3;
-		case 6:
-			return 1;
-		case 7:
-			return 0;
-		default:
-			return 0;
-		}
 	}
 	
 	

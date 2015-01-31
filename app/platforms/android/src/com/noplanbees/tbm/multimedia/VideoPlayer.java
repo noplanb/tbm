@@ -135,7 +135,11 @@ public class VideoPlayer implements OnCompletionListener{
 		return friendId;
 	}
 
-	public void playAtPos(float x, float y, int width, int height, String friendId){
+	public void playOverView(View view, String friendId){
+		playAtPos(view.getX(), view.getY(), view.getWidth() + 1, view.getHeight() + 1, friendId);
+	}
+	
+	private void playAtPos(float x, float y, int width, int height, String friendId){
 		
 		boolean needToPlay = !(videoView.isPlaying() && friendId.equals(this.friendId));
 		
@@ -148,8 +152,7 @@ public class VideoPlayer implements OnCompletionListener{
 		}
 	}
 	
-	public void play(String friendId){
-		
+	private void play(String friendId){
 		boolean needToPlay = !(videoView.isPlaying() && friendId.equals(this.friendId));
 		
 		if (videoView.isPlaying())

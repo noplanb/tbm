@@ -1,5 +1,7 @@
 package com.noplanbees.tbm.ui;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -22,36 +24,35 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import android.widget.VideoView;
-import com.noplanbees.tbm.ActiveModelsHandler;
-import com.noplanbees.tbm.FriendViewController;
+
+import com.noplanbees.tbm.GridElementController;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
-import com.noplanbees.tbm.interfaces.FriendViewControllerCallbacks;
+import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
+import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.GridElement;
+import com.noplanbees.tbm.model.GridElementFactory;
 import com.noplanbees.tbm.multimedia.CameraManager;
 import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.multimedia.VideoRecorder;
 import com.noplanbees.tbm.network.FileDownloadService;
-import com.noplanbees.tbm.ui.view.FriendView;
+import com.noplanbees.tbm.ui.view.GridElementView;
 import com.noplanbees.tbm.ui.view.NineViewGroup;
-import com.noplanbees.tbm.ui.view.NineViewGroup.OnChildLayoutCompleteListener;
+import com.noplanbees.tbm.ui.view.NineViewGroup.LayoutCompleteListener;
 import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.utilities.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
 		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback,
-VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks {
+VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callbacks {
 	private static final String TAG = "GridViewFragment";
-    private ArrayList<FriendViewController> mViewControllers;
+    private ArrayList<GridElementController> mViewControllers;
 
     public interface Callbacks {
 		void onFinish();
@@ -62,7 +63,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
     }
 
 	private NineViewGroup gridView;
-	private FriendsAdapter adapter;
 	private ActiveModelsHandler activeModelsHandler;
 	private VideoPlayer videoPlayer;
 	private VideoRecorder videoRecorder;
@@ -76,7 +76,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		Log.d(TAG, "" + this);
+		Log.d(TAG, "onCreate" + this);
 
 		activeModelsHandler = ActiveModelsHandler.getActiveModelsHandler();
 		activeModelsHandler.getFf().addVideoStatusChangedCallbackDelegate(this);
@@ -87,8 +87,9 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 		videoRecorder = new VideoRecorder(getActivity());
 		videoRecorder.addExceptionHandlerDelegate(this);
 
-		setupGrid();
-
+		GridManager.initGrid(getActivity());
+		GridManager.setGridEventNotificationDelegate(this);
+		
 		mUnexpectedTerminationHelper.init();
 
         mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
@@ -97,7 +98,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
             Log.i(TAG, "Proximity sensor not found");
         }
 
-        mViewControllers = new ArrayList<>(Convenience.FRIENDS_COUNT);
+        mViewControllers = new ArrayList<>(GridManager.GRID_ELEMENTS_COUNT);
 	}
 
 	@Override
@@ -108,6 +109,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		Log.i(TAG, "inflating ninViewGroup");
 		View v = inflater.inflate(R.layout.nineviewgroup_fragment, container, false);
 
 		View videoBody = v.findViewById(R.id.video_body);
@@ -117,17 +119,16 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 		videoPlayer.setVideoViewBody(videoBody);
 
 		gridView = (NineViewGroup) v.findViewById(R.id.grid_view);
-		gridView.setItemClickListener(new NineViewGroup.OnItemTouchListener() {
+		gridView.setGestureListener(new NineViewGroup.GestureListener() {
 			@Override
-			public boolean onItemClick(NineViewGroup parent, View view, int position, long id) {
+			public boolean onClick(NineViewGroup parent, View view, int position, long id) {
 				Log.d(TAG, "onItemClick: " + position + ", " + id);
 				if (id == -1)
 					return false;
-				GridElement ge = (GridElement) ((FriendsAdapter) parent.getAdapter()).getItem(position);
+				GridElement ge = GridElementFactory.getFactoryInstance().get(position);
 				String friendId = ge.getFriendId();
 				if (friendId != null && !friendId.equals("")) {
-					videoPlayer.playAtPos(view.getX(), view.getY(), 
-							view.getWidth() + 1, view.getHeight() + 1, friendId);
+					videoPlayer.playOverView(view, friendId);
 				} else {
 					callbacks.onBenchRequest(position);
 				}
@@ -135,12 +136,12 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 			}
 
 			@Override
-			public boolean onItemLongClick(NineViewGroup parent, View view, int position, long id) {
+			public boolean onStartLongpress(NineViewGroup parent, View view, int position, long id) {
 				Log.d(TAG, "onItemLongClick: " + position + ", " + id);
 				if (id == -1)
 					return false;
 
-				GridElement ge = (GridElement) ((FriendsAdapter) parent.getAdapter()).getItem(position);
+				GridElement ge = GridElementFactory.getFactoryInstance().get(position);
 				String friendId = ge.getFriendId();
 				if (friendId != null && !friendId.equals("")) {
 					Logger.d("START RECORD");
@@ -151,14 +152,14 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 			}
 
 			@Override
-			public boolean onItemStopTouch() {
+			public boolean onEndLongpress() {
 				Logger.d("STOP RECORD");
 				onRecordStop();
 				return false;
 			}
 
 			@Override
-			public boolean onCancelTouch() {
+			public boolean onCancelLongpress() {
 				Log.d(getTag(), "onCancelTouch");
 				toast("Dragged Finger Away.");
 				Logger.d("STOP RECORD");
@@ -167,26 +168,26 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 			}
 
 			@Override
-			public boolean onCancelTouch(String reason) {
+			public boolean onCancelLongpress(String reason) {
 				toast(reason);
 				onRecordCancel();
 				return false;
 			}
 		});
 
-		gridView.setChildLayoutCompleteListener(new OnChildLayoutCompleteListener() {
+		gridView.setChildLayoutCompleteListener(new LayoutCompleteListener() {
 			@Override
-			public void onChildLayoutComplete() {
+			public void onLayoutComplete() {
                 if (!mViewControllers.isEmpty()) {
                     mViewControllers.clear();
                 }
-                final List<GridElement> elements = activeModelsHandler.getGf().all();
-                for (int i = 0; i < Convenience.FRIENDS_COUNT; i++) {
-                    mViewControllers.add(new FriendViewController(
-                            elements.get(Convenience.getFriendPosByUiPos(i)),
-                            (FriendView) gridView.getSurroundedView(i),
-                            GridViewFragment.this));
+                int i = 0;
+                for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
+                	GridElementController gec = new GridElementController(ge, (GridElementView) gridView.getSurroundingView(i), GridViewFragment.this);
+                	mViewControllers.add(gec);
+                	i++;
                 }
+                
                 handleIntentAction(getActivity().getIntent());
 			}
 		});
@@ -197,10 +198,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        adapter = new FriendsAdapter(getActivity(), activeModelsHandler.getGf().all());
         gridView.setVideoRecorder(videoRecorder);
-        gridView.setAdapter(adapter);
-
         Log.d(TAG, "View created");
     }
 
@@ -230,12 +228,14 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 		mUnexpectedTerminationHelper.finish();
 	}
 
+	
+	
 	// -------
 	// Events
 	// -------
 	private void onRecordStart(String friendId) {
 		videoPlayer.stop();
-		GridElement ge = activeModelsHandler.getGf().getGridElementByFriendId(friendId);
+		GridElement ge = GridElementFactory.getFactoryInstance().getGridElementByFriendId(friendId);
 		if (!ge.hasFriend())
 			return;
 
@@ -263,22 +263,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 		}
 	}
 
-	private void setupGrid() {
-		GridManager.setGridEventNotificationDelegate(this);
-
-		if (activeModelsHandler.getGf().all().size() == Convenience.FRIENDS_COUNT)
-			return;
-
-		activeModelsHandler.getGf().destroyAll(getActivity());
-		ArrayList<Friend> allFriends = activeModelsHandler.getFf().all();
-		for (Integer i = 0; i < Convenience.FRIENDS_COUNT; i++) {
-			GridElement g = activeModelsHandler.getGf().makeInstance(getActivity());
-			if (i < allFriends.size()) {
-				Friend f = allFriends.get(i);
-				g.set(GridElement.Attributes.FRIEND_ID, f.getId());
-			}
-		}
-	}
 
 	// ---------------------------------------
 	// Video Recorder ExceptionHandler delegate
@@ -386,7 +370,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 
 	@Override
 	public void gridDidChange() {
-		adapter.notifyDataSetChanged();
 	}
 
 	@Override
@@ -396,7 +379,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 			public void run() {
 				if (getActivity() != null)
 					GridManager.moveFriendToGrid(getActivity(), friend);
-				adapter.notifyDataSetChanged();
 			}
 		});
 	}
@@ -433,19 +415,19 @@ VideoPlayer.StatusCallbacks, SensorEventListener, FriendViewControllerCallbacks 
 	}
 
 	public void play(String friendId) {
-		int i = 0;
-		for (GridElement ge : activeModelsHandler.getGf().all()) {
-			if (ge.getFriendId().equals(friendId))
-				break;
-			i++;
-		}
-		// TODO: remove this ugly hack with magic number
-		int uiPosForFriendPos = Convenience.getUiPosForFriendPos(i);
-		if (uiPosForFriendPos >= 4)
-			uiPosForFriendPos++;
-		View view = gridView.getChildAt(uiPosForFriendPos);
-		videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth(), view.getHeight());
-		videoPlayer.play(friendId);
+		Friend f = (Friend) FriendFactory.getFactoryInstance().find(friendId);
+		
+		if (f == null)
+			throw new RuntimeException("Play from notification found no friendId: " + friendId);
+		
+		GridManager.moveFriendToGrid(getActivity(), f);
+		int index = GridElementFactory.getFactoryInstance().gridElementIndexWithFriend(f);
+		
+		if (index == -1)
+			throw new RuntimeException("Play from notification found not grid element index for friendId: " + friendId);
+		
+		View view = gridView.getSurroundingView(index);
+		videoPlayer.playOverView(view, friendId);
 	}
 
 	// -------------------

@@ -15,9 +15,9 @@ import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.utilities.Convenience;
 
-public class FriendView extends RelativeLayout implements View.OnClickListener {
+public class GridElementView extends RelativeLayout implements View.OnClickListener {
 
-	private static final String TAG = "FriendView";
+	private static final String TAG = "GridElementView";
     private boolean isAlterName;
     private FriendViewListener mEventListener;
 
@@ -53,7 +53,7 @@ public class FriendView extends RelativeLayout implements View.OnClickListener {
 	private boolean needToHideIndicators;
 	private View buttonsBody;
 
-    public FriendView(Context context, int position) {
+    public GridElementView(Context context, int position) {
         super(context);
         mPosition = position;
         init();

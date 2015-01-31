@@ -13,7 +13,6 @@ public class GridElement extends ActiveModel {
 	@Override
 	public String[] attributeList() {
 		final String[] a = {	
-			Attributes.ID,
 			Attributes.FRIEND_ID,
 		};
 		return a;
