@@ -16,7 +16,6 @@
 
 package com.noplanbees.tbm.ui.view;
 
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -30,6 +29,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.noplanbees.tbm.multimedia.VideoRecorder;
@@ -64,6 +64,9 @@ public class NineViewGroup extends ViewGroup {
 		public static final int LONGPRESS = 2;
 	}
 
+	// TODO: a centerClick need to be added to this set of callbacks.
+	// The click and longpress callbacks for surround views should just have 
+	// position as a parameter.
 	public interface GestureListener {
 		boolean onClick(NineViewGroup parent, View view, int position, long id);
 		boolean onStartLongpress(NineViewGroup parent, View view, int position, long id);
@@ -80,7 +83,6 @@ public class NineViewGroup extends ViewGroup {
 	private float[] downPosition = new float[2];
 	private Timer longPressTimer;
 
-	private BaseAdapter adapter;
 	private GestureListener gestureListener;
 	private LayoutCompleteListener layoutCompleteListener;
 
@@ -108,7 +110,6 @@ public class NineViewGroup extends ViewGroup {
 	}
 
 	private void init() {
-		// allow children to extends parent border
 		setClipChildren(false);
 		setClipToPadding(false);
 		addElementViews();
@@ -142,6 +143,30 @@ public class NineViewGroup extends ViewGroup {
 	//-------
 	// Layout
 	//-------
+	private void addElementViews(){
+		for (int i=0; i<9; i++){
+			FrameLayout fl = new FrameLayout(getContext());
+			fl.setBackgroundColor(Color.RED);
+			addView(fl, i, new LayoutParams(elementWidth(),elementHeight()));
+		}
+	}
+	
+	private void layoutElementViews(){
+		int x;
+		int y;
+		int i = 0;
+		for (int row=0; row<3; row++){
+			for (int col=0; col<3; col++){
+				x = (int) (gutterLeft() + col * (elementWidth() + paddingPx()));
+				y = (int) (gutterTop() + row * (elementHeight() + paddingPx()));
+				FrameLayout fl = (FrameLayout) getChildAt(i);
+				fl.layout(x, y, x + elementWidth(), y + elementHeight());
+				i++;
+			}
+		}
+	}
+	
+	// Layout helpers
 	private Pair<Float, Float> elementSize(){
 	    float width;
 	    float height;
@@ -194,31 +219,7 @@ public class NineViewGroup extends ViewGroup {
 		return Convenience.dpToPx(getContext(), MIN_MARGIN_DP);
 	}
 	
-	private void addElementViews(){
-		for (int i=0; i<9; i++){
-			TextView v = new TextView(getContext());
-			v.setBackgroundColor(Color.RED);
-			v.setText("i=" + i);
-			addView(v, i, new LayoutParams(elementWidth(),elementHeight()));
-		}
-	}
-	
-	private void layoutElementViews(){
-		int x;
-		int y;
-		int i = 0;
-		for (int row=0; row<3; row++){
-			for (int col=0; col<3; col++){
-				x = (int) (gutterLeft() + col * (elementWidth() + paddingPx()));
-				y = (int) (gutterTop() + row * (elementHeight() + paddingPx()));
-				TextView v = (TextView) getChildAt(i);
-				v.measure(MeasureSpec.EXACTLY | elementWidth(), MeasureSpec.EXACTLY | elementHeight());
-				v.layout(x, y, x + elementWidth(), y + elementHeight());
-				i++;
-			}
-		}
-	}
-	
+
 
 	//---------------
 	// Public getters
@@ -231,40 +232,58 @@ public class NineViewGroup extends ViewGroup {
      * Returns view by desired populating order:
      * <pre>
      * 7 6 4
-     * 5   0
+     * 5 8 0
      * 3 1 2
      * </pre>
      * 
      * By converting from this internal index order
      * <pre>
-     * 1 2 3 
-     * 4 5 6 
-     * 7 8 9
+     * 0 1 2 
+     * 3 4 5 
+     * 6 7 8
      * </pre>
      * @return corresponding view
      */
     public View getSurroundingView(int position) {
-    	return getChildAt(indexFromPosition(position));
+    	return getChildAt(indexWithPosition(position));
     }
     
-    private int indexFromPosition(int position){
+    private int indexWithPosition(int position){
     	switch (position) {
-		case 0: return 6; 
-		case 1: return 8; 
-		case 2: return 9; 
-		case 3: return 7; 
-		case 4: return 3; 
-		case 5: return 4; 
-		case 6: return 2; 
-		case 7: return 1; 
+		case 0: return 5; 
+		case 1: return 7; 
+		case 2: return 8; 
+		case 3: return 6; 
+		case 4: return 2; 
+		case 5: return 3; 
+		case 6: return 1; 
+		case 7: return 0; 
+		case 8: return 4;
 		default: throw new RuntimeException("Illegal position passed to getSurroundedView");
     	}
     }
     
+    private int positionWithIndex(int index){
+    	switch (index) {
+		case 0: return 7; 
+		case 1: return 6; 
+		case 2: return 4; 
+		case 3: return 5; 
+		case 4: return 8; 
+		case 5: return 0; 
+		case 6: return 3; 
+		case 7: return 1; 
+		case 8: return 2;
+		default: throw new RuntimeException("Illegal position passed to getSurroundedView");
+    	}
+    }
     
     //--------------------------
     // Longpress gesture handler
     //--------------------------
+    // TODO: This long press touch handler needs to be factored into a separate LongpressGestureRecognizer class in the same way I 
+    // originally had it in branch TBM master. Let us please not instantiate massive objects inline. It makes the code very unpleasant to read
+    // and the files very long.
 	@Override
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
@@ -469,61 +488,71 @@ public class NineViewGroup extends ViewGroup {
 	 *         {@link #INVALID_POSITION} if the point does not intersect an
 	 *         item.
 	 */
+	// TODO: When this handler is factored out we should just pass it a list of target views 
+	// It should return  one of those views when an event occurs in its rect. -Sani
 	public int pointToPosition(int x, int y) {
-		Rect frame = new Rect();
+		Rect rect = new Rect();
 
 		final int count = getChildCount();
 		for (int i = count - 1; i >= 0; i--) {
 			final View child = getChildAt(i);
 			if (child.getVisibility() == View.VISIBLE) {
-				child.getHitRect(frame);
-				if (frame.contains(x, y)) {
+				child.getHitRect(rect);
+				if (rect.contains(x, y)) {
 					return i;
 				}
 			}
 		}
 		return INVALID_POSITION;
 	}
-
+	
+	// TODO: This code was and still is Ugly. The and the ugliness is repeated twice. Go back to the way LongpressTouchhanler worked in my master branch
+	// events should bubble down to a target view and just return that view. Then pull the index from the view.
+	// I cleaned up a little for now but will need to factor all of this out. -Sani
 	private void runClick(MotionEvent ev) {
 		int x = (int) ev.getX();
 		int y = (int) ev.getY();
-		int _motionPosition = pointToPosition(x, y);
-		final int motionPosition;
-		if(_motionPosition == CENTER_CHILD)
-			motionPosition = INVALID_POSITION;
-		else if(_motionPosition>CENTER_CHILD)
-			motionPosition = _motionPosition - 1;
-		else
-			motionPosition = _motionPosition;
+		int index = pointToPosition(x, y);
+		Log.d(TAG, "runClick index: " +  index);
+		final int position;
+		if(index == CENTER_CHILD) {
+			position = INVALID_POSITION;
+			// TODO: added a return here for now. But eventually when this is factored the gestureListener in nineViewGroup should 
+			// fire a centerClick event.
+			return;
+		} else {
+			position = positionWithIndex(index);
+		}
 
-		final View child = getChildAt(_motionPosition);
-		final long id = adapter.getItemId(motionPosition);
+		final View child = getChildAt(index);
 		post(new Runnable() {
 			@Override
 			public void run() {
-				gestureListener.onClick(NineViewGroup.this, child, motionPosition, id);
+				Log.d(TAG, "click: " + position);
+				if (gestureListener != null)
+					gestureListener.onClick(NineViewGroup.this, child, position, position);
 			}
 		});
 	}
 
 	private void runStartLongpress(int x, int y) {
 
-		int _motionPosition = pointToPosition(x, y);
-		final int motionPosition;
-		if(_motionPosition == CENTER_CHILD)
-			motionPosition = INVALID_POSITION;
-		else if(_motionPosition>CENTER_CHILD)
-			motionPosition = _motionPosition - 1;
-		else
-			motionPosition = _motionPosition;
-		final View child = getChildAt(_motionPosition);
-		final long id = adapter.getItemId(motionPosition);
+		int index = pointToPosition(x, y);
+		final int position;
+		if(index == CENTER_CHILD){
+			position = INVALID_POSITION;
+			return;
+		} else {
+			position = positionWithIndex(index);
+		}
+
+		final View child = getChildAt(index);
 		post(new Runnable() {
 			@Override
 			public void run() {
+				Log.d(TAG, "startLongpress: " + position);
 				if (gestureListener != null)
-					gestureListener.onStartLongpress(NineViewGroup.this, child, motionPosition, id);
+					gestureListener.onStartLongpress(NineViewGroup.this, child, position, position);
 			}
 		});
 	}

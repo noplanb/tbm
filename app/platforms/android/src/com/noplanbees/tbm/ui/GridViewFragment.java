@@ -67,7 +67,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	private VideoPlayer videoPlayer;
 	private VideoRecorder videoRecorder;
 	private Callbacks callbacks;
-	private Handler handler = new Handler(Looper.getMainLooper());
+	private Handler mainLooper = new Handler(Looper.getMainLooper());
 
     private SensorManager mSensorManager;
     private Sensor mProximitySensor;
@@ -109,7 +109,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Log.i(TAG, "inflating ninViewGroup");
 		View v = inflater.inflate(R.layout.nineviewgroup_fragment, container, false);
 
 		View videoBody = v.findViewById(R.id.video_body);
@@ -323,7 +322,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
 	private void showCameraExceptionDialog(final String title, final String message, final String negativeButton,
 			final String positiveButton) {
-		handler.post(new Runnable() {
+		mainLooper.post(new Runnable() {
 			@Override
 			public void run() {
 				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -358,7 +357,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	}
 
 	private void toast(final String msg) {
-		handler.post(new Runnable() {
+		mainLooper.post(new Runnable() {
 			@Override
 			public void run() {
 				Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT);
@@ -374,7 +373,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
 	@Override
 	public void onVideoStatusChanged(final Friend friend) {
-		handler.post(new Runnable() {
+		mainLooper.post(new Runnable() {
 			@Override
 			public void run() {
 				if (getActivity() != null)
