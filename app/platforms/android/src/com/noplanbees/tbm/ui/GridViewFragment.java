@@ -83,6 +83,9 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
 		videoPlayer = VideoPlayer.getInstance(getActivity());
 
+		// TODO: Let us have a convention that if initalizing something  requires 3 or more lines of code then 
+		// it should be put in its own method. For example. setupVideoRecorder(). That way one can read through
+		// and intialization sequence like this and quickly see what is happening at a high level. -- Sani (Serhii please delete this comment when read)
 		CameraManager.addExceptionHandlerDelegate(this);
 		videoRecorder = new VideoRecorder(getActivity());
 		videoRecorder.addExceptionHandlerDelegate(this);
@@ -90,6 +93,10 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		GridManager.initGrid(getActivity());
 		GridManager.setGridEventNotificationDelegate(this);
 		
+		// TODO: Naming convention: I know that in android and java it is customary to name member variables with mVarirable.
+		// However in this project if it is ok I would like to stick to the convention of just using the classname and lowercasing the first
+		// letter. For example "private smartClass = new SmartClass()" rather than mSmartClass = new SmartClass. I have to read java, javascript, coffescript, objC, ruby, python
+		// etc and it is easier on the eyes to have a common convention across the entire code base. -- Sani (Serhii please deleete this comment when read) 
 		mUnexpectedTerminationHelper.init();
 
         mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
@@ -111,13 +118,18 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.nineviewgroup_fragment, container, false);
 
+		// TODO: factor into a setupVideoPlayer() method
 		View videoBody = v.findViewById(R.id.video_body);
 		VideoView videoView = (VideoView) v.findViewById(R.id.video_view);
-
 		videoPlayer.setVideoView(videoView);
 		videoPlayer.setVideoViewBody(videoBody);
 
 		gridView = (NineViewGroup) v.findViewById(R.id.grid_view);
+		
+		// TODO: Convention: I know that it is conventional to to do inline anonymous class declarations. And this is fine.
+		// However, if the handler for one or more of the overridden methods in the class ends up being more than 3 lines of code
+		// Then let us please capture the action in a method and call that method from the overridden callback. 
+		// It is hard on the eyes to review code where the handler is long and complicated as below. -- Sani
 		gridView.setGestureListener(new NineViewGroup.GestureListener() {
 			@Override
 			public boolean onClick(NineViewGroup parent, View view, int position, long id) {
@@ -177,16 +189,8 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		gridView.setChildLayoutCompleteListener(new LayoutCompleteListener() {
 			@Override
 			public void onLayoutComplete() {
-                if (!mViewControllers.isEmpty()) {
-                    mViewControllers.clear();
-                }
-                int i = 0;
-                for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
-                	GridElementController gec = new GridElementController(ge, (GridElementView) gridView.getSurroundingView(i), GridViewFragment.this);
-                	mViewControllers.add(gec);
-                	i++;
-                }
-                
+				setupGridElements();
+				layoutVideoRecorderPreview();
                 handleIntentAction(getActivity().getIntent());
 			}
 		});
@@ -228,6 +232,27 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	}
 
 	
+	
+	//-------------------
+	// Setup gridElements
+	//-------------------
+	private void setupGridElements(){
+        if (!mViewControllers.isEmpty()) {
+            mViewControllers.clear();
+        }
+        int i = 0;
+        for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
+        	GridElementController gec = new GridElementController(ge, (GridElementView) gridView.getSurroundingFrame(i), GridViewFragment.this);
+        	mViewControllers.add(gec);
+        	i++;
+        }
+	}
+	
+	//---------------------
+	// Layout videoRecorder
+	//---------------------
+	private void layoutVideoRecorderPreview(){
+	}
 	
 	// -------
 	// Events
@@ -425,7 +450,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		if (index == -1)
 			throw new RuntimeException("Play from notification found not grid element index for friendId: " + friendId);
 		
-		View view = gridView.getSurroundingView(index);
+		View view = gridView.getSurroundingFrame(index);
 		videoPlayer.playOverView(view, friendId);
 	}
 

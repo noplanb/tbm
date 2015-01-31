@@ -224,8 +224,8 @@ public class NineViewGroup extends ViewGroup {
 	//---------------
 	// Public getters
 	//---------------
-    public View getCenterView() {
-        return getChildAt(4);
+    public FrameLayout getCenterFrame() {
+        return (FrameLayout) getChildAt(4);
     }
 
     /**
@@ -244,8 +244,8 @@ public class NineViewGroup extends ViewGroup {
      * </pre>
      * @return corresponding view
      */
-    public View getSurroundingView(int position) {
-    	return getChildAt(indexWithPosition(position));
+    public FrameLayout getSurroundingFrame(int position) {
+    	return (FrameLayout) getChildAt(indexWithPosition(position));
     }
     
     private int indexWithPosition(int position){
