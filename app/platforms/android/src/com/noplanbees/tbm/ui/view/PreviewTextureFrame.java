@@ -18,30 +18,31 @@ import android.widget.FrameLayout;
 import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.R;
 
-public class PreviewTextureView extends FrameLayout {
+public class PreviewTextureFrame extends FrameLayout {
 
-    private static final String TAG = "PreviewTextureView";
+    private static final String TAG = "PreviewTextureFrame";
     private TextureView textureView;
 	private boolean isRecording;
 
-	public PreviewTextureView(Context context, AttributeSet attrs, int defStyle) {
+	public PreviewTextureFrame(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init();
 	}
 
-	public PreviewTextureView(Context context, AttributeSet attrs) {
+	public PreviewTextureFrame(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
 
-	public PreviewTextureView(Context context) {
+	public PreviewTextureFrame(Context context) {
 		super(context);
 		init();
 	}
 
 	private void init() {
 		textureView = new TextureView(getContext());
-		addView(textureView);
+		addView(textureView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+		setBackgroundColor(Color.GREEN);
 	}
 
 	public boolean isRecording() {

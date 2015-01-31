@@ -87,9 +87,6 @@ public class NineViewGroup extends ViewGroup {
 	private LayoutCompleteListener layoutCompleteListener;
 
 	private boolean isAttach;
-	
-	private VideoRecorder videoRecorder;
-
 
 	//-------------
 	// Constructors
@@ -118,15 +115,13 @@ public class NineViewGroup extends ViewGroup {
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b){
 		layoutElementViews();
+		if (layoutCompleteListener != null)
+			layoutCompleteListener.onLayoutComplete();
 	}
 
 	//----------------------
 	// Callback registration
 	//----------------------
-	public void setVideoRecorder(VideoRecorder videoRecorder) {
-		this.videoRecorder = videoRecorder;
-	}
-
 	public GestureListener getGestureListener() {
 		return gestureListener;
 	}
@@ -160,6 +155,7 @@ public class NineViewGroup extends ViewGroup {
 				x = (int) (gutterLeft() + col * (elementWidth() + paddingPx()));
 				y = (int) (gutterTop() + row * (elementHeight() + paddingPx()));
 				FrameLayout fl = (FrameLayout) getChildAt(i);
+				fl.measure(MeasureSpec.EXACTLY | elementWidth(), MeasureSpec.EXACTLY | elementHeight());
 				fl.layout(x, y, x + elementWidth(), y + elementHeight());
 				i++;
 			}
@@ -507,8 +503,7 @@ public class NineViewGroup extends ViewGroup {
 	}
 	
 	// TODO: This code was and still is Ugly. The and the ugliness is repeated twice. Go back to the way LongpressTouchhanler worked in my master branch
-	// events should bubble down to a target view and just return that view. Then pull the index from the view.
-	// I cleaned up a little for now but will need to factor all of this out. -Sani
+	// I cleaned up a little for now but will need to factor all of this out. --Sani
 	private void runClick(MotionEvent ev) {
 		int x = (int) ev.getX();
 		int y = (int) ev.getY();

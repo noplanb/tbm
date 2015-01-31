@@ -1,6 +1,8 @@
 package com.noplanbees.tbm;
 
+import android.content.Context;
 import android.util.Log;
+import android.view.ViewGroup;
 
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.GridElement;
@@ -14,25 +16,32 @@ import com.noplanbees.tbm.ui.view.GridElementView;
 public class GridElementController implements GridElementView.ClickListener, VideoPlayer.StatusCallbacks, GridElementView.FriendViewListener {
     private static final String TAG = GridElementController.class.getSimpleName();
     private GridElement mGridElement;
-    private final GridElementView mView;
+    private ViewGroup container;
+    private GridElementView gridElementView;
     private final Callbacks mCallbacks;
+    private Context context;
 
     public interface Callbacks {
-        void onBenchRequest(int pos);
+        void onBenchRequest();
         void onNudgeFriend(Friend f);
         void onRecordDialogRequested();
     }
     
-    public GridElementController(GridElement gridElement, GridElementView view, GridElementController.Callbacks callbacks) {
-    	Log.i(TAG, "instance with view " + view);
-        mView = view;
+    public GridElementController(Context context, GridElement gridElement, ViewGroup container, GridElementController.Callbacks callbacks) {
+    	Log.i(TAG, "instance with view " + container);
+    	this.context = context;
+        this.container = container;
         mGridElement = gridElement;
-        mView.setOnClickListener(this);
         mCallbacks = callbacks;
-        updateContent(false);
+        addGridElementView();
+//        updateContent(false);
     }
 
-    @Override
+    private void addGridElementView() {
+		
+	}
+
+	@Override
     public void onNudgeClicked() {
         mCallbacks.onNudgeFriend(mGridElement.friend());
     }
@@ -44,7 +53,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onEmptyViewClicked() {
-        mCallbacks.onBenchRequest(mView.getPosition());
+        mCallbacks.onBenchRequest();
     }
 
     @Override
@@ -73,18 +82,18 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         }
         int unreadMsgCount = friend.incomingVideoNotViewedCount();
 
-        mView.showNudge(!friend.hasApp());
+        gridElementView.showNudge(!friend.hasApp());
 
-        mView.setVideoViewed(friend.getOutgoingVideoStatus() == Friend.OutgoingVideoStatus.VIEWED && !hideIndicators);
-        mView.setUnreadCount(unreadMsgCount > 0 && !hideIndicators, unreadMsgCount);
+        gridElementView.setVideoViewed(friend.getOutgoingVideoStatus() == Friend.OutgoingVideoStatus.VIEWED && !hideIndicators);
+        gridElementView.setUnreadCount(unreadMsgCount > 0 && !hideIndicators, unreadMsgCount);
         if (friend.thumbExists()) {
-            mView.setThumbnail(friend.lastThumbBitmap());
-            mView.showButtons(false);
+            gridElementView.setThumbnail(friend.lastThumbBitmap());
+            gridElementView.showButtons(false);
         } else {
-            mView.showButtons(true);
+            gridElementView.showButtons(true);
         }
-        mView.showUploadingMark(isUploading());
-        mView.setName(friend.getStatusString()); // TODO Remove
+        gridElementView.showUploadingMark(isUploading());
+        gridElementView.setName(friend.getStatusString()); // TODO Remove
     }
 
     private void updateVideoStatus() {
@@ -104,11 +113,11 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                 break;
             case Video.IncomingVideoStatus.DOWNLOADING:
                 updateContent(true);
-                mView.animateDownloading();
+                gridElementView.animateDownloading();
                 break;
             case Video.IncomingVideoStatus.DOWNLOADED:
                 updateContent(false);
-                mView.showProgressLine(false);
+                gridElementView.showProgressLine(false);
                 break;
             case Video.IncomingVideoStatus.VIEWED:
                 break;
@@ -123,10 +132,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                 break;
             case Friend.OutgoingVideoStatus.UPLOADING:
                 updateContent(true);
-                mView.animateUploading();
+                gridElementView.animateUploading();
                 break;
             case Friend.OutgoingVideoStatus.UPLOADED:
-                mView.showProgressLine(false);
+                gridElementView.showProgressLine(false);
                 updateContent(false);
                 break;
             case Friend.OutgoingVideoStatus.DOWNLOADED:
@@ -155,13 +164,13 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     public void onAttached() {
         updateVideoStatus();
 
-        VideoPlayer videoPlayer = VideoPlayer.getInstance(mView.getContext());
+        VideoPlayer videoPlayer = VideoPlayer.getInstance(context);
         videoPlayer.registerStatusCallbacks(this);
     }
 
     @Override
     public void onDetached() {
-        VideoPlayer videoPlayer = VideoPlayer.getInstance(mView.getContext());
+        VideoPlayer videoPlayer = VideoPlayer.getInstance(context);
         videoPlayer.unregisterStatusCallbacks(this);
     }
 }

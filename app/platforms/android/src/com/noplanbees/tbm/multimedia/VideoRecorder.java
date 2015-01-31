@@ -12,7 +12,7 @@ import android.view.View;
 import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.ui.view.PreviewTextureView;
+import com.noplanbees.tbm.ui.view.PreviewTextureFrame;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class VideoRecorder implements SurfaceTextureListener {
     private Context context;
     private MediaRecorder mediaRecorder;
     private Friend currentFriend;
-    private PreviewTextureView preview;
+    private PreviewTextureFrame preview;
     // Allow registration of a single delegate to handle exceptions.
     private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
 
@@ -291,7 +291,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     public View getView() {
         if (preview == null) {
-            preview = new PreviewTextureView(context);
+            preview = new PreviewTextureFrame(context);
             preview.setSurfaceTextureListener(this);
         }
         return preview;

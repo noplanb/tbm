@@ -8,6 +8,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -22,6 +23,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -42,27 +44,31 @@ import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.multimedia.VideoRecorder;
 import com.noplanbees.tbm.network.FileDownloadService;
-import com.noplanbees.tbm.ui.view.GridElementView;
 import com.noplanbees.tbm.ui.view.NineViewGroup;
 import com.noplanbees.tbm.ui.view.NineViewGroup.LayoutCompleteListener;
-import com.noplanbees.tbm.utilities.Convenience;
+import com.noplanbees.tbm.ui.view.PreviewTextureFrame;
 import com.noplanbees.tbm.utilities.Logger;
 
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
 		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback,
 VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callbacks {
-	private static final String TAG = "GridViewFragment";
+	
+	// TODO: Let us have the convention of referencing the class to set the TAG for logs. That way 
+	// if we change the classname as we often do we dont need to remember to change the TAG for the logs.
+	// if. Catch the tag being set to a hardcoded classname elswhere please change --Sani (serhii please delete comment when read)
+	private static final String TAG = GridViewFragment.class.getSimpleName();
+	
     private ArrayList<GridElementController> mViewControllers;
 
     public interface Callbacks {
 		void onFinish();
-		void onBenchRequest(int pos);
+		void onBenchRequest();
 		void onNudgeFriend(Friend f);
 		void showRecordDialog();
         void showBadConnectionDialog();
     }
 
-	private NineViewGroup gridView;
+	private NineViewGroup nineViewGroup;
 	private ActiveModelsHandler activeModelsHandler;
 	private VideoPlayer videoPlayer;
 	private VideoRecorder videoRecorder;
@@ -83,9 +89,9 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
 		videoPlayer = VideoPlayer.getInstance(getActivity());
 
-		// TODO: Let us have a convention that if initalizing something  requires 3 or more lines of code then 
+		// TODO: Let us have a convention that if initializing something  requires 3 or more lines of code then 
 		// it should be put in its own method. For example. setupVideoRecorder(). That way one can read through
-		// and intialization sequence like this and quickly see what is happening at a high level. -- Sani (Serhii please delete this comment when read)
+		// and initialization sequence like this and quickly see what is happening at a high level. -- Sani (Serhii please delete this comment when read)
 		CameraManager.addExceptionHandlerDelegate(this);
 		videoRecorder = new VideoRecorder(getActivity());
 		videoRecorder.addExceptionHandlerDelegate(this);
@@ -95,8 +101,8 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		
 		// TODO: Naming convention: I know that in android and java it is customary to name member variables with mVarirable.
 		// However in this project if it is ok I would like to stick to the convention of just using the classname and lowercasing the first
-		// letter. For example "private smartClass = new SmartClass()" rather than mSmartClass = new SmartClass. I have to read java, javascript, coffescript, objC, ruby, python
-		// etc and it is easier on the eyes to have a common convention across the entire code base. -- Sani (Serhii please deleete this comment when read) 
+		// letter. For example "private smartClass = new SmartClass()" rather than mSmartClass = new SmartClass(). I have to read java, javascript, coffescript, objC, ruby, python
+		// etc and it is easier on the eyes to have a common convention across the entire code base. Thank you. -- Sani (Serhii please deleete this comment when read) 
 		mUnexpectedTerminationHelper.init();
 
         mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
@@ -124,13 +130,13 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		videoPlayer.setVideoView(videoView);
 		videoPlayer.setVideoViewBody(videoBody);
 
-		gridView = (NineViewGroup) v.findViewById(R.id.grid_view);
+		nineViewGroup = (NineViewGroup) v.findViewById(R.id.grid_view);
 		
 		// TODO: Convention: I know that it is conventional to to do inline anonymous class declarations. And this is fine.
 		// However, if the handler for one or more of the overridden methods in the class ends up being more than 3 lines of code
 		// Then let us please capture the action in a method and call that method from the overridden callback. 
 		// It is hard on the eyes to review code where the handler is long and complicated as below. -- Sani
-		gridView.setGestureListener(new NineViewGroup.GestureListener() {
+		nineViewGroup.setGestureListener(new NineViewGroup.GestureListener() {
 			@Override
 			public boolean onClick(NineViewGroup parent, View view, int position, long id) {
 				Log.d(TAG, "onItemClick: " + position + ", " + id);
@@ -141,7 +147,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 				if (friendId != null && !friendId.equals("")) {
 					videoPlayer.playOverView(view, friendId);
 				} else {
-					callbacks.onBenchRequest(position);
+					callbacks.onBenchRequest();
 				}
 				return true;
 			}
@@ -186,11 +192,11 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 			}
 		});
 
-		gridView.setChildLayoutCompleteListener(new LayoutCompleteListener() {
+		nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
 			@Override
 			public void onLayoutComplete() {
 				setupGridElements();
-				layoutVideoRecorderPreview();
+				layoutVideoRecorder();
                 handleIntentAction(getActivity().getIntent());
 			}
 		});
@@ -201,8 +207,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        gridView.setVideoRecorder(videoRecorder);
-        Log.d(TAG, "View created");
     }
 
 	@Override
@@ -242,21 +246,32 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
         }
         int i = 0;
         for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
-        	GridElementController gec = new GridElementController(ge, (GridElementView) gridView.getSurroundingFrame(i), GridViewFragment.this);
+        	GridElementController gec = new GridElementController(getActivity(), ge, nineViewGroup.getSurroundingFrame(i), GridViewFragment.this);
         	mViewControllers.add(gec);
         	i++;
         }
 	}
 	
+
+
 	//---------------------
-	// Layout videoRecorder
+	// VideoRecorder Layout
 	//---------------------
-	private void layoutVideoRecorderPreview(){
+	private void layoutVideoRecorder(){
+		FrameLayout fl = nineViewGroup.getCenterFrame();
+		if (fl.getChildCount() != 0){
+			Log.w(TAG, "layoutVideoRecorder: not adding preview view as it appears to already have been added.");
+			return;
+		}
+		Log.i(TAG, "layoutVideoRecorder: adding videoRecorder preview");
+		PreviewTextureFrame vrFrame = (PreviewTextureFrame) videoRecorder.getView();
+		fl.addView(vrFrame, new PreviewTextureFrame.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 	}
 	
-	// -------
-	// Events
-	// -------
+	
+	// ----------------------------
+	// VideoRecorder event handling
+	// ----------------------------
 	private void onRecordStart(String friendId) {
 		videoPlayer.stop();
 		GridElement ge = GridElementFactory.getFactoryInstance().getGridElementByFriendId(friendId);
@@ -271,9 +286,9 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 			Dispatch.dispatch("onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
 		}
 	}
-
+	
 	private void onRecordCancel() {
-		// Different from abortAnyRecording becuase we always toast here.
+		// Different from abortAnyRecording because we always toast here.
 		videoRecorder.stopRecording();
 		toast("Not sent.");
 	}
@@ -450,7 +465,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		if (index == -1)
 			throw new RuntimeException("Play from notification found not grid element index for friendId: " + friendId);
 		
-		View view = gridView.getSurroundingFrame(index);
+		View view = nineViewGroup.getSurroundingFrame(index);
 		videoPlayer.playOverView(view, friendId);
 	}
 
@@ -498,8 +513,8 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	}
 
     @Override
-    public void onBenchRequest(int pos) {
-        callbacks.onBenchRequest(pos);
+    public void onBenchRequest() {
+        callbacks.onBenchRequest();
     }
 
     @Override

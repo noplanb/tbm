@@ -182,7 +182,7 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 	}
 
 	@Override
-	public void onBenchRequest(int pos) {
+	public void onBenchRequest() {
 		body.openDrawer(Gravity.RIGHT);
 	}
 
