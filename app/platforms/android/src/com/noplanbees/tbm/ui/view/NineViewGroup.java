@@ -25,6 +25,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,9 +55,9 @@ public class NineViewGroup extends ViewGroup {
 	public static final int CENTER_CHILD = 4;
 	public static final int INVALID_POSITION = -1;
 
-	// -----
-	// State
-	// -----
+	// ---------------------------------
+	// State for longpress touch handler
+	// ----------------------------------
 	private static final class State {
 		public static final int IDLE = 0;
 		public static final int DOWN = 1;
@@ -141,7 +142,7 @@ public class NineViewGroup extends ViewGroup {
 	//-------
 	// Layout
 	//-------
-	private ArrayList<Integer> elementSize(){
+	private Pair<Float, Float> elementSize(){
 	    float width;
 	    float height;
 	    if (isHeightConstrained()){
@@ -151,18 +152,15 @@ public class NineViewGroup extends ViewGroup {
 	        width = ( getWidth() - 2 * (marginPx() + paddingPx()) ) / 3;
 	        height = width / ASPECT;
 	    }
-	    ArrayList<Integer> r = new ArrayList<Integer>();
-	    r.add(Math.round(width));
-	    r.add(Math.round(height));
-	    return r;
+	    return new Pair<Float, Float>(width, height);
 	}
 	
-	private Integer elementWidth(){
-		return elementSize().get(0);
+	private int elementWidth(){
+		return Math.round(elementSize().first);
 	}
 	
-	private Integer elementHeight(){
-		return elementSize().get(1);
+	private int elementHeight(){
+		return Math.round(elementSize().second);
 	}
 	
 	private boolean isHeightConstrained() {
