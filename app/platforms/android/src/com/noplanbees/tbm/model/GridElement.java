@@ -24,7 +24,7 @@ public class GridElement extends ActiveModel {
 		this.context = context;
 	}
 	
-	public Friend friend(){
+	public Friend getFriend(){
 		String fid = attributes.get(GridElement.Attributes.FRIEND_ID);
 		if (fid.equals(""))
 			return null;

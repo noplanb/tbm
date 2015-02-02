@@ -42,7 +42,6 @@ public class PreviewTextureFrame extends FrameLayout {
 	private void init() {
 		textureView = new TextureView(getContext());
 		addView(textureView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-		setBackgroundColor(Color.GREEN);
 	}
 
 	public boolean isRecording() {

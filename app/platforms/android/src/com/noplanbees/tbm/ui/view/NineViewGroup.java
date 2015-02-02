@@ -16,11 +16,7 @@
 
 package com.noplanbees.tbm.ui.view;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -28,12 +24,11 @@ import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
-import android.widget.TextView;
-
-import com.noplanbees.tbm.multimedia.VideoRecorder;
 import com.noplanbees.tbm.utilities.Convenience;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class NineViewGroup extends ViewGroup {
 	// ---------
@@ -97,27 +92,25 @@ public class NineViewGroup extends ViewGroup {
 	}
 
 	public NineViewGroup(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		init();
+		this(context, attrs, 0);
 	}
 
 	public NineViewGroup(Context context) {
-		super(context);
-		init();
+		this(context, null);
 	}
 
 	private void init() {
-		setClipChildren(false);
-		setClipToPadding(false);
 		addElementViews();
 	}
-	
-	@Override
-	protected void onLayout(boolean changed, int l, int t, int r, int b){
-		layoutElementViews();
-		if (layoutCompleteListener != null)
-			layoutCompleteListener.onLayoutComplete();
-	}
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        layoutElementViews();
+        if (changed) {
+            if (layoutCompleteListener != null)
+                layoutCompleteListener.onLayoutComplete();
+        }
+    }
 
 	//----------------------
 	// Callback registration
@@ -134,19 +127,19 @@ public class NineViewGroup extends ViewGroup {
 		this.layoutCompleteListener = childLayoutCompleteListener;
 	}
 
-	
-	//-------
-	// Layout
-	//-------
-	private void addElementViews(){
-		for (int i=0; i<9; i++){
-			FrameLayout fl = new FrameLayout(getContext());
-			fl.setBackgroundColor(Color.RED);
-			addView(fl, i, new LayoutParams(elementWidth(),elementHeight()));
-		}
-	}
-	
-	private void layoutElementViews(){
+    //-------
+    // Layout
+    //-------
+    private void addElementViews() {
+        for (int i = 0; i < 9; i++) {
+            FrameLayout fl = new FrameLayout(getContext());
+            fl.setClipChildren(false);
+            fl.setClipToPadding(false);
+            addView(fl, i, new LayoutParams(elementWidth(), elementHeight()));
+        }
+    }
+
+    private void layoutElementViews() {
 		int x;
 		int y;
 		int i = 0;
@@ -154,7 +147,7 @@ public class NineViewGroup extends ViewGroup {
 			for (int col=0; col<3; col++){
 				x = (int) (gutterLeft() + col * (elementWidth() + paddingPx()));
 				y = (int) (gutterTop() + row * (elementHeight() + paddingPx()));
-				FrameLayout fl = (FrameLayout) getChildAt(i);
+                FrameLayout fl = (FrameLayout) getChildAt(i);
 				fl.measure(MeasureSpec.EXACTLY | elementWidth(), MeasureSpec.EXACTLY | elementHeight());
 				fl.layout(x, y, x + elementWidth(), y + elementHeight());
 				i++;
@@ -241,7 +234,7 @@ public class NineViewGroup extends ViewGroup {
      * @return corresponding view
      */
     public FrameLayout getSurroundingFrame(int position) {
-    	return (FrameLayout) getChildAt(indexWithPosition(position));
+        return (FrameLayout) getChildAt(indexWithPosition(position));
     }
     
     private int indexWithPosition(int position){
@@ -509,6 +502,10 @@ public class NineViewGroup extends ViewGroup {
 		int y = (int) ev.getY();
 		int index = pointToPosition(x, y);
 		Log.d(TAG, "runClick index: " +  index);
+        if (index == INVALID_POSITION) {
+            // Just return if we touch outside views
+            return;
+        }
 		final int position;
 		if(index == CENTER_CHILD) {
 			position = INVALID_POSITION;
