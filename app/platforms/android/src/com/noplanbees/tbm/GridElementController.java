@@ -2,9 +2,7 @@ package com.noplanbees.tbm;
 
 import android.content.Context;
 import android.util.Log;
-import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.GridElement;
@@ -17,10 +15,10 @@ import com.noplanbees.tbm.ui.view.GridElementView;
  */
 public class GridElementController implements GridElementView.ClickListener, VideoPlayer.StatusCallbacks, GridElementView.FriendViewListener {
     private static final String TAG = GridElementController.class.getSimpleName();
-    private GridElement mGridElement;
+    private GridElement gridElement;
     private ViewGroup container;
     private GridElementView gridElementView;
-    private final Callbacks mCallbacks;
+    private final Callbacks callbacks;
     private Context context;
 
     public interface Callbacks {
@@ -33,8 +31,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     	Log.i(TAG, "instance with view " + container);
     	this.context = context;
         this.container = container;
-        mGridElement = gridElement;
-        mCallbacks = callbacks;
+        this.gridElement = gridElement;
+        this.callbacks = callbacks;
         addGridElementView();
 //        updateContent(false);
     }
@@ -44,22 +42,22 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
 	@Override
     public void onNudgeClicked() {
-        mCallbacks.onNudgeFriend(mGridElement.friend());
+        callbacks.onNudgeFriend(gridElement.getFriend());
     }
 
     @Override
     public void onRecordClicked() {
-        mCallbacks.onRecordDialogRequested();
+        callbacks.onRecordDialogRequested();
     }
 
     @Override
     public void onEmptyViewClicked() {
-        mCallbacks.onBenchRequest();
+        callbacks.onBenchRequest();
     }
 
     @Override
     public void onVideoPlaying(String friendId, String videoId) {
-        String id = mGridElement.friend().getId();
+        String id = gridElement.getFriend().getId();
         Log.d(TAG, "onVideoPlaying " + id + " ? " + friendId);
         updateContent(id.equals(friendId));
     }
@@ -77,7 +75,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     public void onFileDownloadingRetry() {   }
 
     private void updateContent(boolean hideIndicators) {
-        Friend friend = mGridElement.friend();
+        Friend friend = gridElement.getFriend();
         if (friend == null) {
             return;
         }
@@ -98,7 +96,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     private void updateVideoStatus() {
-        Friend friend = mGridElement.friend();
+        Friend friend = gridElement.getFriend();
         if (friend == null) {
             return;
         }
@@ -149,11 +147,11 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     private boolean hasFriend() {
-        return mGridElement.friend() != null;
+        return gridElement.getFriend() != null;
     }
 
     private boolean isUploading() {
-        Friend friend = mGridElement.friend();
+        Friend friend = gridElement.getFriend();
         return friend != null && friend.getOutgoingVideoStatus() != Friend.OutgoingVideoStatus.NONE &&
                 friend.getOutgoingVideoStatus() != Friend.OutgoingVideoStatus.VIEWED &&
                 friend.getOutgoingVideoStatus() != Friend.OutgoingVideoStatus.QUEUED &&

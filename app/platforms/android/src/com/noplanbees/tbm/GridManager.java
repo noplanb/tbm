@@ -14,7 +14,6 @@ import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.GridElementFactory;
-import com.noplanbees.tbm.utilities.Convenience;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,12 +56,12 @@ public class GridManager{
 	// Managing friends on grid
 	//-------------------------
 	public static ArrayList<Friend> friendsOnGrid(){
-		ArrayList<Friend> r = new ArrayList<Friend>();
+		ArrayList<Friend> friendList = new ArrayList<Friend>();
 		for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
 			if (ge.hasFriend())
-				r.add(ge.friend());
+				friendList.add(ge.getFriend());
 		}
-		return r;
+		return friendList;
 	}
 	
 	public static ArrayList<Friend> friendsOnBench(){

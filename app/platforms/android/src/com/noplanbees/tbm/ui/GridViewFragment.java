@@ -1,14 +1,11 @@
 package com.noplanbees.tbm.ui;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -26,7 +23,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 import android.widget.VideoView;
-
 import com.noplanbees.tbm.GridElementController;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
@@ -49,22 +45,21 @@ import com.noplanbees.tbm.ui.view.NineViewGroup.LayoutCompleteListener;
 import com.noplanbees.tbm.ui.view.PreviewTextureFrame;
 import com.noplanbees.tbm.utilities.Logger;
 
+import java.util.ArrayList;
+
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
 		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback,
 VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callbacks {
-	
-	// TODO: Let us have the convention of referencing the class to set the TAG for logs. That way 
-	// if we change the classname as we often do we dont need to remember to change the TAG for the logs.
-	// if. Catch the tag being set to a hardcoded classname elswhere please change --Sani (serhii please delete comment when read)
+
 	private static final String TAG = GridViewFragment.class.getSimpleName();
-	
+
     private ArrayList<GridElementController> mViewControllers;
 
     public interface Callbacks {
-		void onFinish();
-		void onBenchRequest();
-		void onNudgeFriend(Friend f);
-		void showRecordDialog();
+        void onFinish();
+        void onBenchRequest();
+        void onNudgeFriend(Friend f);
+        void showRecordDialog();
         void showBadConnectionDialog();
     }
 
@@ -73,10 +68,10 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	private VideoPlayer videoPlayer;
 	private VideoRecorder videoRecorder;
 	private Callbacks callbacks;
-	private Handler mainLooper = new Handler(Looper.getMainLooper());
+	private Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    private SensorManager mSensorManager;
-    private Sensor mProximitySensor;
+    private SensorManager sensorManager;
+    private Sensor proximitySensor;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -89,25 +84,18 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
 		videoPlayer = VideoPlayer.getInstance(getActivity());
 
-		// TODO: Let us have a convention that if initializing something  requires 3 or more lines of code then 
-		// it should be put in its own method. For example. setupVideoRecorder(). That way one can read through
-		// and initialization sequence like this and quickly see what is happening at a high level. -- Sani (Serhii please delete this comment when read)
 		CameraManager.addExceptionHandlerDelegate(this);
 		videoRecorder = new VideoRecorder(getActivity());
 		videoRecorder.addExceptionHandlerDelegate(this);
 
 		GridManager.initGrid(getActivity());
 		GridManager.setGridEventNotificationDelegate(this);
-		
-		// TODO: Naming convention: I know that in android and java it is customary to name member variables with mVarirable.
-		// However in this project if it is ok I would like to stick to the convention of just using the classname and lowercasing the first
-		// letter. For example "private smartClass = new SmartClass()" rather than mSmartClass = new SmartClass(). I have to read java, javascript, coffescript, objC, ruby, python
-		// etc and it is easier on the eyes to have a common convention across the entire code base. Thank you. -- Sani (Serhii please deleete this comment when read) 
+
 		mUnexpectedTerminationHelper.init();
 
-        mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
-        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        if (mProximitySensor == null) {
+        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        if (proximitySensor == null) {
             Log.i(TAG, "Proximity sensor not found");
         }
 
@@ -131,66 +119,8 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		videoPlayer.setVideoViewBody(videoBody);
 
 		nineViewGroup = (NineViewGroup) v.findViewById(R.id.grid_view);
-		
-		// TODO: Convention: I know that it is conventional to to do inline anonymous class declarations. And this is fine.
-		// However, if the handler for one or more of the overridden methods in the class ends up being more than 3 lines of code
-		// Then let us please capture the action in a method and call that method from the overridden callback. 
-		// It is hard on the eyes to review code where the handler is long and complicated as below. -- Sani
-		nineViewGroup.setGestureListener(new NineViewGroup.GestureListener() {
-			@Override
-			public boolean onClick(NineViewGroup parent, View view, int position, long id) {
-				Log.d(TAG, "onItemClick: " + position + ", " + id);
-				if (id == -1)
-					return false;
-				GridElement ge = GridElementFactory.getFactoryInstance().get(position);
-				String friendId = ge.getFriendId();
-				if (friendId != null && !friendId.equals("")) {
-					videoPlayer.playOverView(view, friendId);
-				} else {
-					callbacks.onBenchRequest();
-				}
-				return true;
-			}
 
-			@Override
-			public boolean onStartLongpress(NineViewGroup parent, View view, int position, long id) {
-				Log.d(TAG, "onItemLongClick: " + position + ", " + id);
-				if (id == -1)
-					return false;
-
-				GridElement ge = GridElementFactory.getFactoryInstance().get(position);
-				String friendId = ge.getFriendId();
-				if (friendId != null && !friendId.equals("")) {
-					Logger.d("START RECORD");
-					onRecordStart(friendId);
-				}
-
-				return true;
-			}
-
-			@Override
-			public boolean onEndLongpress() {
-				Logger.d("STOP RECORD");
-				onRecordStop();
-				return false;
-			}
-
-			@Override
-			public boolean onCancelLongpress() {
-				Log.d(getTag(), "onCancelTouch");
-				toast("Dragged Finger Away.");
-				Logger.d("STOP RECORD");
-				onRecordCancel();
-				return false;
-			}
-
-			@Override
-			public boolean onCancelLongpress(String reason) {
-				toast(reason);
-				onRecordCancel();
-				return false;
-			}
-		});
+        nineViewGroup.setGestureListener(new NineViewGestureListener());
 
 		nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
 			@Override
@@ -214,7 +144,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		Logger.d(TAG, "onResume");
 		videoRecorder.onResume();
         videoPlayer.registerStatusCallbacks(this);
-        mSensorManager.registerListener(this, mProximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
 		super.onResume();
 	}
 
@@ -226,7 +156,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		videoRecorder.stopRecording();
         videoPlayer.unregisterStatusCallbacks(this);
 		videoPlayer.release(getActivity());
-        mSensorManager.unregisterListener(this);
+        sensorManager.unregisterListener(this);
 	}
 
 	@Override
@@ -251,8 +181,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
         	i++;
         }
 	}
-	
-
 
 	//---------------------
 	// VideoRecorder Layout
@@ -267,8 +195,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		PreviewTextureFrame vrFrame = (PreviewTextureFrame) videoRecorder.getView();
 		fl.addView(vrFrame, new PreviewTextureFrame.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 	}
-	
-	
+
 	// ----------------------------
 	// VideoRecorder event handling
 	// ----------------------------
@@ -278,7 +205,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		if (!ge.hasFriend())
 			return;
 
-		Friend f = ge.friend();
+		Friend f = ge.getFriend();
 		GridManager.rankingActionOccurred(f);
 		if (videoRecorder.startRecording(f)) {
 			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
@@ -286,11 +213,11 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 			Dispatch.dispatch("onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
 		}
 	}
-	
+
 	private void onRecordCancel() {
 		// Different from abortAnyRecording because we always toast here.
 		videoRecorder.stopRecording();
-		toast("Not sent.");
+		showToast("Not sent.");
 	}
 
 	private void onRecordStop() {
@@ -302,38 +229,37 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		}
 	}
 
-
 	// ---------------------------------------
 	// Video Recorder ExceptionHandler delegate
 	// ----------------------------------------
 	@Override
 	public void unableToSetPrievew() {
-		toast("unable to set preview");
+		showToast("unable to set preview");
 	}
 
 	@Override
 	public void unableToPrepareMediaRecorder() {
-		toast("Unable to prepare MediaRecorder");
+		showToast("Unable to prepare MediaRecorder");
 	}
 
 	@Override
 	public void recordingAborted() {
-		toast("Recording Aborted due to Release before Stop.");
+		showToast("Recording Aborted due to Release before Stop.");
 	}
 
 	@Override
 	public void recordingTooShort() {
-		toast("Not sent. Too short.");
+		showToast("Not sent. Too short.");
 	}
 
 	@Override
 	public void illegalStateOnStart() {
-		toast("Runntime exception on MediaRecorder.start. Quitting app.");
+		showToast("Runntime exception on MediaRecorder.start. Quitting app.");
 	}
 
 	@Override
 	public void runntimeErrorOnStart() {
-		toast("Unable to start recording. Try again.");
+		showToast("Unable to start recording. Try again.");
 	}
 
 	// -------------------------------
@@ -360,28 +286,35 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 				"Quit", "Try Again");
 	}
 
-	private void showCameraExceptionDialog(final String title, final String message, final String negativeButton,
-			final String positiveButton) {
-		mainLooper.post(new Runnable() {
-			@Override
-			public void run() {
-				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-				builder.setTitle(title).setMessage(message)
-						.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								callbacks.onFinish();
-							}
-						}).setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								videoRecorder.dispose();
-								videoRecorder.restore();
-							}
-						});
-				AlertDialog alertDialog = builder.create();
-				alertDialog.setCanceledOnTouchOutside(false);
-				alertDialog.show();
-			}
-		});
+	private void showCameraExceptionDialog(final String title, final String message, final String negativeText,
+			final String positiveText) {
+		uiHandler.post(new Runnable() {
+            private DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+                            callbacks.onFinish();
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            videoRecorder.dispose();
+                            videoRecorder.restore();
+                            break;
+                    }
+                }
+            };
+
+            @Override
+            public void run() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(title).setMessage(message)
+                        .setNegativeButton(negativeText, clickListener)
+                        .setPositiveButton(positiveText, clickListener);
+                AlertDialog alertDialog = builder.create();
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.show();
+            }
+        });
 	}
 
 	@Override
@@ -396,15 +329,15 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
 	}
 
-	private void toast(final String msg) {
-		mainLooper.post(new Runnable() {
-			@Override
-			public void run() {
-				Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT);
-				toast.setGravity(Gravity.CENTER, 0, 0);
-				toast.show();
-			}
-		});
+	private void showToast(final String msg) {
+		uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            }
+        });
 	}
 
 	@Override
@@ -413,13 +346,13 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
 	@Override
 	public void onVideoStatusChanged(final Friend friend) {
-		mainLooper.post(new Runnable() {
-			@Override
-			public void run() {
-				if (getActivity() != null)
-					GridManager.moveFriendToGrid(getActivity(), friend);
-			}
-		});
+		uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (getActivity() != null)
+                    GridManager.moveFriendToGrid(getActivity(), friend);
+            }
+        });
 	}
 
 	private UnexpectedTerminationHelper mUnexpectedTerminationHelper = new UnexpectedTerminationHelper();
@@ -535,7 +468,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
     @Override
     public void onFileDownloading() {
-        toast("Downloading...");
+        showToast("Downloading...");
     }
 
     @Override
@@ -558,5 +491,61 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    private class NineViewGestureListener implements NineViewGroup.GestureListener {
+        @Override
+        public boolean onClick(NineViewGroup parent, View view, int position, long id) {
+            Log.d(TAG, "onItemClick: " + position + ", " + id);
+            if (id == -1)
+                return false;
+            GridElement gridElement = GridElementFactory.getFactoryInstance().get(position);
+            String friendId = gridElement.getFriendId();
+            if (friendId != null && !friendId.equals("")) {
+                videoPlayer.playOverView(view, friendId);
+            } else {
+                callbacks.onBenchRequest();
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onStartLongpress(NineViewGroup parent, View view, int position, long id) {
+            Log.d(TAG, "onItemLongClick: " + position + ", " + id);
+            if (id == -1)
+                return false;
+
+            GridElement ge = GridElementFactory.getFactoryInstance().get(position);
+            String friendId = ge.getFriendId();
+            if (friendId != null && !friendId.equals("")) {
+                Logger.d("START RECORD");
+                onRecordStart(friendId);
+            }
+
+            return true;
+        }
+
+        @Override
+        public boolean onEndLongpress() {
+            Logger.d("STOP RECORD");
+            onRecordStop();
+            return false;
+        }
+
+        @Override
+        public boolean onCancelLongpress() {
+            Log.d(getTag(), "onCancelTouch");
+            showToast("Dragged Finger Away.");
+            Logger.d("STOP RECORD");
+            onRecordCancel();
+            return false;
+        }
+
+        @Override
+        public boolean onCancelLongpress(String reason) {
+            showToast(reason);
+            onRecordCancel();
+            return false;
+        }
     }
 }
