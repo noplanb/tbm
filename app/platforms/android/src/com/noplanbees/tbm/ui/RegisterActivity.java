@@ -12,7 +12,6 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -88,7 +87,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		setContentView(R.layout.register);
 		setupListeners();
 		setupProgressDialog();
-		AddShortcutIcon();
+		addShortcutIcon();
 	}
 
 	@Override
@@ -463,7 +462,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	//-------------
 	// Add shortcut
 	//-------------
-	private void AddShortcutIcon(){
+	private void addShortcutIcon(){
 
 		Intent shortcutIntent = new Intent(getApplicationContext(), MainActivity.class);
 		//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

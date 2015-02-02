@@ -92,6 +92,16 @@ public class FriendFactory extends ActiveModelFactory{
         return r;
     }
 
+    @Override
+    public void destroyAll(Context context) {
+        for (ActiveModel a : instances) {
+            Friend f = (Friend) a;
+            f.deleteAllVideos();
+        }
+
+        super.destroyAll(context);
+    }
+
     //----------------------------
     // VideoStatusChange callbacks
     //----------------------------
