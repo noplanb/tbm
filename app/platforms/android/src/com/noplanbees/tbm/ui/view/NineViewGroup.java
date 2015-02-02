@@ -105,8 +105,8 @@ public class NineViewGroup extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        layoutElementViews();
         if (changed) {
-            layoutElementViews();
             if (layoutCompleteListener != null)
                 layoutCompleteListener.onLayoutComplete();
         }
@@ -502,6 +502,10 @@ public class NineViewGroup extends ViewGroup {
 		int y = (int) ev.getY();
 		int index = pointToPosition(x, y);
 		Log.d(TAG, "runClick index: " +  index);
+        if (index == INVALID_POSITION) {
+            // Just return if we touch outside views
+            return;
+        }
 		final int position;
 		if(index == CENTER_CHILD) {
 			position = INVALID_POSITION;
