@@ -64,6 +64,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     public void setEventListener(FriendViewListener listener) {
         mEventListener = listener;
     }
+
 	private void init() {
 		LayoutInflater.from(getContext()).inflate(R.layout.grid_element_view, this, true);
 		unreadBorder = findViewById(R.id.unread_border);

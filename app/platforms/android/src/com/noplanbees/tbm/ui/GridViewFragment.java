@@ -53,7 +53,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
 	private static final String TAG = GridViewFragment.class.getSimpleName();
 
-    private ArrayList<GridElementController> mViewControllers;
+    private ArrayList<GridElementController> viewControllers;
 
     public interface Callbacks {
         void onFinish();
@@ -99,7 +99,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
             Log.i(TAG, "Proximity sensor not found");
         }
 
-        mViewControllers = new ArrayList<>(GridManager.GRID_ELEMENTS_COUNT);
+        viewControllers = new ArrayList<>(GridManager.GRID_ELEMENTS_COUNT);
 	}
 
 	@Override
@@ -165,35 +165,33 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		mUnexpectedTerminationHelper.finish();
 	}
 
-	
-	
 	//-------------------
 	// Setup gridElements
 	//-------------------
 	private void setupGridElements(){
-        if (!mViewControllers.isEmpty()) {
-            mViewControllers.clear();
+        if (!viewControllers.isEmpty()) {
+            viewControllers.clear();
         }
         int i = 0;
         for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
-        	GridElementController gec = new GridElementController(getActivity(), ge, nineViewGroup.getSurroundingFrame(i), GridViewFragment.this);
-        	mViewControllers.add(gec);
-        	i++;
+            GridElementController gec = new GridElementController(getActivity(), ge, nineViewGroup.getSurroundingFrame(i), GridViewFragment.this);
+            viewControllers.add(gec);
+            i++;
         }
-	}
+    }
 
 	//---------------------
 	// VideoRecorder Layout
 	//---------------------
 	private void layoutVideoRecorder(){
-		FrameLayout fl = nineViewGroup.getCenterFrame();
+        FrameLayout fl = nineViewGroup.getCenterFrame();
 		if (fl.getChildCount() != 0){
 			Log.w(TAG, "layoutVideoRecorder: not adding preview view as it appears to already have been added.");
 			return;
 		}
 		Log.i(TAG, "layoutVideoRecorder: adding videoRecorder preview");
 		PreviewTextureFrame vrFrame = (PreviewTextureFrame) videoRecorder.getView();
-		fl.addView(vrFrame, new PreviewTextureFrame.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+		fl.addView(vrFrame, new PreviewTextureFrame.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 	}
 
 	// ----------------------------
