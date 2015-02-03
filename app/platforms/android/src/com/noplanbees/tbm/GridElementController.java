@@ -67,15 +67,23 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onVideoPlaying(String friendId, String videoId) {
-        String id = gridElement.getFriend().getId();
-        Log.d(TAG, "onVideoPlaying " + id + " ? " + friendId);
-        updateContent(id.equals(friendId));
+        if (isForMe(friendId)) {
+            Log.d(TAG, "onVideoPlaying " + friendId);
+            updateContent(true);
+        }
     }
 
     @Override
-    public void onVideoStopPlaying() {
-        Log.d(TAG, "onVideoStopPlaying");
-        updateContent(false);
+    public void onVideoStopPlaying(String friendId) {
+        if (isForMe(friendId)) {
+            Log.d(TAG, "onVideoStopPlaying " + friendId);
+            updateContent(false);
+        }
+    }
+
+    private boolean isForMe(String friendId) {
+        Friend friend = gridElement.getFriend();
+        return friend != null && friendId != null && friendId.equals(friend.getId());
     }
 
     @Override
@@ -180,4 +188,5 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         VideoPlayer videoPlayer = VideoPlayer.getInstance(context);
         videoPlayer.unregisterStatusCallbacks(this);
     }
+
 }

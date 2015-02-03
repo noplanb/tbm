@@ -461,10 +461,10 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
     }
 
     @Override
-    public void onVideoPlaying(String friendId, String videoId) {   }
+    public void onVideoPlaying(String friendId, String videoId) {}
 
     @Override
-    public void onVideoStopPlaying() {    }
+    public void onVideoStopPlaying(String friendId) {}
 
     @Override
     public void onFileDownloading() {
@@ -493,7 +493,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
-    
     //------------------------------
     // nineViewGroup Gesture listner
     //------------------------------

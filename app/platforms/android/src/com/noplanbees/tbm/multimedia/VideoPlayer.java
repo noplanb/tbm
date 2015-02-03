@@ -25,7 +25,7 @@ public class VideoPlayer implements OnCompletionListener{
 
 	public interface StatusCallbacks{
 		void onVideoPlaying(String friendId, String videoId);
-		void onVideoStopPlaying();
+		void onVideoStopPlaying(String friendId);
         void onFileDownloading();
         void onFileDownloadingRetry();
 	}
@@ -87,7 +87,7 @@ public class VideoPlayer implements OnCompletionListener{
 	
 	private void notifyStopPlaying(){
 		for (StatusCallbacks callbacks : statusCallbacks) {
-			callbacks.onVideoStopPlaying();
+			callbacks.onVideoStopPlaying(friendId);
 		}
 	}
 
