@@ -82,7 +82,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		Log.d(TAG, "onCreate" + this);
 
 		activeModelsHandler = ActiveModelsHandler.getActiveModelsHandler();
-		activeModelsHandler.getFf().addVideoStatusChangedCallbackDelegate(this);
+        activeModelsHandler.getFf().addVideoStatusObserver(this);
 
 		videoPlayer = VideoPlayer.getInstance(getActivity());
 
@@ -164,6 +164,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+        activeModelsHandler.getFf().removeOnVideoStatusChangedObserver(this);
 		mUnexpectedTerminationHelper.finish();
 	}
 
@@ -172,6 +173,9 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	//-------------------
 	private void setupGridElements(){
         if (!viewControllers.isEmpty()) {
+            for (GridElementController controller : viewControllers) {
+                controller.cleanUp();
+            }
             viewControllers.clear();
         }
         int i = 0;
@@ -349,8 +353,16 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (getActivity() != null)
-                    GridManager.moveFriendToGrid(getActivity(), friend);
+                if (getActivity() != null) {
+                    notifyViewControllers(new ViewControllerTask() {
+                        @Override
+                        public void onEvent(GridElementController controller) {
+                            controller.onDataUpdated(friend.getId(), false);
+                        }
+                    });
+                }
+//                if (getActivity() != null)
+//                    GridManager.moveFriendToGrid(getActivity(), friend);
             }
         });
 	}
@@ -508,6 +520,16 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
+    private void notifyViewControllers(ViewControllerTask task) {
+        for (GridElementController controller : viewControllers) {
+            task.onEvent(controller);
+        }
+    }
+
+    private interface ViewControllerTask {
+        void onEvent(GridElementController controller);
+    }
+
     //------------------------------
     // nineViewGroup Gesture listner
     //------------------------------
@@ -570,15 +592,5 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
             Log.d(TAG, "onCenterStartLongpress");
 			return false;
 		}
-    }
-
-    private void notifyViewControllers(ViewControllerTask task) {
-        for (GridElementController controller : viewControllers) {
-            task.onEvent(controller);
-        }
-    }
-
-    private interface ViewControllerTask {
-        void onEvent(GridElementController controller);
     }
 }

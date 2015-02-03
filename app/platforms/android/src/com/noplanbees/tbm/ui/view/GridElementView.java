@@ -1,6 +1,5 @@
 package com.noplanbees.tbm.ui.view;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -12,7 +11,6 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.ShortClickListener;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
@@ -54,7 +52,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 	private View progressLine;
 	private View unreadBorder;
     private View mEmptyView;
-    private View mBody;
+    private View bodyLayout;
 
 
 	private ClickListener mClickListener;
@@ -81,7 +79,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 		unreadBorder = findViewById(R.id.unread_border);
 
         mEmptyView = findViewById(R.id.empty_view);
-        mBody = findViewById(R.id.body);
+        bodyLayout = findViewById(R.id.body);
 
 		twName = (TextView) findViewById(R.id.tw_name);
 		twNundge = (TextView) findViewById(R.id.tw_nudge);
@@ -154,7 +152,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void showEmpty(boolean visible) {
         mEmptyView.setVisibility(visible ? VISIBLE : GONE);
-        mBody.setVisibility(visible ? GONE : VISIBLE);
+        bodyLayout.setVisibility(visible ? GONE : VISIBLE);
     }
 
     public boolean isEmpty() {
@@ -172,13 +170,16 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     public void setUnreadCount(boolean visible, int unreadMsgCount) {
         if (visible) {
             twName.setBackgroundColor(getResources().getColor(R.color.bg_unread_msg));
-            unreadBorder.setVisibility(VISIBLE);
             twUnreadCount.setVisibility(VISIBLE);
+            unreadBorder.setVisibility(VISIBLE);
+            twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_red_circle));
             twUnreadCount.setText(String.valueOf(unreadMsgCount));
         } else {
             twName.setBackgroundColor(getResources().getColor(R.color.bg_name));
-            unreadBorder.setVisibility(INVISIBLE);
+            twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_transparent_circle));
+            twUnreadCount.postInvalidate();
             twUnreadCount.setVisibility(INVISIBLE);
+            unreadBorder.setVisibility(INVISIBLE);
         }
     }
 
@@ -193,6 +194,16 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void showUploadingMark(boolean visible) {
         imgUploading.setVisibility(visible ? VISIBLE : GONE);
+        if (!visible) {
+            progressLine.setVisibility(INVISIBLE);
+        }
+    }
+
+    public void showDownloadingMark(boolean visible) {
+        imgDownloading.setVisibility(visible ? VISIBLE : GONE);
+        if (!visible) {
+            progressLine.setVisibility(INVISIBLE);
+        }
     }
 
     public void showProgressLine(boolean visible) {
@@ -204,13 +215,13 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
 		int durationMillis = 400;
 		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
+        progressLine.setVisibility(VISIBLE);
 		ScaleAnimation scale = new ScaleAnimation(
 				0f, 1f, 
 				1f, 1f, 
 				Animation.RELATIVE_TO_SELF, (float) 0,
 				Animation.RELATIVE_TO_SELF, (float) 0);
 		scale.setDuration(durationMillis);
-		scale.setFillAfter(true);
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
@@ -223,7 +234,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 				Animation.RELATIVE_TO_SELF, fromYDelta, 
 				Animation.RELATIVE_TO_SELF, toYDelta);
 		trAn.setDuration(durationMillis);
-		trAn.setFillAfter(true);
         trAn.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -244,17 +254,18 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 		progressLine.startAnimation(scale);
 	}
 
-	public void animateDownloading() {
+	public void animateDownloading(final Runnable task) {
+        Log.e(TAG, "animateDownloading"); /* TODO I don't know why, but VideoStatusChanged comes two times with the same
+                                             incoming status --Serhii*/
 		int durationMillis = 500;
-		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
-
-		ScaleAnimation scale = new ScaleAnimation(
+		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_downloading));
+        progressLine.setVisibility(VISIBLE);
+		final ScaleAnimation scale = new ScaleAnimation(
 				0f, 1f, 
 				1f, 1f, 
 				Animation.RELATIVE_TO_SELF, 1.0f,
 				Animation.RELATIVE_TO_SELF, 0.0f);
 		scale.setDuration(durationMillis);
-		scale.setFillAfter(true);
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
@@ -262,14 +273,25 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 		float toXDelta = 0;
 
 		TranslateAnimation trAn = new TranslateAnimation(
-				Animation.ABSOLUTE, fromXDelta, 
-				Animation.RELATIVE_TO_SELF,	toXDelta, 
+				Animation.ABSOLUTE, fromXDelta,
+				Animation.RELATIVE_TO_SELF,	toXDelta,
 				Animation.RELATIVE_TO_SELF, fromYDelta, 
 				Animation.RELATIVE_TO_SELF, toYDelta);
 		trAn.setDuration(durationMillis);
-		trAn.setFillAfter(true);
-		imgDownloading.startAnimation(trAn);
-		progressLine.startAnimation(scale);
+        trAn.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                task.run();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+        imgDownloading.startAnimation(trAn);
+        progressLine.startAnimation(scale);
 	}
 
 }
