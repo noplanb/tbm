@@ -91,8 +91,8 @@ public abstract class ViewGroupGestureRecognizer {
 	//----------------------------
 	// Methods that must be called
 	//----------------------------
-	// The viewGroup that instaniates this gesture recognizer must call these methods from its
-	// equivalent overrriden methods.
+	// The viewGroup that instantiates this gesture recognizer must call these methods from its
+	// equivalent overriden methods.
 	
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
 		boolean r = false;
