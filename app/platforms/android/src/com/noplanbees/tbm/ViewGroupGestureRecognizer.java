@@ -1,17 +1,16 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import android.app.Activity;
 import android.graphics.Rect;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.noplanbees.tbm.utilities.Convenience;
+
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public abstract class ViewGroupGestureRecognizer {
 
@@ -308,7 +307,8 @@ public abstract class ViewGroupGestureRecognizer {
 			return true;
 		} else {
 			return false;
-		}	}
+		}
+    }
 
 	private void startLongpressTimer() {
 		if (longPressTimer != null)

@@ -231,28 +231,6 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 		inviteManager.nudge(f);
 	}
 
-	@Override
-	public void showRecordDialog() {
-		InfoDialogFragment info = new InfoDialogFragment();
-		Bundle args = new Bundle();
-		args.putString(InfoDialogFragment.TITLE, "Hold to Record");
-		args.putString(InfoDialogFragment.MSG, "Press and hold the RECORD button to record.");
-		info.setArguments(args );
-		info.show(getFragmentManager(), null);
-	}
-
-    @Override
-    public void showBadConnectionDialog() {
-        ActionInfoDialogFragment actionDialogFragment = new ActionInfoDialogFragment();
-        Bundle args = new Bundle();
-        args.putString(ActionInfoDialogFragment.TITLE, "Bad Connection");
-        args.putString(ActionInfoDialogFragment.MSG, "Trouble downloading. Check your connection");
-        args.putString(ActionInfoDialogFragment.ACTION, "Try Again");
-        args.putBoolean(ActionInfoDialogFragment.NEED_CANCEL, false);
-        actionDialogFragment.setArguments(args );
-        actionDialogFragment.show(getFragmentManager(), null);
-    }
-
     @Override
     public void showVersionHandlerDialog(String message, boolean negativeButton) {
         DialogFragment d = new VersionDialogFragment();

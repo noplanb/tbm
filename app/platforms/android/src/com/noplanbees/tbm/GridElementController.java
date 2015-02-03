@@ -25,7 +25,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         void onNudgeFriend(Friend f);
         void onRecordDialogRequested();
     }
-    
+
     public GridElementController(Context context, GridElement gridElement, ViewGroup container, GridElementController.Callbacks callbacks) {
         Log.i(TAG, "instance with view " + container);
         this.context = context;
@@ -57,6 +57,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onRecordClicked() {
+        // TODO fix issue with click (short longpress) dispatched both in view and gestureRecognizer --Serhii
         callbacks.onRecordDialogRequested();
     }
 

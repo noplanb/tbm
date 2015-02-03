@@ -42,6 +42,7 @@ public class PreviewTextureFrame extends FrameLayout {
 	private void init() {
 		textureView = new TextureView(getContext());
 		addView(textureView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        setClipToPadding(true);
 	}
 
 	public boolean isRecording() {
@@ -66,8 +67,6 @@ public class PreviewTextureFrame extends FrameLayout {
 	}
 	
 	private void drawIndicator(Canvas c){
-		Rect border = new Rect(0, 0, c.getWidth(), c.getHeight());
-		
 		Paint paint = new Paint();
 		paint.setStyle(Paint.Style.FILL);
 
@@ -102,6 +101,7 @@ public class PreviewTextureFrame extends FrameLayout {
 				radius, paint);
 		
 		//draw borders
+        Rect border = new Rect(0, 0, c.getWidth(), c.getHeight());
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(Convenience.dpToPx(getContext(), 2.5f));
 		c.drawRect(border, paint);

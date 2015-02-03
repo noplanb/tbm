@@ -40,6 +40,8 @@ import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.multimedia.VideoRecorder;
 import com.noplanbees.tbm.network.FileDownloadService;
+import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
+import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 import com.noplanbees.tbm.ui.view.NineViewGroup;
 import com.noplanbees.tbm.ui.view.NineViewGroup.LayoutCompleteListener;
 import com.noplanbees.tbm.ui.view.PreviewTextureFrame;
@@ -61,8 +63,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
         void onFinish();
         void onBenchRequest();
         void onNudgeFriend(Friend f);
-        void showRecordDialog();
-        void showBadConnectionDialog();
     }
 
 	private NineViewGroup nineViewGroup;
@@ -233,7 +233,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	// Video Recorder ExceptionHandler delegate
 	// ----------------------------------------
 	@Override
-	public void unableToSetPrievew() {
+	public void unableToSetPreview() {
 		showToast("unable to set preview");
 	}
 
@@ -258,7 +258,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	}
 
 	@Override
-	public void runntimeErrorOnStart() {
+	public void runtimeErrorOnStart() {
 		showToast("Unable to start recording. Try again.");
 	}
 
@@ -457,7 +457,13 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
     @Override
     public void onRecordDialogRequested() {
-        callbacks.showRecordDialog();
+        // show record dialog
+        InfoDialogFragment info = new InfoDialogFragment();
+        Bundle args = new Bundle();
+        args.putString(InfoDialogFragment.TITLE, "Hold to Record");
+        args.putString(InfoDialogFragment.MSG, "Press and hold the RECORD button to record.");
+        info.setArguments(args);
+        info.show(getFragmentManager(), null);
     }
 
     @Override
@@ -474,7 +480,16 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
     @Override
     public void onFileDownloadingRetry() {
         FileDownloadService.restartTransfersPendingRetry(getActivity());
-        callbacks.showBadConnectionDialog();
+
+        // show bad connection dialog
+        ActionInfoDialogFragment actionDialogFragment = new ActionInfoDialogFragment();
+        Bundle args = new Bundle();
+        args.putString(ActionInfoDialogFragment.TITLE, "Bad Connection");
+        args.putString(ActionInfoDialogFragment.MSG, "Trouble downloading. Check your connection");
+        args.putString(ActionInfoDialogFragment.ACTION, "Try Again");
+        args.putBoolean(ActionInfoDialogFragment.NEED_CANCEL, false);
+        actionDialogFragment.setArguments(args);
+        actionDialogFragment.show(getFragmentManager(), null);
     }
 
     @Override
@@ -517,7 +532,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
         @Override
 		public boolean onSurroundingStartLongpress(View view, int position) {
-            Log.d(TAG, "onSurroundingStartLongpress: " + position);            
+            Log.d(TAG, "onSurroundingStartLongpress: " + position);
             GridElement ge = GridElementFactory.getFactoryInstance().get(position);
             String friendId = ge.getFriendId();
             if (friendId != null && !friendId.equals("")) {
@@ -555,5 +570,15 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
             Log.d(TAG, "onCenterStartLongpress");
 			return false;
 		}
+    }
+
+    private void notifyViewControllers(ViewControllerTask task) {
+        for (GridElementController controller : viewControllers) {
+            task.onEvent(controller);
+        }
+    }
+
+    private interface ViewControllerTask {
+        void onEvent(GridElementController controller);
     }
 }
