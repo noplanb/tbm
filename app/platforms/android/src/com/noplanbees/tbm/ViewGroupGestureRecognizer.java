@@ -58,7 +58,6 @@ public abstract class ViewGroupGestureRecognizer {
 		activity = a;
 		viewGroup = vg;
 		addTargetViews(tvs);
-		addListener();
 	}
 
 	private void addTargetViews(ArrayList<View> tvs) {
@@ -72,20 +71,8 @@ public abstract class ViewGroupGestureRecognizer {
 			return;
 
 		targetViews .add(target);
-//		addListener(target);
 	}
 
-	private void addListener() {
-		viewGroup.setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				// We return true here because if no child view has registered an interest in the event.
-				// We still want all future events from the gesture to come to us via dispatch event so 
-				// we can process them.
-				return true;
-			}
-		});
-	}
 	
 	//----------------------------
 	// Methods that must be called
@@ -99,7 +86,7 @@ public abstract class ViewGroupGestureRecognizer {
 		if (  state == State.LONGPRESS && 
 			( ev.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN || ev.getAction() == MotionEvent.ACTION_UP ) )
 			r = true;
-		
+		// Log.d(TAG, "onInterceptTouchEvent: action:" + ev.getAction() + " state:" + state + " return:" + r);
     	handleTouchEvent(ev);
     	return r;
 	}
