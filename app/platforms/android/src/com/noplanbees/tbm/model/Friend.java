@@ -37,10 +37,11 @@ import java.util.List;
 
 public class Friend extends ActiveModel{
 
-public static interface VideoStatusChangedCallback{
-	public void onVideoStatusChanged(Friend friend);
-}
-	public static class OutgoingVideoStatus{
+    public static interface VideoStatusChangedCallback {
+        public void onVideoStatusChanged(Friend friend);
+    }
+
+    public static class OutgoingVideoStatus{
 		public static final int NONE = 0;
 		public static final int NEW = 1;
 		public static final int QUEUED = 2;

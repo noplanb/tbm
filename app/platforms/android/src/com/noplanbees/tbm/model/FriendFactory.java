@@ -4,11 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class FriendFactory extends ActiveModelFactory{
     private final String TAG = getClass().getSimpleName();
@@ -95,18 +96,20 @@ public class FriendFactory extends ActiveModelFactory{
     //----------------------------
     // VideoStatusChange callbacks
     //----------------------------
-    private ArrayList <VideoStatusChangedCallback> vStatusCallbackDelegates = new ArrayList <VideoStatusChangedCallback> ();
+    private Set<VideoStatusChangedCallback> videoStatusObservers = new HashSet<>();
 
-    public void addVideoStatusChangedCallbackDelegate (VideoStatusChangedCallback delegate){
-        if (vStatusCallbackDelegates.contains(delegate))
-            return;
-        vStatusCallbackDelegates.add(delegate);
-        Log.i(TAG, "addVideoStatusChangedCallbackDelegate for " + delegate.toString() + " num=" + vStatusCallbackDelegates.size());
+    public void addVideoStatusObserver(VideoStatusChangedCallback observer){
+        videoStatusObservers.add(observer);
+        Log.i(TAG, "addVideoStatusObserver for " + observer.toString() + " num=" + videoStatusObservers.size());
+    }
+
+    public void removeOnVideoStatusChangedObserver(VideoStatusChangedCallback observer) {
+        videoStatusObservers.remove(observer);
     }
 
     public void notifyStatusChanged(Friend f){
-        for (VideoStatusChangedCallback delegate : vStatusCallbackDelegates){
-            delegate.onVideoStatusChanged(f);
+        for (VideoStatusChangedCallback observer : videoStatusObservers){
+            observer.onVideoStatusChanged(f);
         }
     }
 

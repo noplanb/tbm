@@ -19,13 +19,14 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private GridElementView gridElementView;
     private final Callbacks callbacks;
     private Context context;
+    private boolean isVideoPlaying = false;
 
     public interface Callbacks {
         void onBenchRequest();
         void onNudgeFriend(Friend f);
         void onRecordDialogRequested();
     }
-    
+
     public GridElementController(Context context, GridElement gridElement, ViewGroup container, GridElementController.Callbacks callbacks) {
         Log.i(TAG, "instance with view " + container);
         this.context = context;
@@ -50,6 +51,18 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         updateVideoStatus();
     }
 
+    /**
+     * Updates view content whenever data is changed
+     * @param friendId friend
+     * @param forced flag means if view update should be forced
+     */
+    public void onDataUpdated(String friendId, boolean forced) {
+        if (isForMe(friendId) || forced) {
+//            updateContent(isVideoPlaying);
+            updateVideoStatus();
+        }
+    }
+
     @Override
     public void onNudgeClicked() {
         callbacks.onNudgeFriend(gridElement.getFriend());
@@ -57,6 +70,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onRecordClicked() {
+        // TODO fix issue with click (short longpress) dispatched both in view and gestureRecognizer --Serhii
         callbacks.onRecordDialogRequested();
     }
 
@@ -67,15 +81,25 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onVideoPlaying(String friendId, String videoId) {
-        String id = gridElement.getFriend().getId();
-        Log.d(TAG, "onVideoPlaying " + id + " ? " + friendId);
-        updateContent(id.equals(friendId));
+        if (isForMe(friendId)) {
+            Log.d(TAG, "onVideoPlaying " + friendId);
+            isVideoPlaying = true;
+            updateContent(true);
+        }
     }
 
     @Override
-    public void onVideoStopPlaying() {
-        Log.d(TAG, "onVideoStopPlaying");
-        updateContent(false);
+    public void onVideoStopPlaying(String friendId) {
+        if (isForMe(friendId)) {
+            Log.d(TAG, "onVideoStopPlaying " + friendId);
+            isVideoPlaying = false;
+            updateContent(false);
+        }
+    }
+
+    private boolean isForMe(String friendId) {
+        Friend friend = gridElement.getFriend();
+        return friend != null && friendId != null && friendId.equals(friend.getId());
     }
 
     @Override
@@ -103,6 +127,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             gridElementView.showButtons(true);
         }
         gridElementView.showUploadingMark(isUploading());
+        gridElementView.showDownloadingMark(isDownloading());
         gridElementView.setName(friend.getStatusString()); // TODO Remove
     }
 
@@ -122,12 +147,19 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             case Video.IncomingVideoStatus.QUEUED:
                 break;
             case Video.IncomingVideoStatus.DOWNLOADING:
-                updateContent(true);
-                gridElementView.animateDownloading();
+                if (!isVideoPlaying) {
+                    updateContent(true);
+                }
                 break;
             case Video.IncomingVideoStatus.DOWNLOADED:
-                updateContent(false);
-                gridElementView.showProgressLine(false);
+                if (!isVideoPlaying) {
+                    gridElementView.animateDownloading(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateContent(false);
+                        }
+                    });
+                }
                 break;
             case Video.IncomingVideoStatus.VIEWED:
                 break;
@@ -141,11 +173,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             case Friend.OutgoingVideoStatus.QUEUED:
                 break;
             case Friend.OutgoingVideoStatus.UPLOADING:
-                updateContent(true);
-                gridElementView.animateUploading();
+                if (!isVideoPlaying) {
+                    updateContent(true);
+                    gridElementView.animateUploading();
+                }
                 break;
             case Friend.OutgoingVideoStatus.UPLOADED:
-                gridElementView.showProgressLine(false);
                 updateContent(false);
                 break;
             case Friend.OutgoingVideoStatus.DOWNLOADED:
@@ -163,11 +196,28 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     private boolean isUploading() {
         Friend friend = gridElement.getFriend();
-        return friend != null && friend.getOutgoingVideoStatus() != Friend.OutgoingVideoStatus.NONE &&
-                friend.getOutgoingVideoStatus() != Friend.OutgoingVideoStatus.VIEWED &&
-                friend.getOutgoingVideoStatus() != Friend.OutgoingVideoStatus.QUEUED &&
-                friend.getOutgoingVideoStatus() != Friend.OutgoingVideoStatus.UPLOADING &&
-                friend.getIncomingVideoStatus() != Video.IncomingVideoStatus.DOWNLOADING;
+        boolean result = friend != null;
+        if (result) {
+            int outgoingStatus = friend.getOutgoingVideoStatus();
+            int incomingStatus = friend.getIncomingVideoStatus();
+            result = outgoingStatus != Friend.OutgoingVideoStatus.NONE &&
+                    outgoingStatus != Friend.OutgoingVideoStatus.VIEWED &&
+                    outgoingStatus != Friend.OutgoingVideoStatus.QUEUED &&
+                    outgoingStatus == Friend.OutgoingVideoStatus.UPLOADING &&
+                    incomingStatus != Video.IncomingVideoStatus.DOWNLOADING;
+        }
+        return result;
+    }
+
+    private boolean isDownloading() {
+        Friend friend = gridElement.getFriend();
+        boolean result = friend != null;
+        if (result) {
+            int outgoingStatus = friend.getOutgoingVideoStatus();
+            int incomingStatus = friend.getIncomingVideoStatus();
+            result = incomingStatus == Video.IncomingVideoStatus.DOWNLOADING;
+        }
+        return result;
     }
 
     @Override
@@ -177,6 +227,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onDetached() {
+        cleanUp();
+    }
+
+    public void cleanUp() {
         VideoPlayer videoPlayer = VideoPlayer.getInstance(context);
         videoPlayer.unregisterStatusCallbacks(this);
     }
