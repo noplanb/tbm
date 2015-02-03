@@ -94,12 +94,15 @@ public abstract class ViewGroupGestureRecognizer {
 	// The viewGroup that instaniates this gesture recognizer must call these methods from its
 	// equivalent overrriden methods.
 	
-	public void dispatchTouchEvent(MotionEvent ev) {
-    	handleTouchEvent(ev);
-	}	
-	
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
-		return (state == State.LONGPRESS) ? true : false;
+		boolean r = false;
+		
+		if (  state == State.LONGPRESS && 
+			( ev.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN || ev.getAction() == MotionEvent.ACTION_UP ) )
+			r = true;
+		
+    	handleTouchEvent(ev);
+    	return r;
 	}
 	
 

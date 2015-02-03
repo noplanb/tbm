@@ -277,13 +277,6 @@ public class NineViewGroup extends ViewGroup {
     //-------------------------------
     // NineViewGroupGestureRecognizer
     //-------------------------------
-    
-    @Override
-	public boolean dispatchTouchEvent(MotionEvent ev) {
-    	vgGestureRecognizer.dispatchTouchEvent(ev);
-		return super.dispatchTouchEvent(ev);
-	}
-    
     @Override
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
 		return vgGestureRecognizer.onInterceptTouchEvent(ev);
@@ -306,7 +299,6 @@ public class NineViewGroup extends ViewGroup {
 			
 			if (isCenterView(v))
 				return gestureCallbacks.onCenterClick(v);
-			
 			return gestureCallbacks.onSurroundingClick(v, positionOfView(v));
 		}
 
@@ -317,7 +309,6 @@ public class NineViewGroup extends ViewGroup {
 			
 			if (isCenterView(v))
 				return gestureCallbacks.onCenterStartLongpress(v);
-			
 			return gestureCallbacks.onSurroundingStartLongpress(v, positionOfView(v));
 		}
 
@@ -325,7 +316,6 @@ public class NineViewGroup extends ViewGroup {
 		public boolean endLongpress(View v) {
 			if (gestureCallbacks == null)
 				return false;
-			
 			return gestureCallbacks.onEndLongpress();
 		}
 
@@ -343,7 +333,6 @@ public class NineViewGroup extends ViewGroup {
 	protected boolean handleAbort(View v, String reason) {
 		if (gestureCallbacks == null)
 			return false;
-		
 		return gestureCallbacks.onCancelLongpress(reason);
 	}
 
