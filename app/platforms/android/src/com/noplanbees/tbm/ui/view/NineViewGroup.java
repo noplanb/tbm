@@ -274,9 +274,9 @@ public class NineViewGroup extends ViewGroup {
     	return pov;
     }
     
-    //---------------------------
-    // MultiViewGestureRecoginzer
-    //---------------------------
+    //-------------------------------
+    // NineViewGroupGestureRecognizer
+    //-------------------------------
     
     @Override
 	public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -290,63 +290,54 @@ public class NineViewGroup extends ViewGroup {
 	}
 
 	private void addGestureRecognizer(){
-    	vgGestureRecognizer = new ViewGroupGestureRecognizer((Activity) getContext(), this, getNineViews()) {
-			
-			@Override
-			public boolean startLongpress(View v) {
-				return handleStartLongpress(v);
-			}
-			
-			@Override
-			public boolean endLongpress(View v) {
-				return handleEndLongpress(v);
-			}
-			
-			@Override
-			public boolean click(View v) {
-				return handleClick(v);
-			}
-			
-			@Override
-			public boolean bigMove(View v) {
-				return handleAbort(v, "Dragged finger away");
-			}
-			
-			@Override
-			public boolean abort(View v, String reason) {
-				return handleAbort(v, reason);
-			}
-		};
+		vgGestureRecognizer = new NineViewGroupGestureRecognizer((Activity) getContext(), this, getNineViews());
 		vgGestureRecognizer.enable();
     }
     
+	private class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer{
+		public NineViewGroupGestureRecognizer(Activity a, ViewGroup vg, ArrayList<View> tvs) {
+			super(a, vg, tvs);
+		}
 
-	// Conversion to nineViewGroup callbacks.
-	protected boolean handleStartLongpress(View v) {
-		if (gestureCallbacks == null)
-			return false;
-		
-		if (isCenterView(v))
-			return gestureCallbacks.onCenterStartLongpress(v);
-		
-		return gestureCallbacks.onSurroundingStartLongpress(v, positionOfView(v));
-	}
-	
-	protected boolean handleClick(View v) {
-		if (gestureCallbacks == null)
-			return false;
-		
-		if (isCenterView(v))
-			return gestureCallbacks.onCenterClick(v);
-		
-		return gestureCallbacks.onSurroundingClick(v, positionOfView(v));
-	}
+		@Override
+		public boolean click(View v) {
+			if (gestureCallbacks == null)
+				return false;
+			
+			if (isCenterView(v))
+				return gestureCallbacks.onCenterClick(v);
+			
+			return gestureCallbacks.onSurroundingClick(v, positionOfView(v));
+		}
 
-	protected boolean handleEndLongpress(View v) {
-		if (gestureCallbacks == null)
-			return false;
-		
-		return gestureCallbacks.onEndLongpress();
+		@Override
+		public boolean startLongpress(View v) {
+			if (gestureCallbacks == null)
+				return false;
+			
+			if (isCenterView(v))
+				return gestureCallbacks.onCenterStartLongpress(v);
+			
+			return gestureCallbacks.onSurroundingStartLongpress(v, positionOfView(v));
+		}
+
+		@Override
+		public boolean endLongpress(View v) {
+			if (gestureCallbacks == null)
+				return false;
+			
+			return gestureCallbacks.onEndLongpress();
+		}
+
+		@Override
+		public boolean bigMove(View v) {
+			return handleAbort(v, "Dragged finger away");
+		}
+
+		@Override
+		public boolean abort(View v, String reason) {
+			return handleAbort(v, reason);
+		}	
 	}
 
 	protected boolean handleAbort(View v, String reason) {

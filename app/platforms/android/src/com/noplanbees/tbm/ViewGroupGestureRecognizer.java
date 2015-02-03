@@ -95,12 +95,10 @@ public abstract class ViewGroupGestureRecognizer {
 	// equivalent overrriden methods.
 	
 	public void dispatchTouchEvent(MotionEvent ev) {
-		Log.d(TAG,"dispatchTouchEvent");
     	handleTouchEvent(ev);
 	}	
 	
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
-		Log.d(TAG, "onInterceptTouchEvent");
 		return (state == State.LONGPRESS) ? true : false;
 	}
 	
