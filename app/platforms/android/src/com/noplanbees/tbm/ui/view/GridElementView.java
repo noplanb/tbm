@@ -1,5 +1,6 @@
 package com.noplanbees.tbm.ui.view;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -11,16 +12,26 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.ShortClickListener;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.utilities.Convenience;
 
-public class GridElementView extends RelativeLayout implements View.OnClickListener {
+public class GridElementView extends RelativeLayout implements View.OnClickListener, ShortClickListener.Callbacks {
 
 	private static final String TAG = "GridElementView";
     private boolean isAlterName;
     private FriendViewListener mEventListener;
 
+    // TODO: Serhii I really dont have a problem for the effects of (some of) these events to be handled here rather than bubbling them up.
+    // In my mind a viewController should have the ability to do some entire screen popups for example. I consider the following actions to 
+    // fall under that category:
+    //  - alerts (definitely)
+    //  - toasts (definitely)
+    //  - opening the bench. (Maybe - it is kind of a pop up)
+    //  - Starting a nudge sequence (Maybe)
+    // I would be interested to hear what your thoughts are regarding making these actions accessible from any controller and letting the conroller call them directly.
     public interface ClickListener {
 		void onNudgeClicked();
 		void onRecordClicked();
@@ -110,6 +121,11 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         }
     }
 
+    @Override
+    public void onShortClick(View v){
+    	Log.d(TAG, "shortClick!");
+    }
+    
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

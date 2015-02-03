@@ -47,6 +47,8 @@ import com.noplanbees.tbm.utilities.Logger;
 
 import java.util.ArrayList;
 
+// TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
+
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
 		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback,
 VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callbacks {
@@ -491,59 +493,68 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
-    private class NineViewGestureListener implements NineViewGroup.GestureListener {
+    
+    //------------------------------
+    // nineViewGroup Gesture listner
+    //------------------------------
+    private class NineViewGestureListener implements NineViewGroup.GestureCallbacks {
         @Override
-        public boolean onClick(NineViewGroup parent, View view, int position, long id) {
-            Log.d(TAG, "onItemClick: " + position + ", " + id);
-            if (id == -1)
-                return false;
+        public boolean onSurroundingClick(View view, int position) {
+        	// TODO: Possibly remove all of this from here and start play or show bench from gridElementController -- Sani
+            Log.d(TAG, "onSurroundingClick: " + position);
+
             GridElement gridElement = GridElementFactory.getFactoryInstance().get(position);
             String friendId = gridElement.getFriendId();
             if (friendId != null && !friendId.equals("")) {
                 videoPlayer.playOverView(view, friendId);
             } else {
+            	// TODO: This is delegated to the gridElementController. But this entire click handler should really be handled there.
+            	// We should really only use the NineViewGesture listener for longpress gestures. All clicks should be registerd for 
+            	// and handled by the gridViewController.
                 callbacks.onBenchRequest();
             }
             return true;
         }
 
         @Override
-        public boolean onStartLongpress(NineViewGroup parent, View view, int position, long id) {
-            Log.d(TAG, "onItemLongClick: " + position + ", " + id);
-            if (id == -1)
-                return false;
-
+		public boolean onSurroundingStartLongpress(View view, int position) {
+            Log.d(TAG, "onSurroundingStartLongpress: " + position);            
             GridElement ge = GridElementFactory.getFactoryInstance().get(position);
             String friendId = ge.getFriendId();
             if (friendId != null && !friendId.equals("")) {
                 Logger.d("START RECORD");
                 onRecordStart(friendId);
             }
-
             return true;
         }
 
         @Override
         public boolean onEndLongpress() {
-            Logger.d("STOP RECORD");
+            Log.d(TAG, "onEndLongpress");
             onRecordStop();
             return false;
         }
 
         @Override
-        public boolean onCancelLongpress() {
-            Log.d(getTag(), "onCancelTouch");
-            showToast("Dragged Finger Away.");
-            Logger.d("STOP RECORD");
-            onRecordCancel();
-            return false;
-        }
-
-        @Override
         public boolean onCancelLongpress(String reason) {
+            Log.d(TAG, "onCancelLongpress: " + reason);
             showToast(reason);
             onRecordCancel();
             return false;
         }
+
+		@Override
+		public boolean onCenterClick(View view) {
+			// TODO: add proper alert
+            Log.d(TAG, "onCenterClick");
+			return false;
+		}
+
+		@Override
+		public boolean onCenterStartLongpress(View view) {
+			// TODO: add proper alert
+            Log.d(TAG, "onCenterStartLongpress");
+			return false;
+		}
     }
 }
