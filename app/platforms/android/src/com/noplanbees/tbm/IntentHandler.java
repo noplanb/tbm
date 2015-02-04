@@ -8,16 +8,14 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.PowerManager;
 import android.util.Log;
-
-import com.noplanbees.tbm.network.FriendGetter;
-import com.noplanbees.tbm.network.FriendGetter.FriendGetterCallback;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.network.FileTransferService;
+import com.noplanbees.tbm.network.FriendGetter;
+import com.noplanbees.tbm.network.FriendGetter.FriendGetterCallback;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.NotificationHandler;
-import com.noplanbees.tbm.utilities.Convenience;
 
 public class IntentHandler {
 
@@ -165,8 +163,6 @@ public class IntentHandler {
 			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()) {
 				NotificationAlertManager.alert(context, friend, videoId);
 			} else {
-				FriendFactory.getFactoryInstance().notifyStatusChanged(friend);
-
 				playNotificationTone();
 			}
 

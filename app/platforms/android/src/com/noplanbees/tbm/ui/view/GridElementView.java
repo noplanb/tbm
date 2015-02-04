@@ -5,7 +5,9 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
+import android.view.animation.Interpolator;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
@@ -201,6 +203,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void showDownloadingMark(boolean visible) {
         imgDownloading.setVisibility(visible ? VISIBLE : GONE);
+        imgDownloading.clearAnimation();
         if (!visible) {
             progressLine.setVisibility(INVISIBLE);
         }
@@ -216,12 +219,14 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 		int durationMillis = 400;
 		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
         progressLine.setVisibility(VISIBLE);
+        Interpolator interpolator = new AccelerateDecelerateInterpolator();
 		ScaleAnimation scale = new ScaleAnimation(
 				0f, 1f, 
 				1f, 1f, 
 				Animation.RELATIVE_TO_SELF, (float) 0,
 				Animation.RELATIVE_TO_SELF, (float) 0);
 		scale.setDuration(durationMillis);
+        scale.setInterpolator(interpolator);
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
@@ -234,6 +239,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 				Animation.RELATIVE_TO_SELF, fromYDelta, 
 				Animation.RELATIVE_TO_SELF, toYDelta);
 		trAn.setDuration(durationMillis);
+        trAn.setInterpolator(interpolator);
         trAn.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -255,36 +261,38 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 	}
 
 	public void animateDownloading(final Runnable task) {
-        Log.e(TAG, "animateDownloading"); /* TODO I don't know why, but VideoStatusChanged comes two times with the same
-                                             incoming status --Serhii*/
-		int durationMillis = 500;
+		int durationMillis = 400;
 		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_downloading));
         progressLine.setVisibility(VISIBLE);
+        Interpolator interpolator = new AccelerateDecelerateInterpolator();
 		final ScaleAnimation scale = new ScaleAnimation(
 				0f, 1f, 
 				1f, 1f, 
 				Animation.RELATIVE_TO_SELF, 1.0f,
 				Animation.RELATIVE_TO_SELF, 0.0f);
 		scale.setDuration(durationMillis);
+        scale.setInterpolator(interpolator);
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
-		float fromXDelta = getMeasuredWidth() - imgDownloading.getMeasuredWidth();
-		float toXDelta = 0;
+		float fromXDelta = 0;
+		float toXDelta = -getMeasuredWidth() + imgDownloading.getMeasuredWidth();
 
 		TranslateAnimation trAn = new TranslateAnimation(
-				Animation.ABSOLUTE, fromXDelta,
-				Animation.RELATIVE_TO_SELF,	toXDelta,
+				Animation.RELATIVE_TO_SELF, fromXDelta,
+				Animation.ABSOLUTE,	toXDelta,
 				Animation.RELATIVE_TO_SELF, fromYDelta, 
 				Animation.RELATIVE_TO_SELF, toYDelta);
 		trAn.setDuration(durationMillis);
+        trAn.setFillAfter(true);
+        trAn.setInterpolator(interpolator);
         trAn.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {}
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                task.run();
+                postDelayed(task, 200);
             }
 
             @Override

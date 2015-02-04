@@ -354,6 +354,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
             @Override
             public void run() {
                 if (getActivity() != null) {
+                    GridManager.moveFriendToGrid(getActivity(), friend);
                     notifyViewControllers(new ViewControllerTask() {
                         @Override
                         public void onEvent(GridElementController controller) {
@@ -361,8 +362,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
                         }
                     });
                 }
-//                if (getActivity() != null)
-//                    GridManager.moveFriendToGrid(getActivity(), friend);
             }
         });
 	}
