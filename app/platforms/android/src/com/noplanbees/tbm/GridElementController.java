@@ -2,6 +2,7 @@ package com.noplanbees.tbm;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.GridElement;
@@ -129,6 +130,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         gridElementView.showUploadingMark(isUploading());
         gridElementView.showDownloadingMark(isDownloading());
         gridElementView.setName(friend.getStatusString()); // TODO Remove
+        ((View) container.getParent()).invalidate();
     }
 
     private void updateVideoStatus() {
@@ -136,57 +138,48 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (friend == null) {
             return;
         }
+        int lastEventType = friend.getLastEventType();
+
         int incomingStatus = friend.getIncomingVideoStatus();
         int outgoingStatus = friend.getOutgoingVideoStatus();
 
         Log.d(TAG, this + "| incomingStatus="+incomingStatus+", outgoingStatus="+outgoingStatus);
 
-        switch (incomingStatus) {
-            case Video.IncomingVideoStatus.NEW:
-                break;
-            case Video.IncomingVideoStatus.QUEUED:
-                break;
-            case Video.IncomingVideoStatus.DOWNLOADING:
-                if (!isVideoPlaying) {
-                    updateContent(true);
-                }
-                break;
-            case Video.IncomingVideoStatus.DOWNLOADED:
-                if (!isVideoPlaying) {
-                    gridElementView.animateDownloading(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateContent(false);
-                        }
-                    });
-                }
-                break;
-            case Video.IncomingVideoStatus.VIEWED:
-                break;
-            case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
-                break;
-        }
-
-        switch (outgoingStatus) {
-            case Friend.OutgoingVideoStatus.NEW:
-                break;
-            case Friend.OutgoingVideoStatus.QUEUED:
-                break;
-            case Friend.OutgoingVideoStatus.UPLOADING:
-                if (!isVideoPlaying) {
-                    updateContent(true);
-                    gridElementView.animateUploading();
-                }
-                break;
-            case Friend.OutgoingVideoStatus.UPLOADED:
-                updateContent(false);
-                break;
-            case Friend.OutgoingVideoStatus.DOWNLOADED:
-                break;
-            case Friend.OutgoingVideoStatus.VIEWED:
-                break;
-            case Friend.OutgoingVideoStatus.FAILED_PERMANENTLY:
-                break;
+        if (lastEventType == Friend.VideoStatusEventType.INCOMING) {
+            switch (incomingStatus) {
+                case Video.IncomingVideoStatus.DOWNLOADING:
+                    if (!isVideoPlaying) {
+                        updateContent(true);
+                    }
+                    break;
+                case Video.IncomingVideoStatus.DOWNLOADED:
+                    if (!isVideoPlaying) {
+                        gridElementView.animateDownloading(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateContent(false);
+                            }
+                        });
+                    }
+                    break;
+                default:
+                    return;
+            }
+        } else if (lastEventType == Friend.VideoStatusEventType.OUTGOING) {
+            switch (outgoingStatus) {
+                case Friend.OutgoingVideoStatus.UPLOADING:
+                    if (!isVideoPlaying) {
+                        updateContent(true);
+                        gridElementView.animateUploading();
+                    }
+                    break;
+                case Friend.OutgoingVideoStatus.QUEUED:
+                case Friend.OutgoingVideoStatus.UPLOADED:
+                case Friend.OutgoingVideoStatus.DOWNLOADED:
+                case Friend.OutgoingVideoStatus.VIEWED:
+                    updateContent(false);
+                    break;
+            }
         }
     }
 
@@ -200,11 +193,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (result) {
             int outgoingStatus = friend.getOutgoingVideoStatus();
             int incomingStatus = friend.getIncomingVideoStatus();
-            result = outgoingStatus != Friend.OutgoingVideoStatus.NONE &&
-                    outgoingStatus != Friend.OutgoingVideoStatus.VIEWED &&
-                    outgoingStatus != Friend.OutgoingVideoStatus.QUEUED &&
-                    outgoingStatus == Friend.OutgoingVideoStatus.UPLOADING &&
-                    incomingStatus != Video.IncomingVideoStatus.DOWNLOADING;
+            int lastEventType = friend.getLastEventType();
+            result = lastEventType == Friend.VideoStatusEventType.OUTGOING &&
+                    (outgoingStatus == Friend.OutgoingVideoStatus.NEW ||
+                            outgoingStatus == Friend.OutgoingVideoStatus.UPLOADING);
         }
         return result;
     }
@@ -213,9 +205,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         Friend friend = gridElement.getFriend();
         boolean result = friend != null;
         if (result) {
-            int outgoingStatus = friend.getOutgoingVideoStatus();
+            int lastEventType = friend.getLastEventType();
             int incomingStatus = friend.getIncomingVideoStatus();
-            result = incomingStatus == Video.IncomingVideoStatus.DOWNLOADING;
+            result = lastEventType == Friend.VideoStatusEventType.INCOMING &&
+                    incomingStatus == Video.IncomingVideoStatus.DOWNLOADING;
         }
         return result;
     }

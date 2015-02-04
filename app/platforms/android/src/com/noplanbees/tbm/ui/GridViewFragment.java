@@ -356,6 +356,12 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
 	@Override
 	public void gridDidChange() {
+        notifyViewControllers(new ViewControllerTask() {
+            @Override
+            public void onEvent(GridElementController controller) {
+                controller.onDataUpdated(null, true);
+            }
+        });
 	}
 
 	@Override

@@ -142,7 +142,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     }
 
 	private void moveUnviewedCountToPosition() {
-		int dpToPx = Convenience.dpToPx(getContext(), 5);
+		int dpToPx = Convenience.dpToPx(getContext(), 3);
 		twUnreadCount.setX(getWidth() - twUnreadCount.getMeasuredWidth() + dpToPx);
 		twUnreadCount.setY(- dpToPx);
 	}
