@@ -589,7 +589,7 @@ public class Friend extends ActiveModel{
         set(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE, VideoStatusEventType.INCOMING.toString());
     }
 
-    private int getLastEventType(){
+    public int getLastEventType(){
         return Integer.parseInt(get(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE));
     }
 
