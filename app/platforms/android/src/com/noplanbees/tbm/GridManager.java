@@ -18,29 +18,66 @@ import com.noplanbees.tbm.model.GridElementFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 public class GridManager{
 	private static final String STAG = GridManager.class.getSimpleName();
+    private static GridManager gridManager;
 	
 	public static interface GridEventNotificationDelegate{
-		public void gridDidChange();
+		void gridDidChange();
 	}
-	
-	private static GridEventNotificationDelegate gridEventDelegate;
-	public static void setGridEventNotificationDelegate(GridEventNotificationDelegate delegate){
-		gridEventDelegate = delegate;
+
+    private Set<GridEventNotificationDelegate> gridEventNotificationDelegates;
+
+    private GridManager() {
+        gridEventNotificationDelegates  = new HashSet<GridEventNotificationDelegate>();
+    }
+
+    public static GridManager getInstance(){
+        if(gridManager == null)
+            gridManager = new GridManager();
+        return gridManager;
+    }
+
+	public void addGridEventNotificationDelegate(GridEventNotificationDelegate delegate){
+		gridEventNotificationDelegates.add(delegate);
 	}
-	
-	public static ArrayList<Friend> friendsOnGrid(){
-		ArrayList<Friend> r = new ArrayList<Friend>();
-		for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
-			if (ge.hasFriend())
-				r.add(ge.friend());
-		}
-		return r;
-	}
-	
-	public static ArrayList<Friend> friendsOnBench(){
+
+    public void removeGridEventNotificationDelegate(GridEventNotificationDelegate delegate){
+        gridEventNotificationDelegates.remove(delegate);
+    }
+
+    private void notifyListeners(){
+        for (GridEventNotificationDelegate gridEventNotificationDelegate : gridEventNotificationDelegates) {
+            gridEventNotificationDelegate.gridDidChange();
+        }
+    }
+
+    public boolean hasEmptySpace(){
+        boolean hasEmptySpace = false;
+        for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
+            if (!ge.hasFriend()) {
+                hasEmptySpace = true;
+                break;
+            }
+        }
+        return hasEmptySpace;
+    }
+
+    public boolean isOnGrid(Friend f){
+        boolean isOnGrid = false;
+        for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
+            if (ge.hasFriend() && ge.friend().equals(f)) {
+                isOnGrid = true;
+                break;
+            }
+        }
+        return isOnGrid;
+    }
+
+	public ArrayList<Friend> friendsOnBench(){
 		ArrayList<Friend> allFriends = FriendFactory.getFactoryInstance().all();
 		ArrayList<Friend> gridFriends = friendsOnGrid();
 		for (Friend gf : gridFriends){
@@ -48,49 +85,57 @@ public class GridManager{
 		}
 		return allFriends;
 	}
-	
-	public static void moveFriendToGrid(Context c, Friend f){
+
+    public ArrayList<Friend> friendsOnGrid(){
+        ArrayList<Friend> r = new ArrayList<Friend>();
+        for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
+            if (ge.hasFriend())
+                r.add(ge.friend());
+        }
+        return r;
+    }
+
+    public void moveFriendToGrid(Context c, Friend f){
 		rankingActionOccurred(f);
 		if (!GridElementFactory.getFactoryInstance().friendIsOnGrid(f)){
 			nextAvailableGridElement().setFriend(f);
-			if (gridEventDelegate != null)
-				gridEventDelegate.gridDidChange();
-			GridManager.highLightElementForFriend(c, f);
+			notifyListeners();
+			highLightElementForFriend(c, f);
 		}
 	}
 	
 	//--------
     // Ranking
 	//--------
-	public static void rankingActionOccurred(Friend f){
+	public void rankingActionOccurred(Friend f){
 		f.set(Friend.Attributes.TIME_OF_LAST_ACTION, System.currentTimeMillis() + "");
 	}
 	
-	public static ArrayList<Friend> rankedFriendsOnGrid(){
+	public ArrayList<Friend> rankedFriendsOnGrid(){
 		ArrayList<Friend> fog = friendsOnGrid();
 		Collections.sort(fog, new FriendRankComparator()); 
 		return fog;
 	}
 	
-	public static class FriendRankComparator implements Comparator<Friend>{
+	public class FriendRankComparator implements Comparator<Friend>{
 		@Override
 		public int compare(Friend lhs, Friend rhs) {
 			return timeOfLastAction(lhs).compareTo(timeOfLastAction(rhs));
 		}
 	}
 	
-	public static Long timeOfLastAction(Friend f){
+	public Long timeOfLastAction(Friend f){
 		String stime = f.get(Friend.Attributes.TIME_OF_LAST_ACTION);
 		if (stime == null || stime.equals(""))
-			return 0L;
-		return Long.parseLong(stime);
+			return 0l;
+		return Long.valueOf(stime);
 	}
 	
-	public static Friend lowestRankedFriendOnGrid(){
+	public Friend lowestRankedFriendOnGrid(){
 		return rankedFriendsOnGrid().get(0);
 	}
 	
-	public static GridElement nextAvailableGridElement(){
+	public GridElement nextAvailableGridElement(){
 		GridElement ge = GridElementFactory.getFactoryInstance().firstEmptyGridElement();
 		if (ge != null)
 			return ge;
@@ -102,7 +147,7 @@ public class GridManager{
 	//----------------------
 	// Highlight grid change
 	//----------------------
-	public static void highLightElementForFriend(Context c, Friend f){
+	public void highLightElementForFriend(Context c, Friend f){
 		final GridElement ge = GridElementFactory.getFactoryInstance().findWithFriend(f);
 		if (ge == null)
 			return;

@@ -14,7 +14,11 @@ import android.os.Message;
 import android.util.Log;
 
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.utilities.Logger;
+
+import java.util.ArrayList;
 
 
 public class DataHolderService extends Service {
@@ -24,7 +28,7 @@ public class DataHolderService extends Service {
     private volatile Looper mServiceLooper;
     private volatile ServiceHandler mServiceHandler;
 
-	private ActiveModelsHandler dataManager;
+	private ActiveModelsHandler activeModelsHandler;
 	private ShutdownReceiver receiver;
 
 
@@ -50,7 +54,7 @@ public class DataHolderService extends Service {
 
 	public class LocalBinder extends Binder {
 		public ActiveModelsHandler getActiveModelsHandler() {
-			return DataHolderService.this.dataManager;
+			return DataHolderService.this.activeModelsHandler;
 		}
 	}
 
@@ -67,18 +71,36 @@ public class DataHolderService extends Service {
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
 
-		
-		dataManager = ActiveModelsHandler.getInstance(this);
+
+        activeModelsHandler = ActiveModelsHandler.getInstance(this);
 		//--------------------------
         // Try to retrieve all models from local storage
 		//--------------------------
-		dataManager.ensureAll();
+		activeModelsHandler.ensureAll();
+
+        setupGrid();
 		
 		receiver = new ShutdownReceiver();
 		IntentFilter filter = new IntentFilter("android.intent.action.ACTION_SHUTDOWN");
 		registerReceiver(receiver, filter);
 		
 	}
+
+
+    private void setupGrid() {
+        if (activeModelsHandler.getGf().all().size() == 8)
+            return;
+
+        activeModelsHandler.getGf().destroyAll(this);
+        ArrayList<Friend> allFriends = activeModelsHandler.getFf().all();
+        for (Integer i = 0; i < 8; i++) {
+            GridElement g = activeModelsHandler.getGf().makeInstance(this);
+            if (i < allFriends.size()) {
+                Friend f = allFriends.get(i);
+                g.set(GridElement.Attributes.FRIEND_ID, f.getId());
+            }
+        }
+    }
 
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -133,7 +155,7 @@ public class DataHolderService extends Service {
 	}
 
     private void releaseResources() {
-        dataManager.saveAll();
+        activeModelsHandler.saveAll();
         unregisterReceiver(receiver);
         mUnexpectedTerminationHelper.finish();
     }

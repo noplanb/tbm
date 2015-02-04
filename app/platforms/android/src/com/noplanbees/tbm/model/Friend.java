@@ -97,9 +97,14 @@ public class Friend extends ActiveModel{
         setUploadRetryCount(0);
     }
 
-    //-------
-    // HasApp
-    //-------
+    public String getLastActionTime() {
+        return get(Friend.Attributes.TIME_OF_LAST_ACTION);
+    }
+
+    public void setLastActionTime(long lastActionTime){
+        set(Friend.Attributes.TIME_OF_LAST_ACTION, Long.toString(lastActionTime));
+    }
+
     public boolean hasApp() {
         if (get(Attributes.HAS_APP).equals("true"))
             return true;
@@ -442,8 +447,7 @@ public class Friend extends ActiveModel{
         context.startService(i);
     }
 
-    public void downloadVideo(Intent intent){
-        String videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
+    public void downloadVideo(String videoId){
         Log.i(TAG, "downloadVideo. friend=" + get(Attributes.FIRST_NAME) + " videoId=" + videoId);
 
         setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.QUEUED);
@@ -529,7 +533,6 @@ public class Friend extends ActiveModel{
     }
 
     public void setAndNotifyIncomingVideoStatus(String videoId, int status){
-        setHasApp(); // If we have gotten a video from a friend then he has the app.
         Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
             Log.e(TAG, "setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");

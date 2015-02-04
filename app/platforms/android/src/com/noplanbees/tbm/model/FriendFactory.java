@@ -40,9 +40,9 @@ public class FriendFactory extends ActiveModelFactory{
         return i;
     }
 
-    public static Friend addFriendFromServerParams(Context context, LinkedTreeMap<String,String>params){
-        Log.i(STAG, "addFriendFromServerParams: " + params);
-        if (getFactoryInstance().existsWithId(params.get(ServerParamKeys.ID).toString())){
+    public Friend createFriendFromServerParams(Context context, LinkedTreeMap<String, String> params){
+        Log.i(STAG, "createFriendFromServerParams: " + params);
+        if (existsWithId(params.get(ServerParamKeys.ID).toString())){
             Log.e(STAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
             return null;
         }

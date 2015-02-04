@@ -27,6 +27,7 @@ import com.noplanbees.tbm.ActiveModelsHandler;
 import com.noplanbees.tbm.multimedia.CameraManager;
 import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.network.FileDownloadService;
+import com.noplanbees.tbm.network.FriendGetter;
 import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
@@ -83,8 +84,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 		CameraManager.addExceptionHandlerDelegate(this);
 		videoRecorder = new VideoRecorder(getActivity());
 		videoRecorder.addExceptionHandlerDelegate(this);
-
-		setupGrid();
 
 		mUnexpectedTerminationHelper.init();
 
@@ -190,7 +189,19 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 		Log.d(TAG, "View created");
 	}
 
-	@Override
+    @Override
+    public void onStart() {
+        super.onStart();
+        GridManager.getInstance().addGridEventNotificationDelegate(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        GridManager.getInstance().removeGridEventNotificationDelegate(this);
+    }
+
+    @Override
 	public void onResume() {
 		Logger.d(TAG, "onResume");
 		videoRecorder.onResume();
@@ -226,7 +237,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 			return;
 
 		Friend f = ge.friend();
-		GridManager.rankingActionOccurred(f);
+		GridManager.getInstance().rankingActionOccurred(f);
 		if (videoRecorder.startRecording(f)) {
 			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
 		} else {
@@ -246,23 +257,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 			Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
 			f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
 			f.uploadVideo();
-		}
-	}
-
-	private void setupGrid() {
-		GridManager.setGridEventNotificationDelegate(this);
-
-		if (activeModelsHandler.getGf().all().size() == 8)
-			return;
-
-		activeModelsHandler.getGf().destroyAll(getActivity());
-		ArrayList<Friend> allFriends = activeModelsHandler.getFf().all();
-		for (Integer i = 0; i < 8; i++) {
-			GridElement g = activeModelsHandler.getGf().makeInstance(getActivity());
-			if (i < allFriends.size()) {
-				Friend f = allFriends.get(i);
-				g.set(GridElement.Attributes.FRIEND_ID, f.getId());
-			}
 		}
 	}
 
@@ -381,7 +375,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 			@Override
 			public void run() {
 				if (getActivity() != null)
-					GridManager.moveFriendToGrid(getActivity(), friend);
+					GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
 				adapter.notifyDataSetChanged();
 			}
 		});

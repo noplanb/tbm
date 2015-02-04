@@ -59,14 +59,16 @@ public class SmsStatsHandler {
 	private ArrayList<LinkedTreeMap<String, String>> rankedPhoneData;
 	
 	private SmsManagerCallback delegate;
-	
-	private boolean wasCalledAsync;
+
+    private boolean isRequestRunning;
+    private boolean isRequestComplete;
 
 	//------------
 	// Constructor
 	//------------
 	private SmsStatsHandler(Context c){
 		context = c;
+        rankedPhoneData = new ArrayList<>();
 	}
     
 	// Singleton instance.
@@ -81,7 +83,7 @@ public class SmsStatsHandler {
     // Single delegate allowed.
 	public void setDelegate(SmsManagerCallback d){
 		delegate = d;
-		notifyDelegate();
+//		notifyDelegate();
 	}
 	
 	private void notifyDelegate(){
@@ -89,25 +91,22 @@ public class SmsStatsHandler {
 			delegate.didRecieveRankedPhoneData(rankedPhoneData);
 	}
 
-
-	public boolean isWasCalledAsync() {
-		return wasCalledAsync;
-	}
 	//-------------------------------------------------
 	// Ranking phone data by frequency of text messages
 	//-------------------------------------------------
 	public void getRankedPhoneData(){
-		AsyncTaskManager.executeAsyncTask(new GetRankedPhoneDataAsync(), new Void[]{});
+        if(!isRequestComplete && !isRequestRunning)
+		    AsyncTaskManager.executeAsyncTask(new GetRankedPhoneDataAsync(), new Void[]{});
 	}
 	
 	private class GetRankedPhoneDataAsync extends AsyncTask<Void, Void, Void>{
 		@Override
 		protected Void doInBackground(Void... params) {
 			Log.i(TAG, "GetRankedPhoneDataAsync");
+            isRequestRunning = true;
 			setMessagesCursor();
 			rankPhoneData();
 			printRankedPhoneData();
-			wasCalledAsync = true;
 			return null;
 		}
 		
@@ -116,6 +115,8 @@ public class SmsStatsHandler {
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 			notifyDelegate();
+            isRequestRunning = false;
+            isRequestComplete = true;
 		}
 	}
 

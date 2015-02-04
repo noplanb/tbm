@@ -77,7 +77,8 @@ public class CredentialsGetter {
 
         response.saveCredentials(context);
 
-		delegate.gotCredentials();
+        if(delegate!=null)
+            delegate.gotCredentials();
 	}
 
 	private void serverError(){

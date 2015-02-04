@@ -43,8 +43,12 @@ public class S3FileTransferAgent implements IFileTransferAgent {
                 sharedPreferenceManager.getS3SecretKey()));
         s3Bucket = sharedPreferenceManager.getS3Bucket();
         AmazonS3 client = tm.getAmazonS3Client();
-        client.setRegion(Region.getRegion(Regions.valueOf(sharedPreferenceManager.getS3Region().toUpperCase()
-                .replace('-', '_'))));
+        try {
+            client.setRegion(Region.getRegion(Regions.valueOf(sharedPreferenceManager.getS3Region().toUpperCase()
+                    .replace('-', '_'))));
+        } catch (IllegalArgumentException e) {
+            Dispatch.dispatch("Cant set region");
+        }
     }
 	
 	@Override
@@ -113,7 +117,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         checkErrorCode(e.getStatusCode());
 	}
 
-    private void checkErrorCode(int code){
+        private void checkErrorCode(int code){
         if((code>399 && code<500 && code!=404 || (code == 501) || code == 301)){
             reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
             throw new IllegalStateException("S3 problem. Need to be reworked");

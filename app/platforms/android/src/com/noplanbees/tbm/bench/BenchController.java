@@ -31,12 +31,9 @@ import java.util.List;
 public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnItemClickListener,
         ContactsManager.ContactSelected, SelectPhoneNumberDialog.SelectPhoneNumberDelegate {
 
-	public static final float PERCENT_OF_WINDOW = 0.75f;
-	public static final int ANIMATION_DURATION = 100;
-
 	private final String TAG = getClass().getSimpleName();
 
-	public interface Callbacks {
+    public interface Callbacks {
 		void onHide();
 		void showNoValidPhonesDialog(Contact contact);
 		void inviteFriend(BenchObject bo);
@@ -44,6 +41,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
 	private Activity activity;
 	private ListView listView;
+    private BenchAdapter adapter;
 	private FriendFactory friendFactory;
 	private SmsStatsHandler smsStatsHandler;
 	private ArrayList<BenchObject> smsBenchObjects;
@@ -61,9 +59,10 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		} catch (ClassCastException e) {
 			Dispatch.dispatch("Your activity must implemnets BenchController.Callbacks");
 		}
-		friendFactory = FriendFactory.getFactoryInstance();
 
-		listView = (ListView) activity.findViewById(R.id.bench_list);
+        adapter = new BenchAdapter(activity, null);
+
+        listView = (ListView) activity.findViewById(R.id.bench_list);
 		listView.setOnItemClickListener(this);
 
 		contactsManager = new ContactsManager(activity, this);
@@ -71,8 +70,8 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	}
 
 	public void onDataLoaded() {
-		if (!smsStatsHandler.isWasCalledAsync())
-			smsStatsHandler.getRankedPhoneData();
+        friendFactory = FriendFactory.getFactoryInstance();
+		smsStatsHandler.getRankedPhoneData();
 	}
 
 	public void callSms() {
@@ -92,14 +91,15 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 			return;
 		}
 
-		GridManager.moveFriendToGrid(activity, friend);
+		GridManager.getInstance().moveFriendToGrid(activity, friend);
 	}
 
 	// ---------
 	// Populate
 	// ---------
 	private void populate() {
-		listView.setAdapter(new BenchAdapter(activity, allOnBench()));
+        adapter.setList(allOnBench());
+        listView.setAdapter(adapter);
 	}
 
 	private ArrayList<BenchObject> allOnBench() {
@@ -113,7 +113,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	// --------------------------
 	private ArrayList<BenchObject> benchFriendsAsBenchObjects() {
 		ArrayList<BenchObject> r = new ArrayList<BenchObject>();
-		for (Friend f : GridManager.friendsOnBench()) {
+		for (Friend f : GridManager.getInstance().friendsOnBench()) {
 			LinkedTreeMap<String, String> e = new LinkedTreeMap<String, String>();
 			e.put(BenchObject.Keys.FRIEND_ID, f.getId());
 			e.put(BenchObject.Keys.MOBILE_NUMBER, f.get(Friend.Attributes.MOBILE_NUMBER));
@@ -189,7 +189,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
 		Friend f = friendMatchingContact(contact);
 		if (f != null) {
-			GridManager.moveFriendToGrid(activity, f);
+			GridManager.getInstance().moveFriendToGrid(activity, f);
 			return;
 		}
 
@@ -224,6 +224,11 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		boParams.put(BenchObject.Keys.MOBILE_NUMBER, mobileNumber.get(Contact.PhoneNumberKeys.E164));
 		return new BenchObject(boParams);
 	}
+
+    public void onBenchHasChanged(){
+        adapter.setList(allOnBench());
+        adapter.notifyDataSetChanged();
+    }
 	
 	private class BenchAdapter extends BaseAdapter{
 
@@ -234,8 +239,12 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 			this.context = context;
 			this.list = list;
 		}
-		
-		@Override
+
+        public void setList(List<BenchObject> list) {
+            this.list = list;
+        }
+
+        @Override
 		public int getCount() {
 			return list.size();
 		}

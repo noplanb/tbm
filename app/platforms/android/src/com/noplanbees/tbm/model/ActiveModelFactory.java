@@ -19,7 +19,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
 public abstract class ActiveModelFactory {
-	private String TAG = this.getClass().getSimpleName();
+	private static final String TAG = ActiveModelFactory.class.getSimpleName();
 
 	public ArrayList<ActiveModel> instances = new ArrayList<ActiveModel>();
 

@@ -73,25 +73,6 @@ public abstract class Server {
         return !isSuccess(status);
     }
 
-    public static void showFailureDialog(Activity activity, LinkedTreeMap<String, String>params){
-        InfoDialogFragment info = new InfoDialogFragment();
-        Bundle args = new Bundle();
-        args.putString(InfoDialogFragment.TITLE, params.get(ParamKeys.ERROR_TITLE));
-        args.putString(InfoDialogFragment.MSG, params.get(ParamKeys.ERROR_MSG));
-        info.setArguments(args );
-        info.show(activity.getFragmentManager(), null);
-    }
-
-    public static boolean checkIsFailureAndShowDialog(Activity activity, LinkedTreeMap<String, String>params){
-        String status = params.get(ParamKeys.RESPONSE_STATUS);
-        if (isFailure(status)){
-            showFailureDialog(activity, params);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
 
     //--------------
     // Instantiation
@@ -191,7 +172,7 @@ public abstract class Server {
             ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
         }else{
-            if (sParams.size() > 0){
+            if (sParams != null && sParams.size() > 0){
                 sUrl+="?";
                 List<NameValuePair> params = new LinkedList<NameValuePair>();
                 for (String s : sParams.keySet()) {
@@ -204,6 +185,8 @@ public abstract class Server {
         Log.i(TAG, "httpReq " + method + " url=" + sUrl +"  params=" + sParams);
 
         HttpResponse response = http.execute(request);
+
+        Log.d(TAG, "response: " + response.getStatusLine().getStatusCode());
 
 
         if (response.getStatusLine().getStatusCode() != 200) {

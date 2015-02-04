@@ -332,7 +332,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	//---------------
 	private void debugGetUser(){
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-		params.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, cleanNumber(countryCodeTxt.getText().toString())+ cleanNumber(mobileNumberTxt.getText().toString()));
+        params.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, cleanNumber(mobileNumberTxt.getText().toString()));
+        params.put("country_code", cleanNumber(countryCodeTxt.getText().toString()));
 		Uri.Builder ub = new Uri.Builder();
 		ub.appendPath("reg").appendPath("debug_get_user");
 		new DebugGetUser(ub.build().toString(), params);

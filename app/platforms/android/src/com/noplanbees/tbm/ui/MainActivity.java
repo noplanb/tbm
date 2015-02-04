@@ -22,11 +22,13 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.bench.BenchController;
 import com.noplanbees.tbm.bench.BenchObject;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.network.FriendGetter;
 import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.bench.InviteManager;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
@@ -41,7 +43,7 @@ import com.noplanbees.tbm.ui.dialogs.VersionDialogFragment;
 
 public class MainActivity extends Activity implements GridViewFragment.Callbacks, 
 BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Callback,
-        VersionDialogFragment.Callbacks{
+        VersionDialogFragment.Callbacks, GridManager.GridEventNotificationDelegate, InviteManager.Callbacks {
 	private final static String TAG = "MainActivity";
 	
 	public static final int CONNECTED_DIALOG = 0;
@@ -66,7 +68,7 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 	private Fragment mainFragment;
 	private DrawerLayout body;
 	private InviteManager inviteManager;
-	
+
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_activity);
@@ -78,11 +80,10 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 		
 		gcmHandler = new GcmHandler(this);
 		versionHandler = new VersionHandler(this);
-		
-		inviteManager = InviteManager.getInstance(this);
-		
+        benchController = new BenchController(this);
+
 		setupActionBar();
-	}
+    }
 
 	private void setupActionBar() {
 		ActionBar actionBar = getActionBar();
@@ -93,7 +94,7 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 		ImageView v = new ImageView(this);
 		v.setImageResource(R.drawable.zazo_type);
 		actionBar.setCustomView(v);
-	};
+	}
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -104,18 +105,26 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 	@Override
 	protected void onStart() {
 		super.onStart();
-		versionHandler.checkVersionCompatibility();		
-		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
+        inviteManager = InviteManager.getInstance(this);
+        bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
+		versionHandler.checkVersionCompatibility();
 		NotificationAlertManager.cancelNativeAlerts(this);
-	}
+        GridManager.getInstance().addGridEventNotificationDelegate(this);
+    }
 
 	@Override
 	protected void onStop() {
 		super.onStop();
-		unbindService(conn);
+        unbindService(conn);
+        GridManager.getInstance().removeGridEventNotificationDelegate(this);
 	}
-	
-	private void onLoadComplete() {
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    private void onLoadComplete() {
 		Log.i(TAG, "onLoadComplete");
 
 		if (!User.isRegistered(this)) {
@@ -138,18 +147,14 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 				Dispatch.dispatch("No valid Google Play Services APK found.");
 			}
 
-			benchController = new BenchController(this);
 			benchController.onDataLoaded();
 
             new CredentialsGetter(this, false, new CredentialsGetter.CredentialsGetterCallback() {
                 @Override
                 public void gotCredentials() {
-
+                    new FriendGetter(MainActivity.this, false, null);
                 }
             });
-
-           // Dispatch.dispatch("_________________-----------------_______________");
-
         }
 	}
 
@@ -193,14 +198,9 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 
 	@Override
 	public void showNoValidPhonesDialog(Contact contact) {
-		InfoDialogFragment info = new InfoDialogFragment();
-		Bundle args = new Bundle();
-		args.putString(InfoDialogFragment.TITLE, "No Mobile Number");
-		args.putString(InfoDialogFragment.MSG, "I could not find a valid mobile number for " + contact.getDisplayName()
-				+ ".\n\nPlease add a mobile number for " + contact.getFirstName()
-				+ " in your device contacts and try again.");
-		info.setArguments(args );
-		info.show(getFragmentManager(), null);
+        onShowInfoDialog("No Mobile Number", "I could not find a valid mobile number for " + contact.getDisplayName()
+                + ".\n\nPlease add a mobile number for " + contact.getFirstName()
+                + " in your device contacts and try again.");
 	}
 
 	@Override
@@ -231,24 +231,35 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 		inviteManager.nudge(f);
 	}
 
-	@Override
-	public void showRecordDialog() {
-		InfoDialogFragment info = new InfoDialogFragment();
-		Bundle args = new Bundle();
-		args.putString(InfoDialogFragment.TITLE, "Hold to Record");
-		args.putString(InfoDialogFragment.MSG, "Press and hold the RECORD button to record.");
-		info.setArguments(args );
-		info.show(getFragmentManager(), null);
-	}
+    @Override
+    public void showRecordDialog() {
+        onShowInfoDialog("Hold to Record", "Press and hold the RECORD button to record.");
+    }
+
+    @Override
+    public void onShowInfoDialog(String title, String msg) {
+        InfoDialogFragment info = new InfoDialogFragment();
+        Bundle args = new Bundle();
+        args.putString(InfoDialogFragment.TITLE, title);
+        args.putString(InfoDialogFragment.MSG, msg);
+        info.setArguments(args );
+        info.show(getFragmentManager(), null);
+    }
 
     @Override
     public void showBadConnectionDialog() {
+        onShowActionInfoDialog("Bad Connection", "Trouble downloading. Check your connection", "Try Again", false, -1);
+    }
+
+    public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, int actionId){
         ActionInfoDialogFragment actionDialogFragment = new ActionInfoDialogFragment();
         Bundle args = new Bundle();
-        args.putString(ActionInfoDialogFragment.TITLE, "Bad Connection");
-        args.putString(ActionInfoDialogFragment.MSG, "Trouble downloading. Check your connection");
-        args.putString(ActionInfoDialogFragment.ACTION, "Try Again");
-        args.putBoolean(ActionInfoDialogFragment.NEED_CANCEL, false);
+        args.putString(ActionInfoDialogFragment.TITLE, title);
+        args.putString(ActionInfoDialogFragment.MSG, msg);
+        args.putString(ActionInfoDialogFragment.ACTION, actionTitle);
+        args.putBoolean(ActionInfoDialogFragment.NEED_CANCEL, isNeedCancel);
+        if(actionId!=-1)
+            args.putInt(ActionInfoDialogFragment.ID, actionId);
         actionDialogFragment.setArguments(args );
         actionDialogFragment.show(getFragmentManager(), null);
     }
@@ -276,5 +287,10 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id="
                     + getPackageName())));
         }
+    }
+
+    @Override
+    public void gridDidChange() {
+        benchController.onBenchHasChanged();
     }
 }

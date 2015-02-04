@@ -17,7 +17,6 @@ import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.NotificationHandler;
-import com.noplanbees.tbm.utilities.Convenience;
 
 public class IntentHandler {
 
@@ -134,25 +133,24 @@ public class IntentHandler {
 		// new friends and poll them all.
 		if (friend == null) {
 			Log.i(TAG, "Got Video from a user who is not currently a friend. Getting friends.");
-			new FriendGetter(context, false, new FriendGetterCallback() {
-				@Override
-				public void gotFriends() {
-					new Poller(context).pollAll();
-				}
-			});
+			new FriendGetter(context, false, null);
 			return;
-		}
+		}else{
+            friend.setLastActionTime(System.currentTimeMillis());
+        }
 
-		if (friend.hasIncomingVideoId(videoId) && status == Video.IncomingVideoStatus.NEW) {
+        if (friend.hasIncomingVideoId(videoId) && status == Video.IncomingVideoStatus.NEW) {
 			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");
 			return;
 		}
 
 		if (status == Video.IncomingVideoStatus.NEW) {
+            // If we have gotten a video from a friend then he has the app.
+            friend.setHasApp();
 			// Create the video
 			friend.createIncomingVideo(context, videoId);
 			// Download only if we did not have this videoId before this intent.
-			friend.downloadVideo(intent);
+			friend.downloadVideo(intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY));
 		}
 
 		friend.updateStatus(intent);
@@ -165,8 +163,6 @@ public class IntentHandler {
 			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()) {
 				NotificationAlertManager.alert(context, friend, videoId);
 			} else {
-				FriendFactory.getFactoryInstance().notifyStatusChanged(friend);
-
 				playNotificationTone();
 			}
 
