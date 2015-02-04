@@ -31,10 +31,10 @@ public class CredentialsGetter {
 		this.delegate = delegate;
 		progress = new ProgressDialog(context);
 		progress.setTitle("Checking");
-		getFriends();
+		getCredentials();
 	}
 
-	private void getFriends(){
+	private void getCredentials(){
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
 		//params.put(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
 		//params.put(UserFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
