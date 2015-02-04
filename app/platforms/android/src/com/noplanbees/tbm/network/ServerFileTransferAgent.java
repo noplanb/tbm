@@ -8,6 +8,7 @@ import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.DataHolderService;
+import com.noplanbees.tbm.RemoteStorageHandler;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
@@ -41,9 +42,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 	private Intent intent;
 
 	private String filename;
-	private String videoId;
-	private String videoIdsRemoteKVKey;
-	
+
 	public ServerFileTransferAgent(Context context) {
 		this.context = context;
 	}
@@ -51,11 +50,9 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 	@Override
 	public void setInstanceVariables(Intent intent) {
 		this.intent = intent;
-		filePath = intent.getStringExtra(IntentFields.FILE_PATH_KEY);
-		params = intent.getBundleExtra(IntentFields.PARAMS_KEY);
+        this.filePath = intent.getStringExtra(IntentFields.FILE_PATH_KEY);
+        this.params = intent.getBundleExtra(IntentFields.PARAMS_KEY);
 		this.filename = intent.getStringExtra(IntentFields.FILE_NAME_KEY);
-		this.videoIdsRemoteKVKey = intent.getStringExtra(IntentFields.VIDEOIDS_REMOTE_KV_KEY);
-		this.videoId = intent.getStringExtra(IntentFields.VIDEO_ID_KEY);
 	}
 	
 	@Override
@@ -156,8 +153,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 	
 	@Override
 	public boolean delete() {
-		deleteRemoteFile(filename);
-		deleteRemoteKV(videoIdsRemoteKVKey, videoId);
+		RemoteStorageHandler.deleteRemoteFile(filename);
 		return true;
 	}
 
@@ -182,34 +178,5 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		}
 		return result;
 	}	
-	
-	private class DeleteRemote extends Server{
-		public DeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){		
-			super(uri, params, method);
-		}
-		@Override
-		public void success(String response) {	
-		}
-		@Override
-		public void error(String errorString) {
-		}
-	}
-	
-	
-	//-----------------
-	// DeleteRemoteFile
-	//-----------------
-	private void deleteRemoteFile(String filename){
-		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		params.put("filename", filename);
-		new DeleteRemote("videos/delete", params, "GET");
-	}
-	
-	private void deleteRemoteKV(String key1, String key2){
-		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		params.put("key1", key1);
-		if (key2 != null)
-			params.put("key2", key2);
-		new DeleteRemote("kvstore/delete", params, "GET");
-	}
+
 }

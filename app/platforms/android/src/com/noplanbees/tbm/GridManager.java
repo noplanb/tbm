@@ -43,27 +43,27 @@ public class GridManager{
         return gridManager;
     }
 
+    //----------
+    // Init grid
+    //----------
+    public void initGrid(Context context){
+        if (GridElementFactory.getFactoryInstance().all().size() == GRID_ELEMENTS_COUNT)
+            return;
+
+        GridElementFactory.getFactoryInstance().destroyAll(context);
+        ArrayList<Friend> allFriends = FriendFactory.getFactoryInstance().all();
+        for (Integer i = 0; i < GRID_ELEMENTS_COUNT; i++) {
+            GridElement g = GridElementFactory.getFactoryInstance().makeInstance(context);
+            if (i < allFriends.size()) {
+                Friend f = allFriends.get(i);
+                g.set(GridElement.Attributes.FRIEND_ID, f.getId());
+            }
+        }
+    }
+
 	public void addGridEventNotificationDelegate(GridEventNotificationDelegate delegate) {
         gridEventNotificationDelegates.add(delegate);
     }
-
-	//----------
-	// Init grid
-	//----------
-	public void initGrid(Context context){
-		if (GridElementFactory.getFactoryInstance().all().size() == GRID_ELEMENTS_COUNT)
-			return;
-
-		GridElementFactory.getFactoryInstance().destroyAll(context);
-		ArrayList<Friend> allFriends = FriendFactory.getFactoryInstance().all();
-		for (Integer i = 0; i < GRID_ELEMENTS_COUNT; i++) {
-			GridElement g = GridElementFactory.getFactoryInstance().makeInstance(context);
-			if (i < allFriends.size()) {
-				Friend f = allFriends.get(i);
-				g.set(GridElement.Attributes.FRIEND_ID, f.getId());
-			}
-		}
-	}
 
     public void removeGridEventNotificationDelegate(GridEventNotificationDelegate delegate){
         gridEventNotificationDelegates.remove(delegate);

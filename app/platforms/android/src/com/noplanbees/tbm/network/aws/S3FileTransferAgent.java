@@ -17,6 +17,7 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.noplanbees.tbm.DataHolderService;
+import com.noplanbees.tbm.RemoteStorageHandler;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;

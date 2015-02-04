@@ -288,8 +288,8 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	@Override
 	public void noFrontCamera() {
 		showCameraExceptionDialog("No Front Camera",
-				"Your device does not seem to have a front facing camera. This app requires a front facing camera.",
-				"Quit", "Try Again");
+                "Your device does not seem to have a front facing camera. This app requires a front facing camera.",
+                "Quit", "Try Again");
 	}
 
 	@Override
@@ -364,7 +364,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
             @Override
             public void run() {
                 if (getActivity() != null) {
-                    GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
+                    //GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
                     notifyViewControllers(new ViewControllerTask() {
                         @Override
                         public void onEvent(GridElementController controller) {
@@ -413,7 +413,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 		if (f == null)
 			throw new RuntimeException("Play from notification found no friendId: " + friendId);
 		
-		GridManager.getInstance().moveFriendToGrid(getActivity(), f);
+		//GridManager.getInstance().moveFriendToGrid(getActivity(), f);
 		int index = GridElementFactory.getFactoryInstance().gridElementIndexWithFriend(f);
 		
 		if (index == -1)

@@ -3,6 +3,7 @@ package com.noplanbees.tbm.network;
 import android.content.Context;
 import android.content.Intent;
 
+import com.noplanbees.tbm.RemoteStorageHandler;
 import com.noplanbees.tbm.model.Video;
 
 
@@ -22,8 +23,12 @@ public class FileDeleteService extends FileTransferService {
 	
 	@Override
 	protected boolean doTransfer(Intent intent) throws InterruptedException{
-		return fileTransferAgent.delete();
-	}
+		fileTransferAgent.delete();
+        String videoIdsRemoteKVKey = intent.getStringExtra(IntentFields.VIDEOIDS_REMOTE_KV_KEY);
+        String videoId = intent.getStringExtra(IntentFields.VIDEO_ID_KEY);
+        RemoteStorageHandler.deleteRemoteKV(videoIdsRemoteKVKey, videoId);
+        return true;
+    }
 	
 	@Override
 	protected void maxRetriesReached(Intent intent) throws InterruptedException{

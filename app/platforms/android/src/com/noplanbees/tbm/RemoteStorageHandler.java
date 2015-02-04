@@ -212,4 +212,35 @@ public class RemoteStorageHandler {
 		}
 	}
 
+
+
+    //-----------------
+    // DeleteRemoteFile
+    //-----------------
+    public static void deleteRemoteFile(String filename){
+        LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+        params.put("filename", filename);
+        new DeleteRemote("videos/delete", params, "GET");
+    }
+
+
+    public static void deleteRemoteKV(String key1, String key2){
+        LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+        params.put("key1", key1);
+        if (key2 != null)
+            params.put("key2", key2);
+        new DeleteRemote("kvstore/delete", params, "GET");
+    }
+
+    private static class DeleteRemote extends Server{
+        public DeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){
+            super(uri, params, method);
+        }
+        @Override
+        public void success(String response) {
+        }
+        @Override
+        public void error(String errorString) {
+        }
+    }
 }
