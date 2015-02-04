@@ -20,7 +20,6 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-import com.noplanbees.tbm.ActiveModelsHandler;
 import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.ContactsManager;
@@ -30,6 +29,7 @@ import com.noplanbees.tbm.network.FriendGetter;
 import com.noplanbees.tbm.network.FriendGetter.FriendGetterCallback;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
 import com.noplanbees.tbm.network.aws.CredentialsGetter;
@@ -332,8 +332,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	//---------------
 	private void debugGetUser(){
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-        params.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, cleanNumber(mobileNumberTxt.getText().toString()));
-        params.put("country_code", cleanNumber(countryCodeTxt.getText().toString()));
+		params.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, cleanNumber(mobileNumberTxt.getText().toString()));
+		params.put("country_code", cleanNumber(countryCodeTxt.getText().toString()));
 		Uri.Builder ub = new Uri.Builder();
 		ub.appendPath("reg").appendPath("debug_get_user");
 		new DebugGetUser(ub.build().toString(), params);

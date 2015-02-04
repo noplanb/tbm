@@ -16,6 +16,7 @@ import android.util.Log;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.GridElement;
+import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.utilities.Logger;
 
 import java.util.ArrayList;
@@ -78,29 +79,13 @@ public class DataHolderService extends Service {
 		//--------------------------
 		activeModelsHandler.ensureAll();
 
-        setupGrid();
+        GridManager.getInstance().initGrid(this);
 		
 		receiver = new ShutdownReceiver();
 		IntentFilter filter = new IntentFilter("android.intent.action.ACTION_SHUTDOWN");
 		registerReceiver(receiver, filter);
 		
 	}
-
-
-    private void setupGrid() {
-        if (activeModelsHandler.getGf().all().size() == 8)
-            return;
-
-        activeModelsHandler.getGf().destroyAll(this);
-        ArrayList<Friend> allFriends = activeModelsHandler.getFf().all();
-        for (Integer i = 0; i < 8; i++) {
-            GridElement g = activeModelsHandler.getGf().makeInstance(this);
-            if (i < allFriends.size()) {
-                Friend f = allFriends.get(i);
-                g.set(GridElement.Attributes.FRIEND_ID, f.getId());
-            }
-        }
-    }
 
 	@Override
 	public void onStart(Intent intent, int startId) {

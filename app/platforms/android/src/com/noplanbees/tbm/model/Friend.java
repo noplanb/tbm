@@ -37,22 +37,23 @@ import java.util.List;
 
 public class Friend extends ActiveModel{
 
-    public static interface VideoStatusChangedCallback{
+    public static interface VideoStatusChangedCallback {
         public void onVideoStatusChanged(Friend friend);
     }
-    public static class OutgoingVideoStatus{
-        public static final int NONE = 0;
-        public static final int NEW = 1;
-        public static final int QUEUED = 2;
-        public static final int UPLOADING = 3;
-        public static final int UPLOADED = 4;
-        public static final int DOWNLOADED = 5;
-        public static final int VIEWED = 6;
-        public static final int FAILED_PERMANENTLY = 7;
-    }
 
-    public static class Attributes{
-        public static final String ID  = "id";
+    public static class OutgoingVideoStatus{
+		public static final int NONE = 0;
+		public static final int NEW = 1;
+		public static final int QUEUED = 2;
+		public static final int UPLOADING = 3;
+		public static final int UPLOADED = 4;
+		public static final int DOWNLOADED = 5;
+		public static final int VIEWED = 6;
+		public static final int FAILED_PERMANENTLY = 7;
+	}
+
+	public static class Attributes{
+		public static final String ID  = "id";
         public static final String MKEY  = "mkey";
         public static final String CKEY  = "ckey";
         public static final String FIRST_NAME  = "firstName";

@@ -12,7 +12,7 @@ import android.view.View;
 import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
 import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.ui.view.PreviewTextureView;
+import com.noplanbees.tbm.ui.view.PreviewTextureFrame;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class VideoRecorder implements SurfaceTextureListener {
     // app though whereby we can report caught exceptions that
     // make the app unusable back to our servers for analysis.
     public interface VideoRecorderExceptionHandler {
-        public void unableToSetPrievew();
+        public void unableToSetPreview();
 
         public void unableToPrepareMediaRecorder();
 
@@ -39,7 +39,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 
         public void illegalStateOnStart();
 
-        public void runntimeErrorOnStart();
+        public void runtimeErrorOnStart();
     }
 
     private SurfaceTexture holder;
@@ -48,7 +48,7 @@ public class VideoRecorder implements SurfaceTextureListener {
     private Context context;
     private MediaRecorder mediaRecorder;
     private Friend currentFriend;
-    private PreviewTextureView preview;
+    private PreviewTextureFrame preview;
     // Allow registration of a single delegate to handle exceptions.
     private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
 
@@ -102,16 +102,15 @@ public class VideoRecorder implements SurfaceTextureListener {
                 Dispatch.dispatch("stopRecording: IllegalStateException: " + e.toString());
 
                 rval = false;
-                releaseMediaRecorder();
             } catch (RuntimeException e) {
                 Log.d(TAG, "stopRecording: Recording to short. No output file " + e.toString());
                 if (videoRecorderExceptionHandler != null) {
                     videoRecorderExceptionHandler.recordingTooShort();
                 }
                 rval = false;
+            } finally {
                 releaseMediaRecorder();
             }
-            releaseMediaRecorder();
             // prepareMediaRecorder();
         }
         return rval;
@@ -146,7 +145,7 @@ public class VideoRecorder implements SurfaceTextureListener {
                     + e.toString());
             releaseMediaRecorder();
             if (videoRecorderExceptionHandler != null)
-                videoRecorderExceptionHandler.runntimeErrorOnStart();
+                videoRecorderExceptionHandler.runtimeErrorOnStart();
             return false;
         }
         showRecordingIndicator();
@@ -291,7 +290,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     public View getView() {
         if (preview == null) {
-            preview = new PreviewTextureView(context);
+            preview = new PreviewTextureFrame(context);
             preview.setSurfaceTextureListener(this);
         }
         return preview;
@@ -320,7 +319,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             } catch (IOException e) {
                 Dispatch.dispatch("Error setting camera preview: " + e.getLocalizedMessage());
                 if (videoRecorderExceptionHandler != null)
-                    videoRecorderExceptionHandler.unableToSetPrievew();
+                    videoRecorderExceptionHandler.unableToSetPreview();
                 return;
             }
 
@@ -329,7 +328,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             } catch (RuntimeException e){
                 Dispatch.dispatch("Error camera.startPreview: " + e.getLocalizedMessage());
                 if (videoRecorderExceptionHandler != null)
-                    videoRecorderExceptionHandler.unableToSetPrievew();
+                    videoRecorderExceptionHandler.unableToSetPreview();
                 return;
             }
 

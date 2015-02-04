@@ -20,64 +20,70 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-import com.noplanbees.tbm.ActiveModelsHandler;
 import com.noplanbees.tbm.multimedia.CameraManager;
 import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.network.FileDownloadService;
-import com.noplanbees.tbm.network.FriendGetter;
-import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.model.GridElement;
+import com.noplanbees.tbm.GridElementController;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.model.ActiveModelsHandler;
+import com.noplanbees.tbm.model.FriendFactory;
+import com.noplanbees.tbm.model.GridElementFactory;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.multimedia.VideoRecorder;
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
-import com.noplanbees.tbm.ui.view.FriendView.ClickListener;
+import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
+import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 import com.noplanbees.tbm.ui.view.NineViewGroup;
-import com.noplanbees.tbm.ui.view.NineViewGroup.OnChildLayoutCompleteListener;
+import com.noplanbees.tbm.ui.view.NineViewGroup.LayoutCompleteListener;
+import com.noplanbees.tbm.ui.view.PreviewTextureFrame;
 import com.noplanbees.tbm.utilities.Logger;
 
 import java.util.ArrayList;
 
+// TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
+
 public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
-		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback, ClickListener,
-VideoPlayer.StatusCallbacks, SensorEventListener {
-	private static final String TAG = "GridViewFragment";
+		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback,
+VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callbacks {
+
+	private static final String TAG = GridViewFragment.class.getSimpleName();
+
+    private ArrayList<GridElementController> viewControllers;
 
     public interface Callbacks {
-		void onFinish();
-		void onBenchRequest(int pos);
-		void onNudgeFriend(Friend f);
-		void showRecordDialog();
-        void showBadConnectionDialog();
+        void onFinish();
+        void onBenchRequest();
+        void onNudgeFriend(Friend f);
     }
 
-	private NineViewGroup gridView;
-	private FriendsAdapter adapter;
+	private NineViewGroup nineViewGroup;
 	private ActiveModelsHandler activeModelsHandler;
 	private VideoPlayer videoPlayer;
 	private VideoRecorder videoRecorder;
 	private Callbacks callbacks;
-	private Handler handler = new Handler(Looper.getMainLooper());
+	private Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    private SensorManager mSensorManager;
-    private Sensor mProximitySensor;
+    private SensorManager sensorManager;
+    private Sensor proximitySensor;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		Log.d(TAG, "" + this);
+		Log.d(TAG, "onCreate" + this);
 
 		activeModelsHandler = ActiveModelsHandler.getActiveModelsHandler();
-		activeModelsHandler.getFf().addVideoStatusChangedCallbackDelegate(this);
+        activeModelsHandler.getFf().addVideoStatusObserver(this);
 
 		videoPlayer = VideoPlayer.getInstance(getActivity());
 
@@ -87,11 +93,13 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 
 		mUnexpectedTerminationHelper.init();
 
-        mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
-        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        if (mProximitySensor == null) {
+        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        if (proximitySensor == null) {
             Log.i(TAG, "Proximity sensor not found");
         }
+
+        viewControllers = new ArrayList<>(GridManager.GRID_ELEMENTS_COUNT);
 	}
 
 	@Override
@@ -104,90 +112,32 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.nineviewgroup_fragment, container, false);
 
+		// TODO: factor into a setupVideoPlayer() method
 		View videoBody = v.findViewById(R.id.video_body);
 		VideoView videoView = (VideoView) v.findViewById(R.id.video_view);
-
 		videoPlayer.setVideoView(videoView);
 		videoPlayer.setVideoViewBody(videoBody);
 
-		gridView = (NineViewGroup) v.findViewById(R.id.grid_view);
-		gridView.setItemClickListener(new NineViewGroup.OnItemTouchListener() {
+		nineViewGroup = (NineViewGroup) v.findViewById(R.id.grid_view);
+
+        nineViewGroup.setGestureListener(new NineViewGestureListener());
+
+		nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
 			@Override
-			public boolean onItemClick(NineViewGroup parent, View view, int position, long id) {
-				Log.d(TAG, "onItemClick: " + position + ", " + id);
-				if (id == -1)
-					return false;
-				GridElement ge = (GridElement) ((FriendsAdapter) parent.getAdapter()).getItem(position);
-				String friendId = ge.getFriendId();
-				if (friendId != null && !friendId.equals("")) {
-					videoPlayer.playAtPos(view.getX(), view.getY(), 
-							view.getWidth() + 1, view.getHeight() + 1, friendId);
-				} else {
-					callbacks.onBenchRequest(position);
-				}
-				return true;
-			}
-
-			@Override
-			public boolean onItemLongClick(NineViewGroup parent, View view, int position, long id) {
-				Log.d(TAG, "onItemLongClick: " + position + ", " + id);
-				if (id == -1)
-					return false;
-
-				GridElement ge = (GridElement) ((FriendsAdapter) parent.getAdapter()).getItem(position);
-				String friendId = ge.getFriendId();
-				if (friendId != null && !friendId.equals("")) {
-					Logger.d("START RECORD");
-					onRecordStart(friendId);
-				}
-
-				return true;
-			}
-
-			@Override
-			public boolean onItemStopTouch() {
-				Logger.d("STOP RECORD");
-				onRecordStop();
-				return false;
-			}
-
-			@Override
-			public boolean onCancelTouch() {
-				Log.d(getTag(), "onCancelTouch");
-				toast("Dragged Finger Away.");
-				Logger.d("STOP RECORD");
-				onRecordCancel();
-				return false;
-			}
-
-			@Override
-			public boolean onCancelTouch(String reason) {
-				toast(reason);
-				onRecordCancel();
-				return false;
-			}
-		});
-
-		gridView.setChildLayoutCompleteListener(new OnChildLayoutCompleteListener() {
-			@Override
-			public void onChildLayoutComplete() {
-				handleIntentAction(getActivity().getIntent());
+			public void onLayoutComplete() {
+				setupGridElements();
+				layoutVideoRecorder();
+                handleIntentAction(getActivity().getIntent());
 			}
 		});
 
 		return v;
 	}
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-
-		adapter = new FriendsAdapter(getActivity(), activeModelsHandler.getGf().all(), this);
-		gridView.setAdapter(adapter);
-		gridView.setVideoRecorder(videoRecorder);
-
-		Log.d(TAG, "View created");
-	}
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+    }
 
     @Override
     public void onStart() {
@@ -206,7 +156,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 		Logger.d(TAG, "onResume");
 		videoRecorder.onResume();
         videoPlayer.registerStatusCallbacks(this);
-        mSensorManager.registerListener(this, mProximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
 		super.onResume();
 	}
 
@@ -218,25 +168,58 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 		videoRecorder.stopRecording();
         videoPlayer.unregisterStatusCallbacks(this);
 		videoPlayer.release(getActivity());
-        mSensorManager.unregisterListener(this);
+        sensorManager.unregisterListener(this);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+        activeModelsHandler.getFf().removeOnVideoStatusChangedObserver(this);
 		mUnexpectedTerminationHelper.finish();
 	}
 
-	// -------
-	// Events
-	// -------
+	//-------------------
+	// Setup gridElements
+	//-------------------
+	private void setupGridElements(){
+        if (!viewControllers.isEmpty()) {
+            for (GridElementController controller : viewControllers) {
+                controller.cleanUp();
+            }
+            viewControllers.clear();
+        }
+        int i = 0;
+        for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
+            GridElementController gec = new GridElementController(getActivity(), ge, nineViewGroup.getSurroundingFrame(i), GridViewFragment.this);
+            viewControllers.add(gec);
+            i++;
+        }
+    }
+
+	//---------------------
+	// VideoRecorder Layout
+	//---------------------
+	private void layoutVideoRecorder(){
+        FrameLayout fl = nineViewGroup.getCenterFrame();
+		if (fl.getChildCount() != 0){
+			Log.w(TAG, "layoutVideoRecorder: not adding preview view as it appears to already have been added.");
+			return;
+		}
+		Log.i(TAG, "layoutVideoRecorder: adding videoRecorder preview");
+		PreviewTextureFrame vrFrame = (PreviewTextureFrame) videoRecorder.getView();
+		fl.addView(vrFrame, new PreviewTextureFrame.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+	}
+
+	// ----------------------------
+	// VideoRecorder event handling
+	// ----------------------------
 	private void onRecordStart(String friendId) {
 		videoPlayer.stop();
-		GridElement ge = activeModelsHandler.getGf().getGridElementByFriendId(friendId);
+		GridElement ge = GridElementFactory.getFactoryInstance().getGridElementByFriendId(friendId);
 		if (!ge.hasFriend())
 			return;
 
-		Friend f = ge.friend();
+        Friend f = ge.getFriend();
 		GridManager.getInstance().rankingActionOccurred(f);
 		if (videoRecorder.startRecording(f)) {
 			Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
@@ -246,9 +229,9 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 	}
 
 	private void onRecordCancel() {
-		// Different from abortAnyRecording becuase we always toast here.
+		// Different from abortAnyRecording because we always toast here.
 		videoRecorder.stopRecording();
-		toast("Not sent.");
+		showToast("Not sent.");
 	}
 
 	private void onRecordStop() {
@@ -264,33 +247,33 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 	// Video Recorder ExceptionHandler delegate
 	// ----------------------------------------
 	@Override
-	public void unableToSetPrievew() {
-		toast("unable to set preview");
+	public void unableToSetPreview() {
+		showToast("unable to set preview");
 	}
 
 	@Override
 	public void unableToPrepareMediaRecorder() {
-		toast("Unable to prepare MediaRecorder");
+		showToast("Unable to prepare MediaRecorder");
 	}
 
 	@Override
 	public void recordingAborted() {
-		toast("Recording Aborted due to Release before Stop.");
+		showToast("Recording Aborted due to Release before Stop.");
 	}
 
 	@Override
 	public void recordingTooShort() {
-		toast("Not sent. Too short.");
+		showToast("Not sent. Too short.");
 	}
 
 	@Override
 	public void illegalStateOnStart() {
-		toast("Runntime exception on MediaRecorder.start. Quitting app.");
+		showToast("Runntime exception on MediaRecorder.start. Quitting app.");
 	}
 
 	@Override
-	public void runntimeErrorOnStart() {
-		toast("Unable to start recording. Try again.");
+	public void runtimeErrorOnStart() {
+		showToast("Unable to start recording. Try again.");
 	}
 
 	// -------------------------------
@@ -317,28 +300,35 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 				"Quit", "Try Again");
 	}
 
-	private void showCameraExceptionDialog(final String title, final String message, final String negativeButton,
-			final String positiveButton) {
-		handler.post(new Runnable() {
-			@Override
-			public void run() {
-				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-				builder.setTitle(title).setMessage(message)
-						.setNegativeButton(negativeButton, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								callbacks.onFinish();
-							}
-						}).setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								videoRecorder.dispose();
-								videoRecorder.restore();
-							}
-						});
-				AlertDialog alertDialog = builder.create();
-				alertDialog.setCanceledOnTouchOutside(false);
-				alertDialog.show();
-			}
-		});
+	private void showCameraExceptionDialog(final String title, final String message, final String negativeText,
+			final String positiveText) {
+		uiHandler.post(new Runnable() {
+            private DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+                            callbacks.onFinish();
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            videoRecorder.dispose();
+                            videoRecorder.restore();
+                            break;
+                    }
+                }
+            };
+
+            @Override
+            public void run() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(title).setMessage(message)
+                        .setNegativeButton(negativeText, clickListener)
+                        .setPositiveButton(positiveText, clickListener);
+                AlertDialog alertDialog = builder.create();
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.show();
+            }
+        });
 	}
 
 	@Override
@@ -353,32 +343,37 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 
 	}
 
-	private void toast(final String msg) {
-		handler.post(new Runnable() {
-			@Override
-			public void run() {
-				Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT);
-				toast.setGravity(Gravity.CENTER, 0, 0);
-				toast.show();
-			}
-		});
+	private void showToast(final String msg) {
+		uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            }
+        });
 	}
 
 	@Override
 	public void gridDidChange() {
-		adapter.notifyDataSetChanged();
 	}
 
 	@Override
 	public void onVideoStatusChanged(final Friend friend) {
-		handler.post(new Runnable() {
-			@Override
-			public void run() {
-				if (getActivity() != null)
-					GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
-				adapter.notifyDataSetChanged();
-			}
-		});
+		uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (getActivity() != null) {
+                    GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
+                    notifyViewControllers(new ViewControllerTask() {
+                        @Override
+                        public void onEvent(GridElementController controller) {
+                            controller.onDataUpdated(friend.getId(), false);
+                        }
+                    });
+                }
+            }
+        });
 	}
 
 	private UnexpectedTerminationHelper mUnexpectedTerminationHelper = new UnexpectedTerminationHelper();
@@ -413,19 +408,19 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 	}
 
 	public void play(String friendId) {
-		int i = 0;
-		for (GridElement ge : activeModelsHandler.getGf().all()) {
-			if (ge.getFriendId().equals(friendId))
-				break;
-			i++;
-		}
-		// TODO: remove this ugly hack with magic number
-		int uiPosForFriendPos = Convenience.getUiPosForFriendPos(i);
-		if (uiPosForFriendPos >= 4)
-			uiPosForFriendPos++;
-		View view = gridView.getChildAt(uiPosForFriendPos);
-		videoPlayer.setVideoViewSize(view.getX(), view.getY(), view.getWidth(), view.getHeight());
-		videoPlayer.play(friendId);
+		Friend f = (Friend) FriendFactory.getFactoryInstance().find(friendId);
+		
+		if (f == null)
+			throw new RuntimeException("Play from notification found no friendId: " + friendId);
+		
+		GridManager.getInstance().moveFriendToGrid(getActivity(), f);
+		int index = GridElementFactory.getFactoryInstance().gridElementIndexWithFriend(f);
+		
+		if (index == -1)
+			throw new RuntimeException("Play from notification found not grid element index for friendId: " + friendId);
+		
+		View view = nineViewGroup.getSurroundingFrame(index);
+		videoPlayer.playOverView(view, friendId);
 	}
 
 	// -------------------
@@ -471,32 +466,51 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 		}
 	}
 
-	@Override
-	public void onNudgeClicked(Friend f) {
-		callbacks.onNudgeFriend(f);
-	}
-
-	@Override
-	public void onRecordClicked(Friend f) {
-		callbacks.showRecordDialog();
-	}
-
+    @Override
+    public void onBenchRequest() {
+        callbacks.onBenchRequest();
+    }
 
     @Override
-    public void onVideoPlaying(String friendId, String videoId) {   }
+    public void onNudgeFriend(Friend f) {
+        callbacks.onNudgeFriend(f);
+    }
 
     @Override
-    public void onVideoStopPlaying() {    }
+    public void onRecordDialogRequested() {
+        // show record dialog
+        InfoDialogFragment info = new InfoDialogFragment();
+        Bundle args = new Bundle();
+        args.putString(InfoDialogFragment.TITLE, "Hold to Record");
+        args.putString(InfoDialogFragment.MSG, "Press and hold the RECORD button to record.");
+        info.setArguments(args);
+        info.show(getFragmentManager(), null);
+    }
+
+    @Override
+    public void onVideoPlaying(String friendId, String videoId) {}
+
+    @Override
+    public void onVideoStopPlaying(String friendId) {}
 
     @Override
     public void onFileDownloading() {
-        toast("Downloading...");
+        showToast("Downloading...");
     }
 
     @Override
     public void onFileDownloadingRetry() {
         FileDownloadService.restartTransfersPendingRetry(getActivity());
-        callbacks.showBadConnectionDialog();
+
+        // show bad connection dialog
+        ActionInfoDialogFragment actionDialogFragment = new ActionInfoDialogFragment();
+        Bundle args = new Bundle();
+        args.putString(ActionInfoDialogFragment.TITLE, "Bad Connection");
+        args.putString(ActionInfoDialogFragment.MSG, "Trouble downloading. Check your connection");
+        args.putString(ActionInfoDialogFragment.ACTION, "Try Again");
+        args.putBoolean(ActionInfoDialogFragment.NEED_CANCEL, false);
+        actionDialogFragment.setArguments(args);
+        actionDialogFragment.show(getFragmentManager(), null);
     }
 
     @Override
@@ -513,5 +527,79 @@ VideoPlayer.StatusCallbacks, SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    private void notifyViewControllers(ViewControllerTask task) {
+        for (GridElementController controller : viewControllers) {
+            task.onEvent(controller);
+        }
+    }
+
+    private interface ViewControllerTask {
+        void onEvent(GridElementController controller);
+    }
+
+    //------------------------------
+    // nineViewGroup Gesture listner
+    //------------------------------
+    private class NineViewGestureListener implements NineViewGroup.GestureCallbacks {
+        @Override
+        public boolean onSurroundingClick(View view, int position) {
+        	// TODO: Possibly remove all of this from here and start play or show bench from gridElementController -- Sani
+            Log.d(TAG, "onSurroundingClick: " + position);
+
+            GridElement gridElement = GridElementFactory.getFactoryInstance().get(position);
+            String friendId = gridElement.getFriendId();
+            if (friendId != null && !friendId.equals("")) {
+                videoPlayer.playOverView(view, friendId);
+            } else {
+            	// TODO: This is delegated to the gridElementController. But this entire click handler should really be handled there.
+            	// We should really only use the NineViewGesture listener for longpress gestures. All clicks should be registerd for 
+            	// and handled by the gridViewController.
+                callbacks.onBenchRequest();
+            }
+            return true;
+        }
+
+        @Override
+		public boolean onSurroundingStartLongpress(View view, int position) {
+            Log.d(TAG, "onSurroundingStartLongpress: " + position);
+            GridElement ge = GridElementFactory.getFactoryInstance().get(position);
+            String friendId = ge.getFriendId();
+            if (friendId != null && !friendId.equals("")) {
+                Logger.d("START RECORD");
+                onRecordStart(friendId);
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onEndLongpress() {
+            Log.d(TAG, "onEndLongpress");
+            onRecordStop();
+            return false;
+        }
+
+        @Override
+        public boolean onCancelLongpress(String reason) {
+            Log.d(TAG, "onCancelLongpress: " + reason);
+            showToast(reason);
+            onRecordCancel();
+            return false;
+        }
+
+		@Override
+		public boolean onCenterClick(View view) {
+			// TODO: add proper alert
+            Log.d(TAG, "onCenterClick");
+			return false;
+		}
+
+		@Override
+		public boolean onCenterStartLongpress(View view) {
+			// TODO: add proper alert
+            Log.d(TAG, "onCenterStartLongpress");
+			return false;
+		}
     }
 }

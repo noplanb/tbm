@@ -1,12 +1,7 @@
-package com.noplanbees.tbm;
+package com.noplanbees.tbm.model;
 
 import android.content.Context;
 import android.util.Log;
-
-import com.noplanbees.tbm.model.FriendFactory;
-import com.noplanbees.tbm.model.GridElementFactory;
-import com.noplanbees.tbm.model.UserFactory;
-import com.noplanbees.tbm.model.VideoFactory;
 
 
 public class ActiveModelsHandler {

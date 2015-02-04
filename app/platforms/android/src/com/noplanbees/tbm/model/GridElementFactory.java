@@ -31,6 +31,10 @@ public class GridElementFactory extends ActiveModelFactory {
 		return r;
 	}
 	
+	public GridElement get(int i){
+		return all().get(i);
+	}
+	
 	public GridElement getGridElementByFriendId(String friendId){
 		for (GridElement ge : all()){
 			if (ge.getFriendId().equals(friendId))
@@ -61,5 +65,13 @@ public class GridElementFactory extends ActiveModelFactory {
 	public boolean friendIsOnGrid(Friend f){
 		GridElement ge = findWithFriendId(f.getId());
 		return ge == null ? false : true;
+	}
+
+	public int gridElementIndexWithFriend(Friend f) {
+		GridElement ge = findWithFriendId(f.getId());
+		if (ge == null)
+			return -1;
+		
+		return all().indexOf(ge);
 	}
 }

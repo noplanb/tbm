@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.network.Server;
 import com.noplanbees.tbm.utilities.StringUtils;
 

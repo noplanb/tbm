@@ -13,7 +13,6 @@ public class GridElement extends ActiveModel {
 	@Override
 	public String[] attributeList() {
 		final String[] a = {	
-			Attributes.ID,
 			Attributes.FRIEND_ID,
 		};
 		return a;
@@ -25,7 +24,7 @@ public class GridElement extends ActiveModel {
 		this.context = context;
 	}
 	
-	public Friend friend(){
+	public Friend getFriend(){
 		String fid = attributes.get(GridElement.Attributes.FRIEND_ID);
 		if (fid.equals(""))
 			return null;

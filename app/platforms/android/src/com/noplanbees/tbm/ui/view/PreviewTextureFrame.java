@@ -18,30 +18,31 @@ import android.widget.FrameLayout;
 import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.R;
 
-public class PreviewTextureView extends FrameLayout {
+public class PreviewTextureFrame extends FrameLayout {
 
-    private static final String TAG = "PreviewTextureView";
+    private static final String TAG = "PreviewTextureFrame";
     private TextureView textureView;
 	private boolean isRecording;
 
-	public PreviewTextureView(Context context, AttributeSet attrs, int defStyle) {
+	public PreviewTextureFrame(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init();
 	}
 
-	public PreviewTextureView(Context context, AttributeSet attrs) {
+	public PreviewTextureFrame(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
 
-	public PreviewTextureView(Context context) {
+	public PreviewTextureFrame(Context context) {
 		super(context);
 		init();
 	}
 
 	private void init() {
 		textureView = new TextureView(getContext());
-		addView(textureView);
+		addView(textureView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        setClipToPadding(true);
 	}
 
 	public boolean isRecording() {
@@ -66,8 +67,6 @@ public class PreviewTextureView extends FrameLayout {
 	}
 	
 	private void drawIndicator(Canvas c){
-		Rect border = new Rect(0, 0, c.getWidth(), c.getHeight());
-		
 		Paint paint = new Paint();
 		paint.setStyle(Paint.Style.FILL);
 
@@ -102,6 +101,7 @@ public class PreviewTextureView extends FrameLayout {
 				radius, paint);
 		
 		//draw borders
+        Rect border = new Rect(0, 0, c.getWidth(), c.getHeight());
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(Convenience.dpToPx(getContext(), 2.5f));
 		c.drawRect(border, paint);

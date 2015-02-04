@@ -25,6 +25,8 @@ public class GridManager{
 	private static final String STAG = GridManager.class.getSimpleName();
     private static GridManager gridManager;
 	
+    public static final int GRID_ELEMENTS_COUNT = 8;
+
 	public static interface GridEventNotificationDelegate{
 		void gridDidChange();
 	}
@@ -41,8 +43,26 @@ public class GridManager{
         return gridManager;
     }
 
-	public void addGridEventNotificationDelegate(GridEventNotificationDelegate delegate){
-		gridEventNotificationDelegates.add(delegate);
+	public void addGridEventNotificationDelegate(GridEventNotificationDelegate delegate) {
+        gridEventNotificationDelegates.add(delegate);
+    }
+
+	//----------
+	// Init grid
+	//----------
+	public void initGrid(Context context){
+		if (GridElementFactory.getFactoryInstance().all().size() == GRID_ELEMENTS_COUNT)
+			return;
+
+		GridElementFactory.getFactoryInstance().destroyAll(context);
+		ArrayList<Friend> allFriends = FriendFactory.getFactoryInstance().all();
+		for (Integer i = 0; i < GRID_ELEMENTS_COUNT; i++) {
+			GridElement g = GridElementFactory.getFactoryInstance().makeInstance(context);
+			if (i < allFriends.size()) {
+				Friend f = allFriends.get(i);
+				g.set(GridElement.Attributes.FRIEND_ID, f.getId());
+			}
+		}
 	}
 
     public void removeGridEventNotificationDelegate(GridEventNotificationDelegate delegate){
@@ -69,7 +89,7 @@ public class GridManager{
     public boolean isOnGrid(Friend f){
         boolean isOnGrid = false;
         for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
-            if (ge.hasFriend() && ge.friend().equals(f)) {
+            if (ge.hasFriend() && ge.getFriend().equals(f)) {
                 isOnGrid = true;
                 break;
             }
@@ -90,7 +110,7 @@ public class GridManager{
         ArrayList<Friend> r = new ArrayList<Friend>();
         for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
             if (ge.hasFriend())
-                r.add(ge.friend());
+                r.add(ge.getFriend());
         }
         return r;
     }

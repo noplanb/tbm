@@ -5,7 +5,6 @@ import android.content.Context;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-import com.noplanbees.tbm.ActiveModelsHandler;
 
 public class User extends ActiveModel{
     

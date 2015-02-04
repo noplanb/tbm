@@ -187,7 +187,7 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 	}
 
 	@Override
-	public void onBenchRequest(int pos) {
+	public void onBenchRequest() {
 		body.openDrawer(Gravity.RIGHT);
 	}
 
@@ -232,11 +232,6 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 	}
 
     @Override
-    public void showRecordDialog() {
-        onShowInfoDialog("Hold to Record", "Press and hold the RECORD button to record.");
-    }
-
-    @Override
     public void onShowInfoDialog(String title, String msg) {
         InfoDialogFragment info = new InfoDialogFragment();
         Bundle args = new Bundle();
@@ -244,11 +239,6 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
         args.putString(InfoDialogFragment.MSG, msg);
         info.setArguments(args );
         info.show(getFragmentManager(), null);
-    }
-
-    @Override
-    public void showBadConnectionDialog() {
-        onShowActionInfoDialog("Bad Connection", "Trouble downloading. Check your connection", "Try Again", false, -1);
     }
 
     public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, int actionId){
