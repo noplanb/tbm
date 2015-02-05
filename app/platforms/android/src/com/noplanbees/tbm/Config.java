@@ -11,13 +11,17 @@ import java.util.regex.Pattern;
 public class Config {
 
     public final static String SERVER_HOST = "zazo-dev1-5.elasticbeanstalk.com";
-//	public final static String SERVER_HOST = "192.168.1.82:3000";
-    public final static String SERVER_URI = "http://"+SERVER_HOST;
+//	public final static String SERVER_HOST = "192.168.1.82";
+//  public final static String SERVER_HOST = "54.67.7.124";
+    public static final int SERVER_PORT = 9000;
+//    public static final int SERVER_PORT = 3000;
+//    public static final int SERVER_PORT = 80;
+    public final static String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;
 
 	
 	public final static String appName = "Zazo";
-	
-	private static File publicDir = null;
+
+    private static File publicDir = null;
 
 	public static File getPublicDir() {
 		if (publicDir !=null) 

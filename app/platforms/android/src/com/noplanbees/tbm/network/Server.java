@@ -1,16 +1,13 @@
 package com.noplanbees.tbm.network;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
-import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 import com.noplanbees.tbm.utilities.AsyncTaskManager;
 
 import org.apache.http.HttpResponse;
@@ -141,7 +138,7 @@ public abstract class Server {
         return method.startsWith("POST") || method.startsWith("post");
     }
 
-    public String httpReq() throws IOException, MalformedURLException{
+    public String httpReq() throws IOException{
         String sUrl = Config.fullUrl(uri);
         String result = "";
 
@@ -202,7 +199,6 @@ public abstract class Server {
             result += l;
         }
         br.close();
-//        con.disconnect();
 
         return result;
     }
