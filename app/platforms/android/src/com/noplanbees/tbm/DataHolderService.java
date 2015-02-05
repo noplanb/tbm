@@ -13,7 +13,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.ActiveModelsHandler;

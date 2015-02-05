@@ -35,7 +35,7 @@ import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.VersionHandler;
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.network.aws.CredentialsGetter;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;

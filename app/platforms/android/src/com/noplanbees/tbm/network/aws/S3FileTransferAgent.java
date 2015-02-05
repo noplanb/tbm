@@ -20,7 +20,7 @@ import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.RemoteStorageHandler;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Video;
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 import com.noplanbees.tbm.network.IFileTransferAgent;
 

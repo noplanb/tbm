@@ -1,4 +1,4 @@
-package com.noplanbees.tbm.crash_dispatcher;
+package com.noplanbees.tbm.dispatch;
 
 import android.net.Uri;
 import android.util.Log;
@@ -37,8 +37,6 @@ public class Dispatch {
         Log.e(TAG, msg);
         if(isEnabled){
             LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-            //params.put(User.Attributes.MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
-            //params.put(User.Attributes.AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
             params.put("msg", msg+"\n" + LogCatCollector.collectLogCat(null));
             String uri = new Uri.Builder().appendPath("dispatch").appendPath("post_dispatch").build().toString();
             countDownLatch = new CountDownLatch(1);
@@ -52,10 +50,6 @@ public class Dispatch {
         }
     }
 
-//    Request:
-//    POST url: “dispatch/post_dispatch” params: {auth:user_auth, mkey:user_mkey, msg: (the message the client wishes the server to email to us)}
-//    Response:
-//    {status: “success” | “failure”}
 
     private static class DispatchPost extends Server {
 
@@ -83,7 +77,6 @@ public class Dispatch {
 
         @Override
         public void error(String errorString){
-            //Dispatch.dispatch("ERROR: DispatchPost: " + errorString);
         }
     }
 

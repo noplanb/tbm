@@ -9,7 +9,7 @@ import android.util.Log;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.notification.NotificationHandler;
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.network.FileTransferService;

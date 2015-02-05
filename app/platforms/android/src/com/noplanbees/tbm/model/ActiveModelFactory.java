@@ -6,7 +6,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Config;
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.dispatch.Dispatch;
 
 import java.io.BufferedReader;
 import java.io.File;
