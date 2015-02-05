@@ -30,6 +30,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.UserFactory;
 import com.noplanbees.tbm.utilities.AsyncTaskManager;
@@ -43,8 +44,7 @@ import java.util.Set;
 
 public class ContactsManager implements OnItemClickListener {
 
-	private final static String STAG = ContactsManager.class.getSimpleName();
-	private final String TAG = getClass().getSimpleName();
+	private final static String TAG = ContactsManager.class.getSimpleName();
 
 	public static interface ContactSelected {
 		public void contactSelected(Contact contact);
@@ -96,7 +96,7 @@ public class ContactsManager implements OnItemClickListener {
 			// String selection = Contacts.HAS_PHONE_NUMBER + "=1";
 			Cursor c = context.getContentResolver().query(Contacts.CONTENT_URI, projection, null, null, null);
 			if (c == null || c.getCount() == 0) {
-                Log.e(TAG, "ERROR: setAutoCompleteData: got null cursor from contacs query");
+                Log.i(TAG, "ERROR: setAutoCompleteData: got null cursor from contacs query");
 				if (c != null)
 					c.close();
 				return null;
@@ -111,7 +111,7 @@ public class ContactsManager implements OnItemClickListener {
 			c.close();
 			ArrayList<String> autoCompleteNames = new ArrayList<String>();
 			autoCompleteNames.addAll(uniq);
-			Log.i(STAG, "count = " + autoCompleteNames.size());
+			Log.i(TAG, "count = " + autoCompleteNames.size());
 			// printAllPhoneNumberObjectForNames(autoCompleteNames);
 			return autoCompleteNames;
 		}
@@ -166,7 +166,7 @@ public class ContactsManager implements OnItemClickListener {
 	// Contact look up used to get contact from sms.
 	// ----------------
 	public static Map<String, String> getFirstLastWithRawContactId(Context context, String rawContactId) {
-		Log.i(STAG, "getFirstLast: rawContactId:" + rawContactId);
+		Log.i(TAG, "getFirstLast: rawContactId:" + rawContactId);
 
 		String where = Data.RAW_CONTACT_ID + "=" + rawContactId + " AND " + Data.MIMETYPE + "='"
 				+ CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE + "'";
@@ -350,7 +350,7 @@ public class ContactsManager implements OnItemClickListener {
 
 	// Tries to prepend a default AreaCode in order to make a valid number.
 	private static PhoneNumber getPhoneObject(String phone, String defaultRegion, String defaultAreaCode) {
-		Log.i(STAG, "getPhoneObject:" + phone + " defaultRegion:" + defaultRegion + " defaultAreaCode:"
+		Log.i(TAG, "getPhoneObject:" + phone + " defaultRegion:" + defaultRegion + " defaultAreaCode:"
 				+ defaultAreaCode);
 		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
 		PhoneNumber pn = null;
@@ -363,7 +363,7 @@ public class ContactsManager implements OnItemClickListener {
 			try {
 				pn = pu.parse(defaultAreaCode + phone, defaultRegion);
 			} catch (NumberParseException e1) {
-				Log.e(STAG, phone + ":  NumberParseException was thrown: " + e.toString());
+                Dispatch.dispatch(TAG + phone + ":  NumberParseException was thrown: " + e.toString());
 			}
 		}
 		return pn;
@@ -408,7 +408,7 @@ public class ContactsManager implements OnItemClickListener {
 	// User Profile
 	// -------------
 	public Contact userProfile(Context context) {
-		Log.i(STAG, "userProfile");
+		Log.i(TAG, "userProfile");
 		String[] projection = { Contacts.DISPLAY_NAME };
 		Cursor c = context.getContentResolver().query(Profile.CONTENT_URI, projection, null, null, null);
 
@@ -439,7 +439,7 @@ public class ContactsManager implements OnItemClickListener {
 			return;
 		}
 
-		Log.i(STAG, "count = " + c.getCount());
+		Log.i(TAG, "count = " + c.getCount());
 		c.moveToFirst();
 		do {
 			String phone = c.getString(c.getColumnIndex("data1"));
@@ -448,9 +448,9 @@ public class ContactsManager implements OnItemClickListener {
 			try {
 				pn = pu.parse(phone, "US");
 				String valid = pu.isValidNumber(pn) ? "valid" : "invalid";
-				Log.i(STAG, pu.format(pn, PhoneNumberFormat.E164) + " " + pu.getRegionCodeForNumber(pn) + " " + valid);
+				Log.i(TAG, pu.format(pn, PhoneNumberFormat.E164) + " " + pu.getRegionCodeForNumber(pn) + " " + valid);
 			} catch (NumberParseException e) {
-				Log.e(STAG, phone + ":  NumberParseException was thrown: " + e.toString());
+				Log.e(TAG, phone + ":  NumberParseException was thrown: " + e.toString());
 			}
 		} while (c.moveToNext());
 		c.close();

@@ -227,7 +227,7 @@ public abstract class Server {
                 success(result.get("success"));
             } else {
                 String error = result.get("error");
-                Log.e(TAG, error);
+                Log.d(TAG, error);
                 error(error);
             }
         }

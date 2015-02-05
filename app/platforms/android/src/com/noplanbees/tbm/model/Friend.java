@@ -375,7 +375,7 @@ public class Friend extends ActiveModel{
 
     public void setIncomingVideoViewed(String videoId){
         if (!hasIncomingVideoId(videoId)){
-            Log.e(TAG, "setIncomingVideoViewed: ERROR: incoming video doesnt exist");
+            Dispatch.dispatch(TAG + " setIncomingVideoViewed: ERROR: incoming video doesnt exist");
             return;
         }
 
@@ -539,7 +539,7 @@ public class Friend extends ActiveModel{
     public void setAndNotifyIncomingVideoStatus(String videoId, int status){
         Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
-            Log.e(TAG, "setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
+            Dispatch.dispatch(TAG + " setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
             return;
         }
 
@@ -568,7 +568,7 @@ public class Friend extends ActiveModel{
     private void setAndNotifyDownloadRetryCount(String videoId, int retryCount){
         Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
-            Log.e(TAG, "setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
+            Dispatch.dispatch(TAG + " setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
             return;
         }
 

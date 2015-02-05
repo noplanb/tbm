@@ -102,7 +102,7 @@ public class RemoteStorageHandler {
 		}
 		@Override
 		public void error(String errorString) {
-			Log.e(STAG, "SetOrDeleteRemote: ERROR: " + errorString);
+			Log.d(STAG, "SetOrDeleteRemote: ERROR: " + errorString);
 			LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
 			data.put("success", errorString);
 		}
@@ -176,7 +176,7 @@ public class RemoteStorageHandler {
 		}
 		@Override
 		public void error(String errorString) {
-			Log.e(STAG, "GetRemoteKV: ERROR: " + errorString);
+			Log.d(STAG, "GetRemoteKV: ERROR: " + errorString);
 			LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
 			data.put("error", errorString);
 		}

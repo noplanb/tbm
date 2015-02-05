@@ -249,13 +249,12 @@ public class VideoRecorder implements SurfaceTextureListener {
             Log.i(TAG, "prepareMediaRecorder: mediaRecorder.prepare");
             mediaRecorder.prepare();
         } catch (IllegalStateException e) {
-            Log.e(TAG,
-                    "ERROR: IllegalStateException preparing MediaRecorder: This should never happen" + e.getMessage());
+            Dispatch.dispatch(TAG + " ERROR: IllegalStateException preparing MediaRecorder: This should never happen" + e.getMessage());
             releaseMediaRecorder();
             notifyUnableToPrepare();
             return;
         } catch (IOException e) {
-            Dispatch.dispatch("ERROR: IOException preparing MediaRecorder: This should never happen" + e.getMessage());
+            Dispatch.dispatch(TAG + " ERROR: IOException preparing MediaRecorder: This should never happen" + e.getMessage());
             releaseMediaRecorder();
             notifyUnableToPrepare();
             return;

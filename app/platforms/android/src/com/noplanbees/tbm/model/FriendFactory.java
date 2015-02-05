@@ -12,8 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class FriendFactory extends ActiveModelFactory{
-    private final String TAG = getClass().getSimpleName();
-    private static final String STAG = FriendFactory.class.getSimpleName();
+    private static final String TAG = FriendFactory.class.getSimpleName();
 
     public static class ServerParamKeys{
         public static final String ID = "id";
@@ -42,9 +41,9 @@ public class FriendFactory extends ActiveModelFactory{
     }
 
     public Friend createFriendFromServerParams(Context context, LinkedTreeMap<String, String> params){
-        Log.i(STAG, "createFriendFromServerParams: " + params);
+        Log.i(TAG, "createFriendFromServerParams: " + params);
         if (existsWithId(params.get(ServerParamKeys.ID).toString())){
-            Log.e(STAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
+            Log.e(TAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
             return null;
         }
         Friend f = getFactoryInstance().makeInstance(context);

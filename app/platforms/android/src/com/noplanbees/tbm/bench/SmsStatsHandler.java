@@ -141,7 +141,7 @@ public class SmsStatsHandler {
 
 	private void setNumMessages(){
 		if (messagesCursor == null || messagesCursor.getCount() == 0){
-            Log.e(TAG, "setNumMessages: Got no SMS messages");
+            Log.d(TAG, "setNumMessages: Got no SMS messages");
 			return;
 		}
 
