@@ -10,7 +10,7 @@ public class SharedPreferenceManager {
 
     private static final String SECRET_KEY = "secret_key";
     private static final String ACCESS_KEY_ID = "access_key";
-    private static final String BUCKET_NAME = "bucker_name";
+    private static final String BUCKET_NAME = "bucket_name";
     private static final String REGION = "region";
 
     private static SharedPreferenceManager sharedPreferenceManager;
