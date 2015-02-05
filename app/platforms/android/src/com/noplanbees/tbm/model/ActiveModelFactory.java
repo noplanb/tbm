@@ -91,7 +91,6 @@ public abstract class ActiveModelFactory {
             Log.i(TAG, e.getMessage() + e.toString());
 			return false;
 		} catch (IOException e) {
-            Log.e(TAG, e.getMessage() + e.toString());
             Dispatch.dispatch(e.getMessage() + e.toString());
 			return false;
 		}

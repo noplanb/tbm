@@ -163,7 +163,7 @@ public static interface CameraExceptionHandler{
 		camera.setDisplayOrientation(90);
 		
 		Parameters cparams = camera.getParameters();
-		
+
 		// Set the preview size
 		Camera.Size videoSize = getAppropriateVideoSize(cparams);
 		if (videoSize == null){

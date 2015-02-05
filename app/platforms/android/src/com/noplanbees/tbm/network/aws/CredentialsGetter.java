@@ -1,35 +1,28 @@
 package com.noplanbees.tbm.network.aws;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.network.Server;
 
 public class CredentialsGetter {
 
 	private final String TAG = getClass().getSimpleName();
-    private final boolean isRetryable;
 
-    private ProgressDialog progress;
 	private Context context;
 	private CredentialsGetterCallback delegate;
 
 	public interface CredentialsGetterCallback{
-		public void gotCredentials();
+		void success();
+        void failure();
 	}
 
-	public CredentialsGetter(Context c, boolean isRetryable,  CredentialsGetterCallback delegate){
+	public CredentialsGetter(Context c, CredentialsGetterCallback delegate){
 		context = c;
-        this.isRetryable = isRetryable;
 		this.delegate = delegate;
-		progress = new ProgressDialog(context);
-		progress.setTitle("Checking");
 		getCredentials();
 	}
 
@@ -42,17 +35,15 @@ public class CredentialsGetter {
 	class GetCredentials extends Server{
 		public GetCredentials(String uri, LinkedTreeMap<String, String> params){
 			super(uri, params);
-			//progress.show();
 		}
 		@Override
 		public void success(String response) {
-			//progress.dismiss();
 			gotCredentials(context, response);
 		}
 		@Override
 		public void error(String errorString) {
-			//progress.dismiss();
-			serverError();
+            if(delegate!=null)
+                delegate.failure();
 		}
 	}
 
@@ -63,32 +54,17 @@ public class CredentialsGetter {
 		Log.i(TAG, "gotRegResponse: " + response.toString());
 
         if(response.getStatus().equals("“failure”")){
-            if(isRetryable) {
-                serverError();
-            }else{
-               //TODO:do not retry
-            }
-
+                if(delegate!=null)
+                    delegate.failure();
             return;
         }
 
         response.saveCredentials(context);
 
         if(delegate!=null)
-            delegate.gotCredentials();
+            delegate.success();
 	}
 
-	private void serverError(){
-		showErrorDialog("No Connection", "Can't reach " + Config.appName + ".\n\nCheck your connection and try again.");
-	}
-
-	private void showErrorDialog(String title, String message){
-		AlertDialog.Builder builder = new AlertDialog.Builder(context);
-		builder.setTitle(title)
-		.setMessage(message)
-		.setPositiveButton("Ok", null)
-		.create().show();
-	}
 
 
     private class Response{

@@ -59,7 +59,7 @@ public class NotificationHandler {
 		}
 		@Override
 		public void error(String errorString) {
-			Log.e(STAG, "SendNotification: ERROR: " + errorString);
+			Log.d(STAG, "SendNotification: ERROR: " + errorString);
 		}
 	}
 }

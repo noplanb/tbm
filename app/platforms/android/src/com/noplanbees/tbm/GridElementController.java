@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
+import com.noplanbees.tbm.model.ActiveModel;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.Video;
@@ -13,7 +15,8 @@ import com.noplanbees.tbm.ui.view.GridElementView;
 /**
  * Created by User on 1/30/2015.
  */
-public class GridElementController implements GridElementView.ClickListener, VideoPlayer.StatusCallbacks, GridElementView.FriendViewListener {
+public class GridElementController implements GridElementView.ClickListener, VideoPlayer.StatusCallbacks,
+        GridElementView.FriendViewListener, ActiveModel.ModelChangeCallback {
     private static final String TAG = GridElementController.class.getSimpleName();
     private GridElement gridElement;
     private ViewGroup container;
@@ -24,6 +27,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     public interface Callbacks {
         void onBenchRequest();
+        void onGridUpdated();
         void onNudgeFriend(Friend f);
         void onRecordDialogRequested();
     }
@@ -45,6 +49,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         gridElementView.setOnClickListener(this);
         gridElementView.setEventListener(this);
 
+        gridElement.addCallback(this);
+
         VideoPlayer videoPlayer = VideoPlayer.getInstance(context);
         videoPlayer.registerStatusCallbacks(this);
 
@@ -58,8 +64,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
      * @param forced flag means if view update should be forced
      */
     public void onDataUpdated(String friendId, boolean forced) {
-        if (isForMe(friendId) || forced) {
-//            updateContent(isVideoPlaying);
+        if (forced) {
+            updateContent(isVideoPlaying);
+        }
+        if (isForMe(friendId)) {
             updateVideoStatus();
         }
     }
@@ -129,7 +137,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         }
         gridElementView.showUploadingMark(isUploading());
         gridElementView.showDownloadingMark(isDownloading());
-        gridElementView.setName(friend.getStatusString()); // TODO Remove
+//        gridElementView.setName(gridElement.shouldUseAlterName() ? friend.getDisplayNameAlternative() : friend.getDisplayName());
+        gridElementView.setName(friend.getStatusString()); // TODO Use line above for release
         ((View) container.getParent()).invalidate();
     }
 
@@ -226,5 +235,24 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     public void cleanUp() {
         VideoPlayer videoPlayer = VideoPlayer.getInstance(context);
         videoPlayer.unregisterStatusCallbacks(this);
+        gridElement.removeCallback(this);
+    }
+
+    @Override
+    public void onGridChanged() {
+        updateContent(false);
+        highLightElementForFriend();
+        callbacks.onGridUpdated();
+    }
+
+    //----------------------
+    // Highlight grid change
+    //----------------------
+    private void highLightElementForFriend() {
+        if (!gridElement.hasFriend()) {
+            return;
+        }
+        final View v = container.findViewById(R.id.animation_view);
+        v.startAnimation(AnimationUtils.loadAnimation(context, R.anim.grid_element_appear));
     }
 }

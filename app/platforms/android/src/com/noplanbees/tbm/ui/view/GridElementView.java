@@ -21,8 +21,8 @@ import com.noplanbees.tbm.utilities.Convenience;
 public class GridElementView extends RelativeLayout implements View.OnClickListener, ShortClickListener.Callbacks {
 
 	private static final String TAG = "GridElementView";
-    private boolean isAlterName;
-    private FriendViewListener mEventListener;
+
+    private FriendViewListener viewEventListener;
 
     // TODO: Serhii I really dont have a problem for the effects of (some of) these events to be handled here rather than bubbling them up.
     // In my mind a viewController should have the ability to do some entire screen popups for example. I consider the following actions to 
@@ -73,7 +73,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     }
 
     public void setEventListener(FriendViewListener listener) {
-        mEventListener = listener;
+        viewEventListener = listener;
     }
 
 	private void init() {
@@ -106,8 +106,8 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (mEventListener != null) {
-            mEventListener.onAttached();
+        if (viewEventListener != null) {
+            viewEventListener.onAttached();
         }
         moveUnviewedCountToPosition();
     }
@@ -116,8 +116,8 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (mEventListener != null) {
-            mEventListener.onDetached();
+        if (viewEventListener != null) {
+            viewEventListener.onDetached();
         }
     }
 

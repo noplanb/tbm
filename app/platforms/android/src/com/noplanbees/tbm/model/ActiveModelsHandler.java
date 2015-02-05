@@ -97,7 +97,7 @@ public class ActiveModelsHandler {
 			Log.i(TAG, "Retrieved Video from local storage.");
 			r = vf;
 		} else {
-            Log.e(TAG, "Video not retrievable from local storage");
+            Log.i(TAG, "Video not retrievable from local storage");
 			r = null;
 		}
 		return r;
@@ -113,7 +113,7 @@ public class ActiveModelsHandler {
 			Log.i(TAG, "Retrieved GrideElement from local storage.");
 			r = gf;
 		} else {
-            Log.e(TAG, "GridElement not retrievable from local storage");
+            Log.i(TAG, "GridElement not retrievable from local storage");
 			r = null;
 		}
 		return r;

@@ -7,7 +7,7 @@ import com.noplanbees.tbm.model.Video;
 
 
 public class VideoIdUtils {
-	private static final String STAG = VideoIdUtils.class.getSimpleName();
+	private static final String TAG = VideoIdUtils.class.getSimpleName();
 	
 	public static String generateId() {
 		return System.currentTimeMillis() + "";
@@ -32,10 +32,10 @@ public class VideoIdUtils {
 
 	public static String newerVideoId(String vid1, String vid2) {
 		if (timeStampFromVideoId(vid1) > timeStampFromVideoId(vid2)){
-			Log.e(STAG, "vid1=" + vid1 + " vid2=" + vid2 + " newer=" + vid1);
+			Log.d(TAG, "vid1=" + vid1 + " vid2=" + vid2 + " newer=" + vid1);
 			return vid1;
 		} else {
-			Log.e(STAG, "vid1=" + vid1 + " vid2=" + vid2 + " newer=" + vid2);
+			Log.d(TAG, "vid1=" + vid1 + " vid2=" + vid2 + " newer=" + vid2);
 			return vid2;
 		}
 	}
