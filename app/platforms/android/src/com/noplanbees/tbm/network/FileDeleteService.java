@@ -18,7 +18,7 @@ public class FileDeleteService extends FileTransferService {
 	}	
 	
 	public FileDeleteService() {
-		super("FileDownloadService");
+		super("FileDeleteService");
 	}
 	
 	@Override

@@ -1,21 +1,5 @@
 package com.noplanbees.tbm.network;
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
-
-import com.google.gson.internal.LinkedTreeMap;
-import com.noplanbees.tbm.Config;
-import com.noplanbees.tbm.DataHolderService;
-import com.noplanbees.tbm.RemoteStorageHandler;
-import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.model.Video;
-import com.noplanbees.tbm.dispatch.Dispatch;
-import com.noplanbees.tbm.network.FileTransferService.IntentFields;
-
-import org.apache.commons.io.FileUtils;
-
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -28,6 +12,21 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.Config;
+import com.noplanbees.tbm.DataHolderService;
+import com.noplanbees.tbm.dispatch.Dispatch;
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.Video;
+import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 
 public class ServerFileTransferAgent implements IFileTransferAgent {
 	private final String TAG = getClass().getSimpleName();
@@ -153,9 +152,27 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 	
 	@Override
 	public boolean delete() {
-		RemoteStorageHandler.deleteRemoteFile(filename);
+		deleteRemoteFile(filename);
 		return true;
 	}
+	
+    public static void deleteRemoteFile(String filename){
+        LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+        params.put("filename", filename);
+        new DeleteRemote("videos/delete", params, "GET");
+    }
+
+    private static class DeleteRemote extends Server{
+        public DeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){
+            super(uri, params, method);
+        }
+        @Override
+        public void success(String response) {
+        }
+        @Override
+        public void error(String errorString) {
+        }
+    }
 
 	protected void reportStatus(Intent intent, int status){
 		Log.i(TAG, "reportStatus");

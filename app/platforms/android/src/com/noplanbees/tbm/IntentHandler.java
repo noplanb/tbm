@@ -135,24 +135,21 @@ public class IntentHandler {
 			new FriendGetter(context, false, null);
 			return;
 		}
-        
+		
+		friend.updateStatus(intent);
 		friend.setLastActionTime(System.currentTimeMillis());
+        friend.setHasApp();
 
         if (friend.hasIncomingVideoId(videoId) && status == Video.IncomingVideoStatus.NEW) {
 			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");
 			return;
 		}
 
+        // Create and download the video 
 		if (status == Video.IncomingVideoStatus.NEW) {
-            // If we have gotten a video from a friend then he has the app.
-            friend.setHasApp();
-			// Create the video
 			friend.createIncomingVideo(context, videoId);
-			// Download only if we did not have this videoId before this intent.
 			friend.downloadVideo(intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY));
 		}
-
-		friend.updateStatus(intent);
 
 		if (status == Video.IncomingVideoStatus.DOWNLOADED) {
 			
@@ -168,6 +165,7 @@ public class IntentHandler {
                return;
             }
 
+			// TODO: Serhii, please use THUMB_CREATED state in ui where you used to use DOWNLOADED state. Remove comment when done -- Sani
 			friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.THUMB_CREATED);
 			friend.deleteAllViewedVideos();
 

@@ -217,13 +217,7 @@ public class RemoteStorageHandler {
     //-----------------
     // DeleteRemoteFile
     //-----------------
-    public static void deleteRemoteFile(String filename){
-        LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-        params.put("filename", filename);
-        new DeleteRemote("videos/delete", params, "GET");
-    }
-
-
+	
     public static void deleteRemoteKV(String key1, String key2){
         LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
         params.put("key1", key1);
