@@ -155,7 +155,9 @@ public class IntentHandler {
 		friend.updateStatus(intent);
 
 		if (status == Video.IncomingVideoStatus.DOWNLOADED) {
-			friend.createThumb(videoId);
+			if(!friend.createThumb(videoId)){
+               return;
+            }
 
 			friend.deleteAllViewedVideos();
 
