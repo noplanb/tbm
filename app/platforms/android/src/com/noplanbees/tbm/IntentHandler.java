@@ -134,9 +134,9 @@ public class IntentHandler {
 			Log.i(TAG, "Got Video from a user who is not currently a friend. Getting friends.");
 			new FriendGetter(context, false, null);
 			return;
-		}else{
-            friend.setLastActionTime(System.currentTimeMillis());
-        }
+		}
+        
+		friend.setLastActionTime(System.currentTimeMillis());
 
         if (friend.hasIncomingVideoId(videoId) && status == Video.IncomingVideoStatus.NEW) {
 			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");

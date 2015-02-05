@@ -35,7 +35,7 @@ import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.GridElementFactory;

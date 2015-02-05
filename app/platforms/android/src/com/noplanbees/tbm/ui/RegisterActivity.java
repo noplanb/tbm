@@ -80,10 +80,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-		//getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
 		getActionBar().hide();
-		
 		setContentView(R.layout.register);
 		setupListeners();
 		setupProgressDialog();
@@ -101,7 +98,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	protected void onResume(){
 		super.onResume();
 		setUpView();
-		//new VersionHandler(this);
 	}
 	
 	@Override
@@ -359,7 +355,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	//---------------------
 	// Add user and friends
 	//---------------------
-
 	private void gotUser(LinkedTreeMap<String, String> params){
 		user.set(User.Attributes.FIRST_NAME, params.get(UserFactory.ServerParamKeys.FIRST_NAME));
 		user.set(User.Attributes.LAST_NAME, params.get(UserFactory.ServerParamKeys.LAST_NAME));
@@ -376,6 +371,9 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		});
 	}
 
+	//-------------------
+	// Get S3 credentials
+	//-------------------
     private void getAWSCredentials(){
         new CredentialsGetter(this, true, new CredentialsGetter.CredentialsGetterCallback() {
             @Override
@@ -385,6 +383,18 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         });
     }
 
+	private void regComplete() {
+		UserFactory.current_user().set(User.Attributes.REGISTERED, "true");
+		activeModelsHandler.saveAll();
+		Intent i = new Intent(this, MainActivity.class);
+		startActivity(i);
+		finish();
+	}
+
+    
+    //----------------
+    // Click listeners
+    //----------------
 	private void setupListeners(){
 		Button enterBtn = (Button) findViewById(R.id.enter_btn);
 		enterBtn.setOnClickListener(new OnClickListener() {
@@ -403,22 +413,16 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		});
 	}
 
+
+
+	// -------------
+	// Error dialogs
+	//--------------
 	private void setupProgressDialog(){
 		progress = new ProgressDialog(this);
 		progress.setTitle("Checking");
 	}
 
-	private void regComplete() {
-		UserFactory.current_user().set(User.Attributes.REGISTERED, "true");
-		activeModelsHandler.saveAll();
-		Intent i = new Intent(this, MainActivity.class);
-		startActivity(i);
-		finish();
-	}
-
-	// -------------
-	// Error dialogs
-	//--------------
 	private void phoneError() {
 		showErrorDialog("Bad Number", "Enter your country code and mobile number.");
 	}
@@ -445,30 +449,11 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	}
 
 	//-------------
-	// Convenience
-	//-------------
-//	private String phoneWithFormat(String phone, PhoneNumberFormat format){
-//		if (phone == null)
-//			return null;
-//
-//		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
-//		try {
-//			PhoneNumber pn = pu.parse(phone, "US");
-//			return pu.format(pn, format);
-//		} catch (NumberParseException e) {
-//			return null;
-//		}
-//	}
-
-	//-------------
 	// Add shortcut
 	//-------------
 	private void addShortcutIcon(){
 
 		Intent shortcutIntent = new Intent(getApplicationContext(), MainActivity.class);
-		//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		//	    shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
 
 		Intent addIntent = new Intent();
 		addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);

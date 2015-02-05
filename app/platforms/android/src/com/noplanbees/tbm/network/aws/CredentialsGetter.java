@@ -19,7 +19,6 @@ public class CredentialsGetter {
     private ProgressDialog progress;
 	private Context context;
 	private CredentialsGetterCallback delegate;
-	//ArrayList<LinkedTreeMap<String, String>> friendList = new ArrayList<LinkedTreeMap<String, String>>();
 
 	public interface CredentialsGetterCallback{
 		public void gotCredentials();
@@ -31,13 +30,11 @@ public class CredentialsGetter {
 		this.delegate = delegate;
 		progress = new ProgressDialog(context);
 		progress.setTitle("Checking");
-		getFriends();
+		getCredentials();
 	}
 
-	private void getFriends(){
+	private void getCredentials(){
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-		//params.put(UserFactory.ServerParamKeys.AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
-		//params.put(UserFactory.ServerParamKeys.MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
 		String uri = new Uri.Builder().appendPath("s3_infos").appendPath("info").build().toString();
 		new GetCredentials(uri, params);
 	}
@@ -93,13 +90,6 @@ public class CredentialsGetter {
 		.create().show();
 	}
 
-    //    Response
-//    {status: “success” | “failure”,
-//        region: region,
-//                bucket: bucket,
-//            access_key: access_key,
-//            secret_key: secret_key}
-//    region values: us_east_1 us_west_1 us_west_2 ap_southeast_1 ap_southeast_2 ap_northeast_1 sa_east_1
 
     private class Response{
         private String status;

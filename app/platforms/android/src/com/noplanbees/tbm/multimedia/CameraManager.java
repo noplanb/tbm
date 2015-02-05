@@ -9,7 +9,7 @@ import android.hardware.Camera.Size;
 import android.os.Build;
 import android.util.Log;
 
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.dispatch.Dispatch;
 
 import java.util.Collections;
 import java.util.Comparator;

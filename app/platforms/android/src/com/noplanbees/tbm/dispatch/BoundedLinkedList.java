@@ -1,4 +1,4 @@
-package com.noplanbees.tbm.crash_dispatcher;
+package com.noplanbees.tbm.dispatch;
 
 /*
  *  Copyright 2010 Kevin Gaudin

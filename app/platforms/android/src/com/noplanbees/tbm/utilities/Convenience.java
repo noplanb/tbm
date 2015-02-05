@@ -13,6 +13,8 @@ import android.util.TypedValue;
 
 import org.apache.commons.io.FileUtils;
 
+import com.noplanbees.tbm.dispatch.Dispatch;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -49,7 +51,9 @@ public class Convenience {
 			fis = FileUtils.openInputStream(thumbFile);
 	        bmp = BitmapFactory.decodeStream(fis);
 		} catch (IOException e) {
-			Log.i(STAG, "bitmapWithFile: IOException: " + e.getMessage());
+			String msg = "bitmapWithFile: IOException: " + e.getMessage();
+			Log.i(STAG, msg);
+			Dispatch.dispatch(msg);
 		}
 		return bmp;
 	}

@@ -21,7 +21,7 @@ import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.Attributes;
-import com.noplanbees.tbm.crash_dispatcher.Dispatch;
+import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.ui.dialogs.SelectPhoneNumberDialog;
 
