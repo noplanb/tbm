@@ -149,11 +149,14 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 
 			benchController.onDataLoaded();
 
-            new CredentialsGetter(this, false, new CredentialsGetter.CredentialsGetterCallback() {
+            new CredentialsGetter(this, new CredentialsGetter.CredentialsGetterCallback() {
                 @Override
-                public void gotCredentials() {
+                public void success() {
                     new FriendGetter(MainActivity.this, false, null);
                 }
+
+                @Override
+                public void failure() { }
             });
         }
 	}

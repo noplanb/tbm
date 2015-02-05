@@ -375,11 +375,15 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	// Get S3 credentials
 	//-------------------
     private void getAWSCredentials(){
-        new CredentialsGetter(this, true, new CredentialsGetter.CredentialsGetterCallback() {
+        new CredentialsGetter(this, new CredentialsGetter.CredentialsGetterCallback() {
             @Override
-            public void gotCredentials() {
+            public void success() {
                 regComplete();
             }
+
+            @Override
+            public void failure() {
+                showErrorDialog("No Connection", "Can't reach " + Config.appName + ".\n\nCheck your connection and try again.");            }
         });
     }
 
