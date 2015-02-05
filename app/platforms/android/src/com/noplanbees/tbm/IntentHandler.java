@@ -155,24 +155,28 @@ public class IntentHandler {
 		friend.updateStatus(intent);
 
 		if (status == Video.IncomingVideoStatus.DOWNLOADED) {
+			
+			// Always delete the remote video even if the one we got is corrupted. Otherwise it may never be deleted
+			friend.deleteRemoteVideo(videoId);
+			
+			// Always set status for sender to downloaded and send status notification even if the video we got is not corrupted.
+			rSHandler.setRemoteIncomingVideoStatus(friend, videoId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
+			NotificationHandler.sendForVideoStatusUpdate(friend, videoId, NotificationHandler.StatusEnum.DOWNLOADED);
+			
 			if(!friend.createThumb(videoId)){
+	           friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
                return;
             }
 
+			friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.THUMB_CREATED);
 			friend.deleteAllViewedVideos();
 
 			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()) {
 				NotificationAlertManager.alert(context, friend, videoId);
 			} else {
+				// TODO: play the notification tone only if we are not currently playing or recording.
 				playNotificationTone();
 			}
-
-			friend.deleteRemoteVideo(videoId);
-			// Update RemoteStorage status as downloaded.
-			rSHandler.setRemoteIncomingVideoStatus(friend, videoId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
-
-			// Send outgoing notification
-			NotificationHandler.sendForVideoStatusUpdate(friend, videoId, NotificationHandler.StatusEnum.DOWNLOADED);
 		}
 	}
 

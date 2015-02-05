@@ -391,7 +391,6 @@ public class Friend extends ActiveModel{
         boolean res = false;
 
         if( !videoFromFile(videoId).exists() || videoFromFile(videoId).length() == 0 ){
-            setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
             Dispatch.dispatch("createThumb: no video file found for friend=" + get(Attributes.FIRST_NAME));
             res = false;
         }else{
@@ -416,7 +415,6 @@ public class Friend extends ActiveModel{
                 thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
                 res = true;
             } catch (IOException| NullPointerException e) {
-                setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
                 Dispatch.dispatch("createThumb: " + e.getMessage() + e.toString());
                 res = false;
             }
@@ -443,8 +441,9 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath());
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, get(Attributes.OUTGOING_VIDEO_ID));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this));
-        i.putExtra(FileTransferService.IntentFields.USER_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
-        i.putExtra(FileTransferService.IntentFields.USER_AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
+        // TODO: Andrey why do you add usermkey and user auth to the intent here? Let me know if I can delete. -- Sani
+//        i.putExtra(FileTransferService.IntentFields.USER_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
+//        i.putExtra(FileTransferService.IntentFields.USER_AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -461,9 +460,9 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
-        i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
-        i.putExtra(FileTransferService.IntentFields.USER_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
-        i.putExtra(FileTransferService.IntentFields.USER_AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
+        // TODO: Andrey why do you add usermkey and user auth to the intent here? Let me know if I can delete. -- Sani
+//        i.putExtra(FileTransferService.IntentFields.USER_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
+//        i.putExtra(FileTransferService.IntentFields.USER_AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -477,8 +476,9 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.VIDEOIDS_REMOTE_KV_KEY, RemoteStorageHandler.incomingVideoIdsRemoteKVKey(this));
-        i.putExtra(FileTransferService.IntentFields.USER_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
-        i.putExtra(FileTransferService.IntentFields.USER_AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
+        // TODO: Andrey why do you add usermkey and user auth to the intent here? Let me know if I can delete. -- Sani
+//        i.putExtra(FileTransferService.IntentFields.USER_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
+//        i.putExtra(FileTransferService.IntentFields.USER_AUTH, UserFactory.current_user().get(User.Attributes.AUTH));
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);

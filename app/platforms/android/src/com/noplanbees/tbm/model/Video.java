@@ -15,7 +15,8 @@ public class Video extends ActiveModel {
 		public static final int QUEUED = 2;
 		public static final int DOWNLOADING = 3;
 		public static final int DOWNLOADED = 4;
-		public static final int VIEWED = 5;
+		public static final int THUMB_CREATED = 5;
+		public static final int VIEWED = 6;
 		public static final int FAILED_PERMANENTLY = 7;
 	}
 	
