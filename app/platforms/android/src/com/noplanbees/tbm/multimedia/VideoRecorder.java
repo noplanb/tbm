@@ -5,11 +5,13 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
+import android.media.SoundPool;
 import android.util.Log;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 
 import com.noplanbees.tbm.Config;
+import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.ui.view.PreviewTextureFrame;
@@ -49,11 +51,22 @@ public class VideoRecorder implements SurfaceTextureListener {
     private MediaRecorder mediaRecorder;
     private Friend currentFriend;
     private PreviewTextureFrame preview;
+    private final SoundPool soundPool;
+    private final int soundID;
+
     // Allow registration of a single delegate to handle exceptions.
     private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
 
     public VideoRecorder(Context c) {
         context = c;
+        // Load the sounds
+        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+            }
+        });
+        soundID = soundPool.load(context, R.raw.beep_sin, 1);
     }
 
     public void onResume() {
@@ -72,52 +85,9 @@ public class VideoRecorder implements SurfaceTextureListener {
         videoRecorderExceptionHandler = handler;
     }
 
-    public boolean stopRecording() {
-        Log.i(TAG, "stopRecording");
-
-        // restore playback if needed
-        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        am.setStreamMute(AudioManager.STREAM_MUSIC, false);
-
-        boolean rval = false;
-        hideRecordingIndicator(); // It should be safe to call this even if the
-        // sufraces have already been destroyed.
-        if (mediaRecorder != null) {
-            // hideRecordingIndicator is in the if statement because if
-            // VideoRecorder was disposed due to an external event such as a
-            // phone call while the user was still pressing record when he
-            // releases his finger
-            // we will get a stopRecording even though our app has been paused.
-            // If we try to hideRecordingIndicator at this point the surface
-            // will have already been disposed of and app will crash.
-            try {
-                mediaRecorder.stop();
-                rval = true;
-                Log.i(TAG,
-                        String.format("Recorded file %s : %d", Config.recordingFilePath(context),
-                                Config.recordingFile(context).length()));
-                if (currentFriend != null)
-                    moveRecordingToFriend(currentFriend);
-            } catch (IllegalStateException e) {
-                Dispatch.dispatch("stopRecording: IllegalStateException: " + e.toString());
-
-                rval = false;
-            } catch (RuntimeException e) {
-                Log.d(TAG, "stopRecording: Recording to short. No output file " + e.toString());
-                if (videoRecorderExceptionHandler != null) {
-                    videoRecorderExceptionHandler.recordingTooShort();
-                }
-                rval = false;
-            } finally {
-                releaseMediaRecorder();
-            }
-            // prepareMediaRecorder();
-        }
-        return rval;
-    }
-
     public boolean startRecording(Friend f) {
         Log.i(TAG, "startRecording");
+        disableShutterAndPlayOwnSound();
 
         currentFriend = f;
 
@@ -150,6 +120,51 @@ public class VideoRecorder implements SurfaceTextureListener {
         }
         showRecordingIndicator();
         return true;
+    }
+
+    public boolean stopRecording() {
+        Log.i(TAG, "stopRecording");
+
+        // restore playback if needed
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        am.setStreamMute(AudioManager.STREAM_MUSIC, false);
+
+        boolean rval = false;
+        hideRecordingIndicator(); // It should be safe to call this even if the
+        // sufraces have already been destroyed.
+        if (mediaRecorder != null) {
+            enableShutterAndPlayOwnSound();
+            // hideRecordingIndicator is in the if statement because if
+            // VideoRecorder was disposed due to an external event such as a
+            // phone call while the user was still pressing record when he
+            // releases his finger
+            // we will get a stopRecording even though our app has been paused.
+            // If we try to hideRecordingIndicator at this point the surface
+            // will have already been disposed of and app will crash.
+            try {
+                mediaRecorder.stop();
+                rval = true;
+                Log.i(TAG,
+                        String.format("Recorded file %s : %d", Config.recordingFilePath(context),
+                                Config.recordingFile(context).length()));
+                if (currentFriend != null)
+                    moveRecordingToFriend(currentFriend);
+            } catch (IllegalStateException e) {
+                Dispatch.dispatch("stopRecording: IllegalStateException: " + e.toString());
+
+                rval = false;
+            } catch (RuntimeException e) {
+                Log.d(TAG, "stopRecording: Recording to short. No output file " + e.toString());
+                if (videoRecorderExceptionHandler != null) {
+                    videoRecorderExceptionHandler.recordingTooShort();
+                }
+                rval = false;
+            } finally {
+                releaseMediaRecorder();
+            }
+            // prepareMediaRecorder();
+        }
+        return rval;
     }
 
     public void release() {
@@ -188,8 +203,6 @@ public class VideoRecorder implements SurfaceTextureListener {
         ing.renameTo(ed);
     }
 
-    // ---------------------------------
-    // Prepare and release MediaRecorder
     // ---------------------------------
 
     private void prepareMediaRecorder() {
@@ -344,13 +357,25 @@ public class VideoRecorder implements SurfaceTextureListener {
         return true;
     }
 
-
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
     }
 
+
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+    }
+
+    private void disableShutterAndPlayOwnSound() {
+        soundPool.play(soundID, 1,1, 0,0,1);
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        am.setStreamMute(AudioManager.STREAM_SYSTEM, true);
+    }
+
+    private void enableShutterAndPlayOwnSound() {
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        am.setStreamMute(AudioManager.STREAM_SYSTEM, false);
+        soundPool.play(soundID, 1,1, 0,0,1);
     }
 
 }

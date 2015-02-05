@@ -36,7 +36,6 @@ public class NotificationAlertManager {
 	
 	private static final String subTitle = Config.appName;
 	private static int smallIcon = R.drawable.ic_stat_gcm;
-	private static Uri alertSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
 	private static Bitmap largeImage(Friend friend, String videoId){
 		return friend.sqThumbBitmap(videoId);
@@ -76,10 +75,10 @@ public class NotificationAlertManager {
 		final int NOTIFICATION_ID = 1;
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
-		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, makePlayVideoIntent(intent, context, friend), 0);		
+		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, makePlayVideoIntent(intent, context, friend), 0);
 
-		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-		.setSound(alertSound)
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
+		.setSound(Uri.parse("android.resource://"+ context.getPackageName() + "/" + R.raw.notification_tone))
 		.setLargeIcon(largeImage(friend, videoId))
 		.setSmallIcon(smallIcon)
 		.setContentTitle(title(friend))
