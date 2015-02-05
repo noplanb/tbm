@@ -53,7 +53,7 @@ public class GridElementFactory extends ActiveModelFactory {
 	public GridElement findWithFriendId(String friendId) {
 		return (GridElement) findWhere(GridElement.Attributes.FRIEND_ID, friendId);
 	}
-	
+
 	public GridElement firstEmptyGridElement(){
 		for (GridElement ge : all()){
 			if (!ge.hasFriend())

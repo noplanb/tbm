@@ -2,17 +2,20 @@ package com.noplanbees.tbm.model;
 
 import android.content.Context;
 import android.util.Log;
-
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.dispatch.Dispatch;
 
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class ActiveModel {
 	protected final String TAG = this.getClass().getSimpleName();
 
 	public LinkedTreeMap<String, String> attributes = new LinkedTreeMap<String, String>();
-	
+
 	protected Context context;
+
+    private Set<ModelChangeCallback> callbacks = new HashSet<>();
 
 	public void init(Context context){
 		this.context = context;
@@ -22,16 +25,7 @@ public abstract class ActiveModel {
 	}
 
 	// Must be overridden in subclass.	
-	public String[] attributeList(){
-		return null;
-	}
-
-	// Must be overridden in subclass.	
-	public static String castToSubclass(){
-		return null;
-	}
-	
-	
+	public abstract String[] attributeList();
 
 	//--------------------
 	// Getters and setters
@@ -56,4 +50,22 @@ public abstract class ActiveModel {
 	public String getId(){
 		return attributes.get("id");
 	}
+
+    public final void addCallback(ModelChangeCallback callback) {
+        callbacks.add(callback);
+    }
+
+    public final void removeCallback(ModelChangeCallback callback) {
+        callbacks.remove(callback);
+    }
+
+    protected void notifyCallbacks() {
+        for (ModelChangeCallback callback : callbacks) {
+            callback.onGridChanged();
+        }
+    }
+
+    public interface ModelChangeCallback {
+        void onGridChanged();
+    }
 }
