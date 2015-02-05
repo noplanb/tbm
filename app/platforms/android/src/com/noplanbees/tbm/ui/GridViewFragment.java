@@ -1,6 +1,5 @@
 package com.noplanbees.tbm.ui;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
@@ -23,24 +22,22 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 import android.widget.VideoView;
-
-import com.noplanbees.tbm.multimedia.CameraManager;
-import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
-import com.noplanbees.tbm.network.FileDownloadService;
-import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
-import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.GridElementController;
 import com.noplanbees.tbm.GridManager;
-import com.noplanbees.tbm.GridManager.GridEventNotificationDelegate;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.ActiveModelsHandler;
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.model.FriendFactory;
+import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.GridElementFactory;
+import com.noplanbees.tbm.multimedia.CameraManager;
+import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.multimedia.VideoRecorder;
+import com.noplanbees.tbm.network.FileDownloadService;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 import com.noplanbees.tbm.ui.view.NineViewGroup;
@@ -52,9 +49,8 @@ import java.util.ArrayList;
 
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
-public class GridViewFragment extends Fragment implements GridEventNotificationDelegate,
-		VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback,
-VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callbacks {
+public class GridViewFragment extends Fragment implements VideoRecorder.VideoRecorderExceptionHandler, CameraExceptionHandler, VideoStatusChangedCallback,
+        VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callbacks {
 
 	private static final String TAG = GridViewFragment.class.getSimpleName();
 
@@ -63,6 +59,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
     public interface Callbacks {
         void onFinish();
         void onBenchRequest();
+        void onGridUpdated();
         void onNudgeFriend(Friend f);
     }
 
@@ -70,7 +67,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	private ActiveModelsHandler activeModelsHandler;
 	private VideoPlayer videoPlayer;
 	private VideoRecorder videoRecorder;
-	private Callbacks callbacks;
 	private Handler uiHandler = new Handler(Looper.getMainLooper());
 
     private SensorManager sensorManager;
@@ -103,12 +99,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 	}
 
 	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		callbacks = (Callbacks) activity;
-	}
-
-	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.nineviewgroup_fragment, container, false);
 
@@ -137,18 +127,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        GridManager.getInstance().addGridEventNotificationDelegate(this);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        GridManager.getInstance().removeGridEventNotificationDelegate(this);
     }
 
     @Override
@@ -308,7 +286,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
                 public void onClick(DialogInterface dialog, int which) {
                     switch (which) {
                         case DialogInterface.BUTTON_POSITIVE:
-                            callbacks.onFinish();
+                            getCallbacks().onFinish();
                             break;
                         case DialogInterface.BUTTON_NEGATIVE:
                             videoRecorder.dispose();
@@ -350,16 +328,6 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
                 Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
-            }
-        });
-	}
-
-	@Override
-	public void gridDidChange() {
-        notifyViewControllers(new ViewControllerTask() {
-            @Override
-            public void onEvent(GridElementController controller) {
-                controller.onDataUpdated(null, true);
             }
         });
 	}
@@ -474,12 +442,17 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
 
     @Override
     public void onBenchRequest() {
-        callbacks.onBenchRequest();
+        getCallbacks().onBenchRequest();
+    }
+
+    @Override
+    public void onGridUpdated() {
+        getCallbacks().onGridUpdated();
     }
 
     @Override
     public void onNudgeFriend(Friend f) {
-        callbacks.onNudgeFriend(f);
+        getCallbacks().onNudgeFriend(f);
     }
 
     @Override
@@ -541,6 +514,10 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
         }
     }
 
+    private Callbacks getCallbacks() {
+        return (Callbacks) getActivity();
+    }
+
     private interface ViewControllerTask {
         void onEvent(GridElementController controller);
     }
@@ -562,7 +539,7 @@ VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callback
             	// TODO: This is delegated to the gridElementController. But this entire click handler should really be handled there.
             	// We should really only use the NineViewGesture listener for longpress gestures. All clicks should be registerd for 
             	// and handled by the gridViewController.
-                callbacks.onBenchRequest();
+                getCallbacks().onBenchRequest();
             }
             return true;
         }

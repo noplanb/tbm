@@ -21,29 +21,27 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
-
-import com.noplanbees.tbm.GridManager;
+import com.noplanbees.tbm.DataHolderService;
+import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.VersionHandler;
 import com.noplanbees.tbm.bench.BenchController;
 import com.noplanbees.tbm.bench.BenchObject;
-import com.noplanbees.tbm.model.Contact;
-import com.noplanbees.tbm.DataHolderService;
-import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.network.FriendGetter;
-import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.bench.InviteManager;
-import com.noplanbees.tbm.notification.NotificationAlertManager;
-import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.model.User;
-import com.noplanbees.tbm.VersionHandler;
 import com.noplanbees.tbm.dispatch.Dispatch;
+import com.noplanbees.tbm.model.Contact;
+import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.model.User;
+import com.noplanbees.tbm.network.FriendGetter;
 import com.noplanbees.tbm.network.aws.CredentialsGetter;
+import com.noplanbees.tbm.notification.NotificationAlertManager;
+import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.VersionDialogFragment;
 
 public class MainActivity extends Activity implements GridViewFragment.Callbacks, 
 BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Callback,
-        VersionDialogFragment.Callbacks, GridManager.GridEventNotificationDelegate, InviteManager.Callbacks {
+        VersionDialogFragment.Callbacks, InviteManager.Callbacks {
 	private final static String TAG = "MainActivity";
 	
 	public static final int CONNECTED_DIALOG = 0;
@@ -109,14 +107,12 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
         bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 		versionHandler.checkVersionCompatibility();
 		NotificationAlertManager.cancelNativeAlerts(this);
-        GridManager.getInstance().addGridEventNotificationDelegate(this);
     }
 
 	@Override
 	protected void onStop() {
 		super.onStop();
         unbindService(conn);
-        GridManager.getInstance().removeGridEventNotificationDelegate(this);
 	}
 
     @Override
@@ -194,7 +190,12 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 		body.openDrawer(Gravity.RIGHT);
 	}
 
-	@Override
+    @Override
+    public void onGridUpdated() {
+        benchController.onBenchHasChanged();
+    }
+
+    @Override
 	public void onHide() {
 		body.closeDrawers();
 	}
@@ -280,10 +281,5 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id="
                     + getPackageName())));
         }
-    }
-
-    @Override
-    public void gridDidChange() {
-        benchController.onBenchHasChanged();
     }
 }
