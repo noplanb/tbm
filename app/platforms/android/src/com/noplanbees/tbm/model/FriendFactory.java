@@ -43,7 +43,7 @@ public class FriendFactory extends ActiveModelFactory{
     public Friend createFriendFromServerParams(Context context, LinkedTreeMap<String, String> params){
         Log.i(TAG, "createFriendFromServerParams: " + params);
         if (existsWithId(params.get(ServerParamKeys.ID).toString())){
-            Log.e(TAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
+            Log.i(TAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
             return null;
         }
         Friend f = getFactoryInstance().makeInstance(context);
