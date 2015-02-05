@@ -93,13 +93,6 @@ public class CredentialsGetter {
 		.create().show();
 	}
 
-    //    Response
-//    {status: “success” | “failure”,
-//        region: region,
-//                bucket: bucket,
-//            access_key: access_key,
-//            secret_key: secret_key}
-//    region values: us_east_1 us_west_1 us_west_2 ap_southeast_1 ap_southeast_2 ap_northeast_1 sa_east_1
 
     private class Response{
         private String status;
