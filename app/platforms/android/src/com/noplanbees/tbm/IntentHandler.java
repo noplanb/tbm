@@ -132,6 +132,8 @@ public class IntentHandler {
 		// new friends and poll them all.
 		if (friend == null) {
 			Log.i(TAG, "Got Video from a user who is not currently a friend. Getting friends.");
+			// TODO: make sure this also polls. So this should be a call getAndPollAllFriends().
+			// TODO: make sure friendgetter updates has app even if friend exists on device.
 			new FriendGetter(context, false, null);
 			return;
 		}
@@ -147,12 +149,13 @@ public class IntentHandler {
         // Create and download the video if this was a videoReceived intent.
 		if (status == Video.IncomingVideoStatus.NEW) {
 			friend.createIncomingVideo(context, videoId);
-			friend.downloadVideo(intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY));
+			friend.downloadVideo(videoId);
 		}
 
 		if (status == Video.IncomingVideoStatus.DOWNLOADED) {
 			
 			// Always delete the remote video even if the one we got is corrupted. Otherwise it may never be deleted
+			// TODO: make sure we try to delete the kv even if delete file fails.
 			friend.deleteRemoteVideo(videoId);
 			
 			// Always set status for sender to downloaded and send status notification even if the video we got is not corrupted.
@@ -164,6 +167,10 @@ public class IntentHandler {
                return;
             }
 
+			// TODO: create a new state for local videos called marked_for_remote_deletion.
+			// do not show videos in that state during play
+			// only after we have successfully deleted the remote_kv for the video do we 
+			// actually delete the video object locally.
 			friend.deleteAllViewedVideos();
 
 			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()) {
@@ -175,6 +182,7 @@ public class IntentHandler {
 		}
 		
 		// Update the status and notify based on the intent if we have not exited for another reason above.
+		// TODO: bring this method into this file
 		friend.updateStatus(intent);
 	}
 

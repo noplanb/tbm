@@ -400,10 +400,10 @@ public class Friend extends ActiveModel{
             long duration = mp.getDuration();
             Log.d(TAG, "createThumb: duration = " + duration);
             long pos;
-            if(duration>1)
+            if(duration>1500)
                 pos = duration - 1000;
             else
-                pos = duration;
+                pos = duration/2;
 
             MediaMetadataRetriever r = new MediaMetadataRetriever();
             r.setDataSource(vidPath);
@@ -441,6 +441,7 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath());
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, get(Attributes.OUTGOING_VIDEO_ID));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this));
+        // TODO: why is this here
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -457,6 +458,7 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
+        // TODO: why is this here
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -470,6 +472,7 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.VIDEOIDS_REMOTE_KV_KEY, RemoteStorageHandler.incomingVideoIdsRemoteKVKey(this));
+        // TODO: why is this here
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -588,6 +591,7 @@ public class Friend extends ActiveModel{
     }
 
     // Update with intent
+    // TOOO: move to intent handler.
     public void updateStatus(Intent intent){
         String transferType = intent.getStringExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY);
         int status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
