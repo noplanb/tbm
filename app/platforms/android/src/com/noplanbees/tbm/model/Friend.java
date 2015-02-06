@@ -444,7 +444,7 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath());
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, get(Attributes.OUTGOING_VIDEO_ID));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this));
-        // TODO: why is this here
+        // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -461,7 +461,7 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
-        // TODO: why is this here
+        // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -474,8 +474,7 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
-        i.putExtra(FileTransferService.IntentFields.VIDEOIDS_REMOTE_KV_KEY, RemoteStorageHandler.incomingVideoIdsRemoteKVKey(this));
-        // TODO: why is this here
+        // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);

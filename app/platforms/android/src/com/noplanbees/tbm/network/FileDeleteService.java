@@ -23,13 +23,9 @@ public class FileDeleteService extends FileTransferService {
 	
 	@Override
 	protected boolean doTransfer(Intent intent) throws InterruptedException{
-		if(fileTransferAgent.delete()) {
-            String videoIdsRemoteKVKey = intent.getStringExtra(IntentFields.VIDEOIDS_REMOTE_KV_KEY);
-            String videoId = intent.getStringExtra(IntentFields.VIDEO_ID_KEY);
-            RemoteStorageHandler.deleteRemoteKV(videoIdsRemoteKVKey, videoId);
-            return true;
-        }
-        return false;
+		// Do not retry deletes always return true.
+		fileTransferAgent.delete();
+        return true;
     }
 	
 	@Override

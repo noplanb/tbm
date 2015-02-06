@@ -14,6 +14,7 @@ import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.network.FriendGetter;
+import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.NotificationHandler;
 import com.noplanbees.tbm.utilities.Convenience;
@@ -156,7 +157,7 @@ public class IntentHandler {
 			
 			// Always delete the remote video even if the one we got is corrupted. Otherwise it may never be deleted
 			// TODO: make sure we try to delete the kv even if delete file fails.
-			friend.deleteRemoteVideo(videoId);
+			deleteRemoteVideoAndKV();
 			
 			// Always set status for sender to downloaded and send status notification even if the video we got is not corrupted.
 			rSHandler.setRemoteIncomingVideoStatus(friend, videoId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
@@ -184,6 +185,15 @@ public class IntentHandler {
 		// Update the status and notify based on the intent if we have not exited for another reason above.
 		// TODO: bring this method into this file
 		friend.updateStatus(intent);
+	}
+	
+	private void deleteRemoteVideoAndKV(){
+		// Delete remote video.
+		friend.deleteRemoteVideo(videoId);
+
+		// Delete kv for video.
+        String key = RemoteStorageHandler.incomingVideoIdsRemoteKVKey(friend);
+        RemoteStorageHandler.deleteRemoteKV(key, videoId);
 	}
 
 	private void playNotificationTone() {
