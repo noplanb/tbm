@@ -9,6 +9,9 @@ import java.util.Comparator;
 
 public class Video extends ActiveModel {
 
+    /**
+     * Normal state machine: QUEUED -> NEW <-> DOWNLOADING -> DOWNLOADED -(onViewed)-> VIEWED
+     */
 	public static class IncomingVideoStatus{
 		public static final int NONE = 0;
 		public static final int NEW = 1;
