@@ -83,14 +83,16 @@
             android:name="com.noplanbees.tbm.DataHolderService" />
         
         <service
-            android:name="com.noplanbees.tbm.network.FileUploadService"
-            android:process=":FileTransferService" />
+            android:name="com.noplanbees.tbm.network.FileUploadService" />
+       		<!-- We can run FTS in the same process as app. I have tested and the notstop intent service restarts fine even after 
+       		     power cycle. Putting it in the same process allows models to be shared in memory. -->
+            <!-- android:process=":FileTransferService" -->
         <service
-            android:name="com.noplanbees.tbm.network.FileDownloadService"
-            android:process=":FileTransferService" />
+            android:name="com.noplanbees.tbm.network.FileDownloadService" />
+            <!-- android:process=":FileTransferService" -->
         <service
-            android:name="com.noplanbees.tbm.network.FileDeleteService"
-            android:process=":FileTransferService" />
+            android:name="com.noplanbees.tbm.network.FileDeleteService" />
+            <!-- android:process=":FileTransferService" -->
         
                 
     </application>

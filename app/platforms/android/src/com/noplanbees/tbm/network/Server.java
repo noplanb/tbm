@@ -148,6 +148,7 @@ public abstract class Server {
         if(isDigestAuth) {
 
             if(login==null || pass == null){
+            	Log.d(TAG, "!!!!!!!!!!!!!!!!!! url: " + sUrl + "user: " + UserFactory.current_user());
                 login = UserFactory.current_user().get(User.Attributes.MKEY);
                 pass = UserFactory.current_user().get(User.Attributes.AUTH);
             }

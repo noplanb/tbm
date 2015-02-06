@@ -34,10 +34,6 @@ public abstract class FileTransferService extends NonStopIntentService {
 		public final static String VIDEO_ID_KEY = "videoIdKey";
 		public final static String VIDEOIDS_REMOTE_KV_KEY = "videoIdsRemoteKVKey";
 
-		// TODO: Andrey are these necessary. Let me know so that we can delete them. -- Sani
-//        public final static String USER_MKEY = "user_mkey";
-//        public final static String USER_AUTH = "user_auth";
-
         public final static String TRANSFER_TYPE_UPLOAD = "upload";
 		public final static String TRANSFER_TYPE_DOWNLOAD = "download";
 	}
@@ -73,10 +69,6 @@ public abstract class FileTransferService extends NonStopIntentService {
 		
 		try {
 			Log.i(TAG, "onHandleIntent");
-			//TODO: Andrey why did you add this code here. Please let me know --Sani
-//            User user = UserFactory.getFactoryInstance().makeInstance(getApplicationContext());
-//            user.set(User.Attributes.AUTH, intent.getStringExtra(IntentFields.USER_AUTH));
-//            user.set(User.Attributes.MKEY, intent.getStringExtra(IntentFields.USER_MKEY));
 			fileTransferAgent.setInstanceVariables(intent);
 		} catch (InterruptedException e) {
 			Log.i(TAG, "Interrupt caught for Restart retry outside of loop.");
@@ -119,6 +111,8 @@ public abstract class FileTransferService extends NonStopIntentService {
 		intent.putExtra(IntentFields.RETRY_COUNT_KEY, retryCount);
 
 		long sleepTime = sleepTime(retryCount);
+		// TODO: debug code:
+		sleepTime = 1000;
 		Log.i(TAG, "Sleeping for: " + sleepTime + "ms");
 		Thread.sleep(sleepTime);
 	}
