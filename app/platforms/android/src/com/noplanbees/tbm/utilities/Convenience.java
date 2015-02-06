@@ -6,10 +6,14 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
+import android.view.WindowManager;
 
 import org.apache.commons.io.FileUtils;
 
@@ -138,9 +142,25 @@ public class Convenience {
 
 	
 
-	
-	//------------
-	// URI helpers
-	//------------
-	
+
+    /*
+    * @return: Point where x - width and y - height
+    * */
+    public static Point getScreenDimensions(Context context){
+        Point size = new Point();
+        WindowManager w = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2)
+        {
+            w.getDefaultDisplay().getSize(size);
+        }
+        else
+        {
+            Display d = w.getDefaultDisplay();
+            size.x = d.getWidth();
+            size.y = d.getHeight();
+        }
+        return size;
+
+    }
 }
