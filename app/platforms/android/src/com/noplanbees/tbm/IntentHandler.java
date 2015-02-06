@@ -9,9 +9,11 @@ import android.net.Uri;
 import android.os.PowerManager;
 import android.util.Log;
 
+import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.Video;
+import com.noplanbees.tbm.model.Friend.Attributes;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.network.FriendGetter;
 import com.noplanbees.tbm.network.FileTransferService.IntentFields;
@@ -41,6 +43,7 @@ public class IntentHandler {
 	private String videoId;
 	private RemoteStorageHandler rSHandler;
 	private int status;
+	private int retryCount;
 
 	public IntentHandler(Context context, Intent i) {
 		// Convenience.printBundle(i.getExtras());
@@ -50,6 +53,7 @@ public class IntentHandler {
 		transferType = intent.getStringExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY);
 		videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
 		status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
+        retryCount = intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
 		rSHandler = new RemoteStorageHandler();
 		Log.i(TAG, "status:" + status + " retry:" + intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0));
 	}
@@ -106,7 +110,7 @@ public class IntentHandler {
 	// ---------------------
 	private void handleUploadIntent() {
 		Log.i(TAG, "handleUploadIntent");
-		friend.updateStatus(intent);
+		updateStatus();
 		if (status == Friend.OutgoingVideoStatus.UPLOADED) {
 			// Set remote videoIdKV
 			rSHandler.addRemoteOutgoingVideoId(friend, videoId);
@@ -156,7 +160,6 @@ public class IntentHandler {
 		if (status == Video.IncomingVideoStatus.DOWNLOADED) {
 			
 			// Always delete the remote video even if the one we got is corrupted. Otherwise it may never be deleted
-			// TODO: make sure we try to delete the kv even if delete file fails.
 			deleteRemoteVideoAndKV();
 			
 			// Always set status for sender to downloaded and send status notification even if the video we got is not corrupted.
@@ -182,12 +185,26 @@ public class IntentHandler {
 			}
 		}
 		
+		if (status == Video.IncomingVideoStatus.FAILED_PERMANENTLY){
+			Log.i(TAG, "deleteRemoteVideoAndKV for a video that failed permanently");
+			deleteRemoteVideoAndKV();
+		}
+		
+		if (status == Video.IncomingVideoStatus.DOWNLOADING){
+			// No need to do anything special in this case.
+		}
+		
 		// Update the status and notify based on the intent if we have not exited for another reason above.
 		// TODO: bring this method into this file
-		friend.updateStatus(intent);
+		updateStatus();
 	}
 	
+	
+	//--------
+	// Helpers
+	//--------
 	private void deleteRemoteVideoAndKV(){
+		// Note it is ok if deleting the file fails as s3 will clean itself up after a few days.
 		// Delete remote video.
 		friend.deleteRemoteVideo(videoId);
 
@@ -196,6 +213,22 @@ public class IntentHandler {
         RemoteStorageHandler.deleteRemoteKV(key, videoId);
 	}
 
+
+    public void updateStatus(){
+        if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD)){
+            friend.setAndNotifyIncomingVideoStatus(videoId, status);
+            friend.setAndNotifyDownloadRetryCount(videoId, retryCount);
+        } else if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD)){
+            if (videoId.equals(friend.get(Attributes.OUTGOING_VIDEO_ID))){
+                friend.setAndNotifyOutgoingVideoStatus(status);
+                friend.setAndNotifyUploadRetryCount(retryCount);
+            }
+        } else {
+            Dispatch.dispatch("ERROR: updateStatus: unknown TransferType passed in intent. This should never happen.");
+            throw new RuntimeException();
+        }
+    }
+    
 	private void playNotificationTone() {
 		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 		Ringtone r = RingtoneManager.getRingtone(context.getApplicationContext(), notification);

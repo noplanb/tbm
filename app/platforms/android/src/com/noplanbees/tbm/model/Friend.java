@@ -519,7 +519,7 @@ public class Friend extends ActiveModel{
         return Integer.parseInt(get(Attributes.UPLOAD_RETRY_COUNT));
     }
 
-    private void setAndNotifyUploadRetryCount(int retryCount){
+    public void setAndNotifyUploadRetryCount(int retryCount){
         if (getUploadRetryCount() != retryCount){
             setUploadRetryCount(retryCount);
             setLastEventTypeOutgoing();
@@ -561,7 +561,7 @@ public class Friend extends ActiveModel{
     //		return Integer.parseInt(get(Attributes.DOWNLOAD_RETRY_COUNT));
     //	}
 
-    private void setAndNotifyDownloadRetryCount(String videoId, int retryCount){
+    public void setAndNotifyDownloadRetryCount(String videoId, int retryCount){
         Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
             Dispatch.dispatch(TAG + " setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
@@ -592,27 +592,7 @@ public class Friend extends ActiveModel{
         return Integer.parseInt(get(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE));
     }
 
-    // Update with intent
-    // TOOO: move to intent handler.
-    public void updateStatus(Intent intent){
-        String transferType = intent.getStringExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY);
-        int status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
-        int retryCount = intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
-        String videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
 
-        if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD)){
-            setAndNotifyIncomingVideoStatus(videoId, status);
-            setAndNotifyDownloadRetryCount(videoId, retryCount);
-        } else if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD)){
-            if (videoId.equals(get(Attributes.OUTGOING_VIDEO_ID))){
-                setAndNotifyOutgoingVideoStatus(status);
-                setAndNotifyUploadRetryCount(retryCount);
-            }
-        } else {
-            Dispatch.dispatch("ERROR: updateStatus: unknown TransferType passed in intent. This should never happen.");
-            throw new RuntimeException();
-        }
-    }
 
     //-------------------------------
     // Server notification of changes
