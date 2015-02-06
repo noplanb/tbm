@@ -40,13 +40,11 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	public S3FileTransferAgent(Context context) {
 		this.context = context;
         SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getSharedPreferenceManager(context);
-        tm = new TransferManager(new BasicAWSCredentials(sharedPreferenceManager.getS3AccessKey(),
-                sharedPreferenceManager.getS3SecretKey()));
+        tm = new TransferManager(new BasicAWSCredentials(sharedPreferenceManager.getS3AccessKey(), sharedPreferenceManager.getS3SecretKey()));
         s3Bucket = sharedPreferenceManager.getS3Bucket();
         AmazonS3 client = tm.getAmazonS3Client();
         try {
-            client.setRegion(Region.getRegion(Regions.valueOf(sharedPreferenceManager.getS3Region().toUpperCase()
-                    .replace('-', '_'))));
+            client.setRegion(Region.getRegion(Regions.valueOf(sharedPreferenceManager.getS3Region().toUpperCase().replace('-', '_'))));
         } catch (IllegalArgumentException e) {
             Dispatch.dispatch("Cant set region");
         }
@@ -81,6 +79,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean download() throws IllegalStateException{
+		Log.i(TAG, "Starting S3 download for filename: " + filename);
 		try {
             GetObjectRequest _getObjectRequest = new GetObjectRequest(s3Bucket, filename);
 			Download download = tm.download(_getObjectRequest,	file);
@@ -99,9 +98,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	}
 
 	private boolean checkClientException(AmazonClientException e) {
-        //e.g
-		//Dispatch.dispatch("AmazonClientException[ " + e.isRetryable() + "]: " + e.getLocalizedMessage());
-        return false;//checkErrorCode(e.getStatusCode());
+		Log.e(TAG, "AmazonClientException[ " + e.isRetryable() + "]: " + e.getLocalizedMessage());
+		Log.e(TAG, e.toString());
+        return false;  //checkErrorCode(e.getStatusCode());
 	}
 
 	private void checkServiceException(AmazonServiceException e) {
@@ -109,6 +108,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		case Client:
 			Dispatch.dispatch("AmazonServiceException(Client)[" + e.isRetryable() + "]: " + e.getErrorMessage() + ": " + e.getErrorCode());
 			break;
+		// TODO: Andrey is this case missing a break? Or is that intentional?
 		case Service:
 			Dispatch.dispatch("AmazonServiceException(Service)[" + e.isRetryable() + "]: " + e.getErrorMessage() + ": " + e.getErrorCode());
 		case Unknown:
@@ -118,7 +118,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         checkErrorCode(e.getStatusCode());
 	}
 
-        private void checkErrorCode(int code){
+	// TODO: Andrey why dont you simply return true if not retryable so fts completes normally. Rather than putting this addtional 
+	// exception vector into the fileTransfer service? Also the logic below is quite difficult to read for me at least.
+	private void checkErrorCode(int code){
         if((code>399 && code<500 && code!=404 || (code == 501) || code == 301)){
             reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
             throw new IllegalStateException("S3 problem. Need to be reworked");
