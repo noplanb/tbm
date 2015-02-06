@@ -30,8 +30,7 @@ public class IntentHandler {
 		public static final String SMS_RESULT = "smsResult";
 	}
 
-	private final String TAG = this.getClass().getSimpleName();
-	private final static String STAG = IntentHandler.class.getSimpleName();
+	private final static String TAG = IntentHandler.class.getSimpleName();
 
 	private Context context;
 	private Intent intent;
@@ -136,7 +135,6 @@ public class IntentHandler {
 			return;
 		}
 		
-		friend.updateStatus(intent);
 		friend.setLastActionTime(System.currentTimeMillis());
         friend.setHasApp();
 
@@ -144,8 +142,8 @@ public class IntentHandler {
 			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");
 			return;
 		}
-
-        // Create and download the video 
+        
+        // Create and download the video if this was a videoReceived intent.
 		if (status == Video.IncomingVideoStatus.NEW) {
 			friend.createIncomingVideo(context, videoId);
 			friend.downloadVideo(intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY));
@@ -165,8 +163,6 @@ public class IntentHandler {
                return;
             }
 
-			// TODO: Serhii, please use THUMB_CREATED state in ui where you used to use DOWNLOADED state. Remove comment when done -- Sani
-			friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.THUMB_CREATED);
 			friend.deleteAllViewedVideos();
 
 			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()) {
@@ -176,6 +172,9 @@ public class IntentHandler {
 				playNotificationTone();
 			}
 		}
+		
+		// Update the status and notify based on the intent if we have not exited for another reason above.
+		friend.updateStatus(intent);
 	}
 
 	private void playNotificationTone() {

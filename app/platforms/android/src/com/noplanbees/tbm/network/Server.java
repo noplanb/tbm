@@ -148,13 +148,9 @@ public abstract class Server {
         if(isDigestAuth) {
 
             if(login==null || pass == null){
-            	Log.d(TAG, "!!!!!!!!!!!!!!!!!! url: " + sUrl + "user: " + UserFactory.current_user());
                 login = UserFactory.current_user().get(User.Attributes.MKEY);
                 pass = UserFactory.current_user().get(User.Attributes.AUTH);
             }
-
-            Log.d(TAG, isDigestAuth+ "!!!! " + login + ":" + pass);
-
             http.getCredentialsProvider().setCredentials(
                     new AuthScope(Config.SERVER_HOST, AuthScope.ANY_PORT, "zazo.com"),
                     new UsernamePasswordCredentials(login, pass)
