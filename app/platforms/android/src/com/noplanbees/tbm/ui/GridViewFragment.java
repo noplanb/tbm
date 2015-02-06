@@ -332,23 +332,18 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
         });
 	}
 
-	@Override
-	public void onVideoStatusChanged(final Friend friend) {
-		uiHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (getActivity() != null) {
-                    //GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
-                    notifyViewControllers(new ViewControllerTask() {
-                        @Override
-                        public void onEvent(GridElementController controller) {
-                            controller.onDataUpdated(friend.getId(), false);
-                        }
-                    });
+    @Override
+    public void onVideoStatusChanged(final Friend friend) {
+        if (getActivity() != null) {
+            //GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
+            notifyViewControllers(new ViewControllerTask() {
+                @Override
+                public void onEvent(GridElementController controller) {
+                    controller.onVideoStatusChanged(friend.getId());
                 }
-            }
-        });
-	}
+            });
+        }
+    }
 
 	private UnexpectedTerminationHelper mUnexpectedTerminationHelper = new UnexpectedTerminationHelper();
 

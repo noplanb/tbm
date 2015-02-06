@@ -41,6 +41,9 @@ public class Friend extends ActiveModel{
         public void onVideoStatusChanged(Friend friend);
     }
 
+    /**
+     * Normal state machine (one message): NEW -> QUEUED -> UPLOADING -> UPLOADED -> DOWNLOADED -(onViewed)-> VIEWED
+     */
     public static class OutgoingVideoStatus{
 		public static final int NONE = 0;
 		public static final int NEW = 1;
