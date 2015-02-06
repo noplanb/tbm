@@ -383,7 +383,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 
             @Override
             public void failure() {
-                showErrorDialog("No Connection", "Can't reach " + Config.appName + ".\n\nCheck your connection and try again.");            }
+                serverError();            
+            }
         });
     }
 

@@ -1,5 +1,7 @@
 package com.noplanbees.tbm.ui;
 
+import java.util.ArrayList;
+
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
@@ -22,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 import android.widget.VideoView;
+
 import com.noplanbees.tbm.GridElementController;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.IntentHandler;
@@ -38,14 +41,13 @@ import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.multimedia.VideoRecorder;
 import com.noplanbees.tbm.network.FileDownloadService;
+import com.noplanbees.tbm.network.FileUploadService;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 import com.noplanbees.tbm.ui.view.NineViewGroup;
 import com.noplanbees.tbm.ui.view.NineViewGroup.LayoutCompleteListener;
 import com.noplanbees.tbm.ui.view.PreviewTextureFrame;
 import com.noplanbees.tbm.utilities.Logger;
-
-import java.util.ArrayList;
 
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
@@ -73,10 +75,10 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
     private Sensor proximitySensor;
 
 	@Override
+	// TODO: Serhii please clean per our style guidelines
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		Log.d(TAG, "onCreate" + this);
+		Log.i(TAG, "onCreate");
 
 		activeModelsHandler = ActiveModelsHandler.getActiveModelsHandler();
         activeModelsHandler.getFf().addVideoStatusObserver(this);
@@ -99,7 +101,10 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
 	}
 
 	@Override
+	// TODO: Serhii please clean per our style guidelines.
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		Log.i(TAG, "onCreateView");
+		
 		View v = inflater.inflate(R.layout.nineviewgroup_fragment, container, false);
 
 		// TODO: factor into a setupVideoPlayer() method
@@ -108,10 +113,9 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
 		videoPlayer.setVideoView(videoView);
 		videoPlayer.setVideoViewBody(videoBody);
 
+		// TODO: factor into a setup9ViewGroup method.
 		nineViewGroup = (NineViewGroup) v.findViewById(R.id.grid_view);
-
         nineViewGroup.setGestureListener(new NineViewGestureListener());
-
 		nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
 			@Override
 			public void onLayoutComplete() {
@@ -120,7 +124,6 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
                 handleIntentAction(getActivity().getIntent());
 			}
 		});
-
 		return v;
 	}
 
@@ -131,16 +134,22 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
 
     @Override
 	public void onResume() {
-		Logger.d(TAG, "onResume");
+		Logger.i(TAG, "onResume");
 		videoRecorder.onResume();
         videoPlayer.registerStatusCallbacks(this);
         sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
 		super.onResume();
 	}
+    
+    @Override
+    public void onStart(){
+    	restartFileTransfersPendingRetry();
+    }
+
 
 	@Override
 	public void onPause() {
-		Logger.d(TAG, "onPause");
+		Logger.i(TAG, "onPause");
 		super.onPause();
 		videoRecorder.onPause();
 		videoRecorder.stopRecording();
@@ -156,9 +165,9 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
 		mUnexpectedTerminationHelper.finish();
 	}
 
-	//-------------------
-	// Setup gridElements
-	//-------------------
+	//-------------------------------------
+	// Setup nineViewGroup and gridElements
+	//-------------------------------------
 	private void setupGridElements(){
         if (!viewControllers.isEmpty()) {
             for (GridElementController controller : viewControllers) {
@@ -332,6 +341,7 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
         });
 	}
 
+	// TODO: Serhii remove this from here and have the controllers register for their own videoStatusChanged.
     @Override
     public void onVideoStatusChanged(final Friend friend) {
         if (getActivity() != null) {
@@ -503,16 +513,23 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
+    // TODO: Serhii. Please remove this and have the controllers register directly for any callback they need.
+    // my head is spinning tracing who is calling whom.
     private void notifyViewControllers(ViewControllerTask task) {
         for (GridElementController controller : viewControllers) {
             task.onEvent(controller);
         }
     }
 
+    // TODO: Serhii please have the gridcontrollers register directly for all callbacks they need. 
+    // I am getting confused with all the passing around of callbacks. If you think that is a bad 
+    // idea please tell me why.
     private Callbacks getCallbacks() {
         return (Callbacks) getActivity();
     }
 
+    // TODO: again let us remove this and have the gridElementControllers registerFor and handle the callbacks they need
+    // directly with the models.
     private interface ViewControllerTask {
         void onEvent(GridElementController controller);
     }
@@ -523,7 +540,8 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
     private class NineViewGestureListener implements NineViewGroup.GestureCallbacks {
         @Override
         public boolean onSurroundingClick(View view, int position) {
-        	// TODO: Possibly remove all of this from here and start play or show bench from gridElementController -- Sani
+        	// TODO: Serhii Please remove all of this from here and start play or show bench from gridElementController -- Sani
+        	// Have the gridElementController listen for clicks on noFriendView as well as ThumbNail view.
             Log.d(TAG, "onSurroundingClick: " + position);
 
             GridElement gridElement = GridElementFactory.getFactoryInstance().get(position);
@@ -580,4 +598,12 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
 			return false;
 		}
     }
+    
+    //------------
+    // FileTransfer
+    //-------------
+	private void restartFileTransfersPendingRetry() {
+		FileDownloadService.restartTransfersPendingRetry(getActivity());
+		FileUploadService.restartTransfersPendingRetry(getActivity());
+	}
 }

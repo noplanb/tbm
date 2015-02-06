@@ -129,32 +129,32 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 			startActivity(i);
 			finish();
 			return;
+		} 
+
+		mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
+		if(mainFragment == null){
+			mainFragment = new GridViewFragment();
+			getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
+		}
+
+		if (gcmHandler.checkPlayServices()){
+			gcmHandler.registerGcm();
 		} else {
+			Dispatch.dispatch("No valid Google Play Services APK found.");
+		}
 
-			mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
-			if(mainFragment == null){
-				mainFragment = new GridViewFragment();
-				getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
-			}
-			
-			if (gcmHandler.checkPlayServices()){
-				gcmHandler.registerGcm();
-			} else {
-				Dispatch.dispatch("No valid Google Play Services APK found.");
+		benchController.onDataLoaded();
+
+		new CredentialsGetter(this, new CredentialsGetter.CredentialsGetterCallback() {
+			@Override
+			public void success() {
+				new FriendGetter(MainActivity.this, false, null);
 			}
 
-			benchController.onDataLoaded();
-
-            new CredentialsGetter(this, new CredentialsGetter.CredentialsGetterCallback() {
-                @Override
-                public void success() {
-                    new FriendGetter(MainActivity.this, false, null);
-                }
-
-                @Override
-                public void failure() { }
-            });
-        }
+			@Override
+			public void failure() { }
+		});
+        
 	}
 
 	@Override
