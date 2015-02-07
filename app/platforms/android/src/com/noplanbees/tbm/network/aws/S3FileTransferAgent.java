@@ -28,7 +28,7 @@ import com.noplanbees.tbm.network.IFileTransferAgent;
 public class S3FileTransferAgent implements IFileTransferAgent {
 	private static final String TAG = S3FileTransferAgent.class.getSimpleName();
 
-    private final String s3Bucket;
+    private String s3Bucket;
 
     private TransferManager tm;
 	private Intent intent;
@@ -38,23 +38,33 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	public S3FileTransferAgent(FileTransferService fts) {
 		fileTransferService = fts;
-        SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getSharedPreferenceManager(fileTransferService);
-        tm = new TransferManager(new BasicAWSCredentials(sharedPreferenceManager.getS3AccessKey(), sharedPreferenceManager.getS3SecretKey()));
-        s3Bucket = sharedPreferenceManager.getS3Bucket();
-        AmazonS3 client = tm.getAmazonS3Client();
-        try {
-            client.setRegion(Region.getRegion(Regions.valueOf(sharedPreferenceManager.getS3Region().toUpperCase().replace('-', '_'))));
-        } catch (IllegalArgumentException e) {
-            Dispatch.dispatch("S3FileTransferAgent: cant set region: " + e.toString());
-        }
     }
 	
 	@Override
 	public void setInstanceVariables(Intent intent) throws InterruptedException {
-		this.filename = intent.getStringExtra(IntentFields.FILE_NAME_KEY);
+		filename = intent.getStringExtra(IntentFields.FILE_NAME_KEY);
 		this.intent = intent;
 		String filePath = intent.getStringExtra(IntentFields.FILE_PATH_KEY);
 		this.file = new File(filePath);
+		setupTransferManager();
+	}
+	
+	private void setupTransferManager(){
+        S3CredentialsStore s3CredStore = S3CredentialsStore.getInstance(fileTransferService);
+        
+        if (!s3CredStore.hasCredentials()){
+        	Log.i(TAG, "Attempting an S3 file transfer but have no credentials. Getting them now by this transfer will fail.");
+        	new S3CredentialsGetter(fileTransferService);
+        }
+      
+        tm = new TransferManager(new BasicAWSCredentials(s3CredStore.getS3AccessKey(), s3CredStore.getS3SecretKey()));
+        s3Bucket = s3CredStore.getS3Bucket();
+        AmazonS3 client = tm.getAmazonS3Client();
+        try {
+            client.setRegion(Region.getRegion(Regions.valueOf(s3CredStore.getS3Region().toUpperCase().replace('-', '_'))));
+        } catch (IllegalArgumentException e) {
+            Dispatch.dispatch("S3FileTransferAgent: cant set region: " + e.toString());
+        }
 	}
 
 	@Override
@@ -68,7 +78,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			return notRetryableServiceException(e);
 		} catch (AmazonClientException e) {
 			logClientException(e);
-			return false;
+			return true;
 		}
 		fileTransferService.reportStatus(intent, Friend.OutgoingVideoStatus.UPLOADED);
 		return true;
@@ -86,7 +96,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			return notRetryableServiceException(e);
 		} catch (AmazonClientException e) {
 			logClientException(e);
-			return false;
+			return true;
 		} 
 		fileTransferService.reportStatus(intent, Video.IncomingVideoStatus.DOWNLOADED);
 		return true;
@@ -103,7 +113,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			return notRetryableServiceException(e);
 		} catch (AmazonClientException e) {
 			logClientException(e);
-			return false;
+			return true;
 		}
 		return true;
 	}
@@ -123,7 +133,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	// Client Exception helpers
 	//-------------------------
 	private void logClientException(AmazonClientException e) {
-		Log.e(TAG, "ERROR in transfer type: " + intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY) + "AmazonClientException: " + e.toString());
+		Log.e(TAG, "ERROR in transfer type: " + intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY) + " AmazonClientException: " + e.toString());
         return;
 	}
 	
@@ -165,7 +175,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	
 	private void refreshCredentialsIfNecessary(AmazonServiceException e){
 		if (e.getErrorType() == ErrorType.Client || e.getErrorType() == ErrorType.Unknown){
-	        new CredentialsGetter(fileTransferService, new CredentialsGetter.CredentialsGetterCallback() {
+	        new S3CredentialsGetter(fileTransferService, new S3CredentialsGetter.CredentialsGetterCallback() {
 				@Override
 				public void success() {}
 				@Override

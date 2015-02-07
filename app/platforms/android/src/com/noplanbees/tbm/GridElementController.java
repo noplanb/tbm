@@ -166,7 +166,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             @Override
             public void run() {
                 switch (status) {
+                	case Video.IncomingVideoStatus.NEW:
                     case Video.IncomingVideoStatus.QUEUED:
+                	case Video.IncomingVideoStatus.DOWNLOADING:
+                	case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
                         if (!isVideoPlaying) {
                             updateContent(true);
                         }

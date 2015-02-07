@@ -8,7 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.network.Server;
 
-public class CredentialsGetter {
+public class S3CredentialsGetter {
 
 	private final String TAG = getClass().getSimpleName();
 
@@ -20,7 +20,12 @@ public class CredentialsGetter {
         void failure();
 	}
 
-	public CredentialsGetter(Context c, CredentialsGetterCallback delegate){
+	public S3CredentialsGetter(Context c){
+		context = c;
+		getCredentials();
+	}
+	
+	public S3CredentialsGetter(Context c, CredentialsGetterCallback delegate){
 		context = c;
 		this.delegate = delegate;
 		getCredentials();
@@ -95,7 +100,7 @@ public class CredentialsGetter {
         }
 
         public void saveCredentials(Context context) {
-            SharedPreferenceManager spm = SharedPreferenceManager.getSharedPreferenceManager(context);
+            S3CredentialsStore spm = S3CredentialsStore.getInstance(context);
             spm.saveS3AccessKey(access_key);
             spm.saveS3SecretKey(secret_key);
             spm.saveS3Bucket(bucket);

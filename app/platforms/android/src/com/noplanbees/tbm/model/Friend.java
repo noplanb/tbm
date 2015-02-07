@@ -654,21 +654,21 @@ public class Friend extends ActiveModel{
 
         switch (status){
             case Video.IncomingVideoStatus.NEW:
-                return "Downloading n";
+                return "Dwnld new";
             case Video.IncomingVideoStatus.QUEUED:
-                return "Downloading q";
+                return "Dwnld q";
             case Video.IncomingVideoStatus.DOWNLOADING:
                 if (count > 0){
-                    return "Downloading r" + count;
+                    return "Dwnld r" + count;
                 } else {
-                    return "Downloading...";
+                    return "Dwnld...";
                 }
             case Video.IncomingVideoStatus.DOWNLOADED:
                 return get(Attributes.FIRST_NAME);
             case Video.IncomingVideoStatus.VIEWED:
                 return get(Attributes.FIRST_NAME);
             case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
-                return "Downloading e!";
+                return "Dwnld e!";
         }
         return get(Attributes.FIRST_NAME);
     }

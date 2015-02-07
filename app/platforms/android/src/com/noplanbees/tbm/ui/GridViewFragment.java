@@ -143,6 +143,7 @@ public class GridViewFragment extends Fragment implements VideoRecorder.VideoRec
     
     @Override
     public void onStart(){
+    	super.onStart();
     	restartFileTransfersPendingRetry();
     }
 

@@ -11,15 +11,15 @@ import android.util.Log;
 
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.model.FriendFactory;
-import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.model.Friend.Attributes;
+import com.noplanbees.tbm.model.FriendFactory;
+import com.noplanbees.tbm.model.User;
+import com.noplanbees.tbm.model.UserFactory;
+import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.network.FriendGetter;
-import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.NotificationHandler;
-import com.noplanbees.tbm.utilities.Convenience;
 
 public class IntentHandler {
 
@@ -58,19 +58,22 @@ public class IntentHandler {
 		Log.i(TAG, "status:" + status + " retry:" + intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0));
 	}
 
-	public Integer handle() {
+	public void handle() {
 		Log.i(TAG, "handle:");
+		// This should never happen except perhaps when debugging and notifications are coming in even though
+		// the user is not registered.
+		if (!User.isRegistered(context)){
+			Log.i(TAG, "Got an intent but user was not registered. Not processing it.");
+			return;
+		}
+		
 		if (isDownloadIntent()) {
 			handleDownloadIntent();
 		} else if (isUploadIntent()) {
 			handleUploadIntent();
 		}
-		return getReturnResult();
 	}
 
-	private Integer getReturnResult() {
-		return null;
-	}
 
 	// ------------
 	// Convenience
