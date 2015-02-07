@@ -200,10 +200,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             gridElementView.animateUploading();
                         }
                         break;
+                    case Friend.OutgoingVideoStatus.NEW:
                     case Friend.OutgoingVideoStatus.UPLOADING:
                     case Friend.OutgoingVideoStatus.UPLOADED:
                     case Friend.OutgoingVideoStatus.DOWNLOADED:
                     case Friend.OutgoingVideoStatus.VIEWED:
+                    case Friend.OutgoingVideoStatus.FAILED_PERMANENTLY:
                         updateContent(false);
                         break;
                 }

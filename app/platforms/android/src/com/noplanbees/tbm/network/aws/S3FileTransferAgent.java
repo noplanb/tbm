@@ -35,11 +35,15 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	private File file;
 	private String filename;
 	private FileTransferService fileTransferService;
+	private boolean credentialsOk;
 
 	public S3FileTransferAgent(FileTransferService fts) {
 		fileTransferService = fts;
     }
 	
+	//------------------------
+	// Instantiation and setup
+	//------------------------
 	@Override
 	public void setInstanceVariables(Intent intent) throws InterruptedException {
 		filename = intent.getStringExtra(IntentFields.FILE_NAME_KEY);
@@ -51,12 +55,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	
 	private void setupTransferManager(){
         S3CredentialsStore s3CredStore = S3CredentialsStore.getInstance(fileTransferService);
+        checkCredentialsOk();
         
-        if (!s3CredStore.hasCredentials()){
-        	Log.i(TAG, "Attempting an S3 file transfer but have no credentials. Getting them now by this transfer will fail.");
-        	new S3CredentialsGetter(fileTransferService);
-        }
-      
+        // Use them even if they are not ok. We will get an AmazonClientException which we will special case not retry.
         tm = new TransferManager(new BasicAWSCredentials(s3CredStore.getS3AccessKey(), s3CredStore.getS3SecretKey()));
         s3Bucket = s3CredStore.getS3Bucket();
         AmazonS3 client = tm.getAmazonS3Client();
@@ -66,7 +67,20 @@ public class S3FileTransferAgent implements IFileTransferAgent {
             Dispatch.dispatch("S3FileTransferAgent: cant set region: " + e.toString());
         }
 	}
+	
+	private void checkCredentialsOk(){
+        if (!S3CredentialsStore.getInstance(fileTransferService).hasCredentials()){
+        	Log.e(TAG, "Attempting an S3 file transfer but have no credentials. Getting them now by this transfer will fail.");
+        	new S3CredentialsGetter(fileTransferService);
+        	credentialsOk = false;
+        	return;
+        }
+        credentialsOk = true;
+	}
 
+	//---------------------------
+	// Upload download and delete
+	//---------------------------
 	@Override
 	public boolean upload() throws InterruptedException {
 		try {
@@ -77,8 +91,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			handleServiceException(e);
 			return notRetryableServiceException(e);
 		} catch (AmazonClientException e) {
-			logClientException(e);
-			return true;
+			handleClientException(e);
+			return notRetryableClientException(e);
 		}
 		fileTransferService.reportStatus(intent, Friend.OutgoingVideoStatus.UPLOADED);
 		return true;
@@ -95,8 +109,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			handleServiceException(e);
 			return notRetryableServiceException(e);
 		} catch (AmazonClientException e) {
-			logClientException(e);
-			return true;
+			handleClientException(e);
+			return notRetryableClientException(e);
 		} 
 		fileTransferService.reportStatus(intent, Video.IncomingVideoStatus.DOWNLOADED);
 		return true;
@@ -112,8 +126,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			handleServiceException(e);
 			return notRetryableServiceException(e);
 		} catch (AmazonClientException e) {
-			logClientException(e);
-			return true;
+			handleClientException(e);
+			return notRetryableClientException(e);
 		}
 		return true;
 	}
@@ -132,9 +146,30 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	//-------------------------
 	// Client Exception helpers
 	//-------------------------
+	private void handleClientException(AmazonClientException e){
+		logClientException(e);
+		reportClientException(e);
+	}
+
 	private void logClientException(AmazonClientException e) {
 		Log.e(TAG, "ERROR in transfer type: " + intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY) + " AmazonClientException: " + e.toString());
         return;
+	}
+	
+	private void reportClientException(AmazonClientException e) {
+		if (notRetryableClientException(e)){
+			if (isDownload()){
+	            fileTransferService.reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
+			} else if (isUpload()) {
+	            fileTransferService.reportStatus(intent, Friend.OutgoingVideoStatus.FAILED_PERMANENTLY);
+			}
+		}
+	}
+	
+	private boolean notRetryableClientException(AmazonClientException e){
+		// The only client exception that is not retryable occurs if we have tried to access without credentials 
+		// this returns a client error with message "Unable to calculate a request signature"
+		return !credentialsOk;
 	}
 	
 	//-------------------------

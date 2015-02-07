@@ -68,6 +68,10 @@ public class S3CredentialsStore {
     }
     
     public boolean hasCredentials(){
-    	return getS3AccessKey() != null && getS3Bucket() != null && getS3Region() != null && getS3SecretKey() != null;
+    	return !isBlank(getS3AccessKey()) && !isBlank(getS3Bucket()) && !isBlank(getS3Region()) && !isBlank(getS3SecretKey());
+    }
+    
+    public boolean isBlank(String s){
+    	return s == null || s.isEmpty();
     }
 }
