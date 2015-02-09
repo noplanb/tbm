@@ -209,14 +209,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	}
 	
 	private void refreshCredentialsIfNecessary(AmazonServiceException e){
-		if (e.getErrorType() == ErrorType.Client || e.getErrorType() == ErrorType.Unknown){
-	        new S3CredentialsGetter(fileTransferService, new S3CredentialsGetter.CredentialsGetterCallback() {
-				@Override
-				public void success() {}
-				@Override
-				public void failure() {}
-	        });
-		}
+		if (e.getErrorType() == ErrorType.Client || e.getErrorType() == ErrorType.Unknown)
+	        new S3CredentialsGetter(fileTransferService);
 	}
 	
 	private String serviceExceptionMessage(AmazonServiceException e){

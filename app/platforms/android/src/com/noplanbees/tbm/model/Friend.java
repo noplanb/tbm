@@ -401,14 +401,17 @@ public class Friend extends ActiveModel{
 
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
             retriever.setDataSource(vidPath);
+            
             String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             long duration = Long.parseLong( time );
             Log.d(TAG, "createThumb: duration = " + duration);
+            
             long pos;
             if(duration>1500)
                 pos = duration - 1000;
             else
                 pos = duration/2;
+            
             Bitmap thumb = retriever.getFrameAtTime(pos*1000);
             File thumbFile = thumbFile(videoId);
             try {

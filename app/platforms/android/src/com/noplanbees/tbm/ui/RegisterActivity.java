@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
@@ -27,9 +28,9 @@ import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.ContactsManager;
 import com.noplanbees.tbm.DataHolderService;
+import com.noplanbees.tbm.FriendGetter;
 import com.noplanbees.tbm.DataHolderService.LocalBinder;
-import com.noplanbees.tbm.network.FriendGetter;
-import com.noplanbees.tbm.network.FriendGetter.FriendGetterCallback;
+import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.network.Server;
 import com.noplanbees.tbm.model.ActiveModelsHandler;
@@ -387,17 +388,21 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	// Get S3 credentials
 	//-------------------
     private void getAWSCredentials(){
-        new S3CredentialsGetter(this, new S3CredentialsGetter.CredentialsGetterCallback() {
-            @Override
-            public void success() {
-                regComplete();
-            }
-
-            @Override
-            public void failure() {
-                serverError();            
-            }
-        });
+        new RegS3CredentialsGetter(this);
+    }
+    
+    private class RegS3CredentialsGetter extends S3CredentialsGetter{
+        public RegS3CredentialsGetter(Context c) {
+            super(c);
+        }
+        @Override
+        public void success() {
+            regComplete();
+        }
+        @Override
+        public void failure() {
+            serverError();            
+        }
     }
 
 	private void regComplete() {

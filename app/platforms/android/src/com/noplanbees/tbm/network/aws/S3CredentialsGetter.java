@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.network.Server;
 
 public class S3CredentialsGetter {
@@ -13,22 +14,19 @@ public class S3CredentialsGetter {
 	private final String TAG = getClass().getSimpleName();
 
 	private Context context;
-	private CredentialsGetterCallback delegate;
-
-	public interface CredentialsGetterCallback{
-		void success();
-        void failure();
-	}
-
+	
 	public S3CredentialsGetter(Context c){
 		context = c;
 		getCredentials();
 	}
 	
-	public S3CredentialsGetter(Context c, CredentialsGetterCallback delegate){
-		context = c;
-		this.delegate = delegate;
-		getCredentials();
+	// Should be overriden by subclasses if desired.
+	protected void success(){
+	    
+	}
+	
+	protected void failure(){
+	    
 	}
 
 	private void getCredentials(){
@@ -47,8 +45,7 @@ public class S3CredentialsGetter {
 		}
 		@Override
 		public void error(String errorString) {
-            if(delegate!=null)
-                delegate.failure();
+		    failure();
 		}
 	}
 
@@ -58,19 +55,22 @@ public class S3CredentialsGetter {
 		Response response = g.fromJson(r, Response.class);
 		Log.i(TAG, "gotRegResponse: " + response.toString());
 
-        if(response.getStatus().equals("“failure”")){
-                if(delegate!=null)
-                    delegate.failure();
+        if(!response.getStatus().equalsIgnoreCase("success")){
+            Dispatch.dispatch("CredentialsGetter: got failure from server in gotCredentials()");
+            failure();
             return;
         }
 
         response.saveCredentials(context);
-
-        if(delegate!=null)
-            delegate.success();
+        
+        if (!S3CredentialsStore.getInstance(context).hasCredentials()){
+            Dispatch.dispatch("CredentialsGetter: !hasCredentials() when checking credentials in store after getting: " + response.toString());
+            failure();
+            return;
+        }
+            
+        success();
 	}
-
-
 
     private class Response{
         private String status;

@@ -21,7 +21,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
+
 import com.noplanbees.tbm.DataHolderService;
+import com.noplanbees.tbm.FriendGetter;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.VersionHandler;
 import com.noplanbees.tbm.bench.BenchController;
@@ -31,7 +33,6 @@ import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.User;
-import com.noplanbees.tbm.network.FriendGetter;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.gcm.GcmHandler;
@@ -145,17 +146,8 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 		}
 
 		benchController.onDataLoaded();
-
-		new S3CredentialsGetter(this, new S3CredentialsGetter.CredentialsGetterCallback() {
-			@Override
-			public void success() {
-				new FriendGetter(MainActivity.this, false, null);
-			}
-
-			@Override
-			public void failure() { }
-		});
-        
+		new S3CredentialsGetter(this);
+        new FriendGetter(MainActivity.this, false, null);
 	}
 
 	@Override

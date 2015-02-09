@@ -14,7 +14,6 @@ import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.network.FileTransferService;
-import com.noplanbees.tbm.network.FriendGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.NotificationHandler;
 import com.noplanbees.tbm.utilities.Convenience;
@@ -128,14 +127,15 @@ public class IntentHandler {
 		
 		friend.setLastActionTime(System.currentTimeMillis());
         friend.setHasApp();
-
-        if (friend.hasIncomingVideoId(videoId) && status == Video.IncomingVideoStatus.NEW) {
-			Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");
-			return;
-		}
         
         // Create and download the video if this was a videoReceived intent.
 		if (status == Video.IncomingVideoStatus.NEW) {
+		    
+	        if (friend.hasIncomingVideoId(videoId)) {
+	            Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");
+	            return;
+	        }
+	        
 			friend.createIncomingVideo(context, videoId);
 			friend.downloadVideo(videoId);
 		}
