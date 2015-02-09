@@ -1,12 +1,10 @@
 package com.noplanbees.tbm;
 
-import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.PowerManager;
 import android.util.Log;
 
 import com.noplanbees.tbm.dispatch.Dispatch;
@@ -14,12 +12,12 @@ import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.Attributes;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.User;
-import com.noplanbees.tbm.model.UserFactory;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.network.FriendGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.NotificationHandler;
+import com.noplanbees.tbm.utilities.Convenience;
 
 public class IntentHandler {
 
@@ -88,24 +86,6 @@ public class IntentHandler {
 		if (transferType == null)
 			return false;
 		return transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
-	}
-
-	private Boolean isBackgroundIntent() {
-		return isUploadIntent() || isDownloadIntent();
-	}
-
-	private Boolean screenIsOff() {
-		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-		return !pm.isScreenOn();
-	}
-
-	private Boolean screenIsLocked() {
-		KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-		return (Boolean) km.inKeyguardRestrictedInputMode();
-	}
-
-	private Boolean screenIsLockedOrOff() {
-		return screenIsLocked() || screenIsOff();
 	}
 
     // ---------------------
@@ -180,7 +160,7 @@ public class IntentHandler {
 			// actually delete the video object locally.
 			friend.deleteAllViewedVideos();
 
-			if (!TbmApplication.getInstance().isForeground() || screenIsLockedOrOff()) {
+			if (!TbmApplication.getInstance().isForeground() || Convenience.screenIsLockedOrOff(context)) {
 				NotificationAlertManager.alert(context, friend, videoId);
 			} else {
 				// TODO: play the notification tone only if we are not currently playing or recording.

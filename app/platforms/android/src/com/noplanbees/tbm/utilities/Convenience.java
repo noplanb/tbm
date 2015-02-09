@@ -1,6 +1,7 @@
 package com.noplanbees.tbm.utilities;
 
 import android.app.ActivityManager;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -9,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -162,5 +164,19 @@ public class Convenience {
         }
         return size;
 
+    }
+
+    public static boolean screenIsOff(Context context) {
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        return !pm.isScreenOn();
+    }
+
+    public static boolean screenIsLocked(Context context) {
+        KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        return (Boolean) km.inKeyguardRestrictedInputMode();
+    }
+
+    public static boolean screenIsLockedOrOff(Context context) {
+        return screenIsLocked(context) || screenIsOff(context);
     }
 }
