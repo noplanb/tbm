@@ -251,7 +251,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	class Register extends Server {
 
 		public Register(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params, false);
+			super(uri, params);
 			progress.show();
 		}
 		@Override
@@ -349,7 +349,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	
 	private class DebugGetUser extends Server{
 		public DebugGetUser(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params, false);
+			super(uri, params);
 			progress.show();
 		}
 		@Override
