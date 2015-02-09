@@ -12,13 +12,15 @@ public class S3CredentialsStore {
     private static final String ACCESS_KEY_ID = "access_key";
     private static final String BUCKET_NAME = "bucket_name";
     private static final String REGION = "region";
+    private static final String SHARED_PREFERENCES_FILENAME = "zazo_preferences";
+
 
     private static S3CredentialsStore s3CredentialsStore;
 
     private SharedPreferences sp;
 
     private S3CredentialsStore(Context context){
-        sp = context.getSharedPreferences("zazo", Context.MODE_PRIVATE);
+        sp = context.getSharedPreferences(SHARED_PREFERENCES_FILENAME, Context.MODE_PRIVATE);
     }
 
     public static S3CredentialsStore getInstance(Context context){

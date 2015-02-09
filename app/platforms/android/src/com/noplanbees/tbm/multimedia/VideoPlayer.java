@@ -60,9 +60,7 @@ public class VideoPlayer implements OnCompletionListener{
                     // Stop playback
                 }
             }
-        };
-
-
+        };        
     }
 	
 	public static VideoPlayer getInstance(Context context){
