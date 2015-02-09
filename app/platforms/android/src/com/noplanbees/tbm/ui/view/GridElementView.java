@@ -262,7 +262,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
 	public void animateDownloading(final Runnable task) {
 		int durationMillis = 400;
-		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_downloading));
+		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
         progressLine.setVisibility(VISIBLE);
         Interpolator interpolator = new AccelerateDecelerateInterpolator();
 		final ScaleAnimation scale = new ScaleAnimation(

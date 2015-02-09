@@ -1,6 +1,8 @@
 package com.noplanbees.tbm;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +26,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private final Callbacks callbacks;
     private Context context;
     private boolean isVideoPlaying = false;
+    private Handler uiHandler = new Handler(Looper.getMainLooper());
 
     public interface Callbacks {
         void onBenchRequest();
@@ -59,14 +62,11 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     /**
-     * Updates view content whenever data is changed
+     * Updates view content whenever video status is changed.
+     * It could be called from any thread.
      * @param friendId friend
-     * @param forced flag means if view update should be forced
      */
-    public void onDataUpdated(String friendId, boolean forced) {
-        if (forced) {
-            updateContent(isVideoPlaying);
-        }
+    public void onVideoStatusChanged(String friendId) {
         if (isForMe(friendId)) {
             updateVideoStatus();
         }
@@ -155,41 +155,57 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         Log.d(TAG, this + "| incomingStatus="+incomingStatus+", outgoingStatus="+outgoingStatus);
 
         if (lastEventType == Friend.VideoStatusEventType.INCOMING) {
-            switch (incomingStatus) {
-                case Video.IncomingVideoStatus.DOWNLOADING:
-                    if (!isVideoPlaying) {
-                        updateContent(true);
-                    }
-                    break;
-                case Video.IncomingVideoStatus.DOWNLOADED:
-                    if (!isVideoPlaying) {
-                        gridElementView.animateDownloading(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateContent(false);
-                            }
-                        });
-                    }
-                    break;
-                default:
-                    return;
-            }
+            updateUiForIncomingVideoStatus(incomingStatus);
         } else if (lastEventType == Friend.VideoStatusEventType.OUTGOING) {
-            switch (outgoingStatus) {
-                case Friend.OutgoingVideoStatus.UPLOADING:
-                    if (!isVideoPlaying) {
-                        updateContent(true);
-                        gridElementView.animateUploading();
-                    }
-                    break;
-                case Friend.OutgoingVideoStatus.QUEUED:
-                case Friend.OutgoingVideoStatus.UPLOADED:
-                case Friend.OutgoingVideoStatus.DOWNLOADED:
-                case Friend.OutgoingVideoStatus.VIEWED:
-                    updateContent(false);
-                    break;
-            }
+            updateUiForOutgoingVideoStatus(outgoingStatus);
         }
+    }
+
+    private void updateUiForIncomingVideoStatus(final int status) {
+        uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                switch (status) {
+                    case Video.IncomingVideoStatus.QUEUED:
+                        if (!isVideoPlaying) {
+                            updateContent(true);
+                        }
+                        break;
+                    case Video.IncomingVideoStatus.DOWNLOADED:
+                        if (!isVideoPlaying) {
+                            gridElementView.animateDownloading(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateContent(false);
+                                }
+                            });
+                        }
+                        break;
+                }
+            }
+        });
+    }
+
+    private void updateUiForOutgoingVideoStatus(final int status) {
+        uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                switch (status) {
+                    case Friend.OutgoingVideoStatus.QUEUED:
+                        if (!isVideoPlaying) {
+                            updateContent(true);
+                            gridElementView.animateUploading();
+                        }
+                        break;
+                    case Friend.OutgoingVideoStatus.UPLOADING:
+                    case Friend.OutgoingVideoStatus.UPLOADED:
+                    case Friend.OutgoingVideoStatus.DOWNLOADED:
+                    case Friend.OutgoingVideoStatus.VIEWED:
+                        updateContent(false);
+                        break;
+                }
+            }
+        });
     }
 
     private boolean hasFriend() {
