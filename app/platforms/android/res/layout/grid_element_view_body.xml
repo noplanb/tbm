@@ -77,14 +77,14 @@
             android:visibility="invisible"
             android:background="@drawable/friend_body_unread_border"/>
 
-    <ImageView
+    <com.noplanbees.tbm.ui.view.StatusIndicator
             android:id="@+id/img_viewed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:layout_gravity="right"
             android:background="@color/bg_unread_msg"
-            android:scaleType="center"
+            android:scaleType="fitCenter"
             android:src="@drawable/viewed"
             android:visibility="gone"/>
 
@@ -94,24 +94,24 @@
             android:layout_height="2dp"
             android:visibility="invisible"/>
 
-    <ImageView
+    <com.noplanbees.tbm.ui.view.StatusIndicator
             android:id="@+id/img_uploading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:layout_gravity="right"
             android:background="@color/bg_uploading"
-            android:scaleType="center"
+            android:scaleType="fitCenter"
             android:src="@drawable/uploading"
             android:visibility="invisible"/>
 
-    <ImageView
+    <com.noplanbees.tbm.ui.view.StatusIndicator
             android:id="@+id/img_downloading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:background="@color/bg_uploading"
-            android:scaleType="center"
+            android:scaleType="fitCenter"
             android:src="@drawable/downloading"
             android:visibility="invisible"/>
 
