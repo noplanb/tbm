@@ -12,6 +12,9 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -35,6 +38,7 @@ import com.noplanbees.tbm.model.UserFactory;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.ui.dialogs.EnterCodeDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
+import com.noplanbees.tbm.utilities.Convenience;
 
 public class RegisterActivity extends Activity implements EnterCodeDialogFragment.Callbacks{
 	private final String TAG = this.getClass().getSimpleName();
@@ -79,15 +83,23 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Log.i(TAG, "onCreate");
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		getActionBar().hide();
 		setContentView(R.layout.register);
 		setupListeners();
 		setupProgressDialog();
 		addShortcutIcon();
+        setAdditionalViewHeight();
 	}
 
-	@Override
+    private void setAdditionalViewHeight() {
+        View additionalView = findViewById(R.id.transparent_view);
+        ViewGroup.LayoutParams lp = additionalView.getLayoutParams();
+        lp.height = (int) (Convenience.getScreenDimensions(this).y * 0.6);
+        additionalView.setLayoutParams(lp);
+    }
+
+    @Override
 	protected void onStart() {
 		super.onStart();
 		pd = ProgressDialog.show(this, "Data", "retrieving data...");
@@ -239,7 +251,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	class Register extends Server {
 
 		public Register(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params, false);
+			super(uri, params);
 			progress.show();
 		}
 		@Override
@@ -337,7 +349,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	
 	private class DebugGetUser extends Server{
 		public DebugGetUser(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params, false);
+			super(uri, params);
 			progress.show();
 		}
 		@Override

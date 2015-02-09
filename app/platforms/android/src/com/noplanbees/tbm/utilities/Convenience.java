@@ -1,15 +1,21 @@
 package com.noplanbees.tbm.utilities;
 
 import android.app.ActivityManager;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
+import android.view.WindowManager;
 
 import org.apache.commons.io.FileUtils;
 
@@ -138,9 +144,39 @@ public class Convenience {
 
 	
 
-	
-	//------------
-	// URI helpers
-	//------------
-	
+
+    /*
+    * @return: Point where x - width and y - height
+    * */
+    public static Point getScreenDimensions(Context context){
+        Point size = new Point();
+        WindowManager w = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2)
+        {
+            w.getDefaultDisplay().getSize(size);
+        }
+        else
+        {
+            Display d = w.getDefaultDisplay();
+            size.x = d.getWidth();
+            size.y = d.getHeight();
+        }
+        return size;
+
+    }
+
+    public static boolean screenIsOff(Context context) {
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        return !pm.isScreenOn();
+    }
+
+    public static boolean screenIsLocked(Context context) {
+        KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        return (Boolean) km.inKeyguardRestrictedInputMode();
+    }
+
+    public static boolean screenIsLockedOrOff(Context context) {
+        return screenIsLocked(context) || screenIsOff(context);
+    }
 }

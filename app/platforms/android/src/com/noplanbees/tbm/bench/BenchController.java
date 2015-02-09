@@ -277,8 +277,11 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 			BenchObject item = list.get(position);
 
 			Friend friend = (Friend) FriendFactory.getFactoryInstance().find(item.friendId);
-			if (friend!=null && friend.thumbExists()){
-				holder.thumb.setImageBitmap(friend.lastThumbBitmap());
+			if (friend!=null){
+                if(friend.thumbExists())
+             	    holder.thumb.setImageBitmap(friend.lastThumbBitmap());
+                else
+                    holder.thumb.setImageResource(R.drawable.ic_no_pic_z);
 			}else{
 				holder.thumb.setImageResource(R.drawable.ic_no_pic_z);
 			}

@@ -399,19 +399,17 @@ public class Friend extends ActiveModel{
         }else{
             String vidPath = videoFromPath(videoId);
 
-            MediaPlayer mp = MediaPlayer.create(context, Uri.parse(vidPath));
-            long duration = mp.getDuration();
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(vidPath);
+            String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            long duration = Long.parseLong( time );
             Log.d(TAG, "createThumb: duration = " + duration);
             long pos;
             if(duration>1500)
                 pos = duration - 1000;
             else
                 pos = duration/2;
-
-            MediaMetadataRetriever r = new MediaMetadataRetriever();
-            r.setDataSource(vidPath);
-            // Get the last frame.
-            Bitmap thumb = r.getFrameAtTime(pos*1000);
+            Bitmap thumb = retriever.getFrameAtTime(pos*1000);
             File thumbFile = thumbFile(videoId);
             try {
                 FileOutputStream fos = FileUtils.openOutputStream(thumbFile);

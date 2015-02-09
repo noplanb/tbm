@@ -79,7 +79,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onRecordClicked() {
-        // TODO fix issue with click (short longpress) dispatched both in view and gestureRecognizer --Serhii
         callbacks.onRecordDialogRequested();
     }
 

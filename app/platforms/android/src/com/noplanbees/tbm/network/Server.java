@@ -39,8 +39,6 @@ public abstract class Server {
     private String uri;
     private String method;
     private LinkedTreeMap<String, String> sParams;
-    // TODO: andrey why do we need this.
-    private boolean isDigestAuth = true;
 
     //------------------------------------------------------------------
     // Application level success and failure handling (not http failure)
@@ -82,14 +80,6 @@ public abstract class Server {
         sParams = params;
         this.login = login;
         this.pass = pass;
-        AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
-    }
-
-    public Server(String uri, LinkedTreeMap<String, String> params, boolean isDigestAuth){
-        this.uri = uri;
-        method = "GET";
-        sParams = params;
-        this.isDigestAuth = isDigestAuth;
         AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
     }
 
@@ -146,17 +136,23 @@ public abstract class Server {
         DefaultHttpClient http = new DefaultHttpClient();
         http.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Android");
         http.getParams().setParameter("Accept-Charset", "UTF-8");
-        if(isDigestAuth) {
 
-            if(login==null || pass == null){
-                login = UserFactory.current_user().get(User.Attributes.MKEY);
-                pass = UserFactory.current_user().get(User.Attributes.AUTH);
+        if(login==null || pass == null){
+            User user = UserFactory.current_user();
+            if(user != null){
+                login = user.get(User.Attributes.MKEY);
+                pass = user.get(User.Attributes.AUTH);
+            }else{
+                login = "";
+                pass = "";
             }
-            http.getCredentialsProvider().setCredentials(
-                    new AuthScope(Config.SERVER_HOST, AuthScope.ANY_PORT, "zazo.com"),
-                    new UsernamePasswordCredentials(login, pass)
-            );
         }
+
+        http.getCredentialsProvider().setCredentials(
+                new AuthScope(Config.SERVER_HOST, AuthScope.ANY_PORT, "zazo.com"),
+                new UsernamePasswordCredentials(login, pass)
+        );
+
         HttpUriRequest request;
         if(isPost()){
             request = new HttpPost(sUrl);

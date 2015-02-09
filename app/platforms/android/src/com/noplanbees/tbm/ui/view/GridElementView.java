@@ -185,7 +185,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         }
     }
 
-
     public void setThumbnail(Bitmap bitmap) {
         imgThumb.setImageBitmap(bitmap);
     }

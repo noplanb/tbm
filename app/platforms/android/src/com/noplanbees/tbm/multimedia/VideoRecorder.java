@@ -51,22 +51,12 @@ public class VideoRecorder implements SurfaceTextureListener {
     private MediaRecorder mediaRecorder;
     private Friend currentFriend;
     private PreviewTextureFrame preview;
-    private final SoundPool soundPool;
-    private final int soundID;
 
     // Allow registration of a single delegate to handle exceptions.
     private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
 
     public VideoRecorder(Context c) {
         context = c;
-        // Load the sounds
-        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
-        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-            @Override
-            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-            }
-        });
-        soundID = soundPool.load(context, R.raw.beep_sin, 1);
     }
 
     public void onResume() {
@@ -87,7 +77,6 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     public boolean startRecording(Friend f) {
         Log.i(TAG, "startRecording");
-        disableShutterAndPlayOwnSound();
 
         currentFriend = f;
 
@@ -133,7 +122,6 @@ public class VideoRecorder implements SurfaceTextureListener {
         hideRecordingIndicator(); // It should be safe to call this even if the
         // sufraces have already been destroyed.
         if (mediaRecorder != null) {
-            enableShutterAndPlayOwnSound();
             // hideRecordingIndicator is in the if statement because if
             // VideoRecorder was disposed due to an external event such as a
             // phone call while the user was still pressing record when he
@@ -162,13 +150,12 @@ public class VideoRecorder implements SurfaceTextureListener {
             } finally {
                 releaseMediaRecorder();
             }
-            // prepareMediaRecorder();
         }
         return rval;
     }
 
     public void release() {
-        Log.i(TAG, "dispose");
+        Log.i(TAG, "release");
         isPreviewing = false;
         Boolean abortedRecording = false;
         if (mediaRecorder != null) {
@@ -186,6 +173,7 @@ public class VideoRecorder implements SurfaceTextureListener {
     }
 
     public void dispose() {
+        Log.i(TAG, "dispose");
         preview.setVisibility(View.GONE);
     }
 
@@ -231,11 +219,7 @@ public class VideoRecorder implements SurfaceTextureListener {
         // research that lead to these settings for compatability with IOS.
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very
-        // tinny
-        // but
-        // plays
-        // on
-        // ios
+        // tinny but plays on ios
         mediaRecorder.setAudioChannels(2);
         mediaRecorder.setAudioEncodingBitRate(96000);
         mediaRecorder.setAudioSamplingRate(48000);
@@ -365,17 +349,4 @@ public class VideoRecorder implements SurfaceTextureListener {
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
     }
-
-    private void disableShutterAndPlayOwnSound() {
-        soundPool.play(soundID, 1,1, 0,0,1);
-        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        am.setStreamMute(AudioManager.STREAM_SYSTEM, true);
-    }
-
-    private void enableShutterAndPlayOwnSound() {
-        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        am.setStreamMute(AudioManager.STREAM_SYSTEM, false);
-        soundPool.play(soundID, 1,1, 0,0,1);
-    }
-
 }
