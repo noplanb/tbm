@@ -155,7 +155,7 @@ public class VideoRecorder implements SurfaceTextureListener {
     }
 
     public void release() {
-        Log.i(TAG, "dispose");
+        Log.i(TAG, "release");
         isPreviewing = false;
         Boolean abortedRecording = false;
         if (mediaRecorder != null) {
@@ -173,6 +173,7 @@ public class VideoRecorder implements SurfaceTextureListener {
     }
 
     public void dispose() {
+        Log.i(TAG, "dispose");
         preview.setVisibility(View.GONE);
     }
 

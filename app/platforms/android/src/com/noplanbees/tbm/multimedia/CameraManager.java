@@ -6,9 +6,7 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
-import android.os.Build;
 import android.util.Log;
-
 import com.noplanbees.tbm.dispatch.Dispatch;
 
 import java.util.Collections;
@@ -22,13 +20,13 @@ import java.util.List;
 @SuppressWarnings("deprecation")
 public class CameraManager {
 
-public static interface CameraExceptionHandler{
-	public void noCameraHardware();
-	public void noFrontCamera();
-	public void cameraInUseByOtherApplication();
-	public void unableToSetCameraParams();
-	public void unableToFindAppropriateVideoSize();
-}
+    public static interface CameraExceptionHandler {
+        public void noCameraHardware();
+        public void noFrontCamera();
+        public void cameraInUseByOtherApplication();
+        public void unableToSetCameraParams();
+        public void unableToFindAppropriateVideoSize();
+    }
 
 	private static String TAG = CameraManager.class.getSimpleName();
 
