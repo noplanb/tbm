@@ -51,24 +51,12 @@ public class VideoRecorder implements SurfaceTextureListener {
     private MediaRecorder mediaRecorder;
     private Friend currentFriend;
     private PreviewTextureFrame preview;
-    private final SoundPool soundPool;
-    private final int soundID;
-    private ShutterHelper shutterHelper;
 
     // Allow registration of a single delegate to handle exceptions.
     private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
 
     public VideoRecorder(Context c) {
         context = c;
-        // Load the sounds
-        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
-        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-            @Override
-            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-            }
-        });
-        soundID = soundPool.load(context, R.raw.beep_sin, 1);
-        shutterHelper = new ShutterHelper();
     }
 
     public void onResume() {
@@ -89,7 +77,6 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     public boolean startRecording(Friend f) {
         Log.i(TAG, "startRecording");
-        shutterHelper.disableShutterAndPlayOwnSound();
 
         currentFriend = f;
 
@@ -162,9 +149,7 @@ public class VideoRecorder implements SurfaceTextureListener {
                 rval = false;
             } finally {
                 releaseMediaRecorder();
-                shutterHelper.enableShutterAndPlayOwnSound();
             }
-            // prepareMediaRecorder();
         }
         return rval;
     }
@@ -233,11 +218,7 @@ public class VideoRecorder implements SurfaceTextureListener {
         // research that lead to these settings for compatability with IOS.
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC); // Very
-        // tinny
-        // but
-        // plays
-        // on
-        // ios
+        // tinny but plays on ios
         mediaRecorder.setAudioChannels(2);
         mediaRecorder.setAudioEncodingBitRate(96000);
         mediaRecorder.setAudioSamplingRate(48000);
@@ -366,23 +347,5 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-    }
-
-
-    private class ShutterHelper {
-        private int volume = 0;
-
-        public void disableShutterAndPlayOwnSound() {
-            soundPool.play(soundID, 1, 1, 0, 0, 1);
-            AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-            volume = am.getStreamVolume(AudioManager.STREAM_SYSTEM);
-            am.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
-        }
-
-        public void enableShutterAndPlayOwnSound() {
-            AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-            am.setStreamVolume(AudioManager.STREAM_SYSTEM, volume, AudioManager.FLAG_ALLOW_RINGER_MODES);
-            soundPool.play(soundID, 1, 1, 0, 0, 1);
-        }
     }
 }
