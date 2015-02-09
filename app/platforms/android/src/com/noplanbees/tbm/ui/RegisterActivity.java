@@ -35,7 +35,7 @@ import com.noplanbees.tbm.network.Server;
 import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
-import com.noplanbees.tbm.network.aws.CredentialsGetter;
+import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.ui.dialogs.EnterCodeDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 import com.noplanbees.tbm.utilities.Convenience;
@@ -387,7 +387,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	// Get S3 credentials
 	//-------------------
     private void getAWSCredentials(){
-        new CredentialsGetter(this, new CredentialsGetter.CredentialsGetterCallback() {
+        new S3CredentialsGetter(this, new S3CredentialsGetter.CredentialsGetterCallback() {
             @Override
             public void success() {
                 regComplete();
@@ -395,7 +395,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 
             @Override
             public void failure() {
-                showErrorDialog("No Connection", "Can't reach " + Config.appName + ".\n\nCheck your connection and try again.");            }
+                serverError();            
+            }
         });
     }
 

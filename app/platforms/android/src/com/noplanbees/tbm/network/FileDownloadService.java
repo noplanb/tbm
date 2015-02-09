@@ -7,8 +7,7 @@ import com.noplanbees.tbm.model.Video;
 
 
 public class FileDownloadService extends FileTransferService {
-	private final static String STAG = FileDownloadService.class.getSimpleName();
-	private final String TAG = getClass().getSimpleName();
+	private final static String TAG = FileDownloadService.class.getSimpleName();
 	
 	public static void restartTransfersPendingRetry(Context context) {
 		Intent intent = new Intent(context, FileDownloadService.class);

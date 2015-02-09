@@ -32,7 +32,7 @@ import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.network.FriendGetter;
-import com.noplanbees.tbm.network.aws.CredentialsGetter;
+import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
@@ -120,6 +120,7 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
         super.onDestroy();
     }
 
+    // TODO: Serhii please clean up per our design guidelines.
     private void onLoadComplete() {
 		Log.i(TAG, "onLoadComplete");
 
@@ -129,32 +130,32 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 			startActivity(i);
 			finish();
 			return;
+		} 
+
+		mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
+		if(mainFragment == null){
+			mainFragment = new GridViewFragment();
+			getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
+		}
+
+		if (gcmHandler.checkPlayServices()){
+			gcmHandler.registerGcm();
 		} else {
+			Dispatch.dispatch("No valid Google Play Services APK found.");
+		}
 
-			mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
-			if(mainFragment == null){
-				mainFragment = new GridViewFragment();
-				getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
-			}
-			
-			if (gcmHandler.checkPlayServices()){
-				gcmHandler.registerGcm();
-			} else {
-				Dispatch.dispatch("No valid Google Play Services APK found.");
+		benchController.onDataLoaded();
+
+		new S3CredentialsGetter(this, new S3CredentialsGetter.CredentialsGetterCallback() {
+			@Override
+			public void success() {
+				new FriendGetter(MainActivity.this, false, null);
 			}
 
-			benchController.onDataLoaded();
-
-            new CredentialsGetter(this, new CredentialsGetter.CredentialsGetterCallback() {
-                @Override
-                public void success() {
-                    new FriendGetter(MainActivity.this, false, null);
-                }
-
-                @Override
-                public void failure() { }
-            });
-        }
+			@Override
+			public void failure() { }
+		});
+        
 	}
 
 	@Override

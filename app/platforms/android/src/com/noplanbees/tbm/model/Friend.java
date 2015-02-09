@@ -403,10 +403,10 @@ public class Friend extends ActiveModel{
             long duration = mp.getDuration();
             Log.d(TAG, "createThumb: duration = " + duration);
             long pos;
-            if(duration>1)
+            if(duration>1500)
                 pos = duration - 1000;
             else
-                pos = duration;
+                pos = duration/2;
 
             MediaMetadataRetriever r = new MediaMetadataRetriever();
             r.setDataSource(vidPath);
@@ -444,6 +444,7 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath());
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, get(Attributes.OUTGOING_VIDEO_ID));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this));
+        // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -460,6 +461,7 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
+        // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -472,7 +474,7 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
-        i.putExtra(FileTransferService.IntentFields.VIDEOIDS_REMOTE_KV_KEY, RemoteStorageHandler.incomingVideoIdsRemoteKVKey(this));
+        // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
@@ -517,7 +519,7 @@ public class Friend extends ActiveModel{
         return Integer.parseInt(get(Attributes.UPLOAD_RETRY_COUNT));
     }
 
-    private void setAndNotifyUploadRetryCount(int retryCount){
+    public void setAndNotifyUploadRetryCount(int retryCount){
         if (getUploadRetryCount() != retryCount){
             setUploadRetryCount(retryCount);
             setLastEventTypeOutgoing();
@@ -559,7 +561,7 @@ public class Friend extends ActiveModel{
     //		return Integer.parseInt(get(Attributes.DOWNLOAD_RETRY_COUNT));
     //	}
 
-    private void setAndNotifyDownloadRetryCount(String videoId, int retryCount){
+    public void setAndNotifyDownloadRetryCount(String videoId, int retryCount){
         Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
             Dispatch.dispatch(TAG + " setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
@@ -590,26 +592,7 @@ public class Friend extends ActiveModel{
         return Integer.parseInt(get(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE));
     }
 
-    // Update with intent
-    public void updateStatus(Intent intent){
-        String transferType = intent.getStringExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY);
-        int status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
-        int retryCount = intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
-        String videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
 
-        if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD)){
-            setAndNotifyIncomingVideoStatus(videoId, status);
-            setAndNotifyDownloadRetryCount(videoId, retryCount);
-        } else if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD)){
-            if (videoId.equals(get(Attributes.OUTGOING_VIDEO_ID))){
-                setAndNotifyOutgoingVideoStatus(status);
-                setAndNotifyUploadRetryCount(retryCount);
-            }
-        } else {
-            Dispatch.dispatch("ERROR: updateStatus: unknown TransferType passed in intent. This should never happen.");
-            throw new RuntimeException();
-        }
-    }
 
     //-------------------------------
     // Server notification of changes
@@ -671,21 +654,21 @@ public class Friend extends ActiveModel{
 
         switch (status){
             case Video.IncomingVideoStatus.NEW:
-                return "Downloading n";
+                return "Dwnld new";
             case Video.IncomingVideoStatus.QUEUED:
-                return "Downloading q";
+                return "Dwnld q";
             case Video.IncomingVideoStatus.DOWNLOADING:
                 if (count > 0){
-                    return "Downloading r" + count;
+                    return "Dwnld r" + count;
                 } else {
-                    return "Downloading...";
+                    return "Dwnld...";
                 }
             case Video.IncomingVideoStatus.DOWNLOADED:
                 return get(Attributes.FIRST_NAME);
             case Video.IncomingVideoStatus.VIEWED:
                 return get(Attributes.FIRST_NAME);
             case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
-                return "Downloading e!";
+                return "Dwnld e!";
         }
         return get(Attributes.FIRST_NAME);
     }

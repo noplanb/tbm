@@ -166,7 +166,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             @Override
             public void run() {
                 switch (status) {
+                	case Video.IncomingVideoStatus.NEW:
                     case Video.IncomingVideoStatus.QUEUED:
+                	case Video.IncomingVideoStatus.DOWNLOADING:
+                	case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
                         if (!isVideoPlaying) {
                             updateContent(true);
                         }
@@ -197,10 +200,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             gridElementView.animateUploading();
                         }
                         break;
+                    case Friend.OutgoingVideoStatus.NEW:
                     case Friend.OutgoingVideoStatus.UPLOADING:
                     case Friend.OutgoingVideoStatus.UPLOADED:
                     case Friend.OutgoingVideoStatus.DOWNLOADED:
                     case Friend.OutgoingVideoStatus.VIEWED:
+                    case Friend.OutgoingVideoStatus.FAILED_PERMANENTLY:
                         updateContent(false);
                         break;
                 }

@@ -32,10 +32,10 @@ public abstract class FileTransferService extends NonStopIntentService {
 		public final static String PARAMS_KEY = "params";
 		public final static String STATUS_KEY = "status";
 		public final static String VIDEO_ID_KEY = "videoIdKey";
-		public final static String VIDEOIDS_REMOTE_KV_KEY = "videoIdsRemoteKVKey";
 
         public final static String TRANSFER_TYPE_UPLOAD = "upload";
 		public final static String TRANSFER_TYPE_DOWNLOAD = "download";
+		public final static String TRANSFER_TYPE_DELETE = "delete";
 	}
 
 	protected abstract void maxRetriesReached(Intent intent) throws InterruptedException;
@@ -75,29 +75,26 @@ public abstract class FileTransferService extends NonStopIntentService {
 			intent.putExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
 		}
 
-        try {
-            while(true){
-                try {
-                    if (intent.getIntExtra(IntentFields.RETRY_COUNT_KEY, 0) > MAX_RETRIES){
-                        Log.i(TAG, "onHandleIntent: MAX_RETRIES reached: " + MAX_RETRIES);
-                        maxRetriesReached(intent);
-                        break;
-                    }
-                    if (doTransfer(intent))
-                        break;
-                    retrySleep(intent);
-                } catch (InterruptedException e) {
-                    Log.i(TAG, "Interrupt caught for Restart retry inside loop.");
-                    intent.putExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
-                }
-            }
-        } catch (IllegalStateException e) {
-            Log.d(TAG, "catched");
-        }
+		while(true){
+			try {
+				if (intent.getIntExtra(IntentFields.RETRY_COUNT_KEY, 0) > MAX_RETRIES){
+					Log.i(TAG, "onHandleIntent: MAX_RETRIES reached: " + MAX_RETRIES);
+					maxRetriesReached(intent);
+					break;
+				}
+				if (doTransfer(intent))
+					break;
+				retrySleep(intent);
+			} catch (InterruptedException e) {
+				Log.i(TAG, "Interrupt caught for Restart retry inside loop.");
+				intent.putExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
+			}
+		}
+		
 		stopSelf(startId);
 	}
 
-	protected void reportStatus(Intent intent, int status){
+	public void reportStatus(Intent intent, int status){
 		Log.i(TAG, "reportStatus");
 		intent.setClass(getApplicationContext(), DataHolderService.class);
 		intent.putExtra(IntentFields.STATUS_KEY, status);

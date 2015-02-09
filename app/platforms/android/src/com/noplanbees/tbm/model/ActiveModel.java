@@ -59,6 +59,7 @@ public abstract class ActiveModel {
         callbacks.remove(callback);
     }
 
+    // TODO: Serhii why does the super general active model class know anything about gridChanged?
     protected void notifyCallbacks() {
         for (ModelChangeCallback callback : callbacks) {
             callback.onGridChanged();

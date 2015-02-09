@@ -39,6 +39,7 @@ public abstract class Server {
     private String uri;
     private String method;
     private LinkedTreeMap<String, String> sParams;
+    // TODO: andrey why do we need this.
     private boolean isDigestAuth = true;
 
     //------------------------------------------------------------------

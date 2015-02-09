@@ -4,8 +4,8 @@ import android.content.Intent;
 
 public interface IFileTransferAgent {
 
-	boolean upload();
-	boolean download() throws IllegalStateException;
-	boolean delete();
+	boolean upload() throws InterruptedException;
+	boolean download() throws InterruptedException;
+	boolean delete() throws InterruptedException;
 	void setInstanceVariables(Intent intent) throws InterruptedException;
 }

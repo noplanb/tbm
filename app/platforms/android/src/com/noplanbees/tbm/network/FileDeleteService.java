@@ -5,6 +5,7 @@ import android.content.Intent;
 
 import com.noplanbees.tbm.RemoteStorageHandler;
 import com.noplanbees.tbm.model.Video;
+import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 
 
 public class FileDeleteService extends FileTransferService {
@@ -23,13 +24,10 @@ public class FileDeleteService extends FileTransferService {
 	
 	@Override
 	protected boolean doTransfer(Intent intent) throws InterruptedException{
-		if(fileTransferAgent.delete()) {
-            String videoIdsRemoteKVKey = intent.getStringExtra(IntentFields.VIDEOIDS_REMOTE_KV_KEY);
-            String videoId = intent.getStringExtra(IntentFields.VIDEO_ID_KEY);
-            RemoteStorageHandler.deleteRemoteKV(videoIdsRemoteKVKey, videoId);
-            return true;
-        }
-        return false;
+		intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_DELETE);
+		// Do not retry deletes always return true.
+		fileTransferAgent.delete();
+        return true;
     }
 	
 	@Override
