@@ -85,16 +85,16 @@ public class DialogShower {
         Bundle args = new Bundle();
         args.putString(InfoDialogFragment.TITLE, title);
         args.putString(InfoDialogFragment.MSG, message);
-        info.setArguments(args );
+        info.setArguments(args);
         info.show(activity.getFragmentManager(), null);
     }
 
     public static void showVersionHandlerDialog(Activity activity, String message, boolean negativeButton) {
         DialogFragment d = new VersionDialogFragment();
-        Bundle b = new Bundle();
-        b.putBoolean(VersionDialogFragment.IS_NEGATIVE_BUTTON, negativeButton);
-        b.putString(VersionDialogFragment.MESSAGE, message);
-        d.setArguments(b);
+        Bundle args = new Bundle();
+        args.putBoolean(VersionDialogFragment.IS_NEGATIVE_BUTTON, negativeButton);
+        args.putString(VersionDialogFragment.MESSAGE, message);
+        d.setArguments(args);
         d.show(activity.getFragmentManager(),null);
     }
 }

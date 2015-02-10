@@ -4,12 +4,10 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.Service;
-import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.widget.DrawerLayout;
@@ -35,14 +33,13 @@ import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
-import com.noplanbees.tbm.ui.dialogs.VersionDialogFragment;
 import com.noplanbees.tbm.utilities.DialogShower;
 
-public class MainActivity extends Activity implements GridViewFragment.Callbacks, 
-BenchController.Callbacks, ActionInfoDialogListener, VersionHandler.Callback,
-        VersionDialogFragment.Callbacks, InviteManager.Callbacks {
-	private final static String TAG = "MainActivity";
-	
+public class MainActivity extends Activity implements GridViewFragment.Callbacks,
+        BenchController.Callbacks, ActionInfoDialogListener, VersionHandler.Callback,
+        InviteManager.Callbacks {
+    private final static String TAG = "MainActivity";
+
 	public static final int CONNECTED_DIALOG = 0;
 	public static final int NUDGE_DIALOG = 1;
 	public static final int SMS_DIALOG = 2;
@@ -124,14 +121,14 @@ BenchController.Callbacks, ActionInfoDialogListener, VersionHandler.Callback,
 		Log.i(TAG, "onLoadComplete");
 
 		if (!User.isRegistered(this)) {
-			Log.i(TAG, "Not registered. Starting RegisterActivty");
+			Log.i(TAG, "Not registered. Starting RegisterActivity");
 			Intent i = new Intent(this, RegisterActivity.class);
 			startActivity(i);
 			finish();
 			return;
 		} 
 
-		mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
+		mainFragment = getFragmentManager().findFragmentByTag("main");
 		if(mainFragment == null){
 			mainFragment = new GridViewFragment();
 			getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
@@ -239,18 +236,4 @@ BenchController.Callbacks, ActionInfoDialogListener, VersionHandler.Callback,
         DialogShower.showVersionHandlerDialog(this, message, negativeButton);
     }
 
-    @Override
-    public void onPositiveButtonClicked() {
-        goToPlayStore();
-        finish();
-    }
-
-    private void goToPlayStore(){
-        try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
-        } catch (ActivityNotFoundException anfe) {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id="
-                    + getPackageName())));
-        }
-    }
 }
