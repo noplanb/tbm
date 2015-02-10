@@ -12,12 +12,12 @@ public class Config {
 	String TAG = Config.class.getSimpleName();
 
 	
-	public final static String SERVER_HOST = "192.168.1.82";
-    public static final int SERVER_PORT = 3000;
-    public final static String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;
+//	public final static String SERVER_HOST = "192.168.1.82";
+//    public static final int SERVER_PORT = 3000;
+//    public final static String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;
 
-//  public final static String SERVER_HOST = "zazo-dev1-5.elasticbeanstalk.com";
-//  public final static String SERVER_URI = "http://"+SERVER_HOST;
+  public final static String SERVER_HOST = "zazo-dev1-5.elasticbeanstalk.com";
+  public final static String SERVER_URI = "http://"+SERVER_HOST;
 	
 	public final static String appName = "Zazo";
 
