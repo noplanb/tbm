@@ -2,7 +2,6 @@ package com.noplanbees.tbm.model;
 
 import android.content.Context;
 
-
 public class GridElement extends ActiveModel {
 
     static class Attributes {

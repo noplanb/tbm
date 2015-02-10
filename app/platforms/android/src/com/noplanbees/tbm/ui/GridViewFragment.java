@@ -22,9 +22,7 @@ import com.noplanbees.tbm.GridElementController;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.GridElementFactory;
@@ -46,8 +44,8 @@ import java.util.ArrayList;
 
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
-public class GridViewFragment extends Fragment implements CameraExceptionHandler, VideoStatusChangedCallback,
-        VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callbacks, DoubleActionDialogListener {
+public class GridViewFragment extends Fragment implements CameraExceptionHandler, VideoPlayer.StatusCallbacks,
+        SensorEventListener, GridElementController.Callbacks, DoubleActionDialogListener {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
 
@@ -61,7 +59,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     private NineViewGroup nineViewGroup;
-    private ActiveModelsHandler activeModelsHandler;
     private VideoPlayer videoPlayer;
     private VideoRecorderManager videoRecorderManager;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
@@ -76,8 +73,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate");
 
-        activeModelsHandler = ActiveModelsHandler.getActiveModelsHandler();
-        activeModelsHandler.getFf().addVideoStatusObserver(this);
 
         videoPlayer = VideoPlayer.getInstance(getActivity());
 
@@ -96,7 +91,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     @Override
-    // TODO: Serhii please clean per our style guidelines.
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
         View v = inflater.inflate(R.layout.nineviewgroup_fragment, container, false);
@@ -104,26 +98,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         setupVideoPlayer(v);
         setupNineViewGroup(v);
         return v;
-    }
-
-    private void setupNineViewGroup(View v) {
-        nineViewGroup = (NineViewGroup) v.findViewById(R.id.grid_view);
-        nineViewGroup.setGestureListener(new NineViewGestureListener());
-        nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
-            @Override
-            public void onLayoutComplete() {
-                setupGridElements();
-                layoutVideoRecorder();
-                handleIntentAction(getActivity().getIntent());
-            }
-        });
-    }
-
-    private void setupVideoPlayer(View v) {
-        View videoBody = v.findViewById(R.id.video_body);
-        VideoView videoView = (VideoView) v.findViewById(R.id.video_view);
-        videoPlayer.setVideoView(videoView);
-        videoPlayer.setVideoViewBody(videoBody);
     }
 
     @Override
@@ -159,8 +133,27 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     @Override
     public void onDestroy() {
         super.onDestroy();
-        activeModelsHandler.getFf().removeOnVideoStatusChangedObserver(this);
         unexpectedTerminationHelper.finish();
+    }
+
+    private void setupNineViewGroup(View v) {
+        nineViewGroup = (NineViewGroup) v.findViewById(R.id.grid_view);
+        nineViewGroup.setGestureListener(new NineViewGestureListener());
+        nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
+            @Override
+            public void onLayoutComplete() {
+                setupGridElements();
+                layoutVideoRecorder();
+                handleIntentAction(getActivity().getIntent());
+            }
+        });
+    }
+
+    private void setupVideoPlayer(View v) {
+        View videoBody = v.findViewById(R.id.video_body);
+        VideoView videoView = (VideoView) v.findViewById(R.id.video_view);
+        videoPlayer.setVideoView(videoView);
+        videoPlayer.setVideoViewBody(videoBody);
     }
 
     private void setupGridElements(){
@@ -211,19 +204,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         DialogShower.showCameraException(getActivity(), exception, this);
     }
 
-    // TODO: Serhii remove this from here and have the controllers register for their own videoStatusChanged.
-    @Override
-    public void onVideoStatusChanged(final Friend friend) {
-        if (getActivity() != null) {
-            //GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
-            notifyViewControllers(new ViewControllerTask() {
-                @Override
-                public void onEvent(GridElementController controller) {
-                    controller.onVideoStatusChanged(friend.getId());
-                }
-            });
-        }
-    }
+    // TODO: Sani, should friend be moved to the grid on new message? --Serhii
+    // GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
 
     public void play(String friendId) {
         Friend f = (Friend) FriendFactory.getFactoryInstance().find(friendId);

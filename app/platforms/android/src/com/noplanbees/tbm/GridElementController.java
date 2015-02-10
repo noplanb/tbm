@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import com.noplanbees.tbm.model.ActiveModel;
+import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.Video;
@@ -18,7 +19,7 @@ import com.noplanbees.tbm.ui.view.GridElementView;
  * Created by User on 1/30/2015.
  */
 public class GridElementController implements GridElementView.ClickListener, VideoPlayer.StatusCallbacks,
-        GridElementView.FriendViewListener, ActiveModel.ModelChangeCallback {
+        GridElementView.FriendViewListener, ActiveModel.ModelChangeCallback, Friend.VideoStatusChangedCallback {
     private static final String TAG = GridElementController.class.getSimpleName();
     private GridElement gridElement;
     private ViewGroup container;
@@ -54,6 +55,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         gridElement.addCallback(this);
 
+        ActiveModelsHandler.getActiveModelsHandler().getFf().addVideoStatusObserver(this);
+
         VideoPlayer videoPlayer = VideoPlayer.getInstance(context);
         videoPlayer.registerStatusCallbacks(this);
 
@@ -64,10 +67,11 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     /**
      * Updates view content whenever video status is changed.
      * It could be called from any thread.
-     * @param friendId friend
+     * @param friend friend
      */
-    public void onVideoStatusChanged(String friendId) {
-        if (isForMe(friendId)) {
+    @Override
+    public void onVideoStatusChanged(Friend friend) {
+        if (isForMe(friend.getId())) {
             updateVideoStatus();
         }
     }
@@ -212,10 +216,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         });
     }
 
-    private boolean hasFriend() {
-        return gridElement.getFriend() != null;
-    }
-
     private boolean isUploading() {
         Friend friend = gridElement.getFriend();
         boolean result = friend != null;
@@ -256,10 +256,11 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         VideoPlayer videoPlayer = VideoPlayer.getInstance(context);
         videoPlayer.unregisterStatusCallbacks(this);
         gridElement.removeCallback(this);
+        ActiveModelsHandler.getActiveModelsHandler().getFf().removeOnVideoStatusChangedObserver(this);
     }
 
     @Override
-    public void onGridChanged() {
+    public void onModelChanged() {
         updateContent(false);
         highLightElementForFriend();
         callbacks.onGridUpdated();
