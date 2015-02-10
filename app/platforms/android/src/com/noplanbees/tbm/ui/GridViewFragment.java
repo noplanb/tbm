@@ -1,9 +1,7 @@
 package com.noplanbees.tbm.ui;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -15,12 +13,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 import android.widget.VideoView;
 import com.noplanbees.tbm.GridElementController;
 import com.noplanbees.tbm.GridManager;
@@ -32,17 +28,18 @@ import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.GridElementFactory;
+import com.noplanbees.tbm.multimedia.CameraException;
 import com.noplanbees.tbm.multimedia.CameraManager;
 import com.noplanbees.tbm.multimedia.CameraManager.CameraExceptionHandler;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.network.FileDownloadService;
 import com.noplanbees.tbm.network.FileUploadService;
-import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
-import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
+import com.noplanbees.tbm.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
 import com.noplanbees.tbm.ui.helpers.UnexpectedTerminationHelper;
 import com.noplanbees.tbm.ui.helpers.VideoRecorderManager;
 import com.noplanbees.tbm.ui.view.NineViewGroup;
 import com.noplanbees.tbm.ui.view.NineViewGroup.LayoutCompleteListener;
+import com.noplanbees.tbm.utilities.DialogShower;
 import com.noplanbees.tbm.utilities.Logger;
 
 import java.util.ArrayList;
@@ -50,7 +47,7 @@ import java.util.ArrayList;
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
 public class GridViewFragment extends Fragment implements CameraExceptionHandler, VideoStatusChangedCallback,
-        VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callbacks {
+        VideoPlayer.StatusCallbacks, SensorEventListener, GridElementController.Callbacks, DoubleActionDialogListener {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
 
@@ -75,7 +72,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     private Sensor proximitySensor;
 
     @Override
-    // TODO: Serhii please clean per our style guidelines
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate");
@@ -86,7 +82,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         videoPlayer = VideoPlayer.getInstance(getActivity());
 
         CameraManager.addExceptionHandlerDelegate(this);
-        videoRecorderManager = new VideoRecorderManager(this);
+        videoRecorderManager = new VideoRecorderManager(getActivity());
 
         unexpectedTerminationHelper.init();
 
@@ -199,73 +195,20 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     // CameraExceptionHandler delegate
     // -------------------------------
     @Override
-    public void noCameraHardware() {
-        showCameraExceptionDialog("No Camera",
-                "Your device does not seem to have a camera. This app requires a camera.", "Quit", "Try Again");
+    public void onExceptionDialogActionClicked(int id, int button) {
+        switch (button) {
+            case DoubleActionDialogListener.BUTTON_POSITIVE:
+                videoRecorderManager.reconnect();
+                break;
+            case DoubleActionDialogListener.BUTTON_NEGATIVE:
+                getCallbacks().onFinish();
+                break;
+        }
     }
 
     @Override
-    public void noFrontCamera() {
-        showCameraExceptionDialog("No Front Camera",
-                "Your device does not seem to have a front facing camera. This app requires a front facing camera.",
-                "Quit", "Try Again");
-    }
-
-    @Override
-    public void cameraInUseByOtherApplication() {
-        showCameraExceptionDialog(
-                "Camera in Use",
-                "Your camera seems to be in use by another application. Please close that app and try again. You may also need to restart your device.",
-                "Quit", "Try Again");
-    }
-
-    private void showCameraExceptionDialog(final String title, final String message, final String negativeText,
-                                           final String positiveText) {
-        uiHandler.post(new Runnable() {
-            private DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    switch (which) {
-                        case DialogInterface.BUTTON_POSITIVE:
-                            getCallbacks().onFinish();
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            videoRecorderManager.reconnect();
-                            break;
-                    }
-                }
-            };
-
-            @Override
-            public void run() {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle(title).setMessage(message)
-                        .setNegativeButton(negativeText, clickListener)
-                        .setPositiveButton(positiveText, clickListener);
-                AlertDialog alertDialog = builder.create();
-                alertDialog.setCanceledOnTouchOutside(false);
-                alertDialog.show();
-            }
-        });
-    }
-
-    @Override
-    public void unableToSetCameraParams() {
-    }
-
-    @Override
-    public void unableToFindAppropriateVideoSize() {
-    }
-
-    public void showToast(final String msg) {
-        uiHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.CENTER, 0, 0);
-                toast.show();
-            }
-        });
+    public void onCameraException(CameraException exception) {
+        DialogShower.showCameraException(getActivity(), exception, this);
     }
 
     // TODO: Serhii remove this from here and have the controllers register for their own videoStatusChanged.
@@ -358,13 +301,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     @Override
     public void onRecordDialogRequested() {
-        // show record dialog
-        InfoDialogFragment info = new InfoDialogFragment();
-        Bundle args = new Bundle();
-        args.putString(InfoDialogFragment.TITLE, "Hold to Record");
-        args.putString(InfoDialogFragment.MSG, "Press and hold the RECORD button to record.");
-        info.setArguments(args);
-        info.show(getFragmentManager(), null);
+        DialogShower.showInfoDialog(getActivity(), getString(R.string.dialog_record_title), getString(R.string.dialog_record_message));
     }
 
     @Override
@@ -375,22 +312,13 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     @Override
     public void onFileDownloading() {
-        showToast("Downloading...");
+        DialogShower.showToast(getActivity(), getString(R.string.toast_downloading));
     }
 
     @Override
     public void onFileDownloadingRetry() {
         FileDownloadService.restartTransfersPendingRetry(getActivity());
-
-        // show bad connection dialog
-        ActionInfoDialogFragment actionDialogFragment = new ActionInfoDialogFragment();
-        Bundle args = new Bundle();
-        args.putString(ActionInfoDialogFragment.TITLE, "Bad Connection");
-        args.putString(ActionInfoDialogFragment.MSG, "Trouble downloading. Check your connection");
-        args.putString(ActionInfoDialogFragment.ACTION, "Try Again");
-        args.putBoolean(ActionInfoDialogFragment.NEED_CANCEL, false);
-        actionDialogFragment.setArguments(args);
-        actionDialogFragment.show(getFragmentManager(), null);
+        DialogShower.showBadConnection(getActivity());
     }
 
     @Override
@@ -476,7 +404,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         @Override
         public boolean onCancelLongpress(String reason) {
             Log.d(TAG, "onCancelLongpress: " + reason);
-            showToast(reason);
+            DialogShower.showToast(getActivity(), reason);
             videoRecorderManager.onRecordCancel();
             return false;
         }

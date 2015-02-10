@@ -21,11 +21,7 @@ import java.util.List;
 public class CameraManager {
 
     public static interface CameraExceptionHandler {
-        public void noCameraHardware();
-        public void noFrontCamera();
-        public void cameraInUseByOtherApplication();
-        public void unableToSetCameraParams();
-        public void unableToFindAppropriateVideoSize();
+        void onCameraException(CameraException exception);
     }
 
 	private static String TAG = CameraManager.class.getSimpleName();
@@ -100,7 +96,7 @@ public class CameraManager {
 		
 		if (!hasCameraHardware(context)){
 			if (cameraExceptionHandler != null)
-				cameraExceptionHandler.noCameraHardware();
+				cameraExceptionHandler.onCameraException(CameraException.NO_HARDWARE);
 			return camera;
 		}
 		
@@ -141,20 +137,20 @@ public class CameraManager {
 				r = i;
 		}
 		if (r < 0  && cameraExceptionHandler != null)
-			cameraExceptionHandler.noFrontCamera();
+			cameraExceptionHandler.onCameraException(CameraException.NO_FRONT_CAMERA);
 		return r;
 	}
 	
 	private static void notifyCameraInUse(){
 		if (cameraExceptionHandler != null)
-			cameraExceptionHandler.cameraInUseByOtherApplication();
+			cameraExceptionHandler.onCameraException(CameraException.CAMERA_IN_USE);
 	}
 	
 	@SuppressLint("NewApi")
 	private static Boolean setCameraParams(){
 		if (camera == null){
 			if (cameraExceptionHandler != null)
-				cameraExceptionHandler.unableToSetCameraParams();
+				cameraExceptionHandler.onCameraException(CameraException.UNABLE_TO_SET_PARAMS);
 			return false;
 		}
 		
@@ -166,7 +162,7 @@ public class CameraManager {
 		Camera.Size videoSize = getAppropriateVideoSize(cparams);
 		if (videoSize == null){
 			if (cameraExceptionHandler != null){
-				cameraExceptionHandler.unableToFindAppropriateVideoSize();
+				cameraExceptionHandler.onCameraException(CameraException.UNABLE_TO_FIND_APPROPRIATE_VIDEO_SIZE);
 			}
 			return false;
 		}

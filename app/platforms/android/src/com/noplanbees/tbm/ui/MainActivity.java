@@ -2,7 +2,6 @@ package com.noplanbees.tbm.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.Service;
 import android.content.ActivityNotFoundException;
@@ -21,7 +20,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
-
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.SyncManager;
@@ -36,12 +34,12 @@ import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.gcm.GcmHandler;
-import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
-import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
+import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
 import com.noplanbees.tbm.ui.dialogs.VersionDialogFragment;
+import com.noplanbees.tbm.utilities.DialogShower;
 
 public class MainActivity extends Activity implements GridViewFragment.Callbacks, 
-BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Callback,
+BenchController.Callbacks, ActionInfoDialogListener, VersionHandler.Callback,
         VersionDialogFragment.Callbacks, InviteManager.Callbacks {
 	private final static String TAG = "MainActivity";
 	
@@ -193,12 +191,11 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 		body.closeDrawers();
 	}
 
-	@Override
-	public void showNoValidPhonesDialog(Contact contact) {
-        onShowInfoDialog("No Mobile Number", "I could not find a valid mobile number for " + contact.getDisplayName()
-                + ".\n\nPlease add a mobile number for " + contact.getFirstName()
-                + " in your device contacts and try again.");
-	}
+    @Override
+    public void showNoValidPhonesDialog(Contact contact) {
+        DialogShower.showInfoDialog(this, getString(R.string.dialog_no_valid_phones_title),
+                getString(R.string.dialog_no_valid_phones_message, contact.getDisplayName(), contact.getFirstName()));
+    }
 
 	@Override
 	public void onActionClicked(int id) {
@@ -230,35 +227,16 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 
     @Override
     public void onShowInfoDialog(String title, String msg) {
-        InfoDialogFragment info = new InfoDialogFragment();
-        Bundle args = new Bundle();
-        args.putString(InfoDialogFragment.TITLE, title);
-        args.putString(InfoDialogFragment.MSG, msg);
-        info.setArguments(args );
-        info.show(getFragmentManager(), null);
+        DialogShower.showInfoDialog(this, title, msg);
     }
 
     public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, int actionId){
-        ActionInfoDialogFragment actionDialogFragment = new ActionInfoDialogFragment();
-        Bundle args = new Bundle();
-        args.putString(ActionInfoDialogFragment.TITLE, title);
-        args.putString(ActionInfoDialogFragment.MSG, msg);
-        args.putString(ActionInfoDialogFragment.ACTION, actionTitle);
-        args.putBoolean(ActionInfoDialogFragment.NEED_CANCEL, isNeedCancel);
-        if(actionId!=-1)
-            args.putInt(ActionInfoDialogFragment.ID, actionId);
-        actionDialogFragment.setArguments(args );
-        actionDialogFragment.show(getFragmentManager(), null);
+        DialogShower.showActionInfoDialog(this, title, msg, actionTitle, isNeedCancel, actionId);
     }
 
     @Override
     public void showVersionHandlerDialog(String message, boolean negativeButton) {
-        DialogFragment d = new VersionDialogFragment();
-        Bundle b = new Bundle();
-        b.putBoolean(VersionDialogFragment.IS_NEGATIVE_BUTTON, negativeButton);
-        b.putString(VersionDialogFragment.MESSAGE, message);
-        d.setArguments(b);
-        d.show(getFragmentManager(),null);
+        DialogShower.showVersionHandlerDialog(this, message, negativeButton);
     }
 
     @Override

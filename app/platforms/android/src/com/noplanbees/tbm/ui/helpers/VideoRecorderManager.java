@@ -1,5 +1,6 @@
 package com.noplanbees.tbm.ui.helpers;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.ViewGroup;
 import com.noplanbees.tbm.GridManager;
@@ -8,8 +9,8 @@ import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.GridElementFactory;
 import com.noplanbees.tbm.multimedia.VideoRecorder;
-import com.noplanbees.tbm.ui.GridViewFragment;
 import com.noplanbees.tbm.ui.view.PreviewTextureFrame;
+import com.noplanbees.tbm.utilities.DialogShower;
 
 /**
  * Created by skamenkovych@codeminders.com on 2/9/2015.
@@ -19,11 +20,11 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     private static final String TAG = VideoRecorderManager.class.getSimpleName();
 
     private final VideoRecorder videoRecorder;
-    private final GridViewFragment fragment;
+    private final Context context;
 
-    public VideoRecorderManager(GridViewFragment fragment) {
-        this.fragment = fragment;
-        videoRecorder = new VideoRecorder(fragment.getActivity());
+    public VideoRecorderManager(Context context) {
+        this.context = context;
+        videoRecorder = new VideoRecorder(context);
         videoRecorder.addExceptionHandlerDelegate(this);
     }
 
@@ -44,7 +45,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     public void onRecordCancel() {
         // Different from abortAnyRecording because we always toast here.
         videoRecorder.stopRecording();
-        fragment.showToast("Not sent.");
+        DialogShower.showToast(context, "Not sent.");
     }
 
     public void onRecordStop() {
@@ -61,32 +62,32 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     // ----------------------------------------
     @Override
     public void unableToSetPreview() {
-        fragment.showToast("unable to set preview");
+        DialogShower.showToast(context, "unable to set preview");
     }
 
     @Override
     public void unableToPrepareMediaRecorder() {
-        fragment.showToast("Unable to prepare MediaRecorder");
+        DialogShower.showToast(context, "Unable to prepare MediaRecorder");
     }
 
     @Override
     public void recordingAborted() {
-        fragment.showToast("Recording Aborted due to Release before Stop.");
+        DialogShower.showToast(context, "Recording Aborted due to Release before Stop.");
     }
 
     @Override
     public void recordingTooShort() {
-        fragment.showToast("Not sent. Too short.");
+        DialogShower.showToast(context, "Not sent. Too short.");
     }
 
     @Override
     public void illegalStateOnStart() {
-        fragment.showToast("Runtime exception on MediaRecorder.start. Quitting app.");
+        DialogShower.showToast(context, "Runtime exception on MediaRecorder.start. Quitting app.");
     }
 
     @Override
     public void runtimeErrorOnStart() {
-        fragment.showToast("Unable to start recording. Try again.");
+        DialogShower.showToast(context, "Unable to start recording. Try again.");
     }
 
     public void onResume() {
@@ -108,4 +109,5 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         videoRecorder.dispose();
         videoRecorder.restore();
     }
+
 }

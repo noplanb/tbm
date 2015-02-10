@@ -7,4 +7,35 @@
     <string name="enter_code_dlg_msg">We sent a code via text message\nto %s.</string>
     <string name="enter_code_dlg_helper">Enter Code</string>
 
+    <!-- Dialogs -->
+    <string name="dialog_action_quit">Quit</string>
+    <string name="dialog_action_try_again">Try Again</string>
+    <string name="dialog_bad_connection_title">Bad Connection</string>
+    <string name="dialog_bad_connection_message">Trouble downloading. Check your connection</string>
+    <string name="dialog_camera_exception_no_camera_title">No Camera</string>
+    <string name="dialog_camera_exception_no_camera_message">Your device does not seem to have a camera. This app requires a camera.</string>
+    <string name="dialog_camera_exception_no_front_camera_title">No Front Camera</string>
+    <string name="dialog_camera_exception_no_front_camera_message">Your device does not seem to have a front facing camera. This app requires a front facing camera.</string>
+    <string name="dialog_camera_exception_camera_in_use_title">Camera in Use</string>
+    <string name="dialog_camera_exception_camera_in_use_message">Your camera seems to be in use by another application. Please close that app and try again. You may also need to restart your device.</string>
+    <string name="dialog_camera_exception_unable_to_set_params_title">Unable to set params</string>
+    <string name="dialog_camera_exception_unable_to_set_params_message">Something wrong with device camera. Please close that app and try again.</string>
+    <string name="dialog_camera_exception_unable_to_find_appropriate_video_size_title">Unable to find appropriate video size</string>
+    <string name="dialog_camera_exception_unable_to_find_appropriate_video_size_message">Your camera does not seem to support appropriate video size. Please close that app or try again.</string>
+    <string name="dialog_record_title">Hold to Record</string>
+    <string name="dialog_record_message">Press and hold the RECORD button to record.</string>
+    <string name="dialog_no_valid_phones_title">No Mobile Number</string>
+    <string name="dialog_no_valid_phones_message">I could not find a valid mobile number for %1$s.\n\nPlease add a mobile number for %2$s in your device contacts and try again.</string>
+    <string name="dialog_register_phone_error_title">Bad Number</string>
+    <string name="dialog_register_phone_error_message">Enter your country code and mobile number.</string>
+    <string name="dialog_register_last_name_error_title">Last Name</string>
+    <string name="dialog_register_last_name_error_message">Enter your last name.</string>
+    <string name="dialog_register_first_name_title">First Name</string>
+    <string name="dialog_register_first_name_message">Enter your first name.</string>
+    <string name="dialog_register_server_error_title">No Connection</string>
+    <string name="dialog_register_server_error_message">Can\'t reach %1$s.\n\nCheck your connection and try again.</string>
+    <string name="dialog_register_bad_code_title">Bad Code</string>
+    <string name="dialog_register_bad_code_message">The code you entered is wrong. Please try again.</string>
+
+    <string name="toast_downloading">Downloading...</string>
 </resources>

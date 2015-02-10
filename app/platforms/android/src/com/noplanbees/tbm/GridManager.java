@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class GridManager{
-	private static final String STAG = GridManager.class.getSimpleName();
+    private static final String TAG = GridManager.class.getSimpleName();
     private static GridManager gridManager;
 
     public static final int GRID_ELEMENTS_COUNT = 8;
