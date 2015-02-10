@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 
 public class RemoteStorageHandler {
-	private final static String STAG = RemoteStorageHandler.class.getSimpleName();
+	private final static String TAG = RemoteStorageHandler.class.getSimpleName();
 	
 	public RemoteStorageHandler(){
 	}
@@ -73,12 +73,12 @@ public class RemoteStorageHandler {
 	//--------------------
 	// SetOrDeleteRemote
 	//--------------------
-	public void setRemoteKV(String key, LinkedTreeMap<String, String>data){
+	public static void setRemoteKV(String key, LinkedTreeMap<String, String>data){
 		String key2 = null;
 		setRemoteKV(key, key2, data);
 	}
 	
-	public void setRemoteKV(String key1, String key2, LinkedTreeMap<String, String>data){
+	public static void setRemoteKV(String key1, String key2, LinkedTreeMap<String, String>data){
 		Gson g = new Gson();
 		String value = g.toJson(data, data.getClass());
 		
@@ -90,21 +90,23 @@ public class RemoteStorageHandler {
 		new SetRemote("kvstore/set", params, "POST");
 	}
 	
-	private class SetRemote extends Server {
+	private static class SetRemote extends Server {
 		public SetRemote (String uri, LinkedTreeMap<String, String> params, String method){		
-			super(uri, params, method);
-		}
-		@Override
-		public void success(String response) {	
-			Log.i(STAG, "SetOrDeleteRemote: success");
-			LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-			data.put("success", response);
-		}
-		@Override
-		public void error(String errorString) {
-			Log.d(STAG, "SetOrDeleteRemote: ERROR: " + errorString);
-			LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-			data.put("success", errorString);
+			super(uri, params, method, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    Log.i(TAG, "SetOrDeleteRemote: success");
+                    LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
+                    data.put("success", response);
+                }
+
+                @Override
+                public void error(String errorString) {
+                    Log.d(TAG, "SetOrDeleteRemote: ERROR: " + errorString);
+                    LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
+                    data.put("success", errorString);
+                }
+            });
 		}
 	}
 	
@@ -116,7 +118,7 @@ public class RemoteStorageHandler {
 	}
 
 	
-	public void setRemoteIncomingVideoStatus(Friend friend, String videoId, String status){
+	public static void setRemoteIncomingVideoStatus(Friend friend, String videoId, String status){
 		LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
 		data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, videoId);
 		data.put(RemoteStorageHandler.DataKeys.STATUS_KEY, status);
@@ -124,7 +126,7 @@ public class RemoteStorageHandler {
 	}
 	
 	// Convenience getters
-	public abstract class GetRemoteIncomingVideoIds extends GetRemoteKVs{
+	public static abstract class GetRemoteIncomingVideoIds extends GetRemoteKVs{
 		protected Friend friend;
 		
 		public GetRemoteIncomingVideoIds(Friend friend){
@@ -132,10 +134,9 @@ public class RemoteStorageHandler {
 			this.friend = friend;
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public void gotRemoteKVs(ArrayList<LinkedTreeMap<String, String>> kvs) {	
-			Log.i(STAG, "gotRemoteKVs: ");
+			Log.i(TAG, "gotRemoteKVs: ");
 			ArrayList<String>values = new ArrayList<String>();			
 			for (LinkedTreeMap<String, String> kv : kvs){
 				String vidJson = kv.get("value");
@@ -148,41 +149,59 @@ public class RemoteStorageHandler {
 		}
 		public abstract void gotVideoIds(ArrayList<String>videoIds);
 	}
+
+
+    //------------
+    // GetRemoteKV
+    //------------
+    public static void getRemoteOutgoingVideoStatus(final Friend friend){
+        getRemoteKV(outgoingConnectionKey(friend) + "-VideoStatusKVKey", null, new Server.Callbacks() {
+            @Override
+            public void success(String response) {
+                Gson g = new Gson();
+                LinkedTreeMap<String, String> data;
+                data = g.fromJson(response, LinkedTreeMap.class);
+                Log.d(TAG, "getRemoteOutgoingVideoStatus: " + data);
+                if (data != null && data.get("value") != null) {
+                    LinkedTreeMap<String, String> value = g.fromJson(data.get("value"), LinkedTreeMap.class);
+                    Log.d(TAG, "getRemoteOutgoingVideoStatus: " + value);
+                    String videoId = value.get("videoId");
+                    String status = value.get("status");
+                    if(status.equals(StatusEnum.DOWNLOADED))
+                        friend.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.DOWNLOADED);
+                    else if(status.equals(StatusEnum.VIEWED))
+                        friend.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.VIEWED);
+                }
+            }
+
+            @Override
+            public void error(String errorString) {
+                Log.d(TAG, "GetRemoteKV: ERROR: " + errorString);
+                LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
+                data.put("error", errorString);
+            }
+        });
+    }
+
+    public static void getRemoteKV(String key1, String key2, Server.Callbacks callbacks){
+        LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+        params.put("key1", key1);
+        if (key2 != null)
+            params.put("key2", key2);
+        new GetRemoteKV("kvstore/get", params, "GET", callbacks);
+    }
 	
-	
-	//------------
-	// GetRemoteKV
-	//------------
-	public void getRemoteKV(String key1, String key2){
-		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		params.put("key1", key1);
-		if (key2 != null)
-			params.put("key2", key2);
-		new GetRemoteKV("kvstore/get", params, "GET");
+	private static class GetRemoteKV extends Server{
+
+        public GetRemoteKV(String uri, LinkedTreeMap<String, String> params, String method) {
+            super(uri, params, method);
+        }
+        public GetRemoteKV(String uri, LinkedTreeMap<String, String> params, String method, Callbacks callbacks) {
+            super(uri, params, method, callbacks);
+        }
 	}
 	
-	private class GetRemoteKV extends Server{
-	
-		public GetRemoteKV(String uri, LinkedTreeMap<String, String> params, String method) {
-			super(uri, params, method);
-		}
-		@SuppressWarnings("unchecked")
-		@Override
-		public void success(String response) {
-			Gson g = new Gson();
-			LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-			data = g.fromJson(response, data.getClass());
-			Log.i(STAG, "GetRemoteKV: success: " + data.toString());
-		}
-		@Override
-		public void error(String errorString) {
-			Log.d(STAG, "GetRemoteKV: ERROR: " + errorString);
-			LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-			data.put("error", errorString);
-		}
-	}
-	
-	private abstract class GetRemoteKVs{
+	private static abstract class GetRemoteKVs{
 		public GetRemoteKVs(String key1){
 			LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
 			params.put("key1", key1);
@@ -195,24 +214,23 @@ public class RemoteStorageHandler {
 			private String TAG = this.getClass().getSimpleName();
 			
 			public GetRemoteKVsServer(String uri, LinkedTreeMap<String, String> params, String method) {
-				super(uri, params, method);
-			}
-			@SuppressWarnings("unchecked")
-			@Override
-			public void success(String response) {	
-				Gson g = new Gson();
-				ArrayList<LinkedTreeMap<String, String>> kvs = new ArrayList<LinkedTreeMap<String, String>>();
-				kvs = g.fromJson(response, kvs.getClass());
-				gotRemoteKVs(kvs);
-			}
-			@Override
-			public void error(String errorString) {	
-				Dispatch.dispatch("GetRemoteKVs: " + errorString);
+				super(uri, params, method, new Callbacks() {
+                    @Override
+                    public void success(String response) {
+                        Gson g = new Gson();
+                        ArrayList<LinkedTreeMap<String, String>> kvs = new ArrayList<LinkedTreeMap<String, String>>();
+                        kvs = g.fromJson(response, kvs.getClass());
+                        gotRemoteKVs(kvs);
+                    }
+
+                    @Override
+                    public void error(String errorString) {
+                        Dispatch.dispatch("GetRemoteKVs: " + errorString);
+                    }
+                });
 			}
 		}
 	}
-
-
 
     //-----------------
     // DeleteRemoteFile
@@ -228,13 +246,14 @@ public class RemoteStorageHandler {
 
     private static class DeleteRemote extends Server{
         public DeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){
-            super(uri, params, method);
-        }
-        @Override
-        public void success(String response) {
-        }
-        @Override
-        public void error(String errorString) {
+            super(uri, params, method, new Callbacks() {
+                @Override
+                public void success(String response) {
+                }
+                @Override
+                public void error(String errorString) {
+                }
+            });
         }
     }
 }

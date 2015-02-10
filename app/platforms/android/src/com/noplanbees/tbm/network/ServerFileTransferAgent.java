@@ -166,12 +166,6 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
         public DeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){
             super(uri, params, method);
         }
-        @Override
-        public void success(String response) {
-        }
-        @Override
-        public void error(String errorString) {
-        }
     }
 
 	protected void reportStatus(Intent intent, int status){

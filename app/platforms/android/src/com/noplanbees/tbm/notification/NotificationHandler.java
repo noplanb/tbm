@@ -51,15 +51,16 @@ public class NotificationHandler {
 
 	private static class SendNotification extends Server {
 		public SendNotification(String uri, LinkedTreeMap<String, String> params, String method) {
-			super(uri, params, method);
-		}
-		@Override
-		public void success(String response) {
-			Log.i(STAG, "SendNotification: success");
-		}
-		@Override
-		public void error(String errorString) {
-			Log.d(STAG, "SendNotification: ERROR: " + errorString);
+			super(uri, params, method, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    Log.i(STAG, "SendNotification: success");
+                }
+                @Override
+                public void error(String errorString) {
+                    Log.d(STAG, "SendNotification: ERROR: " + errorString);
+                }
+            });
 		}
 	}
 }

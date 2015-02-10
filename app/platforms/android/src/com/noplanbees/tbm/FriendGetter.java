@@ -38,16 +38,16 @@ public class FriendGetter {
 
 	class GetFriends extends Server {
         public GetFriends(String uri, LinkedTreeMap<String, String>params){
-			super(uri, params);
-		}
-
-		@Override
-		public void success(String response) {	
-			gotFriends(context, response);
-		}
-		@Override
-		public void error(String errorString) {
-		    failure();
+			super(uri, params, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    gotFriends(context, response);
+                }
+                @Override
+                public void error(String errorString) {
+                    failure();
+                }
+            });
 		}
 	}
 

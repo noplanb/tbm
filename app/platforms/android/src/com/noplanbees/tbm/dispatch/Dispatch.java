@@ -54,7 +54,24 @@ public class Dispatch {
     private static class DispatchPost extends Server {
 
         public DispatchPost(String uri, LinkedTreeMap<String, String> params) {
-            super(uri, params, "POST");
+            super(uri, params, "POST", new Callbacks() {
+
+                @Override
+                public void success(String response_string) {
+                    Log.i(TAG, "DispatchPost " + response_string);
+                    Gson g = new Gson();
+                    Response r = g.fromJson(response_string, Response.class);
+                    if(r.getStatus().equals("success")){
+
+                    }else{
+
+                    }
+                }
+
+                @Override
+                public void error(String errorString){
+                }
+            });
         }
 
         @Override
@@ -63,21 +80,6 @@ public class Dispatch {
             countDownLatch.countDown();
         }
 
-        @Override
-        public void success(String response_string) {
-            Log.i(TAG, "DispatchPost " + response_string);
-            Gson g = new Gson();
-            Response r = g.fromJson(response_string, Response.class);
-            if(r.getStatus().equals("success")){
-
-            }else{
-
-            }
-        }
-
-        @Override
-        public void error(String errorString){
-        }
     }
 
     private static class Response{

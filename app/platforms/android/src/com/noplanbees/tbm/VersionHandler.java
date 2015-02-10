@@ -84,17 +84,18 @@ public class VersionHandler {
 	
 	private class CheckVersionCompatibility extends Server {
 		public CheckVersionCompatibility(String uri, LinkedTreeMap<String, String> params, String method) {
-			super(uri, params);
+			super(uri, params, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    String result = StringUtils.linkedTreeMapWithJson(response).get(VersionHandler.ParamKeys.RESULT_KEY);
+                    handleCompatibilityResult(result);
+                }
+                @Override
+                public void error(String errorString) {
+                    Dispatch.dispatch("checkCompatibility: ERROR: " + errorString);
+                }
+            });
 		}
-		@Override
-		public void success(String response) {
-			String result = StringUtils.linkedTreeMapWithJson(response).get(VersionHandler.ParamKeys.RESULT_KEY);
-		    handleCompatibilityResult(result);
-		}
-		@Override
-		public void error(String errorString) {	
-			Dispatch.dispatch("checkCompatibility: ERROR: " + errorString);
-		}	
 	}
 	
 	private PackageInfo packageInfo(){

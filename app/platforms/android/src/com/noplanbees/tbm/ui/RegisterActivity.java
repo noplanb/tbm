@@ -250,18 +250,19 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	class Register extends Server {
 
 		public Register(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params);
+			super(uri, params, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    progress.dismiss();
+                    didRegister(response);
+                }
+                @Override
+                public void error(String errorString) {
+                    progress.dismiss();
+                    serverError();
+                }
+            });
 			progress.show();
-		}
-		@Override
-		public void success(String response) {
-			progress.dismiss();
-			didRegister(response);
-		}
-		@Override
-		public void error(String errorString) {
-			progress.dismiss();
-			serverError();
 		}
 	}
 
@@ -306,18 +307,21 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 
 	private class SendCode extends Server{
 		public SendCode(String uri, LinkedTreeMap<String, String> params, String mkey, String auth) {
-			super(uri, params, mkey, auth);
+			super(uri, params, mkey, auth, new Server.Callbacks() {
+                @Override
+                public void success(String response) {
+                    progress.dismiss();
+                    didReceiveCodeResponse(response);
+                }
+
+                @Override
+                public void error(String errorString) {
+                    progress.dismiss();
+                    serverError();
+                }
+
+            });
 			progress.show();
-		}
-		@Override
-		public void success(String response) {	
-			progress.dismiss();
-			didReceiveCodeResponse(response);
-		}
-		@Override
-		public void error(String errorString) {		
-			progress.dismiss();
-			serverError();
 		}
 	}
 
@@ -348,18 +352,19 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	
 	private class DebugGetUser extends Server{
 		public DebugGetUser(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params);
+			super(uri, params, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    progress.dismiss();
+                    didReceiveCodeResponse(response);
+                }
+                @Override
+                public void error(String errorString) {
+                    progress.dismiss();
+                    serverError();
+                }
+            });
 			progress.show();
-		}
-		@Override
-		public void success(String response) {	
-			progress.dismiss();
-			didReceiveCodeResponse(response);
-		}
-		@Override
-		public void error(String errorString) {	
-			progress.dismiss();
-			serverError();
 		}
 	}
 	

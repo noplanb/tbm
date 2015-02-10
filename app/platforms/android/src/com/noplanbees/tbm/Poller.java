@@ -28,12 +28,15 @@ public class Poller {
 
         public void poll(Friend friend){
             Log.i(TAG, "poll: " + friend.get(Friend.Attributes.FIRST_NAME));
-            new GetRemoteVideoIds(new RemoteStorageHandler(), friend);
+            new GetRemoteVideoIds(friend);
+
+            if(friend.getOutgoingVideoStatus()!=Friend.OutgoingVideoStatus.VIEWED)
+                RemoteStorageHandler.getRemoteOutgoingVideoStatus(friend);
         }
 
         private class GetRemoteVideoIds extends RemoteStorageHandler.GetRemoteIncomingVideoIds {
-            public GetRemoteVideoIds(RemoteStorageHandler remoteStoragehander, Friend friend) {
-                remoteStoragehander.super(friend);
+            public GetRemoteVideoIds(Friend friend) {
+                super(friend);
             }
             @Override
             public void gotVideoIds(ArrayList<String> videoIds) {

@@ -170,15 +170,16 @@ public class GcmHandler {
 	
 	class GCMPostPushToken extends Server {
 		public GCMPostPushToken(String uri, LinkedTreeMap<String, String> params, String method) {
-			super(uri, params, method);
-		}
-		@Override
-		public void success(String response) {	
-			Log.i(TAG, "postPushToken: got response = " + response);
-		}
-		@Override
-		public void error(String errorString) {
-			Dispatch.dispatch("ERROR: postPushToken: " + errorString);
+			super(uri, params, method, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    Log.i(TAG, "postPushToken: got response = " + response);
+                }
+                @Override
+                public void error(String errorString) {
+                    Dispatch.dispatch("ERROR: postPushToken: " + errorString);
+                }
+            });
 		}
 	}
 	

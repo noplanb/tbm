@@ -32,28 +32,35 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class Server {
+
+    public static interface Callbacks{
+
+        void success(String response);
+        void error(String errorString);
+    }
+    private String method;
+
     private static String STAG = Server.class.getSimpleName();
     private String pass;
     private String login;
     private String TAG = this.getClass().getSimpleName();
     private String uri;
-    private String method;
     private LinkedTreeMap<String, String> sParams;
-
+    protected Callbacks callbacks;
     //------------------------------------------------------------------
     // Application level success and failure handling (not http failure)
     //------------------------------------------------------------------
     public static class ParamKeys{
+
         public static final String RESPONSE_STATUS = "status";
         public static final String ERROR_TITLE = "title";
         public static final String ERROR_MSG = "msg";
     }
-
     public static class StatusValues{
+
         public static final String STATUS_SUCCESS = "success";
         public static final String STATUS_FAILURE = "failure";
     }
-
     public static boolean isSuccess(String status){
         Log.i(STAG, "is isSuccess:" + status);
         // If no status parameter is given then assume success.
@@ -69,17 +76,20 @@ public abstract class Server {
         return !isSuccess(status);
     }
 
-
-    //--------------
-    // Instantiation
-    //--------------
-    public Server(String uri, LinkedTreeMap<String, String> params,
-                  String login, String pass){
+    public Server(String uri, Callbacks callbacks){
         this.uri = uri;
+        sParams = null;
         method = "GET";
+        this.callbacks = callbacks;
+        AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
+    }
+
+
+    public Server(String uri, LinkedTreeMap<String, String> params, Callbacks callbacks){
+        this.uri = uri;
         sParams = params;
-        this.login = login;
-        this.pass = pass;
+        method = "GET";
+        this.callbacks = callbacks;
         AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
     }
 
@@ -90,26 +100,24 @@ public abstract class Server {
         AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
     }
 
-    public Server(String uri, LinkedTreeMap<String, String> params){
+    public Server(String uri, LinkedTreeMap<String, String> params, String method, Callbacks callbacks) {
         this.uri = uri;
+        this.method = method;
         sParams = params;
-        method = "GET";
+        this.callbacks = callbacks;
         AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
     }
 
-    public Server(String uri){
+    public Server(String uri, LinkedTreeMap<String, String> params,
+                  String login, String pass, Callbacks callbacks){
         this.uri = uri;
-        sParams = null;
         method = "GET";
+        sParams = params;
+        this.login = login;
+        this.pass = pass;
+        this.callbacks = callbacks;
         AsyncTaskManager.executeAsyncTask(new BgHttpReq(), new Void[]{});
     }
-
-    //-----------------
-    // Abstract methods
-    //-----------------
-    public abstract void success(String response);
-    public abstract void error(String errorString);
-
 
     //-----
     // Http
@@ -218,11 +226,13 @@ public abstract class Server {
         @Override
         protected void onPostExecute(HashMap<String, String> result) {
             if ( result.get("success") != null){
-                success(result.get("success"));
+                if(callbacks!=null)
+                    callbacks.success(result.get("success"));
             } else {
                 String error = result.get("error");
                 Log.d(TAG, error);
-                error(error);
+                if(callbacks!=null)
+                    callbacks.error(error);
             }
         }
 

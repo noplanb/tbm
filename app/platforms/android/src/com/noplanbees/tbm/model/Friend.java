@@ -605,6 +605,7 @@ public class Friend extends ActiveModel{
     private void notifyServerVideoViewed(String videoId) {
         Log.i(TAG, "notifyServerVideoViewed");
         // Update kv store
+        RemoteStorageHandler.setRemoteIncomingVideoStatus(this, videoId, RemoteStorageHandler.StatusEnum.VIEWED);
         // Send notification
         NotificationHandler.sendForVideoStatusUpdate(this, videoId, NotificationHandler.StatusEnum.VIEWED);
     }

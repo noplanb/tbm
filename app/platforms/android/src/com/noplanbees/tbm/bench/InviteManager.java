@@ -83,28 +83,29 @@ public class InviteManager{
 		String url = builder.build().toString();
 		new CheckHasAppRequest(url);
 	}
+    private ProgressDialog pd;
 
 	private class CheckHasAppRequest extends Server {
 
-        private final ProgressDialog pd;
 
         public CheckHasAppRequest(String uri) {
-			super(uri);
+			super(uri, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    gotHasApp(response);
+                    if(pd!=null)
+                        pd.dismiss();
+                }
+                @Override
+                public void error(String errorString) {
+                    Dispatch.dispatch("Error: " + errorString);
+                    serverError();
+                    if(pd!=null)
+                        pd.dismiss();
+                }            });
             pd = ProgressDialog.show(context, "Checking", null);
 		}
-        @Override
-		public void success(String response) {
- 			gotHasApp(response);
-            if(pd!=null)
-                pd.dismiss();
-		}
-        @Override
-		public void error(String errorString) {
-			Dispatch.dispatch("Error: " + errorString);
-			serverError();
-            if(pd!=null)
-                pd.dismiss();
-		}
+
     }
     @SuppressWarnings("unchecked")
 	public void gotHasApp(String response) {
@@ -139,25 +140,24 @@ public class InviteManager{
 
 	private class GetFriendRequest extends Server{
 
-        private final ProgressDialog pd;
-
         public GetFriendRequest(String uri) {
-			super(uri);
+			super(uri, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    Log.i(TAG, "Success: " + response);
+                    gotFriend(response);
+                    if(pd!=null)
+                        pd.dismiss();
+                }
+                @Override
+                public void error(String errorString) {
+                    Dispatch.dispatch("Error: " + errorString);
+                    serverError();
+                    if(pd!=null)
+                        pd.dismiss();
+                }
+            });
             pd = ProgressDialog.show(context, "Checking", null);
-		}
-        @Override
-		public void success(String response) {
-			Log.i(TAG, "Success: " + response);
-			gotFriend(response);
-            if(pd!=null)
-                pd.dismiss();
-		}
-        @Override
-		public void error(String errorString) {
-			Dispatch.dispatch("Error: " + errorString);
-			serverError();
-            if(pd!=null)
-                pd.dismiss();
 		}
     }
 	@SuppressWarnings("unchecked")

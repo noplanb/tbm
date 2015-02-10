@@ -37,15 +37,16 @@ public class S3CredentialsGetter {
 
 	class GetCredentials extends Server{
 		public GetCredentials(String uri, LinkedTreeMap<String, String> params){
-			super(uri, params);
-		}
-		@Override
-		public void success(String response) {
-			gotCredentials(context, response);
-		}
-		@Override
-		public void error(String errorString) {
-		    failure();
+			super(uri, params, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    gotCredentials(context, response);
+                }
+                @Override
+                public void error(String errorString) {
+                    failure();
+                }
+            });
 		}
 	}
 
