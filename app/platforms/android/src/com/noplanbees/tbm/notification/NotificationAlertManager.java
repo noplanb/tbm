@@ -35,7 +35,7 @@ public class NotificationAlertManager {
 	public static final String SMALL_ICON_KEY = "smallIconKey";
 	
 	private static final String subTitle = Config.appName;
-	private static int smallIcon = R.drawable.ic_stat_gcm;
+	private static int smallIcon = R.drawable.ic_launcher;
 
 	private static Bitmap largeImage(Friend friend, String videoId){
 		return friend.sqThumbBitmap(videoId);
