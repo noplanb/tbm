@@ -600,7 +600,7 @@ public class Friend extends ActiveModel{
 
 
     //-------------------------------
-    // Server notification of changes
+    // HttpRequest notification of changes
     //-------------------------------
     private void notifyServerVideoViewed(String videoId) {
         Log.i(TAG, "notifyServerVideoViewed");

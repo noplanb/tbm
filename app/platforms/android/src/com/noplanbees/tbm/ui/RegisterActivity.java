@@ -32,7 +32,7 @@ import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
-import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.network.HttpRequest;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.ui.dialogs.EnterCodeDialogFragment;
 import com.noplanbees.tbm.utilities.Convenience;
@@ -246,7 +246,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		return r;
 	}
 
-	class Register extends Server {
+	class Register extends HttpRequest {
 
 		public Register(String uri, LinkedTreeMap<String, String> params) {
 			super(uri, params, new Callbacks() {
@@ -275,13 +275,13 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		params = g.fromJson(r, params.getClass());
 		Log.i(TAG, "didRegister: " + params.toString());
 
-		if ( Server.isSuccess(params.get(Server.ParamKeys.RESPONSE_STATUS)) ){
+		if ( HttpRequest.isSuccess(params.get(HttpRequest.ParamKeys.RESPONSE_STATUS)) ){
 			auth = params.get(UserFactory.ServerParamKeys.AUTH);
 			mkey = params.get(UserFactory.ServerParamKeys.MKEY);
 			showVerificationDialog();
 		} else {
-			String title = params.get(Server.ParamKeys.ERROR_TITLE);
-			String msg = params.get(Server.ParamKeys.ERROR_MSG);
+			String title = params.get(HttpRequest.ParamKeys.ERROR_TITLE);
+			String msg = params.get(HttpRequest.ParamKeys.ERROR_MSG);
 			showErrorDialog(title, msg);
 		}
 	}
@@ -304,9 +304,9 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	}
 
 
-	private class SendCode extends Server{
+	private class SendCode extends HttpRequest{
 		public SendCode(String uri, LinkedTreeMap<String, String> params, String mkey, String auth) {
-			super(uri, params, mkey, auth, new Server.Callbacks() {
+			super(uri, params, mkey, auth, new HttpRequest.Callbacks() {
                 @Override
                 public void success(String response) {
                     progress.dismiss();
@@ -330,7 +330,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		Gson g = new Gson();
 		LinkedTreeMap<String,String> params = new LinkedTreeMap<String, String>();
 		params = g.fromJson(r, params.getClass());
-		if ( Server.isSuccess(params.get(Server.ParamKeys.RESPONSE_STATUS)) ){
+		if ( HttpRequest.isSuccess(params.get(HttpRequest.ParamKeys.RESPONSE_STATUS)) ){
 			gotUser(params);
 		} else {
 			showErrorDialog(getString(R.string.dialog_register_bad_code_title), getString(R.string.dialog_register_bad_code_message));
@@ -349,7 +349,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		new DebugGetUser(ub.build().toString(), params);
 	}
 	
-	private class DebugGetUser extends Server{
+	private class DebugGetUser extends HttpRequest{
 		public DebugGetUser(String uri, LinkedTreeMap<String, String> params) {
 			super(uri, params, new Callbacks() {
                 @Override

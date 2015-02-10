@@ -8,7 +8,7 @@ import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
-import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.network.HttpRequest;
 
 import java.util.ArrayList;
 
@@ -90,7 +90,7 @@ public class RemoteStorageHandler {
 		new SetRemote("kvstore/set", params, "POST");
 	}
 	
-	private static class SetRemote extends Server {
+	private static class SetRemote extends HttpRequest {
 		public SetRemote (String uri, LinkedTreeMap<String, String> params, String method){		
 			super(uri, params, method, new Callbacks() {
                 @Override
@@ -155,7 +155,7 @@ public class RemoteStorageHandler {
     // GetRemoteKV
     //------------
     public static void getRemoteOutgoingVideoStatus(final Friend friend){
-        getRemoteKV(outgoingConnectionKey(friend) + "-VideoStatusKVKey", null, new Server.Callbacks() {
+        getRemoteKV(outgoingConnectionKey(friend) + "-VideoStatusKVKey", null, new HttpRequest.Callbacks() {
             @Override
             public void success(String response) {
                 Gson g = new Gson();
@@ -183,7 +183,7 @@ public class RemoteStorageHandler {
         });
     }
 
-    public static void getRemoteKV(String key1, String key2, Server.Callbacks callbacks){
+    public static void getRemoteKV(String key1, String key2, HttpRequest.Callbacks callbacks){
         LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
         params.put("key1", key1);
         if (key2 != null)
@@ -191,7 +191,7 @@ public class RemoteStorageHandler {
         new GetRemoteKV("kvstore/get", params, "GET", callbacks);
     }
 	
-	private static class GetRemoteKV extends Server{
+	private static class GetRemoteKV extends HttpRequest{
 
         public GetRemoteKV(String uri, LinkedTreeMap<String, String> params, String method) {
             super(uri, params, method);
@@ -210,7 +210,7 @@ public class RemoteStorageHandler {
 		
 		public abstract void gotRemoteKVs(ArrayList<LinkedTreeMap<String, String>> kvs);
 		
-		private class GetRemoteKVsServer extends Server{
+		private class GetRemoteKVsServer extends HttpRequest{
 			private String TAG = this.getClass().getSimpleName();
 			
 			public GetRemoteKVsServer(String uri, LinkedTreeMap<String, String> params, String method) {
@@ -244,7 +244,7 @@ public class RemoteStorageHandler {
         new DeleteRemote("kvstore/delete", params, "GET");
     }
 
-    private static class DeleteRemote extends Server{
+    private static class DeleteRemote extends HttpRequest{
         public DeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){
             super(uri, params, method, new Callbacks() {
                 @Override

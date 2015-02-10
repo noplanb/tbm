@@ -6,7 +6,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
-import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.network.HttpRequest;
 
 public class NotificationHandler {
 	public static String STAG = NotificationHandler.class.getSimpleName();
@@ -49,7 +49,7 @@ public class NotificationHandler {
 		new SendNotification("notification/send_video_status_update", params, "POST");
 	}
 
-	private static class SendNotification extends Server {
+	private static class SendNotification extends HttpRequest {
 		public SendNotification(String uri, LinkedTreeMap<String, String> params, String method) {
 			super(uri, params, method, new Callbacks() {
                 @Override

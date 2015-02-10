@@ -14,7 +14,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.gson.internal.LinkedTreeMap;
-import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.network.HttpRequest;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
@@ -168,7 +168,7 @@ public class GcmHandler {
 	    new GCMPostPushToken("notification/set_push_token", params, "POST");
 	}
 	
-	class GCMPostPushToken extends Server {
+	class GCMPostPushToken extends HttpRequest {
 		public GCMPostPushToken(String uri, LinkedTreeMap<String, String> params, String method) {
 			super(uri, params, method, new Callbacks() {
                 @Override

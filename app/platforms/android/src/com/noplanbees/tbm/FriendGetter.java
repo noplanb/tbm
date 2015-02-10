@@ -11,7 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
-import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.network.HttpRequest;
 
 public class FriendGetter {
 	
@@ -26,7 +26,6 @@ public class FriendGetter {
 		this.destroyAll = destroyAll;
 	}
 	
-	// Subclass should override this if it wants to check on success or failure.
 	protected void success(){};
     protected void failure(){};
 
@@ -36,7 +35,7 @@ public class FriendGetter {
 		new GetFriends(uri, params);
 	}
 
-	class GetFriends extends Server {
+	class GetFriends extends HttpRequest {
         public GetFriends(String uri, LinkedTreeMap<String, String>params){
 			super(uri, params, new Callbacks() {
                 @Override

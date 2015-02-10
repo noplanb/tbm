@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.network.HttpRequest;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
 
@@ -51,7 +51,7 @@ public class Dispatch {
     }
 
 
-    private static class DispatchPost extends Server {
+    private static class DispatchPost extends HttpRequest {
 
         public DispatchPost(String uri, LinkedTreeMap<String, String> params) {
             super(uri, params, "POST", new Callbacks() {

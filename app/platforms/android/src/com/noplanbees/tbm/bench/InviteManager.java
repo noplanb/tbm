@@ -14,7 +14,7 @@ import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
-import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.network.HttpRequest;
 import com.noplanbees.tbm.ui.MainActivity;
 
 public class InviteManager{
@@ -80,7 +80,7 @@ public class InviteManager{
 	}
     private ProgressDialog pd;
 
-	private class CheckHasAppRequest extends Server {
+	private class CheckHasAppRequest extends HttpRequest {
 
 
         public CheckHasAppRequest(String uri) {
@@ -133,7 +133,7 @@ public class InviteManager{
 		new GetFriendRequest(url);
 	}
 
-	private class GetFriendRequest extends Server{
+	private class GetFriendRequest extends HttpRequest{
 
         public GetFriendRequest(String uri) {
 			super(uri, new Callbacks() {
@@ -240,9 +240,9 @@ public class InviteManager{
 	}
 
     public boolean checkIsFailureAndShowDialog(LinkedTreeMap<String, String>params){
-        String status = params.get(Server.ParamKeys.RESPONSE_STATUS);
-        if (Server.isFailure(status)){
-            callbacks.onShowInfoDialog(params.get(Server.ParamKeys.ERROR_TITLE), params.get(Server.ParamKeys.ERROR_MSG));
+        String status = params.get(HttpRequest.ParamKeys.RESPONSE_STATUS);
+        if (HttpRequest.isFailure(status)){
+            callbacks.onShowInfoDialog(params.get(HttpRequest.ParamKeys.ERROR_TITLE), params.get(HttpRequest.ParamKeys.ERROR_MSG));
             return true;
         } else {
             return false;

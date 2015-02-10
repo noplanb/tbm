@@ -162,7 +162,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		new DeleteRemote("videos/delete", params, "GET");
     }
 
-    private static class DeleteRemote extends Server{
+    private static class DeleteRemote extends HttpRequest{
         public DeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){
             super(uri, params, method);
         }

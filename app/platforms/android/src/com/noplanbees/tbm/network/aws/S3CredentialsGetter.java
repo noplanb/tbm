@@ -7,7 +7,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.dispatch.Dispatch;
-import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.network.HttpRequest;
 
 public class S3CredentialsGetter {
 
@@ -35,7 +35,7 @@ public class S3CredentialsGetter {
 		new GetCredentials(uri, params);
 	}
 
-	class GetCredentials extends Server{
+	class GetCredentials extends HttpRequest{
 		public GetCredentials(String uri, LinkedTreeMap<String, String> params){
 			super(uri, params, new Callbacks() {
                 @Override

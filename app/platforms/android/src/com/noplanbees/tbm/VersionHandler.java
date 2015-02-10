@@ -10,7 +10,7 @@ import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.ActiveModelsHandler;
-import com.noplanbees.tbm.network.Server;
+import com.noplanbees.tbm.network.HttpRequest;
 import com.noplanbees.tbm.utilities.StringUtils;
 
 
@@ -82,7 +82,7 @@ public class VersionHandler {
 		new CheckVersionCompatibility("version/check_compatibility", params, "GET");
 	}
 	
-	private class CheckVersionCompatibility extends Server {
+	private class CheckVersionCompatibility extends HttpRequest {
 		public CheckVersionCompatibility(String uri, LinkedTreeMap<String, String> params, String method) {
 			super(uri, params, new Callbacks() {
                 @Override
