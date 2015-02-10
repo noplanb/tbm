@@ -119,6 +119,10 @@ public class Friend extends ActiveModel{
     public void setHasApp(){
         set(Attributes.HAS_APP, "true");
     }
+    
+    public void setHasApp(boolean value){
+        set(Attributes.HAS_APP, value ? "true" : "false");
+    }
 
     //------------
     // PhoneNumber

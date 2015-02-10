@@ -119,9 +119,7 @@ public class IntentHandler {
 		// new friends and poll them all.
 		if (friend == null) {
 			Log.i(TAG, "Got Video from a user who is not currently a friend. Getting friends.");
-			// TODO: make sure this also polls. So this should be a call getAndPollAllFriends().
-			// TODO: make sure friendgetter updates has app even if friend exists on device.
-			new FriendGetter(context, false, null);
+			new SyncManager(context).getAndPollAllFriends();
 			return;
 		}
 		

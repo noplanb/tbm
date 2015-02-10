@@ -23,8 +23,8 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.noplanbees.tbm.DataHolderService;
-import com.noplanbees.tbm.FriendGetter;
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.SyncManager;
 import com.noplanbees.tbm.VersionHandler;
 import com.noplanbees.tbm.bench.BenchController;
 import com.noplanbees.tbm.bench.BenchObject;
@@ -147,7 +147,7 @@ BenchController.Callbacks, ActionInfoDialogFragment.Callbacks, VersionHandler.Ca
 
 		benchController.onDataLoaded();
 		new S3CredentialsGetter(this);
-        new FriendGetter(MainActivity.this, false, null);
+		new SyncManager(this).getAndPollAllFriends();
 	}
 
 	@Override

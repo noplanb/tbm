@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
 
 import java.util.ArrayList;
@@ -22,6 +24,9 @@ public class FriendFactory extends ActiveModelFactory{
         public static final String CKEY = "ckey";
         public static final String MOBILE_NUMBER = "mobile_number";
         public static final String HAS_APP = "has_app";
+        
+        public static final String HAS_APP_TRUE_VALUE = "true";
+        public static final String HAS_APP_FALSE_VALUE = "false";
     }
 
     private static FriendFactory instance = null;
@@ -39,8 +44,34 @@ public class FriendFactory extends ActiveModelFactory{
         instances.add(i);
         return i;
     }
+    
+    /**
+     * @param context
+     * @param params (server params)
+     * @return Returns a friend only one was found and changed. Otherwise returns null.
+     */
+    public Friend updateWithServerParams(Context context, LinkedTreeMap<String, String> params){
+        boolean servHasApp = servHasApp(params);
+        Friend f = getFriendFromMkey(params.get(ServerParamKeys.MKEY));
+        if (f != null){
+            if (f.hasApp() ^ servHasApp){
+                f.setHasApp(servHasApp);
+                GridManager.getInstance().rankingActionOccurred(f);
+                notifyStatusChanged(f);
+                return f;
+            }
+        }
+        return null;
+    }
 
-    public Friend createFriendFromServerParams(Context context, LinkedTreeMap<String, String> params){
+    /**
+     * 
+     * @param context
+     * @param params (server params)
+     * @return Returns a friend only if a new one was created. It only creates a new friend if  
+     * none was found with the same id as in params.
+     */
+    public Friend createWithServerParams(Context context, LinkedTreeMap<String, String> params){
         Log.i(TAG, "createFriendFromServerParams: " + params);
         if (existsWithId(params.get(ServerParamKeys.ID).toString())){
             Log.i(TAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
@@ -52,9 +83,15 @@ public class FriendFactory extends ActiveModelFactory{
         f.set(Friend.Attributes.ID, params.get(ServerParamKeys.ID).toString());
         f.set(Friend.Attributes.MKEY, params.get(ServerParamKeys.MKEY));
         f.set(Friend.Attributes.MOBILE_NUMBER, params.get(ServerParamKeys.MOBILE_NUMBER));
-        f.set(Friend.Attributes.HAS_APP, params.get(ServerParamKeys.HAS_APP));
         f.set(Friend.Attributes.CKEY, params.get(ServerParamKeys.CKEY));
+        f.setHasApp(servHasApp(params));
+        GridManager.getInstance().rankingActionOccurred(f);
+        notifyStatusChanged(f);
         return f;
+    }
+    
+    public boolean servHasApp(LinkedTreeMap<String, String> servParams){
+        return servParams.get(ServerParamKeys.HAS_APP).equalsIgnoreCase(ServerParamKeys.HAS_APP_TRUE_VALUE);
     }
 
     public static Friend getFriendFromMkey(String mkey){

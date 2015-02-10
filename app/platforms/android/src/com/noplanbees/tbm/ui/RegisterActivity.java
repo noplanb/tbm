@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,17 +24,16 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.noplanbees.tbm.Config;
-import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.ContactsManager;
 import com.noplanbees.tbm.DataHolderService;
-import com.noplanbees.tbm.FriendGetter;
 import com.noplanbees.tbm.DataHolderService.LocalBinder;
-import com.noplanbees.tbm.FriendGetter.FriendGetterCallback;
+import com.noplanbees.tbm.FriendGetter;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.network.Server;
 import com.noplanbees.tbm.model.ActiveModelsHandler;
+import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
+import com.noplanbees.tbm.network.Server;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.ui.dialogs.EnterCodeDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
@@ -376,12 +374,26 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		user.set(User.Attributes.MKEY, params.get(UserFactory.ServerParamKeys.MKEY));
 		user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
 		user.set(User.Attributes.REGISTERED, "true");
-		new FriendGetter(this, true, new FriendGetterCallback(){
-			@Override
-			public void gotFriends() {
-				getAWSCredentials();
-			}
-		});
+		new RegFriendGetter(this, true).getFriends();
+	}
+	
+	private class RegFriendGetter extends FriendGetter{
+        public RegFriendGetter(Context c, boolean destroyAll) {
+            super(c, destroyAll);
+            progress.show();
+        }
+        
+        @Override
+        protected void success() {
+            progress.dismiss();
+            getAWSCredentials();
+        }
+
+        @Override
+        protected void failure() {
+            progress.dismiss();
+            serverError();
+        }
 	}
 
 	//-------------------

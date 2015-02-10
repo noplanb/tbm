@@ -169,7 +169,7 @@ public class InviteManager{
 		if (checkIsFailureAndShowDialog(params))
 			return;
 
-		friend = FriendFactory.getFactoryInstance().createFriendFromServerParams(context, params);
+		friend = FriendFactory.getFactoryInstance().createWithServerParams(context, params);
 		connectedDialog();
 	}
 
