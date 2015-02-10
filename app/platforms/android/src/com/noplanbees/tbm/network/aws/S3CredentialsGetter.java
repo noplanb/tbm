@@ -54,7 +54,7 @@ public class S3CredentialsGetter {
 	public void gotCredentials(Context context, String r) {
 		Gson g = new Gson();
 		Response response = g.fromJson(r, Response.class);
-		Log.i(TAG, "gotRegResponse: " + response.toString());
+		Log.i(TAG, "gotCredentials: " + response.toString());
 
         if(!response.getStatus().equalsIgnoreCase("success")){
             Dispatch.dispatch("CredentialsGetter: got failure from server in gotCredentials()");

@@ -1,5 +1,7 @@
 package com.noplanbees.tbm.ui;
 
+import java.util.ArrayList;
+
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -18,10 +20,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.VideoView;
+
 import com.noplanbees.tbm.GridElementController;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.SyncManager;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.GridElement;
@@ -39,8 +43,6 @@ import com.noplanbees.tbm.ui.view.NineViewGroup;
 import com.noplanbees.tbm.ui.view.NineViewGroup.LayoutCompleteListener;
 import com.noplanbees.tbm.utilities.DialogShower;
 import com.noplanbees.tbm.utilities.Logger;
-
-import java.util.ArrayList;
 
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
@@ -107,17 +109,18 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     @Override
     public void onResume() {
+        super.onResume();
         Logger.i(TAG, "onResume");
         videoRecorderManager.onResume();
         videoPlayer.registerStatusCallbacks(this);
         sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
-        super.onResume();
     }
 
     @Override
     public void onStart() {
         super.onStart();
         restartFileTransfersPendingRetry();
+        new SyncManager(getActivity()).getAndPollAllFriends();
     }
 
     @Override

@@ -72,6 +72,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     @Override
     public void onVideoStatusChanged(Friend friend) {
         if (isForMe(friend.getId())) {
+            // Serhii - I added updateContent here to cover the following case:
+            // if we getFriends due to app coming to the foreground. And hasApp for the friend
+            // this event is signalled by onVideoStatusChanged as well and we want this to be reflected in the ui.
+            updateContent(false);
             updateVideoStatus();
         }
     }

@@ -142,7 +142,6 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 
 		benchController.onDataLoaded();
 		new S3CredentialsGetter(this);
-		new SyncManager(this).getAndPollAllFriends();
 	}
 
 	@Override

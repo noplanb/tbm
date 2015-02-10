@@ -26,36 +26,31 @@ public class FriendGetter {
 		this.destroyAll = destroyAll;
 	}
 	
+	// I do not use an interface here because I want to be able to call failure from the 
+	// instantiation method of httpRequest.
 	protected void success(){};
     protected void failure(){};
 
 	public void getFriends(){
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
 		String uri = new Uri.Builder().appendPath("reg").appendPath("get_friends").build().toString();
-		new GetFriends(uri, params);
-	}
-
-	class GetFriends extends HttpRequest {
-        public GetFriends(String uri, LinkedTreeMap<String, String>params){
-			super(uri, params, new Callbacks() {
-                @Override
-                public void success(String response) {
-                    gotFriends(context, response);
-                }
-                @Override
-                public void error(String errorString) {
-                    failure();
-                }
-            });
-		}
+		new HttpRequest(uri, params, new HttpRequest.Callbacks() {
+            @Override
+            public void success(String response) {
+                gotFriends(context, response);
+            }
+            @Override
+            public void error(String errorString) {
+                failure();   
+            }
+        });
 	}
 
 	@SuppressWarnings("unchecked")
 	private void gotFriends(Context context, String r) {
-        Log.i(TAG, "gotRegResponse: " + r);
+        Log.i(TAG, "gotFriends: " + r);
 		Gson g = new Gson();
 		friendList = g.fromJson(r, friendList.getClass());
-		Log.i(TAG, "gotRegResponse: " + friendList.toString());
 		
 		if (destroyAll)
 			FriendFactory.getFactoryInstance().destroyAll(context);

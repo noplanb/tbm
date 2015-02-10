@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-public abstract class HttpRequest {
+public class HttpRequest {
 
     public static interface Callbacks{
         void success(String response);
@@ -183,12 +183,7 @@ public abstract class HttpRequest {
             }
             request = new HttpGet(sUrl);
         }
-        Log.i(TAG, "httpReq " + method + " url=" + sUrl +"  params=" + sParams);
-
         HttpResponse response = http.execute(request);
-
-        Log.d(TAG, "response: " + response.getStatusLine().getStatusCode());
-
 
         if (response.getStatusLine().getStatusCode() != 200) {
             Log.e(TAG, sUrl + "\n" + response.getStatusLine().getStatusCode() + " "

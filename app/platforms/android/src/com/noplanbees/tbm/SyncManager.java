@@ -1,6 +1,7 @@
 package com.noplanbees.tbm;
 
 import android.content.Context;
+import android.util.Log;
 
 public class SyncManager {
     private static String TAG = SyncManager.class.getSimpleName();
@@ -11,6 +12,7 @@ public class SyncManager {
     }
     
     public void getAndPollAllFriends(){
+        Log.d(TAG, "getAndPollAllFriends");
         new SyncFriendGetter(context, false).getFriends();
     }
     
