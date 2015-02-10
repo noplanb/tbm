@@ -1,26 +1,21 @@
 package com.noplanbees.tbm.bench;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Config;
+import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.dispatch.Dispatch;
-import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.network.Server;
 import com.noplanbees.tbm.ui.MainActivity;
-import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
-import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 
 public class InviteManager{
 	private static InviteManager inviteManager;

@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -36,8 +35,8 @@ import com.noplanbees.tbm.model.UserFactory;
 import com.noplanbees.tbm.network.Server;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.ui.dialogs.EnterCodeDialogFragment;
-import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
 import com.noplanbees.tbm.utilities.Convenience;
+import com.noplanbees.tbm.utilities.DialogShower;
 
 public class RegisterActivity extends Activity implements EnterCodeDialogFragment.Callbacks{
 	private final String TAG = this.getClass().getSimpleName();
@@ -330,7 +329,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		if ( Server.isSuccess(params.get(Server.ParamKeys.RESPONSE_STATUS)) ){
 			gotUser(params);
 		} else {
-			showErrorDialog("Bad Code", "The code you enterred is wrong. Please try again.");
+			showErrorDialog(getString(R.string.dialog_register_bad_code_title), getString(R.string.dialog_register_bad_code_message));
 		}
 	}
 
@@ -458,29 +457,25 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	}
 
 	private void phoneError() {
-		showErrorDialog("Bad Number", "Enter your country code and mobile number.");
+		showErrorDialog(getString(R.string.dialog_register_phone_error_title), getString(R.string.dialog_register_phone_error_message));
 	}
 
 	private void lastNameError() {
-		showErrorDialog("Last Name", "Enter your last name.");
+        showErrorDialog(getString(R.string.dialog_register_last_name_error_title), getString(R.string.dialog_register_last_name_error_message));
 	}
 
 	private void firstNameError() {
-		showErrorDialog("First Name", "Enter your first name.");
+        showErrorDialog(getString(R.string.dialog_register_first_name_title), getString(R.string.dialog_register_first_name_message));
 	}
 
 	private void serverError(){
-		showErrorDialog("No Connection", "Can't reach " + Config.appName + ".\n\nCheck your connection and try again.");
+        showErrorDialog(getString(R.string.dialog_register_server_error_title),
+                getString(R.string.dialog_register_server_error_message, Config.appName));
 	}
 
-	private void showErrorDialog(String title, String message){
-		InfoDialogFragment info = new InfoDialogFragment();
-		Bundle args = new Bundle();
-		args.putString(InfoDialogFragment.TITLE, title);
-		args.putString(InfoDialogFragment.MSG, message);
-		info.setArguments(args );
-		info.show(getFragmentManager(), null);
-	}
+    private void showErrorDialog(String title, String message) {
+        DialogShower.showInfoDialog(this, title, message);
+    }
 
 	//-------------
 	// Add shortcut

@@ -13,16 +13,16 @@ public class ActionInfoDialogFragment extends AbstractDialogFragment {
 	public static final String ID = "dialog_id";
 	public static final String NEED_CANCEL = "need_cancel";
 	
-	public interface Callbacks{
+	public interface ActionInfoDialogListener {
 		void onActionClicked(int id);
 	}
 	
-	private Callbacks callbacks;
+	private ActionInfoDialogListener actionInfoDialogListener;
 	
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		callbacks = (Callbacks) activity;
+		actionInfoDialogListener = (ActionInfoDialogListener) activity;
 	}
 	
 	@Override
@@ -39,7 +39,7 @@ public class ActionInfoDialogFragment extends AbstractDialogFragment {
 		setPositiveButton(action, new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				callbacks.onActionClicked(id);
+				actionInfoDialogListener.onActionClicked(id);
 				dismiss();
 			}
 		});
