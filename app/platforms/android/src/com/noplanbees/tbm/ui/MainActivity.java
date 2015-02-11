@@ -29,13 +29,12 @@ import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
-import com.noplanbees.tbm.ui.dialogs.SelectPhoneNumberDialog;
 import com.noplanbees.tbm.utilities.DialogShower;
 
 public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback,
-        InviteDialogListener, BenchViewManager.Provider, SelectPhoneNumberDialog.Callbacks {
+        InviteDialogListener, BenchViewManager.Provider {
 
-    private final static String TAG = "MainActivity";
+    private static final String TAG = MainActivity.class.getSimpleName();
 
 	public static final int CONNECTED_DIALOG = 0;
 	public static final int NUDGE_DIALOG = 1;
@@ -193,16 +192,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     public void showVersionHandlerDialog(String message, boolean negativeButton) {
         DialogShower.showVersionHandlerDialog(this, message, negativeButton);
-    }
-
-    @Override
-    public void onShowSelectPhoneNumberDialog(Contact contact) {
-        SelectPhoneNumberDialog.getInstance(contact).show(getFragmentManager(), null);
-    }
-
-    @Override
-    public void phoneSelected(Contact contact, int phoneIndex) {
-        inviteFriend(BenchObject.benchObjectWithContact(contact, contact.phoneObjects.get(phoneIndex)));
     }
 
     @Override

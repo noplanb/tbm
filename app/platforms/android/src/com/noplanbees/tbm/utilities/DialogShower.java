@@ -10,11 +10,13 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.widget.Toast;
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.multimedia.CameraException;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.DoubleActionDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
 import com.noplanbees.tbm.ui.dialogs.InfoDialogFragment;
+import com.noplanbees.tbm.ui.dialogs.SelectPhoneNumberDialog;
 import com.noplanbees.tbm.ui.dialogs.VersionDialogFragment;
 
 /**
@@ -96,5 +98,10 @@ public class DialogShower {
         args.putString(VersionDialogFragment.MESSAGE, message);
         d.setArguments(args);
         d.show(activity.getFragmentManager(),null);
+    }
+
+    public static void showSelectPhoneNumberDialog(Activity activity, Contact contact, SelectPhoneNumberDialog.Callbacks callbacks) {
+        DialogFragment f = SelectPhoneNumberDialog.getInstance(contact, callbacks);
+        f.show(activity.getFragmentManager(), null);
     }
 }

@@ -23,13 +23,14 @@ import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.Attributes;
 import com.noplanbees.tbm.model.FriendFactory;
+import com.noplanbees.tbm.ui.dialogs.SelectPhoneNumberDialog;
 import com.noplanbees.tbm.utilities.DialogShower;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnItemClickListener,
-        ContactsManager.ContactSelected, SelectPhoneNumberDialog.SelectPhoneNumberDelegate, BenchViewManager {
+        ContactsManager.ContactSelected, SelectPhoneNumberDialog.Callbacks, BenchViewManager {
 
 	private final String TAG = getClass().getSimpleName();
 
@@ -214,7 +215,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 			return;
 		}
 
-		benchControllerCallbacks.onShowSelectPhoneNumberDialog(contact);
+        DialogShower.showSelectPhoneNumberDialog(activity, contact, this);
 	}
 
     private void showNoValidPhonesDialog(Contact contact) {
@@ -227,7 +228,12 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
         InviteManager.getInstance().invite(bo);
 	}
 
-	private class BenchAdapter extends BaseAdapter{
+    @Override
+    public void phoneSelected(Contact contact, int phoneIndex) {
+        InviteManager.getInstance().invite(BenchObject.benchObjectWithContact(contact, contact.phoneObjects.get(phoneIndex)));
+    }
+
+    private class BenchAdapter extends BaseAdapter{
 
 		private Context context;
 		private List<BenchObject> list;

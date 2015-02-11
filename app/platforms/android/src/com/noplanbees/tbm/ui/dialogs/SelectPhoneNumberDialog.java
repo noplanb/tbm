@@ -1,9 +1,8 @@
 package com.noplanbees.tbm.ui.dialogs;
 
-import android.app.Activity;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +11,6 @@ import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.model.Contact;
 
@@ -21,11 +19,12 @@ public class SelectPhoneNumberDialog extends AbstractDialogFragment implements A
 
     private static final String CONTACT_KEY = "contact_key";
 
-    public static DialogFragment getInstance(Contact contact){
-        DialogFragment f = new SelectPhoneNumberDialog();
+    public static DialogFragment getInstance(Contact contact, Callbacks callbacks) {
+        SelectPhoneNumberDialog f = new SelectPhoneNumberDialog();
         Bundle args = new Bundle();
         args.putParcelable(CONTACT_KEY, contact);
         f.setArguments(args);
+        f.setCallbacks(callbacks);
         return f;
     }
 
@@ -36,10 +35,8 @@ public class SelectPhoneNumberDialog extends AbstractDialogFragment implements A
 	private Contact contact;
 	private Callbacks callbacks;
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        callbacks = (Callbacks) activity;
+    private void setCallbacks(Callbacks callbacks) {
+        this.callbacks = callbacks;
     }
 
     @Override
