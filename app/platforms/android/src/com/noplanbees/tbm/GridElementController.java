@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import com.noplanbees.tbm.bench.InviteManager;
 import com.noplanbees.tbm.model.ActiveModel;
 import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.model.Friend;
@@ -32,7 +33,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     public interface Callbacks {
         void onBenchRequest();
         void onGridUpdated();
-        void onNudgeFriend(Friend f);
         void onRecordDialogRequested();
     }
 
@@ -82,7 +82,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onNudgeClicked() {
-        callbacks.onNudgeFriend(gridElement.getFriend());
+        InviteManager.getInstance().nudge(gridElement.getFriend());
     }
 
     @Override

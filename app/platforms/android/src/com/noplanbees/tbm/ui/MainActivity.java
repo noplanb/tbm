@@ -20,14 +20,12 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.SyncManager;
 import com.noplanbees.tbm.VersionHandler;
 import com.noplanbees.tbm.bench.BenchController;
-import com.noplanbees.tbm.bench.BenchObject;
 import com.noplanbees.tbm.bench.InviteManager;
+import com.noplanbees.tbm.bench.InviteManager.InviteDialogListener;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Contact;
-import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
@@ -38,7 +36,8 @@ import com.noplanbees.tbm.utilities.DialogShower;
 
 public class MainActivity extends Activity implements GridViewFragment.Callbacks,
         BenchController.Callbacks, ActionInfoDialogListener, VersionHandler.Callback,
-        InviteManager.Callbacks, SelectPhoneNumberDialog.Callbacks {
+        InviteDialogListener, SelectPhoneNumberDialog.Callbacks {
+
     private final static String TAG = "MainActivity";
 
 	public static final int CONNECTED_DIALOG = 0;
@@ -67,14 +66,17 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_activity);
-		
+
 		body = (DrawerLayout)findViewById(R.id.drawer_layout);
-		
+
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-		
+
 		gcmHandler = new GcmHandler(this);
 		versionHandler = new VersionHandler(this);
+
+        inviteManager = InviteManager.getInstance();
+        inviteManager.init(this, this);
         benchController = new BenchController(this);
 
 		setupActionBar();
@@ -100,7 +102,6 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	@Override
 	protected void onStart() {
 		super.onStart();
-        inviteManager = InviteManager.getInstance(this);
         bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 		versionHandler.checkVersionCompatibility();
 		NotificationAlertManager.cancelNativeAlerts(this);
@@ -210,16 +211,6 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 			inviteManager.sendLink();
 			break;
 		}
-	}
-
-	@Override
-	public void inviteFriend(BenchObject bo) {
-		inviteManager.invite(bo);
-	}
-
-    @Override
-	public void onNudgeFriend(Friend f) {
-		inviteManager.nudge(f);
 	}
 
     @Override

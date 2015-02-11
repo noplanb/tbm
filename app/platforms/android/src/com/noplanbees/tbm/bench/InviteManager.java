@@ -24,36 +24,30 @@ public class InviteManager{
         public static final String SMS_RESULT = "smsResult";
     }
 
-    public static interface Callbacks{
+    public static interface InviteDialogListener {
         void onShowInfoDialog(String title, String msg);
         void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, int actionId);
     }
 
-	private final String TAG = getClass().getSimpleName();
+    private static final String TAG = InviteManager.class.getSimpleName();
 
 	private Context context;
     private BenchObject benchObject;
     private Friend friend;
-    private Callbacks callbacks;
+    private InviteDialogListener listener;
 
-	private InviteManager(){
+    private InviteManager() {
     }
 
-	public static InviteManager getInstance(Context context){
-		if(inviteManager == null)
-			inviteManager = new InviteManager();
-        inviteManager.setContext(context);
-		return inviteManager;
-	}
+    public static InviteManager getInstance() {
+        if (inviteManager == null)
+            inviteManager = new InviteManager();
+        return inviteManager;
+    }
 
-    private void setContext(Context context){
+    public void init(Context context, InviteDialogListener listener) {
         this.context = context;
-        try {
-            callbacks = (Callbacks) context;
-        } catch (ClassCastException e) {
-            e.printStackTrace();
-        }
-
+        this.listener = listener;
     }
 
 	public void invite(BenchObject bo){
@@ -175,7 +169,7 @@ public class InviteManager{
 		String msg = "You and "+ benchObject.firstName +" are connected.\n\nRecord a welcome "
 	+ Config.appName + " to " + benchObject.firstName + " now.";
 
-        callbacks.onShowActionInfoDialog("You are Connected", msg, "Okay", false, MainActivity.CONNECTED_DIALOG);
+        listener.onShowActionInfoDialog("You are Connected", msg, "Okay", false, MainActivity.CONNECTED_DIALOG);
 	}
 
 	private void serverError(){
@@ -183,7 +177,7 @@ public class InviteManager{
 	}
 
 	private void showErrorDialog(String message){
-        callbacks.onShowInfoDialog("No Connection", message);
+        listener.onShowInfoDialog("No Connection", message);
 	}
 
 	//----------------------------
@@ -192,18 +186,18 @@ public class InviteManager{
 	private void preNudgeDialog(){
         String msg = friend.get(Friend.Attributes.FIRST_NAME) + " still hasn't installed " + Config.appName + ". Send them the link again.";
         String title = "Nudge " + friend.get(Friend.Attributes.FIRST_NAME);
-        callbacks.onShowActionInfoDialog(title, msg, "Send", false, MainActivity.NUDGE_DIALOG);
+        listener.onShowActionInfoDialog(title, msg, "Send", false, MainActivity.NUDGE_DIALOG);
 	}
 
 
 	private void preSmsDialog(){
         String value = benchObject.firstName + " has not installed " + Config.appName + " yet.\n\nSend them a link!";
-        callbacks.onShowActionInfoDialog("Invite", value, "Send", false, MainActivity.SMS_DIALOG);
+        listener.onShowActionInfoDialog("Invite", value, "Send", false, MainActivity.SMS_DIALOG);
 	}
 
 	public void showSms(){
 		String smsMessage = "I sent you a message on " + Config.appName + ". Get the app - it is really great. http://www.zazoapp.com.";
-        callbacks.onShowActionInfoDialog("Send Link", smsMessage, "Send", false, MainActivity.SENDLINK_DIALOG);
+        listener.onShowActionInfoDialog("Send Link", smsMessage, "Send", false, MainActivity.SENDLINK_DIALOG);
 	}
 
 	public void sendLink(){
@@ -242,7 +236,7 @@ public class InviteManager{
     public boolean checkIsFailureAndShowDialog(LinkedTreeMap<String, String>params){
         String status = params.get(HttpRequest.ParamKeys.RESPONSE_STATUS);
         if (HttpRequest.isFailure(status)){
-            callbacks.onShowInfoDialog(params.get(HttpRequest.ParamKeys.ERROR_TITLE), params.get(HttpRequest.ParamKeys.ERROR_MSG));
+            listener.onShowInfoDialog(params.get(HttpRequest.ParamKeys.ERROR_TITLE), params.get(HttpRequest.ParamKeys.ERROR_MSG));
             return true;
         } else {
             return false;
