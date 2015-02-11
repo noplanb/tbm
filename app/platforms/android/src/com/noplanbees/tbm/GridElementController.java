@@ -124,29 +124,34 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     @Override
     public void onFileDownloadingRetry() {   }
 
-    private void updateContent(boolean hideIndicators) {
-        Friend friend = gridElement.getFriend();
-        if (friend == null) {
-            return;
-        }
-        gridElementView.showEmpty(false);
-        int unreadMsgCount = friend.incomingVideoNotViewedCount();
+    private void updateContent(final boolean hideIndicators) {
+        uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Friend friend = gridElement.getFriend();
+                if (friend == null) {
+                    return;
+                }
+                gridElementView.showEmpty(false);
+                int unreadMsgCount = friend.incomingVideoNotViewedCount();
 
-        gridElementView.showNudge(!friend.hasApp());
+                gridElementView.showNudge(!friend.hasApp());
 
-        gridElementView.setVideoViewed(friend.getOutgoingVideoStatus() == Friend.OutgoingVideoStatus.VIEWED && !hideIndicators);
-        gridElementView.setUnreadCount(unreadMsgCount > 0 && !hideIndicators, unreadMsgCount);
-        if (friend.thumbExists()) {
-            gridElementView.setThumbnail(friend.lastThumbBitmap());
-            gridElementView.showButtons(false);
-        } else {
-            gridElementView.showButtons(true);
-        }
-        gridElementView.showUploadingMark(isUploading());
-        gridElementView.showDownloadingMark(isDownloading());
-//        gridElementView.setName(gridElement.shouldUseAlterName() ? friend.getDisplayNameAlternative() : friend.getDisplayName());
-        gridElementView.setName(friend.getStatusString()); // TODO Use line above for release
-        ((View) container.getParent()).invalidate();
+                gridElementView.setVideoViewed(friend.getOutgoingVideoStatus() == Friend.OutgoingVideoStatus.VIEWED && !hideIndicators);
+                gridElementView.setUnreadCount(unreadMsgCount > 0 && !hideIndicators, unreadMsgCount);
+                if (friend.thumbExists()) {
+                    gridElementView.setThumbnail(friend.lastThumbBitmap());
+                    gridElementView.showButtons(false);
+                } else {
+                    gridElementView.showButtons(true);
+                }
+                gridElementView.showUploadingMark(isUploading());
+                gridElementView.showDownloadingMark(isDownloading());
+//                gridElementView.setName(gridElement.shouldUseAlterName() ? friend.getDisplayNameAlternative() : friend.getDisplayName());
+                gridElementView.setName(friend.getStatusString()); // TODO Use line above for release
+                ((View) container.getParent()).invalidate();
+            }
+        });
     }
 
     private void updateVideoStatus() {

@@ -3,6 +3,8 @@ package com.noplanbees.tbm.model;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.google.gson.internal.LinkedTreeMap;
@@ -160,11 +162,10 @@ public class FriendFactory extends ActiveModelFactory{
         videoStatusObservers.remove(observer);
     }
 
-    public void notifyStatusChanged(Friend f){
-        for (VideoStatusChangedCallback observer : videoStatusObservers){
+    public void notifyStatusChanged(final Friend f){
+        for (final VideoStatusChangedCallback observer : videoStatusObservers){
             observer.onVideoStatusChanged(f);
         }
     }
-
-
+    
 }
