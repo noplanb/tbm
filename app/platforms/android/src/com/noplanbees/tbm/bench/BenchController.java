@@ -91,7 +91,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 			return;
 		}
 
-		GridManager.getInstance().moveFriendToGrid(activity, friend);
+		GridManager.getInstance().moveFriendToGrid(friend);
 	}
 
 	// ---------
@@ -189,7 +189,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
 		Friend f = friendMatchingContact(contact);
 		if (f != null) {
-			GridManager.getInstance().moveFriendToGrid(activity, f);
+			GridManager.getInstance().moveFriendToGrid(f);
 			return;
 		}
 

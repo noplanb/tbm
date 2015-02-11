@@ -10,13 +10,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class GridManager{
+public class GridManager implements Friend.VideoStatusChangedCallback{
     private static final String TAG = GridManager.class.getSimpleName();
     private static GridManager gridManager;
 
     public static final int GRID_ELEMENTS_COUNT = 8;
 
     private GridManager() {
+        FriendFactory.getFactoryInstance().addVideoStatusObserver(this);
     }
 
     public static GridManager getInstance(){
@@ -83,7 +84,7 @@ public class GridManager{
         return r;
     }
 
-    public void moveFriendToGrid(Context c, Friend f){
+    public void moveFriendToGrid(Friend f){
 		rankingActionOccurred(f);
 		if (!GridElementFactory.getFactoryInstance().friendIsOnGrid(f)) {
 			nextAvailableGridElement().setFriend(f, hasFriendName(f.getDisplayName()));
@@ -138,6 +139,16 @@ public class GridManager{
 		Friend f = lowestRankedFriendOnGrid();
 		return GridElementFactory.getFactoryInstance().findWithFriendId(f.getId());
 	}
+	
+	
+    //----------------------------
+	// VideoStatusChanged Observer
+	//----------------------------
+    @Override
+    public void onVideoStatusChanged(Friend friend) {
+        if (!isOnGrid(friend))
+            moveFriendToGrid(friend);
+    }
 
 }
 

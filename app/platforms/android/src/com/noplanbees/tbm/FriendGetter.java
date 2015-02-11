@@ -65,7 +65,7 @@ public class FriendGetter {
             
             // If one was either updated or created then move him to grid.
             if(f !=null)
-                gm.moveFriendToGrid(context, f);
+                gm.moveFriendToGrid(f);
 		}
         success();
 	}

@@ -227,7 +227,7 @@ public class InviteManager{
 	}
 
 	public void moveFriendToGrid(){
-		GridManager.getInstance().moveFriendToGrid(context, friend);
+		GridManager.getInstance().moveFriendToGrid(friend);
 	}
 
 	// Not used as the intent coming back into home context is unnecessarily disruptive.
