@@ -188,8 +188,7 @@ public class IntentHandler {
 		friend.deleteRemoteVideo(videoId);
 
 		// Delete kv for video.
-        String key = RemoteStorageHandler.incomingVideoIdsRemoteKVKey(friend);
-        RemoteStorageHandler.deleteRemoteKV(key, videoId);
+		RemoteStorageHandler.deleteRemoteIncomingVideoId(friend, videoId);
 	}
 
 

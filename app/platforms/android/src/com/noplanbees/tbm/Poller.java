@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.noplanbees.tbm.RemoteStorageHandler.StatusEnum;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.Video;
@@ -16,6 +17,9 @@ public class Poller {
         private static String TAG = Poller.class.getSimpleName();
         private Context context;
 
+        //-----------------
+        // Public Interface
+        //-----------------
         public Poller(Context context){
             this.context = context;
         }
@@ -31,9 +35,12 @@ public class Poller {
             new GetRemoteVideoIds(friend);
 
             if(friend.getOutgoingVideoStatus()!=Friend.OutgoingVideoStatus.VIEWED)
-                RemoteStorageHandler.getRemoteOutgoingVideoStatus(friend);
+                new GetVideoStatus(friend);
         }
 
+        //----------------
+       // Private helpers
+        //----------------
         private class GetRemoteVideoIds extends RemoteStorageHandler.GetRemoteIncomingVideoIds {
             public GetRemoteVideoIds(Friend friend) {
                 super(friend);
@@ -44,7 +51,7 @@ public class Poller {
                 handleVideoIds(friend, videoIds);
             }
         }
-
+        
         public void handleVideoIds(Friend friend, ArrayList<String> videoIds) {
             for (String videoId : videoIds){
                 Intent intent = new Intent();
@@ -58,6 +65,26 @@ public class Poller {
                 context.startService(intent);
             }
         }
+
+        private class GetVideoStatus extends RemoteStorageHandler.GetRemoteOutgoingVideoStatus{
+            public GetVideoStatus(Friend friend) {
+                super(friend);
+            }
+
+            @Override
+            protected void gotVideoIdStatus(String videoId, String status) {
+                if(friend.get(Friend.Attributes.OUTGOING_VIDEO_ID).equals(videoId)){
+                    Log.i(TAG, "gotVideoIdStatus: got status for "  + friend.get(Friend.Attributes.FIRST_NAME) + " for non current videoId. Ignoring");
+                    return;
+                }
+                
+                if(status.equals(StatusEnum.DOWNLOADED))
+                    friend.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.DOWNLOADED);
+                else if(status.equals(StatusEnum.VIEWED))
+                    friend.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.VIEWED);
+            }
+        }
+
 
     }
 
