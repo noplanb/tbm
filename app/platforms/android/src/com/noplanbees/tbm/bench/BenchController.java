@@ -128,7 +128,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 			LinkedTreeMap<String, String> e = new LinkedTreeMap<String, String>();
 			e.put(BenchObject.Keys.FRIEND_ID, f.getId());
 			e.put(BenchObject.Keys.MOBILE_NUMBER, f.get(Friend.Attributes.MOBILE_NUMBER));
-			e.put(BenchObject.Keys.DISPLAY_NAME, f.fullName());
+			e.put(BenchObject.Keys.DISPLAY_NAME, f.getFullName());
 			e.put(BenchObject.Keys.FIRST_NAME, f.get(Friend.Attributes.FIRST_NAME));
 			e.put(BenchObject.Keys.LAST_NAME, f.get(Friend.Attributes.LAST_NAME));
 			r.add(new BenchObject(e));

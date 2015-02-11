@@ -394,11 +394,11 @@ public class Friend extends ActiveModel{
     // Create Thumb
     //-------------
     public synchronized boolean createThumb(String videoId){
-        Log.i(TAG, "createThumb for friend=" + get(Attributes.FIRST_NAME));
+        Log.i(TAG, "createThumb for friend=" + getUniqueName());
         boolean res = false;
 
         if( !videoFromFile(videoId).exists() || videoFromFile(videoId).length() == 0 ){
-            Dispatch.dispatch("createThumb: no video file found for friend=" + get(Attributes.FIRST_NAME));
+            Dispatch.dispatch("createThumb: no video file found for friend=" + getUniqueName());
             res = false;
         }else{
             String vidPath = videoFromPath(videoId);
@@ -439,7 +439,7 @@ public class Friend extends ActiveModel{
     }
 
     public void uploadVideo(){
-        Log.i(TAG, "uploadVideo. For friend=" + get(Attributes.FIRST_NAME));
+        Log.i(TAG, "uploadVideo. For friend=" + getUniqueName());
 
         setAndNotifyOutgoingVideoStatus(OutgoingVideoStatus.QUEUED);
         setOutGoingVideoId();
@@ -457,7 +457,7 @@ public class Friend extends ActiveModel{
     }
 
     public void downloadVideo(String videoId){
-        Log.i(TAG, "downloadVideo. friend=" + get(Attributes.FIRST_NAME) + " videoId=" + videoId);
+        Log.i(TAG, "downloadVideo. friend=" + getUniqueName() + " videoId=" + videoId);
 
         setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.QUEUED);
 
@@ -598,6 +598,12 @@ public class Friend extends ActiveModel{
     }
 
 
+    public int getIncomingVideoStatus(){
+        Video v = newestIncomingVideo();
+        if (v == null)
+            return -1;
+        return v.getIncomingVideoStatus();
+    }
 
     //-------------------------------
     // HttpRequest notification of changes
@@ -647,13 +653,13 @@ public class Friend extends ActiveModel{
             case OutgoingVideoStatus.FAILED_PERMANENTLY:
                 return sfn + " e!";
         }
-        return get(Attributes.FIRST_NAME);
+        return getUniqueName();
     }
 
     private String incomingStatusStr() {
         Video v = newestIncomingVideo();
         if (v == null)
-            return get(Attributes.FIRST_NAME);
+            return getUniqueName();
 
         int status = v.getIncomingVideoStatus();
         int count = v.getDownloadRetryCount();
@@ -670,37 +676,59 @@ public class Friend extends ActiveModel{
                     return "Dwnld...";
                 }
             case Video.IncomingVideoStatus.DOWNLOADED:
-                return get(Attributes.FIRST_NAME);
+                return getUniqueName();
             case Video.IncomingVideoStatus.VIEWED:
-                return get(Attributes.FIRST_NAME);
+                return getUniqueName();
             case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
                 return "Dwnld e!";
         }
-        return get(Attributes.FIRST_NAME);
+        return getUniqueName();
     }
 
+    //------
+    // Names
+    //------
+    
     private String shortFirstName(){
-        String fn = get(Attributes.FIRST_NAME);
+        String fn = getUniqueName();
         int shortLen = Math.min(7, fn.length());
         return fn.substring(0, shortLen);
     }
 
     public String getDisplayName(){
-        return get(Attributes.FIRST_NAME);
+        if (Config.DEPLOYMENT_TYPE == Config.DeploymentType.DEVELOPMENT)
+            return getStatusString();
+        else
+            return getUniqueName();
+    }
+    
+    public String getUniqueName(){
+        Log.d(TAG, "getUniqueName");
+        if (otherHasSameFirstName())
+            return getFirstInitialDotLast();
+        else 
+            return getFirstName();
+    }
+    
+    private boolean otherHasSameFirstName(){
+        Log.d(TAG, "otherHasSameFirstName");
+        for (Friend f : FriendFactory.getFactoryInstance().all()){
+            Log.d(TAG, "otherHasSameFirstName: " + "friend: " + f.getFirstName() + " Self: " + getFirstName() + " Same: " + f.getFirstName().equalsIgnoreCase(getFirstName()));
+            if (f != this && f.getFirstName().equalsIgnoreCase(getFirstName()))
+                return true;
+        }
+        return false;        
     }
 
-    public String getDisplayNameAlternative(){
+    public String getFirstName(){
+        return get(Attributes.FIRST_NAME);
+    }
+    
+    public String getFirstInitialDotLast(){
         return get(Attributes.FIRST_NAME).charAt(0) + ". " + get(Attributes.LAST_NAME);
     }
 
-    public int getIncomingVideoStatus(){
-        Video v = newestIncomingVideo();
-        if (v == null)
-            return -1;
-        return v.getIncomingVideoStatus();
-    }
-
-    public String fullName() {
+    public String getFullName() {
         return get(Attributes.FIRST_NAME) + " " + get(Attributes.LAST_NAME);
     }
 }

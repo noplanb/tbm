@@ -39,7 +39,7 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
             GridElement g = GridElementFactory.getFactoryInstance().makeInstance(context);
             if (i < allFriends.size()) {
                 Friend f = allFriends.get(i);
-                g.setFriend(f, hasFriendName(f.getDisplayName()), false);
+                g.setFriend(f, false);
             }
         }
     }
@@ -87,18 +87,10 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
     public void moveFriendToGrid(Friend f){
 		rankingActionOccurred(f);
 		if (!GridElementFactory.getFactoryInstance().friendIsOnGrid(f)) {
-			nextAvailableGridElement().setFriend(f, hasFriendName(f.getDisplayName()));
+			nextAvailableGridElement().setFriend(f);
 		}
 	}
 
-    private boolean hasFriendName(String name) {
-        for (GridElement ge : GridElementFactory.getFactoryInstance().all()) {
-            if (ge.hasFriend() && ge.getFriend().getDisplayName().equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
 	//--------
     // Ranking
