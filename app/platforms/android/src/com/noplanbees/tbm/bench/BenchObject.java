@@ -1,10 +1,20 @@
 package com.noplanbees.tbm.bench;
 
 import com.google.gson.internal.LinkedTreeMap;
+import com.noplanbees.tbm.model.Contact;
 
 public class BenchObject {
-	
-	public static class Keys{
+
+    public static BenchObject benchObjectWithContact(Contact contact, LinkedTreeMap<String, String> mobileNumber) {
+        LinkedTreeMap<String, String> boParams = new LinkedTreeMap<String, String>();
+        boParams.put(Keys.DISPLAY_NAME, contact.getDisplayName());
+        boParams.put(Keys.FIRST_NAME, contact.getFirstName());
+        boParams.put(Keys.LAST_NAME, contact.getLastName());
+        boParams.put(Keys.MOBILE_NUMBER, mobileNumber.get(Contact.PhoneNumberKeys.E164));
+        return new BenchObject(boParams);
+    }
+
+    public static class Keys{
 		public static final String FRIEND_ID = "friendId";
 		public static final String FIRST_NAME = "firstName";
 		public static final String LAST_NAME = "lastName";

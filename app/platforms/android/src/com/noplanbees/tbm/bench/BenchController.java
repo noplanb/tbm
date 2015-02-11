@@ -23,13 +23,12 @@ import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.Attributes;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.FriendFactory;
-import com.noplanbees.tbm.ui.dialogs.SelectPhoneNumberDialog;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnItemClickListener,
-        ContactsManager.ContactSelected, SelectPhoneNumberDialog.SelectPhoneNumberDelegate {
+        ContactsManager.ContactSelected {
 
 	private final String TAG = getClass().getSimpleName();
 
@@ -37,7 +36,8 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		void onHide();
 		void showNoValidPhonesDialog(Contact contact);
 		void inviteFriend(BenchObject bo);
-	}
+        void onShowSelectPhoneNumberDialog(Contact contact);
+   }
 
 	private Activity activity;
 	private ListView listView;
@@ -203,26 +203,12 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 			return;
 		}
 
-		new SelectPhoneNumberDialog(activity, contact, this);
-	}
-
-	@Override
-	public void phoneSelected(Contact contact, int phoneIndex) {
-		invite(contact, contact.phoneObjects.get(phoneIndex));
+        benchControllerCallbacks.onShowSelectPhoneNumberDialog(contact);
 	}
 
 	private void invite(Contact contact, LinkedTreeMap<String, String> mobileNumber) {
-		BenchObject bo = benchObjectWithContact(contact, mobileNumber);
+		BenchObject bo = BenchObject.benchObjectWithContact(contact, mobileNumber);
 		benchControllerCallbacks.inviteFriend(bo);
-	}
-
-	private BenchObject benchObjectWithContact(Contact contact, LinkedTreeMap<String, String> mobileNumber) {
-		LinkedTreeMap<String, String> boParams = new LinkedTreeMap<String, String>();
-		boParams.put(BenchObject.Keys.DISPLAY_NAME, contact.getDisplayName());
-		boParams.put(BenchObject.Keys.FIRST_NAME, contact.getFirstName());
-		boParams.put(BenchObject.Keys.LAST_NAME, contact.getLastName());
-		boParams.put(BenchObject.Keys.MOBILE_NUMBER, mobileNumber.get(Contact.PhoneNumberKeys.E164));
-		return new BenchObject(boParams);
 	}
 
     public void onBenchHasChanged(){

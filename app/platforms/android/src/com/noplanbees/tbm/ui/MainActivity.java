@@ -33,11 +33,12 @@ import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
+import com.noplanbees.tbm.ui.dialogs.SelectPhoneNumberDialog;
 import com.noplanbees.tbm.utilities.DialogShower;
 
 public class MainActivity extends Activity implements GridViewFragment.Callbacks,
         BenchController.Callbacks, ActionInfoDialogListener, VersionHandler.Callback,
-        InviteManager.Callbacks {
+        InviteManager.Callbacks, SelectPhoneNumberDialog.Callbacks {
     private final static String TAG = "MainActivity";
 
 	public static final int CONNECTED_DIALOG = 0;
@@ -216,7 +217,7 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 		inviteManager.invite(bo);
 	}
 
-	@Override
+    @Override
 	public void onNudgeFriend(Friend f) {
 		inviteManager.nudge(f);
 	}
@@ -235,4 +236,13 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
         DialogShower.showVersionHandlerDialog(this, message, negativeButton);
     }
 
+    @Override
+    public void onShowSelectPhoneNumberDialog(Contact contact) {
+        SelectPhoneNumberDialog.getInstance(contact).show(getFragmentManager(), null);
+    }
+
+    @Override
+    public void phoneSelected(Contact contact, int phoneIndex) {
+        inviteFriend(BenchObject.benchObjectWithContact(contact, contact.phoneObjects.get(phoneIndex)));
+    }
 }
