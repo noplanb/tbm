@@ -147,8 +147,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                 }
                 gridElementView.showUploadingMark(isUploading());
                 gridElementView.showDownloadingMark(isDownloading());
-//                gridElementView.setName(gridElement.shouldUseAlterName() ? friend.getDisplayNameAlternative() : friend.getDisplayName());
-                gridElementView.setName(friend.getStatusString()); // TODO Use line above for release
+                
+                if (Config.DEPLOYMENT_TYPE == Config.DeploymentType.DEVELOPMENT)
+                    gridElementView.setName(friend.getStatusString());
+                else
+                   gridElementView.setName(gridElement.shouldUseAlterName() ? friend.getDisplayNameAlternative() : friend.getDisplayName());
+                
                 ((View) container.getParent()).invalidate();
             }
         });

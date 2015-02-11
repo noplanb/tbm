@@ -57,7 +57,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		try {
 			benchControllerCallbacks = (Callbacks) a;
 		} catch (ClassCastException e) {
-			Dispatch.dispatch("Your activity must implemnets BenchController.Callbacks");
+			Dispatch.dispatch("Your activity must implement BenchController.Callbacks");
 		}
 
         adapter = new BenchAdapter(activity, null);
