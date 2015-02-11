@@ -15,14 +15,11 @@ import java.util.ArrayList;
 
 public class RemoteStorageHandler {
 	private final static String TAG = RemoteStorageHandler.class.getSimpleName();
-	
-	public RemoteStorageHandler(){
-	}
 
 	//--------------------------------
 	// Data structures keys and values
 	//--------------------------------
-	public static class DataKeys{
+	private static class DataKeys{
 		public static String VIDEO_ID_KEY = "videoId";
 		public static String STATUS_KEY = "status";
 	}
@@ -31,6 +28,81 @@ public class RemoteStorageHandler {
 		public static String DOWNLOADED = "downloaded";
 		public static String VIEWED = "viewed";
 	}
+	
+	
+    //---------------------------
+	// Public setters and getters
+    //---------------------------
+	
+	// Setters
+    public static void addRemoteOutgoingVideoId(Friend friend, String videoId){
+        LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
+        data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, videoId);
+        setRemoteKV(RemoteStorageHandler.outgoingVideoIdsRemoteKVKey(friend), videoId, data);
+    }
+
+    
+    public static void setRemoteIncomingVideoStatus(Friend friend, String videoId, String status){
+        LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
+        data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, videoId);
+        data.put(RemoteStorageHandler.DataKeys.STATUS_KEY, status);
+        setRemoteKV(RemoteStorageHandler.incomingVideoStatusRemoteKVKey(friend), data);
+    }
+    
+    // Getters
+    public static abstract class GetRemoteIncomingVideoIds extends GetRemoteKVs{
+        protected Friend friend;
+        
+        public GetRemoteIncomingVideoIds(Friend friend){
+            super(incomingVideoIdsRemoteKVKey(friend));
+            this.friend = friend;
+        }
+
+        @Override
+        public void gotRemoteKVs(ArrayList<LinkedTreeMap<String, String>> kvs) {    
+            Log.i(TAG, "gotRemoteKVs: ");
+            ArrayList<String>values = new ArrayList<String>();          
+            for (LinkedTreeMap<String, String> kv : kvs){
+                String vidJson = kv.get("value");
+                Gson g = new Gson();
+                LinkedTreeMap<String, String> vidObj = new LinkedTreeMap<String, String>();
+                vidObj = g.fromJson(vidJson, vidObj.getClass());
+                values.add(vidObj.get(DataKeys.VIDEO_ID_KEY));
+            }
+            gotVideoIds(values);
+        }
+        public abstract void gotVideoIds(ArrayList<String>videoIds);
+    }
+
+
+    public static void getRemoteOutgoingVideoStatus(final Friend friend){
+        getRemoteKV(outgoingConnectionKey(friend) + "-VideoStatusKVKey", null, new HttpRequest.Callbacks() {
+            @Override
+            public void success(String response) {
+                Gson g = new Gson();
+                LinkedTreeMap<String, String> data;
+                data = g.fromJson(response, LinkedTreeMap.class);
+                Log.d(TAG, "getRemoteOutgoingVideoStatus: " + data);
+                if (data != null && data.get("value") != null) {
+                    LinkedTreeMap<String, String> value = g.fromJson(data.get("value"), LinkedTreeMap.class);
+                    Log.d(TAG, "getRemoteOutgoingVideoStatus: " + value);
+                    String videoId = value.get("videoId");
+                    String status = value.get("status");
+                    if(status.equals(StatusEnum.DOWNLOADED))
+                        friend.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.DOWNLOADED);
+                    else if(status.equals(StatusEnum.VIEWED))
+                        friend.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.VIEWED);
+                }
+            }
+
+            @Override
+            public void error(String errorString) {
+                Log.d(TAG, "GetRemoteKV: ERROR: " + errorString);
+                LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
+                data.put("error", errorString);
+            }
+        });
+    }
 	
 	//------------------------
 	// Keys for remote storage
@@ -43,19 +115,19 @@ public class RemoteStorageHandler {
 		return incomingConnectionKey(friend) + "-" + videoId + "-filename";
 	}
 
-	public static String outgoingVideoIdsRemoteKVKey(Friend friend) {
+	private static String outgoingVideoIdsRemoteKVKey(Friend friend) {
 		return outgoingConnectionKey(friend) + "-VideoIdKVKey";
 	}
 
-	public static String incomingVideoIdsRemoteKVKey(Friend friend) {
+	private static String incomingVideoIdsRemoteKVKey(Friend friend) {
 		return incomingConnectionKey(friend) + "-VideoIdKVKey";
 	}
 
-	public static String outgoingVideoStatusRemoteKVKey(Friend friend) {
+	private static String outgoingVideoStatusRemoteKVKey(Friend friend) {
 		return outgoingConnectionKey(friend) + "-VideoStatusKVKey";
 	}
 
-	public static String incomingVideoStatusRemoteKVKey(Friend friend) {
+	private static String incomingVideoStatusRemoteKVKey(Friend friend) {
 		return incomingConnectionKey(friend) + "-VideoStatusKVKey";
 	}
 	
@@ -73,12 +145,12 @@ public class RemoteStorageHandler {
 	//--------------------
 	// SetOrDeleteRemote
 	//--------------------
-	public static void setRemoteKV(String key, LinkedTreeMap<String, String>data){
+	private static void setRemoteKV(String key, LinkedTreeMap<String, String>data){
 		String key2 = null;
 		setRemoteKV(key, key2, data);
 	}
 	
-	public static void setRemoteKV(String key1, String key2, LinkedTreeMap<String, String>data){
+	private static void setRemoteKV(String key1, String key2, LinkedTreeMap<String, String>data){
 		Gson g = new Gson();
 		String value = g.toJson(data, data.getClass());
 		
@@ -109,81 +181,8 @@ public class RemoteStorageHandler {
             });
 		}
 	}
-	
-	// Convenience setters
-	public void addRemoteOutgoingVideoId(Friend friend, String videoId){
-		LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-		data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, videoId);
-		setRemoteKV(RemoteStorageHandler.outgoingVideoIdsRemoteKVKey(friend), videoId, data);
-	}
 
-	
-	public static void setRemoteIncomingVideoStatus(Friend friend, String videoId, String status){
-		LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-		data.put(RemoteStorageHandler.DataKeys.VIDEO_ID_KEY, videoId);
-		data.put(RemoteStorageHandler.DataKeys.STATUS_KEY, status);
-		setRemoteKV(RemoteStorageHandler.incomingVideoStatusRemoteKVKey(friend), data);
-	}
-	
-	// Convenience getters
-	public static abstract class GetRemoteIncomingVideoIds extends GetRemoteKVs{
-		protected Friend friend;
-		
-		public GetRemoteIncomingVideoIds(Friend friend){
-			super(incomingVideoIdsRemoteKVKey(friend));
-			this.friend = friend;
-		}
-
-		@Override
-		public void gotRemoteKVs(ArrayList<LinkedTreeMap<String, String>> kvs) {	
-			Log.i(TAG, "gotRemoteKVs: ");
-			ArrayList<String>values = new ArrayList<String>();			
-			for (LinkedTreeMap<String, String> kv : kvs){
-				String vidJson = kv.get("value");
-				Gson g = new Gson();
-				LinkedTreeMap<String, String> vidObj = new LinkedTreeMap<String, String>();
-				vidObj = g.fromJson(vidJson, vidObj.getClass());
-				values.add(vidObj.get(DataKeys.VIDEO_ID_KEY));
-			}
-			gotVideoIds(values);
-		}
-		public abstract void gotVideoIds(ArrayList<String>videoIds);
-	}
-
-
-    //------------
-    // GetRemoteKV
-    //------------
-    public static void getRemoteOutgoingVideoStatus(final Friend friend){
-        getRemoteKV(outgoingConnectionKey(friend) + "-VideoStatusKVKey", null, new HttpRequest.Callbacks() {
-            @Override
-            public void success(String response) {
-                Gson g = new Gson();
-                LinkedTreeMap<String, String> data;
-                data = g.fromJson(response, LinkedTreeMap.class);
-                Log.d(TAG, "getRemoteOutgoingVideoStatus: " + data);
-                if (data != null && data.get("value") != null) {
-                    LinkedTreeMap<String, String> value = g.fromJson(data.get("value"), LinkedTreeMap.class);
-                    Log.d(TAG, "getRemoteOutgoingVideoStatus: " + value);
-                    String videoId = value.get("videoId");
-                    String status = value.get("status");
-                    if(status.equals(StatusEnum.DOWNLOADED))
-                        friend.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.DOWNLOADED);
-                    else if(status.equals(StatusEnum.VIEWED))
-                        friend.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.VIEWED);
-                }
-            }
-
-            @Override
-            public void error(String errorString) {
-                Log.d(TAG, "GetRemoteKV: ERROR: " + errorString);
-                LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-                data.put("error", errorString);
-            }
-        });
-    }
-
-    public static void getRemoteKV(String key1, String key2, HttpRequest.Callbacks callbacks){
+    private static void getRemoteKV(String key1, String key2, HttpRequest.Callbacks callbacks){
         LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
         params.put("key1", key1);
         if (key2 != null)
@@ -192,7 +191,6 @@ public class RemoteStorageHandler {
     }
 	
 	private static class GetRemoteKV extends HttpRequest{
-
         public GetRemoteKV(String uri, LinkedTreeMap<String, String> params, String method) {
             super(uri, params, method);
         }
@@ -208,11 +206,9 @@ public class RemoteStorageHandler {
 			new GetRemoteKVsServer("kvstore/get_all", params, "GET");
 		}
 		
-		public abstract void gotRemoteKVs(ArrayList<LinkedTreeMap<String, String>> kvs);
+		protected abstract void gotRemoteKVs(ArrayList<LinkedTreeMap<String, String>> kvs);
 		
-		private class GetRemoteKVsServer extends HttpRequest{
-			private String TAG = this.getClass().getSimpleName();
-			
+		private class GetRemoteKVsServer extends HttpRequest{			
 			public GetRemoteKVsServer(String uri, LinkedTreeMap<String, String> params, String method) {
 				super(uri, params, method, new Callbacks() {
                     @Override
@@ -225,7 +221,7 @@ public class RemoteStorageHandler {
 
                     @Override
                     public void error(String errorString) {
-                        Dispatch.dispatch("GetRemoteKVs: " + errorString);
+                        Log.e(TAG, "GetRemoteKVs: " + errorString);
                     }
                 });
 			}
@@ -233,10 +229,9 @@ public class RemoteStorageHandler {
 	}
 
     //-----------------
-    // DeleteRemoteFile
+    // DeleteRemoteKV
     //-----------------
-	
-    public static void deleteRemoteKV(String key1, String key2){
+    private static void deleteRemoteKV(String key1, String key2){
         LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
         params.put("key1", key1);
         if (key2 != null)

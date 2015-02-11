@@ -38,7 +38,6 @@ public class IntentHandler {
 	private Friend friend;
 	private String transferType;
 	private String videoId;
-	private RemoteStorageHandler rSHandler;
 	private int status;
 	private int retryCount;
 
@@ -51,7 +50,6 @@ public class IntentHandler {
 		videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
 		status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
         retryCount = intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
-		rSHandler = new RemoteStorageHandler();
 		Log.i(TAG, "status:" + status + " retry:" + intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0));
 	}
 
@@ -95,7 +93,7 @@ public class IntentHandler {
 		updateStatus();
 		if (status == Friend.OutgoingVideoStatus.UPLOADED) {
 			// Set remote videoIdKV
-			rSHandler.addRemoteOutgoingVideoId(friend, videoId);
+			RemoteStorageHandler.addRemoteOutgoingVideoId(friend, videoId);
 
 			// Send outgoing notification
 			NotificationHandler.sendForVideoReceived(friend, videoId);
@@ -144,7 +142,7 @@ public class IntentHandler {
 			deleteRemoteVideoAndKV();
 			
 			// Always set status for sender to downloaded and send status notification even if the video we got is not corrupted.
-			rSHandler.setRemoteIncomingVideoStatus(friend, videoId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
+			RemoteStorageHandler.setRemoteIncomingVideoStatus(friend, videoId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
 			NotificationHandler.sendForVideoStatusUpdate(friend, videoId, NotificationHandler.StatusEnum.DOWNLOADED);
 			
 			if(!friend.createThumb(videoId)){
