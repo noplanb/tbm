@@ -1,83 +1,72 @@
 package com.noplanbees.tbm.ui.dialogs;
 
-import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.model.Contact;
 
-public class SelectPhoneNumberDialog implements OnItemClickListener{
-	private final String TAG = getClass().getSimpleName();
+public class SelectPhoneNumberDialog extends AbstractDialogFragment implements AdapterView.OnItemClickListener {
+    private final static String TAG = SelectPhoneNumberDialog.class.getSimpleName();
 
-	public interface SelectPhoneNumberDelegate{
+    private static final String CONTACT_KEY = "contact_key";
+
+    public static DialogFragment getInstance(Contact contact, Callbacks callbacks) {
+        SelectPhoneNumberDialog f = new SelectPhoneNumberDialog();
+        Bundle args = new Bundle();
+        args.putParcelable(CONTACT_KEY, contact);
+        f.setArguments(args);
+        f.setCallbacks(callbacks);
+        return f;
+    }
+
+    public interface Callbacks {
 		public void phoneSelected(Contact contact, int phoneIndex);
 	}
 
-	public static final float PERCENT_OF_WINDOW_WIDTH = 0.75f;
-	public static final float PERCENT_OF_WINDOW_HEIGHT = 0.4f;
-
-	private Activity activity;
 	private Contact contact;
-	private SelectPhoneNumberDelegate delegate;
-	private AlertDialog dialog;
-	private ListView listView;
-	private PhoneNumberListAdapter pnla;
+	private Callbacks callbacks;
 
-	public SelectPhoneNumberDialog(Activity a, Contact c, SelectPhoneNumberDelegate delegate){
-		activity = a;
-		contact = c;
-		this.delegate = delegate;
-		setupDialogAndShow();
-	}
+    private void setCallbacks(Callbacks callbacks) {
+        this.callbacks = callbacks;
+    }
 
-	private void setupDialogAndShow(){
-		AlertDialog.Builder db = new AlertDialog.Builder(activity);
-		db.setTitle(contact.getFirstName() + "'s mobile?").
-		setNegativeButton("Cancel", null);
-		listView =  new ListView(activity);
-		LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-		listView.setLayoutParams(lp);
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        contact = getArguments().getParcelable(CONTACT_KEY);
+
+        setTitle(contact.getFirstName() + "'s mobile?");
+        setNegativeButton("Cancel", null);
+        setPositiveButton(null, null);
+        ListView listView = new ListView(getActivity());
 		listView.setOnItemClickListener(this);
-		db.setView(listView);
-		pnla = new PhoneNumberListAdapter(activity, contact);
-		listView.setAdapter(pnla);
-		dialog = db.show();
-	}
+        setCustomView(listView);
+        ListAdapter adapter = new PhoneNumberListAdapter(getActivity(), contact);
+		listView.setAdapter(adapter);
+    }
 
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		hide();
-		if (delegate != null)
-			delegate.phoneSelected(contact, position);
-	}
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if (callbacks != null)
+            callbacks.phoneSelected(contact, position);
+    }
 
-	public void hide(){
-		if (dialog != null)
-			dialog.dismiss();
-	}
+    public class PhoneNumberListAdapter extends BaseAdapter{
 
-
-	//-----------------------
-	// PhoneNumberListAdapter
-	//-----------------------
-	public class PhoneNumberListAdapter extends BaseAdapter{
-
-		private Activity activity;
+		private Context activity;
 		private Contact contact;
 
-		public PhoneNumberListAdapter(Activity activity, Contact contact){
-			super();
-			this.activity = activity;
+		public PhoneNumberListAdapter(Context context, Contact contact){
+			this.activity = context;
 			this.contact = contact;
 		}
 

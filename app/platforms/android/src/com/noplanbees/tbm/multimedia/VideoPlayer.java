@@ -234,6 +234,7 @@ public class VideoPlayer implements OnCompletionListener{
 	public void onCompletion(MediaPlayer mp) {
 		Log.i(TAG, "play complete.");
         am.abandonAudioFocus(audioFocusChangeListener);
+        // TODO check notification, if it is the last video it will notify two times (also from stop()) --Serhii
 		notifyStopPlaying();
 		Friend friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
 		videoId = friend.getNextIncomingVideoId(videoId);

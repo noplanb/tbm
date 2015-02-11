@@ -10,9 +10,7 @@ import android.content.ServiceConnection;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -20,14 +18,12 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.SyncManager;
 import com.noplanbees.tbm.VersionHandler;
 import com.noplanbees.tbm.bench.BenchController;
-import com.noplanbees.tbm.bench.BenchObject;
+import com.noplanbees.tbm.bench.BenchViewManager;
 import com.noplanbees.tbm.bench.InviteManager;
+import com.noplanbees.tbm.bench.InviteManager.InviteDialogListener;
 import com.noplanbees.tbm.dispatch.Dispatch;
-import com.noplanbees.tbm.model.Contact;
-import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
@@ -35,10 +31,10 @@ import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
 import com.noplanbees.tbm.utilities.DialogShower;
 
-public class MainActivity extends Activity implements GridViewFragment.Callbacks,
-        BenchController.Callbacks, ActionInfoDialogListener, VersionHandler.Callback,
-        InviteManager.Callbacks {
-    private final static String TAG = "MainActivity";
+public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback,
+        InviteDialogListener, BenchViewManager.Provider {
+
+    private static final String TAG = MainActivity.class.getSimpleName();
 
 	public static final int CONNECTED_DIALOG = 0;
 	public static final int NUDGE_DIALOG = 1;
@@ -60,20 +56,20 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	private BenchController benchController;
 	private VersionHandler versionHandler;
 	private Fragment mainFragment;
-	private DrawerLayout body;
 	private InviteManager inviteManager;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_activity);
-		
-		body = (DrawerLayout)findViewById(R.id.drawer_layout);
-		
+
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-		
+
 		gcmHandler = new GcmHandler(this);
 		versionHandler = new VersionHandler(this);
+
+        inviteManager = InviteManager.getInstance();
+        inviteManager.init(this, this);
         benchController = new BenchController(this);
 
 		setupActionBar();
@@ -99,7 +95,6 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 	@Override
 	protected void onStart() {
 		super.onStart();
-        inviteManager = InviteManager.getInstance(this);
         bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 		versionHandler.checkVersionCompatibility();
 		NotificationAlertManager.cancelNativeAlerts(this);
@@ -152,45 +147,19 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 		return super.onCreateOptionsMenu(menu);
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle presses on the action bar items
-		switch (item.getItemId()) {
-		case R.id.action_bench:
-			if(body.isDrawerOpen(Gravity.RIGHT))
-				body.closeDrawers();
-			else
-				body.openDrawer(Gravity.RIGHT);
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
-
-	@Override
-	public void onFinish() {
-		finish();
-	}
-
-	@Override
-	public void onBenchRequest() {
-		body.openDrawer(Gravity.RIGHT);
-	}
-
     @Override
-    public void onGridUpdated() {
-        benchController.onBenchHasChanged();
-    }
-
-    @Override
-	public void onHide() {
-		body.closeDrawers();
-	}
-
-    @Override
-    public void showNoValidPhonesDialog(Contact contact) {
-        DialogShower.showInfoDialog(this, getString(R.string.dialog_no_valid_phones_title),
-                getString(R.string.dialog_no_valid_phones_message, contact.getDisplayName(), contact.getFirstName()));
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_bench:
+                if(benchController.isBenchShowed()) {
+                    benchController.hideBench();
+                } else {
+                    benchController.showBench();
+                }
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
 	@Override
@@ -211,16 +180,6 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
 		}
 	}
 
-	@Override
-	public void inviteFriend(BenchObject bo) {
-		inviteManager.invite(bo);
-	}
-
-	@Override
-	public void onNudgeFriend(Friend f) {
-		inviteManager.nudge(f);
-	}
-
     @Override
     public void onShowInfoDialog(String title, String msg) {
         DialogShower.showInfoDialog(this, title, msg);
@@ -235,4 +194,8 @@ public class MainActivity extends Activity implements GridViewFragment.Callbacks
         DialogShower.showVersionHandlerDialog(this, message, negativeButton);
     }
 
+    @Override
+    public BenchViewManager getBenchViewManager() {
+        return benchController;
+    }
 }

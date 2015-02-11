@@ -1,16 +1,15 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-
 import com.noplanbees.tbm.RemoteStorageHandler.StatusEnum;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.network.FileTransferService;
+
+import java.util.ArrayList;
 // Polls for new videos and schedules downloads.
 public class Poller {
 
@@ -44,15 +43,14 @@ public class Poller {
             public GetRemoteVideoIds(Friend friend) {
                 super(friend);
                 Log.d(TAG, "GetRemoteVideoIds for: " + friend.get(Friend.Attributes.FIRST_NAME));
-                Log.d(TAG, "GetRemoteVideoIds for: " + this.friend.get(Friend.Attributes.FIRST_NAME));
             }
             @Override
             public void gotVideoIds(ArrayList<String> videoIds) {
-                Log.i(TAG, "gotVideoIds: " + friend.get(Friend.Attributes.FIRST_NAME) + ": " + videoIds);
-                handleVideoIds(friend, videoIds);
+                Log.i(TAG, "gotVideoIds: " + getFriend().get(Friend.Attributes.FIRST_NAME) + ": " + videoIds);
+                handleVideoIds(getFriend(), videoIds);
             }
         }
-        
+
         public void handleVideoIds(Friend friend, ArrayList<String> videoIds) {
             for (String videoId : videoIds){
                 Intent intent = new Intent();
@@ -74,22 +72,21 @@ public class Poller {
 
             @Override
             protected void gotVideoIdStatus(String videoId, String status) {
-                Log.i(TAG, "Got video status: " + friend.get(Friend.Attributes.FIRST_NAME) + ": vId:" + videoId + " sts: " + status );
+                Log.i(TAG, "Got video status: " + getFriend().get(Friend.Attributes.FIRST_NAME) + ": vId:" + videoId + " sts: " + status );
                 if (videoId == null)
                     return;
-                
-                if(friend.get(Friend.Attributes.OUTGOING_VIDEO_ID).equals(videoId)){
-                    Log.i(TAG, "gotVideoIdStatus: got status for "  + friend.get(Friend.Attributes.FIRST_NAME) + " for non current videoId. Ignoring");
+
+                if(getFriend().get(Friend.Attributes.OUTGOING_VIDEO_ID).equals(videoId)){
+                    Log.i(TAG, "gotVideoIdStatus: got status for "  + getFriend().get(Friend.Attributes.FIRST_NAME) + " for non current videoId. Ignoring");
                     return;
                 }
-                
+
                 if(status.equals(StatusEnum.DOWNLOADED))
-                    friend.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.DOWNLOADED);
+                    getFriend().setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.DOWNLOADED);
                 else if(status.equals(StatusEnum.VIEWED))
-                    friend.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.VIEWED);
+                    getFriend().setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.VIEWED);
             }
         }
-
 
     }
 

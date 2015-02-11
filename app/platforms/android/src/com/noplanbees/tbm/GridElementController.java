@@ -1,12 +1,14 @@
 package com.noplanbees.tbm;
 
-import android.content.Context;
+import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import com.noplanbees.tbm.bench.BenchViewManager;
+import com.noplanbees.tbm.bench.InviteManager;
 import com.noplanbees.tbm.model.ActiveModel;
 import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.model.Friend;
@@ -14,40 +16,36 @@ import com.noplanbees.tbm.model.GridElement;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.ui.view.GridElementView;
+import com.noplanbees.tbm.utilities.DialogShower;
 
 /**
  * Created by User on 1/30/2015.
  */
 public class GridElementController implements GridElementView.ClickListener, VideoPlayer.StatusCallbacks,
         GridElementView.FriendViewListener, ActiveModel.ModelChangeCallback, Friend.VideoStatusChangedCallback {
+
     private static final String TAG = GridElementController.class.getSimpleName();
+
     private GridElement gridElement;
     private ViewGroup container;
     private GridElementView gridElementView;
-    private final Callbacks callbacks;
-    private Context context;
+    private BenchViewManager benchViewManager;
+    private Activity activity;
     private boolean isVideoPlaying = false;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    public interface Callbacks {
-        void onBenchRequest();
-        void onGridUpdated();
-        void onNudgeFriend(Friend f);
-        void onRecordDialogRequested();
-    }
-
-    public GridElementController(Context context, GridElement gridElement, ViewGroup container, GridElementController.Callbacks callbacks) {
+    public GridElementController(Activity activity, GridElement gridElement, ViewGroup container, BenchViewManager benchViewManager) {
         Log.i(TAG, "instance with view " + container);
-        this.context = context;
+        this.activity = activity;
         this.container = container;
         this.gridElement = gridElement;
-        this.callbacks = callbacks;
+        this.benchViewManager = benchViewManager;
         setUpView();
     }
 
     private void setUpView() {
         if (container.getChildCount() == 0) {
-            gridElementView = new GridElementView(context);
+            gridElementView = new GridElementView(activity);
             container.addView(gridElementView);
         }
         gridElementView.setOnClickListener(this);
@@ -57,7 +55,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         ActiveModelsHandler.getActiveModelsHandler().getFf().addVideoStatusObserver(this);
 
-        VideoPlayer videoPlayer = VideoPlayer.getInstance(context);
+        VideoPlayer videoPlayer = VideoPlayer.getInstance(activity);
         videoPlayer.registerStatusCallbacks(this);
 
         updateContent(false);
@@ -82,17 +80,24 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onNudgeClicked() {
-        callbacks.onNudgeFriend(gridElement.getFriend());
+        InviteManager.getInstance().nudge(gridElement.getFriend());
     }
 
     @Override
     public void onRecordClicked() {
-        callbacks.onRecordDialogRequested();
+        DialogShower.showInfoDialog(activity, activity.getString(R.string.dialog_record_title), activity.getString(R.string.dialog_record_message));
     }
 
     @Override
     public void onEmptyViewClicked() {
-        callbacks.onBenchRequest();
+        benchViewManager.showBench();
+    }
+
+    @Override
+    public void onThumbViewClicked() {
+        // As it has thumb it must have friend, so play video
+        VideoPlayer videoPlayer = VideoPlayer.getInstance(activity);
+        videoPlayer.playOverView(container, gridElement.getFriendId());
     }
 
     @Override
@@ -143,6 +148,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                     gridElementView.setThumbnail(friend.lastThumbBitmap());
                     gridElementView.showButtons(false);
                 } else {
+                    gridElementView.setThumbnail(null);
                     gridElementView.showButtons(true);
                 }
                 gridElementView.showUploadingMark(isUploading());
@@ -266,7 +272,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     public void cleanUp() {
-        VideoPlayer videoPlayer = VideoPlayer.getInstance(context);
+        VideoPlayer videoPlayer = VideoPlayer.getInstance(activity);
         videoPlayer.unregisterStatusCallbacks(this);
         gridElement.removeCallback(this);
         ActiveModelsHandler.getActiveModelsHandler().getFf().removeOnVideoStatusChangedObserver(this);
@@ -276,7 +282,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     public void onModelChanged() {
         updateContent(false);
         highLightElementForFriend();
-        callbacks.onGridUpdated();
+        benchViewManager.updateBench();
     }
 
     //----------------------
@@ -287,6 +293,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             return;
         }
         final View v = container.findViewById(R.id.animation_view);
-        v.startAnimation(AnimationUtils.loadAnimation(context, R.anim.grid_element_appear));
+        v.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.grid_element_appear));
     }
 }

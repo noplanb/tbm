@@ -72,8 +72,10 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 		if(name != null){
 			btnOk.setVisibility(View.VISIBLE);
 			btnOk.setText(name);
-		}
-		if(clickListener != null)
+		}else
+            btnOk.setVisibility(View.GONE);
+
+        if(clickListener != null)
 			btnOk.setOnClickListener(clickListener);
 	}
 	
