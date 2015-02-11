@@ -2,7 +2,9 @@ package com.noplanbees.tbm.bench;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,52 +15,41 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.ContactsManager;
-import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.GridManager;
+import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.Attributes;
-import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.FriendFactory;
+import com.noplanbees.tbm.utilities.DialogShower;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnItemClickListener,
-        ContactsManager.ContactSelected {
+        ContactsManager.ContactSelected, SelectPhoneNumberDialog.SelectPhoneNumberDelegate, BenchViewManager {
 
 	private final String TAG = getClass().getSimpleName();
 
-    public interface Callbacks {
-		void onHide();
-		void showNoValidPhonesDialog(Contact contact);
-        void onShowSelectPhoneNumberDialog(Contact contact);
-   }
-
 	private Activity activity;
 	private ListView listView;
+    private DrawerLayout drawerLayout;
     private BenchAdapter adapter;
 	private FriendFactory friendFactory;
 	private SmsStatsHandler smsStatsHandler;
 	private ArrayList<BenchObject> smsBenchObjects;
 	private ArrayList<BenchObject> currentAllOnBench;
 	private ContactsManager contactsManager;
-	private Callbacks benchControllerCallbacks;
 
 	// ----------------------
 	// Constructor and setup
 	// ----------------------
 	public BenchController(Activity a) {
 		activity = a;
-		try {
-			benchControllerCallbacks = (Callbacks) a;
-		} catch (ClassCastException e) {
-			Dispatch.dispatch("Your activity must implemnets BenchController.Callbacks");
-		}
 
+        drawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
         adapter = new BenchAdapter(activity, null);
 
         listView = (ListView) activity.findViewById(R.id.bench_list);
@@ -79,8 +70,8 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		benchControllerCallbacks.onHide();
 
+        hideBench();
 		BenchObject bo = currentAllOnBench.get(position);
 		Log.i(TAG, "Postion:" + position + " " + bo.displayName);
 
@@ -92,6 +83,27 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
 		GridManager.getInstance().moveFriendToGrid(friend);
 	}
+
+    @Override
+    public void showBench() {
+        drawerLayout.openDrawer(Gravity.RIGHT);
+    }
+
+    @Override
+    public void hideBench() {
+        drawerLayout.closeDrawers();
+    }
+
+    @Override
+    public void updateBench() {
+        adapter.setList(allOnBench());
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean isBenchShowed() {
+        return drawerLayout.isDrawerOpen(Gravity.RIGHT);
+    }
 
 	// ---------
 	// Populate
@@ -184,7 +196,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	public void contactSelected(Contact contact) {
 		Log.i(TAG, contact.toString());
 
-		benchControllerCallbacks.onHide();
+        hideBench();
 
 		Friend f = friendMatchingContact(contact);
 		if (f != null) {
@@ -193,7 +205,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		}
 
 		if (contact.phoneObjects.size() == 0) {
-			benchControllerCallbacks.showNoValidPhonesDialog(contact);
+			showNoValidPhonesDialog(contact);
 			return;
 		}
 
@@ -202,18 +214,18 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 			return;
 		}
 
-        benchControllerCallbacks.onShowSelectPhoneNumberDialog(contact);
+		benchControllerCallbacks.onShowSelectPhoneNumberDialog(contact);
 	}
+
+    private void showNoValidPhonesDialog(Contact contact) {
+        DialogShower.showInfoDialog(activity, activity.getString(R.string.dialog_no_valid_phones_title),
+                activity.getString(R.string.dialog_no_valid_phones_message, contact.getDisplayName(), contact.getFirstName()));
+    }
 
 	private void invite(Contact contact, LinkedTreeMap<String, String> mobileNumber) {
 		BenchObject bo = BenchObject.benchObjectWithContact(contact, mobileNumber);
         InviteManager.getInstance().invite(bo);
 	}
-
-    public void onBenchHasChanged(){
-        adapter.setList(allOnBench());
-        adapter.notifyDataSetChanged();
-    }
 
 	private class BenchAdapter extends BaseAdapter{
 

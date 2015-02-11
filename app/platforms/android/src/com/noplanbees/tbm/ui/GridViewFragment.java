@@ -10,8 +10,6 @@ import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +21,7 @@ import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.SyncManager;
+import com.noplanbees.tbm.bench.BenchViewManager;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.GridElement;
@@ -46,22 +45,15 @@ import java.util.ArrayList;
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
 public class GridViewFragment extends Fragment implements CameraExceptionHandler, VideoPlayer.StatusCallbacks,
-        SensorEventListener, GridElementController.Callbacks, DoubleActionDialogListener {
+        SensorEventListener, DoubleActionDialogListener {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
 
     private ArrayList<GridElementController> viewControllers;
 
-    public interface Callbacks {
-        void onFinish();
-        void onBenchRequest();
-        void onGridUpdated();
-    }
-
     private NineViewGroup nineViewGroup;
     private VideoPlayer videoPlayer;
     private VideoRecorderManager videoRecorderManager;
-    private Handler uiHandler = new Handler(Looper.getMainLooper());
 
     private UnexpectedTerminationHelper unexpectedTerminationHelper = new UnexpectedTerminationHelper();
 
@@ -165,8 +157,15 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             viewControllers.clear();
         }
         int i = 0;
-        for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
-            GridElementController gec = new GridElementController(getActivity(), ge, nineViewGroup.getSurroundingFrame(i), GridViewFragment.this);
+        BenchViewManager benchViewManager;
+        try {
+            benchViewManager = ((BenchViewManager.Provider) getActivity()).getBenchViewManager();
+        } catch (ClassCastException e) {
+            throw new RuntimeException("Activity must inherit BenchViewManagerProvider.");
+        }
+
+        for (GridElement ge : GridElementFactory.getFactoryInstance().all()) {
+            GridElementController gec = new GridElementController(getActivity(), ge, nineViewGroup.getSurroundingFrame(i), benchViewManager);
             viewControllers.add(gec);
             i++;
         }
@@ -195,7 +194,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
                 videoRecorderManager.reconnect();
                 break;
             case DoubleActionDialogListener.BUTTON_NEGATIVE:
-                getCallbacks().onFinish();
+                getActivity().finish();
                 break;
         }
     }
@@ -268,21 +267,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     @Override
-    public void onBenchRequest() {
-        getCallbacks().onBenchRequest();
-    }
-
-    @Override
-    public void onGridUpdated() {
-        getCallbacks().onGridUpdated();
-    }
-
-    @Override
-    public void onRecordDialogRequested() {
-        DialogShower.showInfoDialog(getActivity(), getString(R.string.dialog_record_title), getString(R.string.dialog_record_message));
-    }
-
-    @Override
     public void onVideoPlaying(String friendId, String videoId) {}
 
     @Override
@@ -323,13 +307,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         }
     }
 
-    // TODO: Serhii please have the gridcontrollers register directly for all callbacks they need. 
-    // I am getting confused with all the passing around of callbacks. If you think that is a bad 
-    // idea please tell me why.
-    private Callbacks getCallbacks() {
-        return (Callbacks) getActivity();
-    }
-
     // TODO: again let us remove this and have the gridElementControllers registerFor and handle the callbacks they need
     // directly with the models.
     private interface ViewControllerTask {
@@ -342,20 +319,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     private class NineViewGestureListener implements NineViewGroup.GestureCallbacks {
         @Override
         public boolean onSurroundingClick(View view, int position) {
-        	// TODO: Serhii Please remove all of this from here and start play or show bench from gridElementController -- Sani
-        	// Have the gridElementController listen for clicks on noFriendView as well as ThumbNail view.
-            Log.d(TAG, "onSurroundingClick: " + position);
-
-            GridElement gridElement = GridElementFactory.getFactoryInstance().get(position);
-            String friendId = gridElement.getFriendId();
-            if (friendId != null && !friendId.equals("")) {
-                videoPlayer.playOverView(view, friendId);
-            } else {
-            	// TODO: This is delegated to the gridElementController. But this entire click handler should really be handled there.
-            	// We should really only use the NineViewGesture listener for longpress gestures. All clicks should be registerd for 
-            	// and handled by the gridViewController.
-                getCallbacks().onBenchRequest();
-            }
             return true;
         }
 

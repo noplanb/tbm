@@ -36,6 +36,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 		void onNudgeClicked();
 		void onRecordClicked();
         void onEmptyViewClicked();
+        void onThumbViewClicked();
 	}
 
     public interface FriendViewListener {
@@ -55,7 +56,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 	private View unreadBorder;
     private View mEmptyView;
     private View bodyLayout;
-
 
 	private ClickListener mClickListener;
 
@@ -101,6 +101,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         twNundge.setOnClickListener(this);
         twRecord.setOnClickListener(this);
         mEmptyView.setOnClickListener(this);
+        imgThumb.setOnClickListener(this);
     }
 
     @Override
@@ -138,6 +139,8 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             case R.id.empty_view:
                 mClickListener.onEmptyViewClicked();
                 break;
+            case R.id.img_thumb:
+                mClickListener.onThumbViewClicked();
         }
     }
 
@@ -186,7 +189,12 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     }
 
     public void setThumbnail(Bitmap bitmap) {
-        imgThumb.setImageBitmap(bitmap);
+        if (bitmap != null) {
+            imgThumb.setImageBitmap(bitmap);
+            imgThumb.setVisibility(VISIBLE);
+        } else {
+            imgThumb.setVisibility(GONE);
+        }
     }
 
     public void showButtons(boolean visible) {
