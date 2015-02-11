@@ -31,7 +31,6 @@ public class Poller {
         }
 
         public void poll(Friend friend){
-            Log.i(TAG, "poll: " + friend.get(Friend.Attributes.FIRST_NAME));
             new GetRemoteVideoIds(friend);
 
             if(friend.getOutgoingVideoStatus()!=Friend.OutgoingVideoStatus.VIEWED)
@@ -44,10 +43,12 @@ public class Poller {
         private class GetRemoteVideoIds extends RemoteStorageHandler.GetRemoteIncomingVideoIds {
             public GetRemoteVideoIds(Friend friend) {
                 super(friend);
+                Log.d(TAG, "GetRemoteVideoIds for: " + friend.get(Friend.Attributes.FIRST_NAME));
+                Log.d(TAG, "GetRemoteVideoIds for: " + this.friend.get(Friend.Attributes.FIRST_NAME));
             }
             @Override
             public void gotVideoIds(ArrayList<String> videoIds) {
-                Log.i(TAG, "gotVideoIds: " + videoIds);
+                Log.i(TAG, "gotVideoIds: " + friend.get(Friend.Attributes.FIRST_NAME) + ": " + videoIds);
                 handleVideoIds(friend, videoIds);
             }
         }
@@ -73,6 +74,10 @@ public class Poller {
 
             @Override
             protected void gotVideoIdStatus(String videoId, String status) {
+                Log.i(TAG, "Got video status: " + friend.get(Friend.Attributes.FIRST_NAME) + ": vId:" + videoId + " sts: " + status );
+                if (videoId == null)
+                    return;
+                
                 if(friend.get(Friend.Attributes.OUTGOING_VIDEO_ID).equals(videoId)){
                     Log.i(TAG, "gotVideoIdStatus: got status for "  + friend.get(Friend.Attributes.FIRST_NAME) + " for non current videoId. Ignoring");
                     return;

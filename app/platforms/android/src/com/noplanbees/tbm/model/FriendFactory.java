@@ -55,16 +55,9 @@ public class FriendFactory extends ActiveModelFactory{
     public Friend updateWithServerParams(Context context, LinkedTreeMap<String, String> params){
         boolean servHasApp = servHasApp(params);
         Friend f = getFriendFromMkey(params.get(ServerParamKeys.MKEY));
-        Log.d(TAG, "servHasApp: " + servHasApp);
-        Log.d(TAG, "friend: " + f);
         if (f != null){
-            Log.d(TAG, "friend hasApp: " + f.hasApp());
-            Log.d(TAG, "friend hasAppStr" + f.get(Friend.Attributes.HAS_APP));
-            Log.d(TAG, "xor: " + (f.hasApp() ^ servHasApp));
-
             if (f.hasApp() ^ servHasApp){
                 f.setHasApp(servHasApp);
-                Log.d(TAG, "friend hasAppStr after update" + f.get(Friend.Attributes.HAS_APP));
                 GridManager.getInstance().rankingActionOccurred(f);
                 notifyStatusChanged(f);
                 return f;
