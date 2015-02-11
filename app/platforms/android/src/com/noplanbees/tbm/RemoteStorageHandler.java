@@ -1,18 +1,14 @@
 package com.noplanbees.tbm;
 
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
 import com.noplanbees.tbm.network.HttpRequest;
 
 import java.util.ArrayList;
-
-import javax.security.auth.callback.Callback;
 
 
 public class RemoteStorageHandler {
@@ -61,7 +57,7 @@ public class RemoteStorageHandler {
     //--------
     // incomingVideoIds
     public static abstract class GetRemoteIncomingVideoIds extends GetRemoteKVs{
-        public Friend friend;
+        private final Friend friend;
         
         public GetRemoteIncomingVideoIds(Friend friend){
             super(incomingVideoIdsRemoteKVKey(friend));
@@ -81,26 +77,35 @@ public class RemoteStorageHandler {
             gotVideoIds(values);
         }
         protected abstract void gotVideoIds(ArrayList<String>videoIds);
+
+        protected Friend getFriend() {
+            return friend;
+        }
     }
     
     
     // OutgoingVideoStatus
     public static abstract class GetRemoteOutgoingVideoStatus extends GetRemoteKV{
-        public Friend friend;
-        
+        private final Friend friend;
+
         public GetRemoteOutgoingVideoStatus(Friend friend){
             super(outgoingVideoStatusRemoteKVKey(friend), null);
             this.friend = friend;
         }
-        
+
         @Override
         protected void gotRemoteKV(LinkedTreeMap<String, String> kv) {
             if (kv == null)
                 gotVideoIdStatus(null, null);
             else
                 gotVideoIdStatus(kv.get(DataKeys.VIDEO_ID_KEY), kv.get(DataKeys.STATUS_KEY));
-        }   
+        }
+
         protected abstract void gotVideoIdStatus(String videoId, String status);
+
+        protected Friend getFriend() {
+            return friend;
+        }
     }
 
     
