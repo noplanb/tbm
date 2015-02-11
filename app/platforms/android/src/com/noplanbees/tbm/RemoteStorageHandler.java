@@ -214,18 +214,21 @@ public class RemoteStorageHandler {
 	                @SuppressWarnings("unchecked")
 	                @Override
 	                public void success(String response) {
-	                    LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
+	                    LinkedTreeMap<String, String> data;
 	                    
 	                    if (response.isEmpty()){
-	                        gotRemoteKV(data);
+	                        gotRemoteKV(null);
 	                        return;
 	                    }
-	                    
-	                    data = new Gson().fromJson(response, data.getClass());
-	                    LinkedTreeMap<String,String> value = new LinkedTreeMap<String, String>();
-	                    value = new Gson().fromJson(data.get(DataKeys.VALUE_KEY), value.getClass());
-	                    
-	                    gotRemoteKV(value);
+
+                        Gson gson = new Gson();
+                        data = gson.fromJson(response, LinkedTreeMap.class);
+                        if(data!=null) {
+                            LinkedTreeMap<String, String> value;
+                            value = gson.fromJson(data.get(DataKeys.VALUE_KEY), LinkedTreeMap.class);
+                            gotRemoteKV(value);
+                        }else
+                            gotRemoteKV(null);
 	                }
 
 	                @Override

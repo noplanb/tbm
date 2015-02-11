@@ -282,8 +282,9 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
              	    holder.thumb.setImageBitmap(friend.lastThumbBitmap());
                 else
                     holder.thumb.setImageResource(R.drawable.ic_no_pic_z);
+                holder.thumb.setVisibility(View.VISIBLE);
 			}else{
-				holder.thumb.setImageResource(R.drawable.ic_no_pic_z);
+				holder.thumb.setVisibility(View.GONE);
 			}
 			
 			holder.name.setText(item.displayName);
