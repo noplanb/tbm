@@ -182,7 +182,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     // CameraExceptionHandler delegate
     // -------------------------------
     @Override
-    public void onExceptionDialogActionClicked(int id, int button) {
+    public void onDialogActionClicked(int id, int button) {
         switch (button) {
             case DoubleActionDialogListener.BUTTON_POSITIVE:
                 videoRecorderManager.reconnect();
@@ -195,7 +195,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     @Override
     public void onCameraException(CameraException exception) {
-        DialogShower.showCameraException(getActivity(), exception, this);
+        DialogShower.showCameraException(getActivity(), exception, this, exception.ordinal());
     }
 
     // TODO: Sani, should friend be moved to the grid on new message? --Serhii

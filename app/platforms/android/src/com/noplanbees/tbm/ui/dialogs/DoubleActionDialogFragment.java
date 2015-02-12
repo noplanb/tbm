@@ -17,26 +17,26 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
     private static final String ACTION_NEGATIVE = "action_negative";
     private static final String ID = "dialog_id";
 
-    public interface DoubleActionDialogListener {
+    public interface DoubleActionDialogListener extends DialogListener {
         public static final int BUTTON_POSITIVE = DialogInterface.BUTTON_POSITIVE;
         public static final int BUTTON_NEGATIVE = DialogInterface.BUTTON_NEGATIVE;
 
-        void onExceptionDialogActionClicked(int id, int button);
+        void onDialogActionClicked(int id, int button);
     }
 
-    public static DoubleActionDialogFragment getInstance(String title, String message, String actionPositive,
-                                             String actionNegative){
-        DoubleActionDialogFragment fragment = new DoubleActionDialogFragment();
+    public static DialogFragment getInstance(int id, String title, String message, String actionPositive,
+                                             String actionNegative, DialogListener listener) {
+        AbstractDialogFragment fragment = new DoubleActionDialogFragment();
+
         Bundle args = new Bundle();
-        args.putString(DoubleActionDialogFragment.TITLE, title);
-        args.putString(DoubleActionDialogFragment.MSG, message);
-        args.putString(DoubleActionDialogFragment.ACTION_POSITIVE, actionPositive);
-        args.putString(DoubleActionDialogFragment.ACTION_NEGATIVE, actionNegative);
+        args.putString(TITLE, title);
+        args.putString(MSG, message);
+        args.putString(ACTION_POSITIVE, actionPositive);
+        args.putString(ACTION_NEGATIVE, actionNegative);
+        fragment.setDialogListener(args, listener, id);
         fragment.setArguments(args);
         return fragment;
     }
-
-    private DoubleActionDialogListener listener;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -52,19 +52,16 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
         setNegativeButton(actionNegative, this);
     }
 
-    public void setListener(DoubleActionDialogListener listener) {
-        this.listener = listener;
-    }
-
     @Override
     public void onClick(View v) {
-        if (listener != null) {
+        if (getListener() instanceof DoubleActionDialogListener) {
+            DoubleActionDialogListener listener = ((DoubleActionDialogListener) getListener());
             switch (v.getId()) {
                 case R.id.btn_dialog_ok:
-                    listener.onExceptionDialogActionClicked(getArguments().getInt(ID, -1), DoubleActionDialogListener.BUTTON_POSITIVE);
+                    listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_POSITIVE);
                     break;
                 case R.id.btn_dialog_cancel:
-                    listener.onExceptionDialogActionClicked(getArguments().getInt(ID, -1), DoubleActionDialogListener.BUTTON_NEGATIVE);
+                    listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_NEGATIVE);
                     break;
             }
         }

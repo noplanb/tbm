@@ -623,7 +623,7 @@ public class Friend extends ActiveModel{
     }
     
     public boolean hasDownloadingVideo(){
-        for (Video v : VideoFactory.getFactoryInstance().allWithFriendId(getId())) {
+        for (Video v : getIncomingVideos()) {
             if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING)
                 return true;
         }
@@ -631,7 +631,7 @@ public class Friend extends ActiveModel{
     }
     
     public boolean hasRetryingDownload(){
-        for (Video v : VideoFactory.getFactoryInstance().allWithFriendId(getId())){
+        for (Video v : getIncomingVideos()){
             if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING && v.getDownloadRetryCount() > 0)
                 return true;
         }

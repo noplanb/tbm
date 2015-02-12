@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.res.Resources;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
@@ -12,6 +11,7 @@ import android.widget.Toast;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.multimedia.CameraException;
+import com.noplanbees.tbm.ui.dialogs.AbstractDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.DoubleActionDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
@@ -42,17 +42,17 @@ public class DialogShower {
         Resources res = activity.getResources();
         showActionInfoDialog(activity, res.getString(R.string.dialog_bad_connection_title),
                 res.getString(R.string.dialog_bad_connection_message), res.getString(R.string.dialog_action_try_again),
-                false, -1);
+                false, -1, null);
     }
 
     public static void showActionInfoDialog(Activity activity, String title, String message, String action,
-                                            boolean needCancel, int actionId) {
+                                            boolean needCancel, int actionId, AbstractDialogFragment.DialogListener listener) {
         DialogFragment dialog = ActionInfoDialogFragment.getInstance(title, message, action, actionId,
-                needCancel);
+                needCancel, listener);
         dialog.show(activity.getFragmentManager(), null);
     }
 
-    public static void showCameraException(final Activity activity, CameraException cameraException, final DoubleActionDialogListener listener) {
+    public static void showCameraException(final Activity activity, CameraException cameraException, final DoubleActionDialogListener listener, final int id) {
         Resources res = activity.getResources();
         final String title = res.getString(cameraException.getTitleId());
         final String message = res.getString(cameraException.getMessageId());
@@ -63,8 +63,7 @@ public class DialogShower {
 
             @Override
             public void run() {
-                DoubleActionDialogFragment dialogFragment = DoubleActionDialogFragment.getInstance(title, message, positiveText, negativeText);
-                dialogFragment.setListener(listener);
+                DialogFragment dialogFragment = DoubleActionDialogFragment.getInstance(id, title, message, positiveText, negativeText, listener);
                 dialogFragment.show(activity.getFragmentManager(), null);
             }
         });

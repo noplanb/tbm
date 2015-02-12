@@ -23,21 +23,16 @@ public class SelectPhoneNumberDialog extends AbstractDialogFragment implements A
         SelectPhoneNumberDialog f = new SelectPhoneNumberDialog();
         Bundle args = new Bundle();
         args.putParcelable(CONTACT_KEY, contact);
+        f.setDialogListener(args, callbacks, 0);
         f.setArguments(args);
-        f.setCallbacks(callbacks);
         return f;
     }
 
-    public interface Callbacks {
+    public interface Callbacks extends DialogListener {
 		public void phoneSelected(Contact contact, int phoneIndex);
 	}
 
 	private Contact contact;
-	private Callbacks callbacks;
-
-    private void setCallbacks(Callbacks callbacks) {
-        this.callbacks = callbacks;
-    }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -56,8 +51,8 @@ public class SelectPhoneNumberDialog extends AbstractDialogFragment implements A
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (callbacks != null)
-            callbacks.phoneSelected(contact, position);
+        if (getListener() instanceof Callbacks)
+            ((Callbacks) getListener()).phoneSelected(contact, position);
     }
 
     public class PhoneNumberListAdapter extends BaseAdapter{

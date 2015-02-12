@@ -189,7 +189,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     }
 
     public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, int actionId){
-        DialogShower.showActionInfoDialog(this, title, msg, actionTitle, isNeedCancel, actionId);
+        DialogShower.showActionInfoDialog(this, title, msg, actionTitle, isNeedCancel, actionId, this);
     }
 
     @Override

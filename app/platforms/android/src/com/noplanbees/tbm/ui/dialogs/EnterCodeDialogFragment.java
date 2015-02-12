@@ -1,6 +1,5 @@
 package com.noplanbees.tbm.ui.dialogs;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
@@ -9,7 +8,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.TextView;
-
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
@@ -19,26 +17,18 @@ import com.noplanbees.tbm.R;
 public class EnterCodeDialogFragment extends AbstractDialogFragment {
 
 	private static final String PHONE_NUMBER = "phonenumber";
-	
-	public interface Callbacks{
+
+	public interface Callbacks extends DialogListener {
 		void didEnterCode(String code);
 	}
 
-    public static DialogFragment getInstance(String phoneNumber){
-        DialogFragment fragment = new EnterCodeDialogFragment();
+    public static DialogFragment getInstance(String phoneNumber, Callbacks callbacks){
+        AbstractDialogFragment fragment = new EnterCodeDialogFragment();
         Bundle args = new Bundle();
-
+        fragment.setDialogListener(args, callbacks, 0);
         fragment.setArguments(args);
         return fragment;
     }
-	
-	private Callbacks callbacks;
-	
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		callbacks = (Callbacks) activity;
-	}
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -49,25 +39,27 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment {
     @Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		
+
 		String e164 = getArguments().getString(PHONE_NUMBER);
-		
+
 		setTitle("Enter Code");
-		
+
 		View v = LayoutInflater.from(getActivity()).inflate(R.layout.enter_code_dialog, 
 				null, false);
 		TextView twMsg = (TextView) v.findViewById(R.id.tw_msg);
 		final EditText edtVerificationCode = (EditText) v.findViewById(R.id.edt_code);
-		
-		twMsg.setText(getString(R.string.enter_code_dlg_msg, 
+
+		twMsg.setText(getString(R.string.enter_code_dlg_msg,
 				phoneWithFormat(e164, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL)));
-		
+
 		setCustomView(v);
-		
+
 		setPositiveButton("Enter", new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				callbacks.didEnterCode(edtVerificationCode.getText().toString().replaceAll("\\s+", ""));
+                if (getListener() instanceof Callbacks) {
+                    ((Callbacks) getListener()).didEnterCode(edtVerificationCode.getText().toString().replaceAll("\\s+", ""));
+                }
 				dismiss();
 			}
 		});

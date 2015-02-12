@@ -6,7 +6,7 @@ import android.view.View;
 
 public class InfoDialogFragment extends AbstractDialogFragment {
 
-	private  static final String TITLE = "title";
+	private static final String TITLE = "title";
 	private static final String MSG = "msg";
 
     public static DialogFragment getInstance(String title, String message){

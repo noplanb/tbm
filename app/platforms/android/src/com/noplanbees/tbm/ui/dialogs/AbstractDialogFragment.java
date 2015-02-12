@@ -1,6 +1,8 @@
 package com.noplanbees.tbm.ui.dialogs;
 
+import android.app.Activity;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,15 +16,22 @@ import com.noplanbees.tbm.R;
 
 abstract public class AbstractDialogFragment extends DialogFragment {
 
+    private static final String TARGET_TYPE = "target_type";
+    private static final String ID = "dialog_id";
+
 	private Button btnCancel;
 	private Button btnOk;
 	private TextView twTitle;
 	private TextView twMsg;
 	private FrameLayout body;
 	private View btnsDivider;
-	
-	
-	@Override
+    private DialogListener listener;
+
+    public interface DialogListener {
+        // Just a marker
+    }
+
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
@@ -56,9 +65,37 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 		});
 
 		return v;
-	}	
-	
-	protected void setTitle(String title){
+	}
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (getArguments() != null) {
+            DialogListenerType type = (DialogListenerType) getArguments().getSerializable(TARGET_TYPE);
+            if (type != null) {
+                switch (type) {
+                    case ACTIVITY:
+                        listener = (DialogListener) activity;
+                        break;
+                    case FRAGMENT:
+                        listener = (DialogListener) getTargetFragment();
+                        break;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
+    }
+
+    protected DialogListener getListener() {
+        return listener;
+    }
+
+    protected void setTitle(String title){
         if(title!=null) {
             twTitle.setVisibility(View.VISIBLE);
             twTitle.setText(title);
@@ -96,4 +133,19 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 	protected void setCustomView(View ll) {
 		body.addView(ll, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT));
 	}
+
+    protected void setDialogListener(Bundle args, DialogListener listener, int dialogId) {
+        DialogListenerType type = DialogListenerType.getType(listener);
+        args.putSerializable(TARGET_TYPE, type);
+        args.putInt(ID, dialogId);
+        if (type == DialogListenerType.FRAGMENT) {
+            setTargetFragment((Fragment) listener, dialogId);
+        }
+    }
+
+    protected int getDialogId() {
+        if (getArguments() != null)
+            return getArguments().getInt(ID, -1);
+        return -1;
+    }
 }

@@ -290,7 +290,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 
 	private void showVerificationDialog() {
 		if(enterCodeDialog == null)
-			enterCodeDialog = EnterCodeDialogFragment.getInstance(e164);
+			enterCodeDialog = EnterCodeDialogFragment.getInstance(e164, this);
 		enterCodeDialog.show(getFragmentManager(), "enterCdDlg");
 	}
 
