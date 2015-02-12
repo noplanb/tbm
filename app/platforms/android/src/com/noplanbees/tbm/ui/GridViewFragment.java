@@ -44,8 +44,7 @@ import java.util.ArrayList;
 
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
-public class GridViewFragment extends Fragment implements CameraExceptionHandler, VideoPlayer.StatusCallbacks,
-        SensorEventListener, DoubleActionDialogListener {
+public class GridViewFragment extends Fragment implements CameraExceptionHandler, SensorEventListener, DoubleActionDialogListener {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
 
@@ -102,7 +101,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         super.onResume();
         Logger.i(TAG, "onResume");
         videoRecorderManager.onResume();
-        videoPlayer.registerStatusCallbacks(this);
         sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
@@ -118,8 +116,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         Logger.i(TAG, "onPause");
         super.onPause();
         videoRecorderManager.onPause();
-        videoPlayer.unregisterStatusCallbacks(this);
-        videoPlayer.release(getActivity());
+        videoPlayer.release();
         sensorManager.unregisterListener(this);
     }
 
@@ -266,23 +263,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             currentIntent.setAction(IntentHandler.IntentActions.NONE);
             Log.i(TAG, currentIntent.toString());
         }
-    }
-
-    @Override
-    public void onVideoPlaying(String friendId, String videoId) {}
-
-    @Override
-    public void onVideoStopPlaying(String friendId) {}
-
-    @Override
-    public void onFileDownloading() {
-        DialogShower.showToast(getActivity(), getString(R.string.toast_downloading));
-    }
-
-    @Override
-    public void onFileDownloadingRetry() {
-        FileDownloadService.restartTransfersPendingRetry(getActivity());
-        DialogShower.showBadConnection(getActivity());
     }
 
     @Override

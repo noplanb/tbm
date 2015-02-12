@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+
 import com.noplanbees.tbm.bench.BenchViewManager;
 import com.noplanbees.tbm.bench.InviteManager;
 import com.noplanbees.tbm.model.ActiveModel;
@@ -122,12 +123,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         Friend friend = gridElement.getFriend();
         return friend != null && friendId != null && friendId.equals(friend.getId());
     }
-
-    @Override
-    public void onFileDownloading() {    }
-
-    @Override
-    public void onFileDownloadingRetry() {   }
 
     private void updateContent(final boolean hideIndicators) {
         uiHandler.post(new Runnable() {
@@ -289,7 +284,14 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (!gridElement.hasFriend()) {
             return;
         }
-        final View v = container.findViewById(R.id.animation_view);
-        v.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.grid_element_appear));
+        
+        uiHandler.post(new Runnable(){
+            @Override
+            public void run() {
+                final View v = container.findViewById(R.id.animation_view);
+                v.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.grid_element_appear));                
+            } 
+        });
+
     }
 }

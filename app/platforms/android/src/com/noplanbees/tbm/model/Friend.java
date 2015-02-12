@@ -263,13 +263,14 @@ public class Friend extends ActiveModel{
         Iterator<Video> i = videos.iterator();
         while (i.hasNext()){
             Video v = i.next();
-            if(v.getIncomingVideoStatus() != Video.IncomingVideoStatus.DOWNLOADED || v.getIncomingVideoStatus() != Video.IncomingVideoStatus.VIEWED)
+            if(v.getIncomingVideoStatus() != Video.IncomingVideoStatus.DOWNLOADED && v.getIncomingVideoStatus() != Video.IncomingVideoStatus.VIEWED)
                 i.remove();
         }
         return videos;
     } 
     
     public ArrayList<Video> getSortedIncomingPlayableVideos(){
+        Log.i(TAG, "getSortedIncomingPlayableVideos: " + sortVideosByTimeStamp(getIncomingPlayableVideos()));
         return sortVideosByTimeStamp(getIncomingPlayableVideos());
     }
     
@@ -433,7 +434,6 @@ public class Friend extends ActiveModel{
             
             String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             long duration = Long.parseLong( time );
-            Log.d(TAG, "createThumb: duration = " + duration);
             
             long pos;
             if(duration>1500)
@@ -744,7 +744,6 @@ public class Friend extends ActiveModel{
     }
     
     public String getUniqueName(){
-        Log.d(TAG, "getUniqueName");
         if (otherHasSameFirstName())
             return getFirstInitialDotLast();
         else 
@@ -752,9 +751,7 @@ public class Friend extends ActiveModel{
     }
     
     private boolean otherHasSameFirstName(){
-        Log.d(TAG, "otherHasSameFirstName");
         for (Friend f : FriendFactory.getFactoryInstance().all()){
-            Log.d(TAG, "otherHasSameFirstName: " + "friend: " + f.getFirstName() + " Self: " + getFirstName() + " Same: " + f.getFirstName().equalsIgnoreCase(getFirstName()));
             if (f != this && f.getFirstName().equalsIgnoreCase(getFirstName()))
                 return true;
         }

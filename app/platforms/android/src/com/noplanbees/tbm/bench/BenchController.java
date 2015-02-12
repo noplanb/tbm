@@ -2,6 +2,8 @@ package com.noplanbees.tbm.bench;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Gravity;
@@ -15,6 +17,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.ContactsManager;
 import com.noplanbees.tbm.GridManager;
@@ -96,8 +99,14 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
     @Override
     public void updateBench() {
-        adapter.setList(allOnBench());
-        adapter.notifyDataSetChanged();
+        new Handler(Looper.getMainLooper()).post(new Runnable(){
+            @Override
+            public void run() {
+                adapter.setList(allOnBench());
+                adapter.notifyDataSetChanged();                
+            }  
+        });
+
     }
 
     @Override

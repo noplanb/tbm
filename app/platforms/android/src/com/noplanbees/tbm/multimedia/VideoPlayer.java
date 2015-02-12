@@ -1,5 +1,10 @@
 package com.noplanbees.tbm.multimedia;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+
+import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -10,15 +15,12 @@ import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
 
+import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.Video;
-import com.noplanbees.tbm.model.VideoFactory;
 import com.noplanbees.tbm.network.FileDownloadService;
-
-import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
+import com.noplanbees.tbm.utilities.DialogShower;
 
 
 public class VideoPlayer implements OnCompletionListener{
@@ -28,13 +30,11 @@ public class VideoPlayer implements OnCompletionListener{
 	public interface StatusCallbacks{
 		void onVideoPlaying(String friendId, String videoId);
 		void onVideoStopPlaying(String friendId);
-        void onFileDownloading();
-        void onFileDownloadingRetry();
 	}
 	
 	private static VideoPlayer videoPlayer;
 	
-	private Context context;
+	private Activity activity;
 	private String videoId;
 	private Video video;
 	private String friendId;
@@ -51,11 +51,11 @@ public class VideoPlayer implements OnCompletionListener{
     //---------------------
     // Instantiate and init
     //---------------------
-    private VideoPlayer(Context context) {
-		this.context = context;
+    private VideoPlayer(Activity a) {
+		activity = a;
 		statusCallbacks = new HashSet<StatusCallbacks>();
 
-        audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
+        audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
         
         // TODO: GARF: Andrey why are these not used?
         audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
@@ -74,9 +74,9 @@ public class VideoPlayer implements OnCompletionListener{
     }
     
     // TODO: Serhii reference should be held by the instantiating fragment
-    public static VideoPlayer getInstance(Context context){
+    public static VideoPlayer getInstance(Activity activity){
         if(videoPlayer == null)
-            videoPlayer = new VideoPlayer(context);
+            videoPlayer = new VideoPlayer(activity);
         return videoPlayer;
     }
     
@@ -114,18 +114,6 @@ public class VideoPlayer implements OnCompletionListener{
 			callbacks.onVideoStopPlaying(friendId);
 		}
 	}
-
-    private void notifyFileDownloading(){
-        for (StatusCallbacks callbacks : statusCallbacks) {
-            callbacks.onFileDownloading();
-        }
-    }
-
-    private void notifyFileDownloadingRetry(){
-        for (StatusCallbacks callbacks : statusCallbacks) {
-            callbacks.onFileDownloadingRetry();
-        }
-    }
 	
 
     //---------------
@@ -133,6 +121,10 @@ public class VideoPlayer implements OnCompletionListener{
     //---------------
 	public void togglePlayOverView(View view, String friendId){
 		boolean needToPlay = !(isPlaying() && friendId.equals(this.friendId));
+		
+	    // Always stop first so that the notification goes out to reset the view we were on in case it was still playing and we are switching to another view.
+		stop();
+		
 		this.friendId = friendId;
 		friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
 		
@@ -154,7 +146,7 @@ public class VideoPlayer implements OnCompletionListener{
         notifyStopPlaying();
     }
 	
-	public void release(Context context){
+	public void release(){
 	    stop();
 	}
 	
@@ -171,10 +163,10 @@ public class VideoPlayer implements OnCompletionListener{
 		if (videoId == null){
 		    if (videosAreDownloading){
 		        if (friend.hasRetryingDownload()){
-		            FileDownloadService.restartTransfersPendingRetry(context);
-		            alertBadConnection();
+		            FileDownloadService.restartTransfersPendingRetry(activity);
+		            DialogShower.showBadConnection(activity);
 		        } else {
-		            toastWait();
+		            DialogShower.showToast(activity, activity.getString(R.string.toast_downloading));
 		        }
 		    } else {
 		        Log.w(TAG, "No playable video.");
@@ -233,7 +225,7 @@ public class VideoPlayer implements OnCompletionListener{
 	    if (friend.hasDownloadingVideo())
 	        videosAreDownloading = true;
 	    else
-	        videosAreDownloading = false;
+	        videosAreDownloading = false;	    
 	}
 	
 	private void setCurrentVideoToFirst(){
@@ -270,14 +262,5 @@ public class VideoPlayer implements OnCompletionListener{
                 // Request permanent focus.
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
     }
-    
-    private void toastWait() {
-        // TODO Auto-generated method stub
-        
-    }
 
-    private void alertBadConnection() {
-        // TODO Auto-generated method stub
-        
-    }
 }
