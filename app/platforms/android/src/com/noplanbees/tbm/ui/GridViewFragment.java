@@ -205,6 +205,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     // TODO: Sani, should friend be moved to the grid on new message? --Serhii
+    // Yes if user clicks on notification which opens app for an intent
+    // Friend should be moved to the grid and play started automatically.
     // GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
 
     public void play(String friendId) {
@@ -217,10 +219,10 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         int index = GridElementFactory.getFactoryInstance().gridElementIndexWithFriend(f);
 
         if (index == -1)
-            throw new RuntimeException("Play from notification found not grid element index for friendId: " + friendId);
+            throw new RuntimeException("Play from notification found no grid element index for friendId: " + friendId);
 
         View view = nineViewGroup.getSurroundingFrame(index);
-        videoPlayer.playOverView(view, friendId);
+        videoPlayer.togglePlayOverView(view, friendId);
     }
 
     // -------------------

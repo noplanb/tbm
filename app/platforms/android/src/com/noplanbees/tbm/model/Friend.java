@@ -159,16 +159,72 @@ public class Friend extends ActiveModel{
     }
 
     public ArrayList<Video> getIncomingNotViewedVideos(){
-        VideoFactory vf = VideoFactory.getFactoryInstance();
-        //List
-        ArrayList<Video> videos = vf.allWithFriendId(getId());
+        ArrayList<Video> videos = getIncomingVideos();
         Iterator<Video> i = videos.iterator();
         while (i.hasNext()){
-            Video video = i.next();
-            if(video.getIncomingVideoStatus() != Video.IncomingVideoStatus.DOWNLOADED)
+            Video v = i.next();
+            if(v.getIncomingVideoStatus() != Video.IncomingVideoStatus.DOWNLOADED)
                 i.remove();
         }
         return videos;
+    }
+    
+    public String getFirstPlayableVideoId(){
+        String vid = null;
+        List<Video> videoList = getSortedIncomingNotViewedVideos();
+        if(videoList.size()==0){
+            videoList = getSortedIncomingVideos();
+        }
+        for (Video v : videoList){
+            if (videoFromFile(v.getId()).exists()){
+                vid = v.getId();
+                break;
+            }
+        }
+        return vid;
+    }
+
+    public String getFirstUnviewedVideoId(){
+        String vid = null;
+        List<Video> videoList = getSortedIncomingNotViewedVideos();
+        if(videoList.size()==0){
+            videoList = getSortedIncomingVideos();
+        }
+
+        if(videoList.size()!=0)
+            if(videoList.get(videoList.size()-1).getIncomingVideoStatus()==Video.IncomingVideoStatus.DOWNLOADING)
+                vid = videoList.get(videoList.size()-1).getId();
+            else{
+                vid = videoList.get(0).getId();
+            }
+
+        return vid;
+    }
+
+    public String getNextPlayableVideoId(String videoId){
+        Boolean found = false;
+        for (Video v : getSortedIncomingVideos()){
+            if (found && videoFromFile(v.getId()).exists()){
+                return v.getId();
+            }
+            if (v.getId().equals(videoId))
+                found = true;
+        }
+        return null;
+    }
+
+    public String getNextUnviewedVideoId(String videoId){
+        Boolean found = false;
+        List<Video> videoList =  getSortedIncomingVideos();
+
+        for (Video v : videoList){
+            if (found){
+                return v.getId();
+            }
+            if (v.getId().equals(videoId))
+                found = true;
+        }
+        return null;
     }
 
     public ArrayList<Video> getSortedIncomingNotViewedVideos(){
@@ -249,64 +305,6 @@ public class Friend extends ActiveModel{
 
     public File videoFromFile(String videoId){
         return new File(videoFromPath(videoId));
-    }
-
-    public String getFirstPlayableVideoId(){
-        String vid = null;
-        List<Video> videoList = getSortedIncomingNotViewedVideos();
-        if(videoList.size()==0){
-            videoList = getSortedIncomingVideos();
-        }
-        for (Video v : videoList){
-            if (videoFromFile(v.getId()).exists()){
-                vid = v.getId();
-                break;
-            }
-        }
-        return vid;
-    }
-
-    public String getFirstIncomingVideoId(){
-        String vid = null;
-        List<Video> videoList = getSortedIncomingNotViewedVideos();
-        if(videoList.size()==0){
-            videoList = getSortedIncomingVideos();
-        }
-
-        if(videoList.size()!=0)
-            if(videoList.get(videoList.size()-1).getIncomingVideoStatus()==Video.IncomingVideoStatus.DOWNLOADING)
-                vid = videoList.get(videoList.size()-1).getId();
-            else{
-                vid = videoList.get(0).getId();
-            }
-
-        return vid;
-    }
-
-    public String getNextPlayableVideoId(String videoId){
-        Boolean found = false;
-        for (Video v : getSortedIncomingVideos()){
-            if (found && videoFromFile(v.getId()).exists()){
-                return v.getId();
-            }
-            if (v.getId().equals(videoId))
-                found = true;
-        }
-        return null;
-    }
-
-    public String getNextIncomingVideoId(String videoId){
-        Boolean found = false;
-        List<Video> videoList =  getSortedIncomingVideos();
-
-        for (Video v : videoList){
-            if (found){
-                return v.getId();
-            }
-            if (v.getId().equals(videoId))
-                found = true;
-        }
-        return null;
     }
 
     public String videoToPath(){
@@ -615,6 +613,22 @@ public class Friend extends ActiveModel{
         if (v == null)
             return -1;
         return v.getIncomingVideoStatus();
+    }
+    
+    public boolean hasDownloadingVideo(){
+        for (Video v : VideoFactory.getFactoryInstance().all()){
+            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING)
+                return true;
+        }
+        return false;
+    }
+    
+    public boolean hasRetryingDownload(){
+        for (Video v : VideoFactory.getFactoryInstance().all()){
+            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING && v.getDownloadRetryCount() > 0)
+                return true;
+        }
+        return false;
     }
 
     //-------------------------------

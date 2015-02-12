@@ -97,7 +97,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     public void onThumbViewClicked() {
         // As it has thumb it must have friend, so play video
         VideoPlayer videoPlayer = VideoPlayer.getInstance(activity);
-        videoPlayer.playOverView(container, gridElement.getFriendId());
+        videoPlayer.togglePlayOverView(container, gridElement.getFriendId());
     }
 
     @Override

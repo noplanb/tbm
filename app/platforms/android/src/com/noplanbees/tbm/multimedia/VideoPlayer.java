@@ -14,7 +14,9 @@ import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.model.VideoFactory;
+import com.noplanbees.tbm.network.FileDownloadService;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,20 +36,28 @@ public class VideoPlayer implements OnCompletionListener{
 	
 	private Context context;
 	private String videoId;
+	private Video video;
 	private String friendId;
+	private Friend friend;
 	private VideoView videoView;
 	private View videoBody;
+	private boolean videosAreDownloading;
 	
 	private Set<StatusCallbacks> statusCallbacks;
 
-    private AudioManager am;
+    private AudioManager audioManager;
     private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
 
+    //---------------------
+    // Instantiate and init
+    //---------------------
     private VideoPlayer(Context context) {
 		this.context = context;
 		statusCallbacks = new HashSet<StatusCallbacks>();
 
-        am = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
+        audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
+        
+        // TODO: GARF: Andrey why are these not used?
         audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
             public void onAudioFocusChange(int focusChange) {
                 if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
@@ -55,19 +65,32 @@ public class VideoPlayer implements OnCompletionListener{
                 } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
                     // Resume playback
                 } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-                    //am.unregisterMediaButtonEventReceiver(RemoteControlReceiver);
-                    am.abandonAudioFocus(audioFocusChangeListener);
+                    //audioManager.unregisterMediaButtonEventReceiver(RemoteControlReceiver);
+                    audioManager.abandonAudioFocus(audioFocusChangeListener);
                     // Stop playback
                 }
             }
         };        
     }
-	
-	public static VideoPlayer getInstance(Context context){
-		if(videoPlayer == null)
-			videoPlayer = new VideoPlayer(context);
-		return videoPlayer;
-	}
+    
+    // TODO: Serhii reference should be held by the instantiating fragment
+    public static VideoPlayer getInstance(Context context){
+        if(videoPlayer == null)
+            videoPlayer = new VideoPlayer(context);
+        return videoPlayer;
+    }
+    
+    
+    // TODO: Serhii we should probably pass the view and the body in in the constructor no?
+    public void setVideoView(VideoView videoView){
+        this.videoView = videoView;
+        this.videoView.setOnCompletionListener(this);
+    }
+    
+    // TODO: Serhii we should probably pass the view and the body in in the constructor no?
+    public void setVideoViewBody(View videoBody){
+        this.videoBody = videoBody;
+    }
 	
 	public void registerStatusCallbacks(StatusCallbacks statusCallback){
 		this.statusCallbacks.add(statusCallback);
@@ -76,7 +99,10 @@ public class VideoPlayer implements OnCompletionListener{
 	public void unregisterStatusCallbacks(StatusCallbacks statusCallback){
 		this.statusCallbacks.remove(statusCallback);
 	}
-	
+	    
+    //-----------------
+	// Notify observers
+	//-----------------
 	private void notifyStartPlaying(){
 		for (StatusCallbacks callbacks : statusCallbacks) {
 			callbacks.onVideoPlaying(friendId, videoId);
@@ -100,122 +126,67 @@ public class VideoPlayer implements OnCompletionListener{
             callbacks.onFileDownloadingRetry();
         }
     }
+	
 
-	public static void bypassExistingBluetooth(Context context){
-		//((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(true);
-	}
-	
-	public static void restoreExistingBluetooth(Context context){
-		//((AudioManager) context.getSystemService(Activity.AUDIO_SERVICE)).setBluetoothScoOn(false);
-	}
-	
-	public boolean isPlaying(){
-		return videoView.isPlaying();
-	}
-	
-	public void setVideoView(VideoView videoView){
-		this.videoView = videoView;
-		this.videoView.setOnCompletionListener(this);
-	}
-	
-	public void setVideoViewBody(View videoBody){
-		this.videoBody = videoBody;
-	}
-	
-	public void setVideoViewSize(float x, float y, int width, int height) {
-		LayoutParams params = new FrameLayout.LayoutParams(width, height);
-		videoBody.setLayoutParams(params);
-		videoBody.setX(x);
-		videoBody.setY(y);
-	}
-
-	public String getFriendId() {
-		return friendId;
-	}
-
-	public void playOverView(View view, String friendId){
-		playAtPos(view.getX(), view.getY(), view.getWidth() + 1, view.getHeight() + 1, friendId);
-	}
-	
-	private void playAtPos(float x, float y, int width, int height, String friendId){
-		
-		boolean needToPlay = !(videoView.isPlaying() && friendId.equals(this.friendId));
-		
-		if (videoView.isPlaying())
-			stop();
-		
-		if(needToPlay) {
-			setVideoViewSize(x, y, width, height);
-			start(friendId);
-		}
-	}
-	
-	private void play(String friendId){
-		boolean needToPlay = !(videoView.isPlaying() && friendId.equals(this.friendId));
-		
-		if (videoView.isPlaying())
-			stop();
-		
-		if(needToPlay) {
-			start(friendId);
-		}
-	}
-	
-	public void stop(){
-		Log.i(TAG, "stop");
-		VideoPlayer.restoreExistingBluetooth(context);
-		videoView.stopPlayback();
-		videoView.suspend();
-		videoBody.setVisibility(View.GONE);
-        notifyStopPlaying();
-    }
-
-	private void start(String friendId){
-		Log.i(TAG, "start");
+    //---------------
+    // Public actions
+    //---------------
+	public void togglePlayOverView(View view, String friendId){
+		boolean needToPlay = !(isPlaying() && friendId.equals(this.friendId));
 		this.friendId = friendId;
+		friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
 		
-	    Friend friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
-		videoId = friend.getFirstIncomingVideoId();
+		if (isPlaying())
+			stop();
 		
-		if (videoId == null)
-			return;
-
-		play(friend);
+		if(needToPlay) {
+			setPlayerOverView(view);
+			start();
+		}
+	}
+	
+	public void release(Context context){
+	    stop();
+	}
+	
+	
+    //----------------------
+	// Private state machine
+	//----------------------
+	private void start(){
+		Log.i(TAG, "start");	
+		
+		determineIfDownloading();
+		setCurrentVideoToFirst();
+		
+		if (videoId == null){
+		    if (videosAreDownloading){
+		        if (friend.hasRetryingDownload()){
+		            FileDownloadService.restartTransfersPendingRetry(context);
+		            alertBadConnection();
+		        } else {
+		            toastWait();
+		        }
+		    } else {
+		        Log.w(TAG, "No playable video.");
+		    }
+		    return;
+		}
+		
+		play();
 	}
 
-	private void play(Friend f){
+    private void play(){
+        Log.i(TAG, "play");
+        // Always set it to viewed whether it is playable or not so it eventually gets deleted.
+        friend.setAndNotifyIncomingVideoViewed(videoId);
 
-        int unreadMsgCount = f.incomingVideoNotViewedCount();
-        Video video = (Video) VideoFactory.getFactoryInstance().find(videoId);
-
-        int retryCount = video.getDownloadRetryCount();
-
-        if(f.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING && unreadMsgCount==0){
-            if(retryCount == 0){
-                notifyFileDownloading();
-            }else{
-                notifyFileDownloadingRetry();
-            }
-            notifyStopPlaying();
-            return;
-        }
-
-        if (f.videoFromFile(videoId).length() > 100){
-			f.setAndNotifyIncomingVideoViewed(videoId);
+        if (videoIsPlayable()){
 			videoBody.setVisibility(View.VISIBLE);
-			videoView.setVideoPath(f.videoFromPath(videoId));
-			//AudioManager am = (AudioManager) this.context.getSystemService(Activity.AUDIO_SERVICE);
-			//am.setBluetoothScoOn(true);
+			videoView.setVideoPath(friend.videoFromPath(videoId));
 
-            // Request audio focus for playback
-
-            int result = am.requestAudioFocus(audioFocusChangeListener,
-                    // Use the music stream.
-                    AudioManager.STREAM_MUSIC,
-                    // Request permanent focus.
-                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
-
-            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            // TODO: GARF: Andrey what happens if it is not granted!
+            if (requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 videoView.start();
                 notifyStartPlaying();
             }
@@ -224,26 +195,89 @@ public class VideoPlayer implements OnCompletionListener{
 			onCompletion(null);
 		}
 	}
-	
-	public void release(Context context){
-		restoreExistingBluetooth(context);
-		stop();
-	}
 
-	@Override
-	public void onCompletion(MediaPlayer mp) {
-		Log.i(TAG, "play complete.");
-        am.abandonAudioFocus(audioFocusChangeListener);
+    private void stop(){
+        Log.i(TAG, "stop");
+        audioManager.abandonAudioFocus(audioFocusChangeListener);
+        videoView.stopPlayback();
+        videoView.suspend();
+        videoBody.setVisibility(View.GONE);
+        notifyStopPlaying();
+    }
+    
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        Log.i(TAG, "play complete.");
         // TODO check notification, if it is the last video it will notify two times (also from stop()) --Serhii
-		notifyStopPlaying();
-		Friend friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
-		videoId = friend.getNextIncomingVideoId(videoId);
-		if (videoId != null){
-			play(friend);
-		} else {
-			stop();
-		}
+        // This should be fixed -- Sani
+        setCurrentVideoToNext();
+
+        if (videoId != null)
+            play();
+        else
+            stop();
+    }
+
+
+    //---------------
+	// Helper methods
+	//---------------
+	private void setPlayerOverView(View view) {
+	    LayoutParams params = new FrameLayout.LayoutParams(view.getWidth(), view.getHeight());
+	    videoBody.setLayoutParams(params);
+	    videoBody.setX(view.getX());
+	    videoBody.setY(view.getY());
+	}
+	
+	private void determineIfDownloading(){
+	    if (friend.hasDownloadingVideo())
+	        videosAreDownloading = true;
+	    else
+	        videosAreDownloading = false;
+	}
+	
+	private void setCurrentVideoToFirst(){
+	    if (videosAreDownloading)
+	        setCurrentVideoId(friend.getFirstUnviewedVideoId());
+	    else
+	        setCurrentVideoId(friend.getFirstPlayableVideoId());
+	}
+	
+	private void setCurrentVideoToNext(){
+	    if (videosAreDownloading)
+	        setCurrentVideoId(friend.getNextUnviewedVideoId(videoId));
+	    else
+	        setCurrentVideoId(friend.getNextPlayableVideoId(videoId));
+	}
+	
+	private void setCurrentVideoId(String videoId){
+	    this.videoId = videoId;
 	}
 
+    private boolean isPlaying(){
+        return videoView.isPlaying();
+    }
+    
+    private boolean videoIsPlayable(){
+        File f = friend.videoFromFile(videoId);
+        return f.exists() && f.length() > 100;
+    }
+    
+    private int requestAudioFocus() {
+        return audioManager.requestAudioFocus(audioFocusChangeListener,
+                // Use the music stream.
+                AudioManager.STREAM_MUSIC,
+                // Request permanent focus.
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+    }
+    
+    private void toastWait() {
+        // TODO Auto-generated method stub
+        
+    }
 
+    private void alertBadConnection() {
+        // TODO Auto-generated method stub
+        
+    }
 }
