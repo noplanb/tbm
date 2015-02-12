@@ -76,7 +76,7 @@ public class Poller {
                 if (videoId == null)
                     return;
 
-                if(getFriend().get(Friend.Attributes.OUTGOING_VIDEO_ID).equals(videoId)){
+                if(!getFriend().get(Friend.Attributes.OUTGOING_VIDEO_ID).equals(videoId)){
                     Log.i(TAG, "gotVideoIdStatus: got status for "  + getFriend().get(Friend.Attributes.FIRST_NAME) + " for non current videoId. Ignoring");
                     return;
                 }
