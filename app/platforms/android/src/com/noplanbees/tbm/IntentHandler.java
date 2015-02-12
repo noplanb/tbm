@@ -197,7 +197,7 @@ public class IntentHandler {
             friend.setAndNotifyIncomingVideoStatus(videoId, status);
             friend.setAndNotifyDownloadRetryCount(videoId, retryCount);
         } else if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD)){
-            if (videoId.equals(friend.get(Attributes.OUTGOING_VIDEO_ID))){
+            if ( videoId.equals(friend.getOutgoingVideoId()) ){
                 friend.setAndNotifyOutgoingVideoStatus(status);
                 friend.setAndNotifyUploadRetryCount(retryCount);
             }

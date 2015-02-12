@@ -72,11 +72,11 @@ public class Poller {
 
             @Override
             protected void gotVideoIdStatus(String videoId, String status) {
-                Log.i(TAG, "Got video status: " + getFriend().get(Friend.Attributes.FIRST_NAME) + ": vId:" + videoId + " sts: " + status );
+                Log.i(TAG, "Got video status: " + getFriend().getUniqueName() + ": vId:" + videoId + " sts: " + status );
                 if (videoId == null)
                     return;
 
-                if(!getFriend().get(Friend.Attributes.OUTGOING_VIDEO_ID).equals(videoId)){
+                if(!getFriend().getOutgoingVideoId().equals(videoId)){
                     Log.i(TAG, "gotVideoIdStatus: got status for "  + getFriend().get(Friend.Attributes.FIRST_NAME) + " for non current videoId. Ignoring");
                     return;
                 }

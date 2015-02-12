@@ -100,6 +100,7 @@ public class Friend extends ActiveModel{
         set(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE, VideoStatusEventType.INCOMING.toString());
         setUploadRetryCount(0);
     }
+    
 
     public String getLastActionTime() {
         return get(Friend.Attributes.TIME_OF_LAST_ACTION);
@@ -122,6 +123,17 @@ public class Friend extends ActiveModel{
     
     public void setHasApp(boolean value){
         set(Attributes.HAS_APP, value ? "true" : "false");
+    }
+    
+    //------------------------------
+    // Attribute Getters and Setters
+    //------------------------------
+    public String getOutgoingVideoId(){
+        return  get(Friend.Attributes.OUTGOING_VIDEO_ID);
+    }
+    
+    public void setOutGoingVideoId(String videoId){
+        set(Attributes.OUTGOING_VIDEO_ID, videoId);
     }
 
     //------------
@@ -435,7 +447,7 @@ public class Friend extends ActiveModel{
     //--------------------------
     private void setOutGoingVideoId(){
         Log.i(TAG, "setOutGoingVideoId.");
-        set(Attributes.OUTGOING_VIDEO_ID, VideoIdUtils.generateId());
+        setOutGoingVideoId(VideoIdUtils.generateId());
     }
 
     public void uploadVideo(){
@@ -447,7 +459,7 @@ public class Friend extends ActiveModel{
         Intent i = new Intent(context, FileUploadService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath());
-        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, get(Attributes.OUTGOING_VIDEO_ID));
+        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, getOutgoingVideoId());
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this));
         // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();

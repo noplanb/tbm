@@ -120,7 +120,7 @@ public class RemoteStorageHandler {
 	// Keys for remote storage
 	//------------------------
 	public static String outgoingVideoRemoteFilename(Friend friend) {
-		return outgoingConnectionKey(friend) + "-" + friend.get(Friend.Attributes.OUTGOING_VIDEO_ID) + "-filename";
+		return outgoingConnectionKey(friend) + "-" + friend.getOutgoingVideoId() + "-filename";
 	}
 
 	public static String incomingVideoRemoteFilename(Friend friend, String videoId) {
