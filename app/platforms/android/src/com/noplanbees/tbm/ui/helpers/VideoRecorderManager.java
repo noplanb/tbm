@@ -77,7 +77,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
 
     @Override
     public void recordingTooShort() {
-        DialogShower.showToast(context, "Not sent. Too short.");
+        DialogShower.showToast(context, "Too short.");
     }
 
     @Override

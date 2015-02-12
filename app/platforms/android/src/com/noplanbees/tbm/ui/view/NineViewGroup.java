@@ -115,19 +115,6 @@ public class NineViewGroup extends ViewGroup {
             fl.setClipChildren(false);
             fl.setClipToPadding(false);
             fl.setId(i);
-            fl.setOnTouchListener(new View.OnTouchListener() {
-				@Override
-				public boolean onTouch(View v, MotionEvent event) {
-					// The reason for this is very subtle. This ViewGroup has a gestureRecognzier that 
-					// snoops on onInterceptTouchEvent for the ViewGroup. If none of the children of this
-					// viewGroup or their decendents ever return true for an onTouch then this viewGroup
-					// will stop receiving onInterceptTouchEvents for that gesture after the first down event. Returning true
-					// here means that as a last recourse if no child of our children has returned true for onTouch
-					// our direct children will at least do so here. This allows us to continue to receive onInterceptTouchEvent
-					// for the entire gesture for all gestures.
-					return true;
-				}
-			});
             addView(fl, i, new LayoutParams(elementWidth(), elementHeight()));
         }
     }
@@ -295,7 +282,18 @@ public class NineViewGroup extends ViewGroup {
 		return vgGestureRecognizer.onInterceptTouchEvent(ev);
 	}
 
-	private void addGestureRecognizer(){
+	@Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+	    vgGestureRecognizer.dispatchTouchEvent(ev);
+        return super.dispatchTouchEvent(ev);
+    }
+	
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return vgGestureRecognizer.onTouchEvent(event);
+    }
+
+    private void addGestureRecognizer(){
 		vgGestureRecognizer = new NineViewGroupGestureRecognizer((Activity) getContext(), this, getNineViews());
 		vgGestureRecognizer.enable();
     }

@@ -4,10 +4,13 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.telephony.SmsManager;
 import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Config;
+import com.noplanbees.tbm.Config.DeploymentType;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.dispatch.Dispatch;
@@ -194,28 +197,32 @@ public class InviteManager{
 	}
 
 	public void showSms(){
-		String smsMessage = "I sent you a message on " + Config.appName + ". Get the app - it is really great. http://www.zazoapp.com.";
-        listener.onShowActionInfoDialog("Send Link", smsMessage, "Send", false, MainActivity.SENDLINK_DIALOG);
+        listener.onShowActionInfoDialog("Send Link", smsMessage(), "Send", false, MainActivity.SENDLINK_DIALOG);
 	}
 
 	public void sendLink(){
-		String smsMessage = "I sent you a message on " + Config.appName + ". Get the app - it is really great. http://www.zazoapp.com.";
-		sendSms(smsMessage);
+		sendSms(smsMessage());
 		if (friend == null)
 			getFriendFromServer();
 	}
+	
+	private String smsMessage(){
+	    return "I sent you a message on " + Config.appName + ". Get the app! " + Config.landingPageUrl;
+	}
 
 	private void sendSms(String body){
-		String addr;
+		String addr = null;
 		if (friend != null)
 			addr = friend.get(Friend.Attributes.MOBILE_NUMBER);
 
 		if (benchObject != null)
 			addr = benchObject.mobileNumber;
 
-		addr = "+16502453537";
+		if (Config.DEPLOYMENT_TYPE == DeploymentType.DEVELOPMENT)
+		    addr = "+16502453537";
+		
 		Log.i(TAG, "sendSms: " + addr + ": " + body);
-//		SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
+		SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
 	}
 
 	public void moveFriendToGrid(){

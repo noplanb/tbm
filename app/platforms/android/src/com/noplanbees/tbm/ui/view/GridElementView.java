@@ -18,7 +18,7 @@ import com.noplanbees.tbm.ShortClickListener;
 import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.utilities.Convenience;
 
-public class GridElementView extends RelativeLayout implements View.OnClickListener, ShortClickListener.Callbacks {
+public class GridElementView extends RelativeLayout implements View.OnClickListener {
 
 	private static final String TAG = "GridElementView";
 
@@ -114,11 +114,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         }
     }
 
-    @Override
-    public void onShortClick(View v){
-    	Log.d(TAG, "shortClick!");
-    }
-    
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

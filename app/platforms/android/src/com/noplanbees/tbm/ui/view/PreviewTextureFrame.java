@@ -61,7 +61,6 @@ public class PreviewTextureFrame extends FrameLayout {
 	@Override
 	protected void dispatchDraw(Canvas canvas) {
 		super.dispatchDraw(canvas);
-		Log.d(TAG, "dispatchDraw " + isRecording);
 		if(isRecording)
 			drawIndicator(canvas);
 	}

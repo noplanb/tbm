@@ -50,6 +50,8 @@ public abstract class ViewGroupGestureRecognizer {
 	private Double[] downPosition = new Double[2];
 	private Timer longPressTimer;
 	private Boolean enabled = false;
+	private Boolean intercept = false;
+	private Boolean cancelOnMultiTouch = false;
 
 	// -------------------
 	// Constructor related
@@ -72,6 +74,10 @@ public abstract class ViewGroupGestureRecognizer {
 
 		targetViews .add(target);
 	}
+	
+	public void setCancelOnMultiTouch(Boolean value){
+	    cancelOnMultiTouch = value;
+	}
 
 	
 	//----------------------------
@@ -79,17 +85,29 @@ public abstract class ViewGroupGestureRecognizer {
 	//----------------------------
 	// The viewGroup that instantiates this gesture recognizer must call these methods from its
 	// equivalent overriden methods.
-	
+
+    public void dispatchTouchEvent(MotionEvent ev) {
+        if ( state == State.LONGPRESS)
+            intercept = true;
+        
+        if (ev.getAction() == MotionEvent.ACTION_DOWN)
+            intercept = false;
+        Log.d(TAG, "dispatchTouchEvent: ev: " + ev.getAction() + "intercept: " + intercept);
+        handleTouchEvent(ev);
+    }
+    
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
-		boolean r = false;
-		
-		if (  state == State.LONGPRESS && 
-			( ev.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN || ev.getAction() == MotionEvent.ACTION_UP ) )
-			r = true;
-		// Log.d(TAG, "onInterceptTouchEvent: action:" + ev.getAction() + " state:" + state + " return:" + r);
-    	handleTouchEvent(ev);
-    	return r;
+	    Log.d(TAG, "onInterceptTouchEvent: ev: " + ev.getAction() + "intercept: " + intercept);
+	    return intercept;
 	}
+	
+	// We return true here so that if none of the descendants of this view group
+	// claims an interest in touches on we at least do so here. That way we continue to 
+	// get calls to dispatchTouchEvent. Note we will no longer get calls to onInterceptTouchEvent
+	// in that case however but that is ok as there isnt a child to intercept from.
+    public boolean onTouchEvent(MotionEvent event) {
+        return true;
+    }
 	
 
 	// --------------
@@ -172,6 +190,9 @@ public abstract class ViewGroupGestureRecognizer {
 			}
 			
 			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN){
+			    if (!cancelOnMultiTouch)
+			        return;
+			    
 				state = State.IDLE;
 				return;
 			}
@@ -202,6 +223,9 @@ public abstract class ViewGroupGestureRecognizer {
 			
 			// Second finger down aborts.
 			if (maskedAction == MotionEvent.ACTION_POINTER_DOWN){
+			    if (!cancelOnMultiTouch)
+			        return;
+			    
 				state = State.IDLE;
 				runAbort(targetView, "Two Finger Touch");				
 				return;
@@ -325,6 +349,5 @@ public abstract class ViewGroupGestureRecognizer {
 		}
 		return null;
 	}
-
 
 }
