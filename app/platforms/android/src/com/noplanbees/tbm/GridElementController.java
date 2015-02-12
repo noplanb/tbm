@@ -59,7 +59,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         VideoPlayer videoPlayer = VideoPlayer.getInstance();
         videoPlayer.registerStatusCallbacks(this);
 
-        updateContent(false);
         updateVideoStatus();
     }
 
@@ -71,10 +70,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     @Override
     public void onVideoStatusChanged(Friend friend) {
         if (isForMe(friend.getId())) {
-            // Serhii - I added updateContent here to cover the following case:
-            // if we getFriends due to app coming to the foreground. And hasApp for the friend
-            // this event is signalled by onVideoStatusChanged as well and we want this to be reflected in the ui.
-            updateContent(false);
             updateVideoStatus();
         }
     }
@@ -168,10 +163,13 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         Log.d(TAG, this + "| incomingStatus="+incomingStatus+", outgoingStatus="+outgoingStatus);
 
-        if (lastEventType == Friend.VideoStatusEventType.INCOMING) {
-            updateUiForIncomingVideoStatus(incomingStatus);
-        } else if (lastEventType == Friend.VideoStatusEventType.OUTGOING) {
-            updateUiForOutgoingVideoStatus(outgoingStatus);
+        // if video is currently not played we update view content and show animation if needed
+        if (!isVideoPlaying) {
+            if (lastEventType == Friend.VideoStatusEventType.INCOMING) {
+                updateUiForIncomingVideoStatus(incomingStatus);
+            } else if (lastEventType == Friend.VideoStatusEventType.OUTGOING) {
+                updateUiForOutgoingVideoStatus(outgoingStatus);
+            }
         }
     }
 
@@ -180,23 +178,22 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             @Override
             public void run() {
                 switch (status) {
-                	case Video.IncomingVideoStatus.NEW:
+                    case Video.IncomingVideoStatus.NEW:
                     case Video.IncomingVideoStatus.QUEUED:
-                	case Video.IncomingVideoStatus.DOWNLOADING:
-                	case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
-                        if (!isVideoPlaying) {
-                            updateContent(true);
-                        }
+                    case Video.IncomingVideoStatus.DOWNLOADING:
+                    case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
+                        updateContent(true);
                         break;
                     case Video.IncomingVideoStatus.DOWNLOADED:
-                        if (!isVideoPlaying) {
-                            gridElementView.animateDownloading(new Runnable() {
-                                @Override
-                                public void run() {
-                                    updateContent(false);
-                                }
-                            });
-                        }
+                        gridElementView.animateDownloading(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateContent(false);
+                            }
+                        });
+                        break;
+                    default:
+                        updateContent(false);
                         break;
                 }
             }
@@ -214,12 +211,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             gridElementView.animateUploading();
                         }
                         break;
-                    case Friend.OutgoingVideoStatus.NEW:
-                    case Friend.OutgoingVideoStatus.UPLOADING:
-                    case Friend.OutgoingVideoStatus.UPLOADED:
-                    case Friend.OutgoingVideoStatus.DOWNLOADED:
-                    case Friend.OutgoingVideoStatus.VIEWED:
-                    case Friend.OutgoingVideoStatus.FAILED_PERMANENTLY:
+                    default:
                         updateContent(false);
                         break;
                 }
@@ -236,7 +228,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             int lastEventType = friend.getLastEventType();
             result = lastEventType == Friend.VideoStatusEventType.OUTGOING &&
                     (outgoingStatus == Friend.OutgoingVideoStatus.NEW ||
-                            outgoingStatus == Friend.OutgoingVideoStatus.UPLOADING);
+                            outgoingStatus == Friend.OutgoingVideoStatus.UPLOADING ||
+                            outgoingStatus == Friend.OutgoingVideoStatus.QUEUED);
         }
         return result;
     }
@@ -248,7 +241,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             int lastEventType = friend.getLastEventType();
             int incomingStatus = friend.getIncomingVideoStatus();
             result = lastEventType == Friend.VideoStatusEventType.INCOMING &&
-                    incomingStatus == Video.IncomingVideoStatus.DOWNLOADING;
+                    (incomingStatus == Video.IncomingVideoStatus.DOWNLOADING ||
+                            incomingStatus == Video.IncomingVideoStatus.NEW ||
+                            incomingStatus == Video.IncomingVideoStatus.QUEUED);
         }
         return result;
     }

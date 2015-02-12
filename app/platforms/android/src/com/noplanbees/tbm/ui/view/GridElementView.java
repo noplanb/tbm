@@ -24,14 +24,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     private FriendViewListener viewEventListener;
 
-    // TODO: Serhii I really dont have a problem for the effects of (some of) these events to be handled here rather than bubbling them up.
-    // In my mind a viewController should have the ability to do some entire screen popups for example. I consider the following actions to 
-    // fall under that category:
-    //  - alerts (definitely)
-    //  - toasts (definitely)
-    //  - opening the bench. (Maybe - it is kind of a pop up)
-    //  - Starting a nudge sequence (Maybe)
-    // I would be interested to hear what your thoughts are regarding making these actions accessible from any controller and letting the conroller call them directly.
     public interface ClickListener {
 		void onNudgeClicked();
 		void onRecordClicked();
@@ -204,14 +196,15 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     public void showUploadingMark(boolean visible) {
         imgUploading.setVisibility(visible ? VISIBLE : GONE);
         if (!visible) {
+            imgUploading.clearAnimation();
             progressLine.setVisibility(INVISIBLE);
         }
     }
 
     public void showDownloadingMark(boolean visible) {
         imgDownloading.setVisibility(visible ? VISIBLE : GONE);
-        imgDownloading.clearAnimation();
         if (!visible) {
+            imgDownloading.clearAnimation();
             progressLine.setVisibility(INVISIBLE);
         }
     }
@@ -246,6 +239,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 				Animation.RELATIVE_TO_SELF, fromYDelta, 
 				Animation.RELATIVE_TO_SELF, toYDelta);
 		trAn.setDuration(durationMillis);
+        trAn.setFillAfter(true);
         trAn.setInterpolator(interpolator);
         trAn.setAnimationListener(new Animation.AnimationListener() {
             @Override

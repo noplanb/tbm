@@ -9,7 +9,6 @@ import android.util.Log;
 
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
-import com.noplanbees.tbm.model.Friend.Attributes;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.Video;
