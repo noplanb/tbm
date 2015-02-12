@@ -1,7 +1,7 @@
 package com.noplanbees.tbm.ui;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.DialogFragment;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -35,6 +35,7 @@ import com.noplanbees.tbm.model.UserFactory;
 import com.noplanbees.tbm.network.HttpRequest;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.ui.dialogs.EnterCodeDialogFragment;
+import com.noplanbees.tbm.ui.dialogs.ProgressDialogFragment;
 import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.utilities.DialogShower;
 
@@ -42,7 +43,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	private final String TAG = this.getClass().getSimpleName();
 	private UserFactory userFactory;
 	private User user;
-	private ProgressDialog progress;
 
 	private String firstName;
 	private String lastName;
@@ -58,7 +58,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	private EditText countryCodeTxt;
 	private EditText mobileNumberTxt;
 
-	private ProgressDialog pd;
+    private DialogFragment pd;
+
 	protected ActiveModelsHandler activeModelsHandler;
 	private ServiceConnection conn = new ServiceConnection() {
 		@Override
@@ -73,7 +74,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 			onLoadComplete();
 		}
 	};
-	private EnterCodeDialogFragment enterCodeDialog;
+	private DialogFragment enterCodeDialog;
 
 	//----------
 	// LifeCycle
@@ -85,7 +86,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		getActionBar().hide();
 		setContentView(R.layout.register);
 		setupListeners();
-		setupProgressDialog();
 		addShortcutIcon();
         setAdditionalViewHeight();
 	}
@@ -100,7 +100,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
     @Override
 	protected void onStart() {
 		super.onStart();
-		pd = ProgressDialog.show(this, "Data", "retrieving data...");
+		pd = ProgressDialogFragment.getInstance("Data", "retrieving data...");
+        pd.show(getFragmentManager(), null);
 		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 	}
 	
@@ -252,16 +253,17 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 			super(uri, params, new Callbacks() {
                 @Override
                 public void success(String response) {
-                    progress.dismiss();
+                    pd.dismiss();
                     didRegister(response);
                 }
                 @Override
                 public void error(String errorString) {
-                    progress.dismiss();
+                    pd.dismiss();
                     serverError();
                 }
             });
-			progress.show();
+            pd = ProgressDialogFragment.getInstance("Checking", null);
+			pd.show(getFragmentManager(), null);
 		}
 	}
 
@@ -288,10 +290,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 
 	private void showVerificationDialog() {
 		if(enterCodeDialog == null)
-			enterCodeDialog = new EnterCodeDialogFragment();
-		Bundle args = new Bundle();
-		args.putString(EnterCodeDialogFragment.PHONE_NUMBER, e164);
-		enterCodeDialog.setArguments(args );
+			enterCodeDialog = EnterCodeDialogFragment.getInstance(e164);
 		enterCodeDialog.show(getFragmentManager(), "enterCdDlg");
 	}
 
@@ -309,18 +308,19 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 			super(uri, params, mkey, auth, new HttpRequest.Callbacks() {
                 @Override
                 public void success(String response) {
-                    progress.dismiss();
+                    pd.dismiss();
                     didReceiveCodeResponse(response);
                 }
 
                 @Override
                 public void error(String errorString) {
-                    progress.dismiss();
+                    pd.dismiss();
                     serverError();
                 }
 
             });
-			progress.show();
+            pd = ProgressDialogFragment.getInstance("Checking", null);
+			pd.show(getFragmentManager(), null);
 		}
 	}
 
@@ -354,16 +354,17 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 			super(uri, params, new Callbacks() {
                 @Override
                 public void success(String response) {
-                    progress.dismiss();
+                    pd.dismiss();
                     didReceiveCodeResponse(response);
                 }
                 @Override
                 public void error(String errorString) {
-                    progress.dismiss();
+                    pd.dismiss();
                     serverError();
                 }
             });
-			progress.show();
+            pd = ProgressDialogFragment.getInstance("Checking", null);
+            pd.show(getFragmentManager(), null);
 		}
 	}
 	
@@ -384,18 +385,19 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	private class RegFriendGetter extends FriendGetter{
         public RegFriendGetter(Context c, boolean destroyAll) {
             super(c, destroyAll);
-            progress.show();
+            pd = ProgressDialogFragment.getInstance("Checking", null);
+            pd.show(getFragmentManager(), null);
         }
         
         @Override
         protected void success() {
-            progress.dismiss();
+            pd.dismiss();
             getAWSCredentials();
         }
 
         @Override
         protected void failure() {
-            progress.dismiss();
+            pd.dismiss();
             serverError();
         }
 	}
@@ -456,10 +458,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	// -------------
 	// Error dialogs
 	//--------------
-	private void setupProgressDialog(){
-		progress = new ProgressDialog(this);
-		progress.setTitle("Checking");
-	}
 
 	private void phoneError() {
 		showErrorDialog(getString(R.string.dialog_register_phone_error_title), getString(R.string.dialog_register_phone_error_message));

@@ -1,7 +1,6 @@
 package com.noplanbees.tbm.bench;
 
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -16,6 +15,7 @@ import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.network.HttpRequest;
 import com.noplanbees.tbm.ui.MainActivity;
+import com.noplanbees.tbm.ui.dialogs.ProgressDialogFragment;
 
 public class InviteManager{
 	private static InviteManager inviteManager;
@@ -27,6 +27,8 @@ public class InviteManager{
     public static interface InviteDialogListener {
         void onShowInfoDialog(String title, String msg);
         void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, int actionId);
+        void onShowProgressDialog(String title, String msg);
+        void onDismissProgressDialog();
     }
 
     private static final String TAG = InviteManager.class.getSimpleName();
@@ -72,7 +74,6 @@ public class InviteManager{
 		String url = builder.build().toString();
 		new CheckHasAppRequest(url);
 	}
-    private ProgressDialog pd;
 
 	private class CheckHasAppRequest extends HttpRequest {
 
@@ -82,17 +83,16 @@ public class InviteManager{
                 @Override
                 public void success(String response) {
                     gotHasApp(response);
-                    if(pd!=null)
-                        pd.dismiss();
+                    listener.onDismissProgressDialog();
                 }
                 @Override
                 public void error(String errorString) {
                     Dispatch.dispatch("Error: " + errorString);
                     serverError();
-                    if(pd!=null)
-                        pd.dismiss();
-                }            });
-            pd = ProgressDialog.show(context, "Checking", null);
+                    listener.onDismissProgressDialog();
+                }
+            });
+            listener.onShowProgressDialog("Checking", null);
 		}
 
     }
@@ -135,18 +135,16 @@ public class InviteManager{
                 public void success(String response) {
                     Log.i(TAG, "Success: " + response);
                     gotFriend(response);
-                    if(pd!=null)
-                        pd.dismiss();
+                    listener.onDismissProgressDialog();
                 }
                 @Override
                 public void error(String errorString) {
                     Dispatch.dispatch("Error: " + errorString);
                     serverError();
-                    if(pd!=null)
-                        pd.dismiss();
+                    listener.onDismissProgressDialog();
                 }
             });
-            pd = ProgressDialog.show(context, "Checking", null);
+            listener.onShowProgressDialog("Checking", null);
 		}
     }
 	@SuppressWarnings("unchecked")

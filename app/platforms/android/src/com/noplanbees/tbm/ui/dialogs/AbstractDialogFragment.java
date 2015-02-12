@@ -18,7 +18,7 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 	private Button btnOk;
 	private TextView twTitle;
 	private TextView twMsg;
-	protected FrameLayout body;
+	private FrameLayout body;
 	private View btnsDivider;
 	
 	
@@ -59,13 +59,17 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 	}	
 	
 	protected void setTitle(String title){
-		twTitle.setVisibility(View.VISIBLE);
-		twTitle.setText(title);
+        if(title!=null) {
+            twTitle.setVisibility(View.VISIBLE);
+            twTitle.setText(title);
+        }
 	}
 	
 	protected void setMessage(String message){
-		twMsg.setVisibility(View.VISIBLE);
-		twMsg.setText(message);
+        if(message!=null){
+            twMsg.setVisibility(View.VISIBLE);
+            twMsg.setText(message);
+        }
 	}
 	
 	protected void setPositiveButton(String name, OnClickListener clickListener){

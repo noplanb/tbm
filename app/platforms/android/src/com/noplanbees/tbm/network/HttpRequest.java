@@ -45,7 +45,7 @@ public class HttpRequest {
     private String login;
     private String uri;
     private LinkedTreeMap<String, String> sParams;
-    protected Callbacks callbacks;
+    private Callbacks callbacks;
     
     //------------------------------------------------------------------
     // Application level success and failure handling (not http failure)

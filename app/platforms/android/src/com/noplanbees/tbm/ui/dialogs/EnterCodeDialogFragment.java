@@ -2,6 +2,7 @@ package com.noplanbees.tbm.ui.dialogs;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,11 +18,19 @@ import com.noplanbees.tbm.R;
 
 public class EnterCodeDialogFragment extends AbstractDialogFragment {
 
-	public static final String PHONE_NUMBER = "phonenumber";
+	private static final String PHONE_NUMBER = "phonenumber";
 	
 	public interface Callbacks{
 		void didEnterCode(String code);
-	} 
+	}
+
+    public static DialogFragment getInstance(String phoneNumber){
+        DialogFragment fragment = new EnterCodeDialogFragment();
+        Bundle args = new Bundle();
+
+        fragment.setArguments(args);
+        return fragment;
+    }
 	
 	private Callbacks callbacks;
 	

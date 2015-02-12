@@ -75,7 +75,8 @@
             android:text="@android:string/ok"
             android:textColor="@color/dialog_textcolor"
             android:textStyle="bold"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:visibility="gone"/>
     </LinearLayout>
 
 </LinearLayout>

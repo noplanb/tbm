@@ -10,23 +10,32 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import com.noplanbees.tbm.VersionHandler;
+
 public class VersionDialogFragment extends DialogFragment {
 
-    public static final String IS_NEGATIVE_BUTTON = "is_negative_button";
-    public static final String MESSAGE = "message";
-    private boolean negativeButton;
-    private String message;
+    private static final String IS_NEGATIVE_BUTTON = "is_negative_button";
+    private static final String MESSAGE = "message";
+
+    public static DialogFragment getInstance(String message, boolean isNegativeButton){
+        DialogFragment dialog = new VersionDialogFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(VersionDialogFragment.IS_NEGATIVE_BUTTON, isNegativeButton);
+        args.putString(VersionDialogFragment.MESSAGE, message);
+        dialog.setArguments(args);
+        return dialog;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        negativeButton = getArguments().getBoolean(IS_NEGATIVE_BUTTON, false);
-        message = getArguments().getString(MESSAGE);
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        boolean negativeButton = getArguments().getBoolean(IS_NEGATIVE_BUTTON, false);
+        String message = getArguments().getString(MESSAGE);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Update Available")
                 .setMessage(message)

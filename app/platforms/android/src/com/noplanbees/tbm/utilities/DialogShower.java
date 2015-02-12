@@ -45,17 +45,11 @@ public class DialogShower {
                 false, -1);
     }
 
-    public static void showActionInfoDialog(Activity activity, String title, String message, String action, boolean needCancel, int actionId) {
-        ActionInfoDialogFragment actionDialogFragment = new ActionInfoDialogFragment();
-        Bundle args = new Bundle();
-        args.putString(ActionInfoDialogFragment.TITLE, title);
-        args.putString(ActionInfoDialogFragment.MSG, message);
-        args.putString(ActionInfoDialogFragment.ACTION, action);
-        args.putBoolean(ActionInfoDialogFragment.NEED_CANCEL, needCancel);
-        if (actionId != -1)
-            args.putInt(ActionInfoDialogFragment.ID, actionId);
-        actionDialogFragment.setArguments(args);
-        actionDialogFragment.show(activity.getFragmentManager(), null);
+    public static void showActionInfoDialog(Activity activity, String title, String message, String action,
+                                            boolean needCancel, int actionId) {
+        DialogFragment dialog = ActionInfoDialogFragment.getInstance(title, message, action, actionId,
+                needCancel);
+        dialog.show(activity.getFragmentManager(), null);
     }
 
     public static void showCameraException(final Activity activity, CameraException cameraException, final DoubleActionDialogListener listener) {
@@ -69,34 +63,20 @@ public class DialogShower {
 
             @Override
             public void run() {
-                DoubleActionDialogFragment dialogFragment = new DoubleActionDialogFragment();
+                DoubleActionDialogFragment dialogFragment = DoubleActionDialogFragment.getInstance(title, message, positiveText, negativeText);
                 dialogFragment.setListener(listener);
-                Bundle args = new Bundle();
-                args.putString(DoubleActionDialogFragment.TITLE, title);
-                args.putString(DoubleActionDialogFragment.MSG, message);
-                args.putString(DoubleActionDialogFragment.ACTION_POSITIVE, positiveText);
-                args.putString(DoubleActionDialogFragment.ACTION_NEGATIVE, negativeText);
-                dialogFragment.setArguments(args);
                 dialogFragment.show(activity.getFragmentManager(), null);
             }
         });
     }
 
     public static void showInfoDialog(Activity activity, String title, String message) {
-        InfoDialogFragment info = new InfoDialogFragment();
-        Bundle args = new Bundle();
-        args.putString(InfoDialogFragment.TITLE, title);
-        args.putString(InfoDialogFragment.MSG, message);
-        info.setArguments(args);
+        DialogFragment info = InfoDialogFragment.getInstance(title, message);
         info.show(activity.getFragmentManager(), null);
     }
 
     public static void showVersionHandlerDialog(Activity activity, String message, boolean negativeButton) {
-        DialogFragment d = new VersionDialogFragment();
-        Bundle args = new Bundle();
-        args.putBoolean(VersionDialogFragment.IS_NEGATIVE_BUTTON, negativeButton);
-        args.putString(VersionDialogFragment.MESSAGE, message);
-        d.setArguments(args);
+        DialogFragment d = VersionDialogFragment.getInstance(message, negativeButton);
         d.show(activity.getFragmentManager(),null);
     }
 

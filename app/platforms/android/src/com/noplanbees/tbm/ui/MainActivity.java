@@ -2,6 +2,7 @@ package com.noplanbees.tbm.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.Service;
 import android.content.ComponentName;
@@ -29,6 +30,7 @@ import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
+import com.noplanbees.tbm.ui.dialogs.ProgressDialogFragment;
 import com.noplanbees.tbm.utilities.DialogShower;
 
 public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback,
@@ -57,6 +59,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 	private VersionHandler versionHandler;
 	private Fragment mainFragment;
 	private InviteManager inviteManager;
+    private DialogFragment pd;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -187,6 +190,18 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, int actionId){
         DialogShower.showActionInfoDialog(this, title, msg, actionTitle, isNeedCancel, actionId);
+    }
+
+    @Override
+    public void onShowProgressDialog(String title, String msg) {
+        pd = ProgressDialogFragment.getInstance("Checking", null);
+        pd.show(getFragmentManager(), null);
+    }
+
+    @Override
+    public void onDismissProgressDialog() {
+        if(pd!=null)
+            pd.dismiss();
     }
 
     @Override

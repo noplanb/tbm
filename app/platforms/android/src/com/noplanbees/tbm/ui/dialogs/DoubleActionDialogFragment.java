@@ -1,5 +1,6 @@
 package com.noplanbees.tbm.ui.dialogs;
 
+import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
@@ -10,17 +11,29 @@ import com.noplanbees.tbm.R;
  */
 public class DoubleActionDialogFragment extends AbstractDialogFragment implements View.OnClickListener {
 
-    public static final String TITLE = "title";
-    public static final String MSG = "msg";
-    public static final String ACTION_POSITIVE = "action_positive";
-    public static final String ACTION_NEGATIVE = "action_negative";
-    public static final String ID = "dialog_id";
+    private static final String TITLE = "title";
+    private static final String MSG = "msg";
+    private static final String ACTION_POSITIVE = "action_positive";
+    private static final String ACTION_NEGATIVE = "action_negative";
+    private static final String ID = "dialog_id";
 
     public interface DoubleActionDialogListener {
         public static final int BUTTON_POSITIVE = DialogInterface.BUTTON_POSITIVE;
         public static final int BUTTON_NEGATIVE = DialogInterface.BUTTON_NEGATIVE;
 
         void onExceptionDialogActionClicked(int id, int button);
+    }
+
+    public static DoubleActionDialogFragment getInstance(String title, String message, String actionPositive,
+                                             String actionNegative){
+        DoubleActionDialogFragment fragment = new DoubleActionDialogFragment();
+        Bundle args = new Bundle();
+        args.putString(DoubleActionDialogFragment.TITLE, title);
+        args.putString(DoubleActionDialogFragment.MSG, message);
+        args.putString(DoubleActionDialogFragment.ACTION_POSITIVE, actionPositive);
+        args.putString(DoubleActionDialogFragment.ACTION_NEGATIVE, actionNegative);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     private DoubleActionDialogListener listener;
