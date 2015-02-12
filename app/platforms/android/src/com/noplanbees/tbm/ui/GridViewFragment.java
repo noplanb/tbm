@@ -64,9 +64,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate");
 
-
-        videoPlayer = VideoPlayer.getInstance(getActivity());
-
         CameraManager.addExceptionHandlerDelegate(this);
         videoRecorderManager = new VideoRecorderManager(getActivity());
 
@@ -140,10 +137,10 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     private void setupVideoPlayer(View v) {
-        View videoBody = v.findViewById(R.id.video_body);
+        videoPlayer = VideoPlayer.getInstance();
+        ViewGroup videoBody = (ViewGroup) v.findViewById(R.id.video_body);
         VideoView videoView = (VideoView) v.findViewById(R.id.video_view);
-        videoPlayer.setVideoView(videoView);
-        videoPlayer.setVideoViewBody(videoBody);
+        videoPlayer.init(getActivity(), videoBody, videoView);
     }
 
     private void setupGridElements(){

@@ -56,7 +56,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         ActiveModelsHandler.getActiveModelsHandler().getFf().addVideoStatusObserver(this);
 
-        VideoPlayer videoPlayer = VideoPlayer.getInstance(activity);
+        VideoPlayer videoPlayer = VideoPlayer.getInstance();
         videoPlayer.registerStatusCallbacks(this);
 
         updateContent(false);
@@ -97,7 +97,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     @Override
     public void onThumbViewClicked() {
         // As it has thumb it must have friend, so play video
-        VideoPlayer videoPlayer = VideoPlayer.getInstance(activity);
+        VideoPlayer videoPlayer = VideoPlayer.getInstance();
         videoPlayer.togglePlayOverView(container, gridElement.getFriendId());
     }
 
@@ -264,7 +264,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     public void cleanUp() {
-        VideoPlayer videoPlayer = VideoPlayer.getInstance(activity);
+        VideoPlayer videoPlayer = VideoPlayer.getInstance();
         videoPlayer.unregisterStatusCallbacks(this);
         gridElement.removeCallback(this);
         ActiveModelsHandler.getActiveModelsHandler().getFf().removeOnVideoStatusChangedObserver(this);

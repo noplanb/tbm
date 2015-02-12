@@ -5,26 +5,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.noplanbees.tbm.Config;
-import com.noplanbees.tbm.utilities.Convenience;
-import com.noplanbees.tbm.notification.NotificationHandler;
 import com.noplanbees.tbm.RemoteStorageHandler;
-import com.noplanbees.tbm.multimedia.VideoIdUtils;
 import com.noplanbees.tbm.dispatch.Dispatch;
+import com.noplanbees.tbm.multimedia.VideoIdUtils;
 import com.noplanbees.tbm.network.FileDeleteService;
 import com.noplanbees.tbm.network.FileDownloadService;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.network.FileUploadService;
-
+import com.noplanbees.tbm.notification.NotificationHandler;
+import com.noplanbees.tbm.utilities.Convenience;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -218,7 +214,7 @@ public class Friend extends ActiveModel{
         return v;
     }
 
-    public Boolean hasIncomingVideoId(String videoId){
+    public boolean hasIncomingVideoId(String videoId){
         for (Video v : getIncomingVideos()){
             if (v.getId().equals(videoId))
                 return true;
@@ -287,9 +283,9 @@ public class Friend extends ActiveModel{
     // Private helpers for above lists
     //--------------------------------
     private String getNextVideoIdInList(String videoId, List<Video> videoList){
-        Boolean found = false;
+        boolean found = false;
         for (Video v : videoList){
-            if (found){
+            if (found) {
                 return v.getId();
             }
             if (v.getId().equals(videoId))
@@ -367,32 +363,28 @@ public class Friend extends ActiveModel{
         Bitmap thumbBmp = thumbBitmap(videoId);
         if (thumbBmp != null){
             sq = ThumbnailUtils.extractThumbnail(thumbBmp, thumbBmp.getWidth(), thumbBmp.getWidth());
-            Log.i(TAG, "sqThumbBitmap: size = " + ((Integer) sq.getByteCount()).toString());
+            Log.i(TAG, "sqThumbBitmap: size = " + String.valueOf(sq.getByteCount()));
         }
         return sq;
     }
 
-    public Boolean thumbExists(){
-        Boolean r = false;
+    public boolean thumbExists(){
         for (Video v : getIncomingVideos()){
             if (thumbFile(v.getId()).exists()){
-                r = true;
-                break;
+                return true;
             }
         }
-        return r;
+        return false;
     }
 
-    public Boolean incomingVideoNotViewed(){
+    public boolean incomingVideoNotViewed(){
         // Return true if any of the incoming videos are status DOWNLOADED
-        Boolean r = false;
         for (Video v : getIncomingVideos()){
             if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED){
-                r = true;
-                break;
+                return true;
             }
         }
-        return r;
+        return false;
     }
 
     public int incomingVideoNotViewedCount(){
@@ -523,7 +515,7 @@ public class Friend extends ActiveModel{
 
     // Outgoing video status
     private void setOutgoingVideoStatus(int status){
-        set(Attributes.OUTGOING_VIDEO_STATUS, ((Integer) status).toString());
+        set(Attributes.OUTGOING_VIDEO_STATUS, String.valueOf(status));
     }
 
     public int getOutgoingVideoStatus(){
@@ -542,7 +534,7 @@ public class Friend extends ActiveModel{
 
     // Upload retryCount
     private void setUploadRetryCount(int retryCount){
-        set(Attributes.UPLOAD_RETRY_COUNT, ((Integer) retryCount).toString());
+        set(Attributes.UPLOAD_RETRY_COUNT, String.valueOf(retryCount));
     }
 
     private int getUploadRetryCount(){
@@ -631,7 +623,7 @@ public class Friend extends ActiveModel{
     }
     
     public boolean hasDownloadingVideo(){
-        for (Video v : VideoFactory.getFactoryInstance().all()){
+        for (Video v : VideoFactory.getFactoryInstance().allWithFriendId(getId())) {
             if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING)
                 return true;
         }
@@ -639,7 +631,7 @@ public class Friend extends ActiveModel{
     }
     
     public boolean hasRetryingDownload(){
-        for (Video v : VideoFactory.getFactoryInstance().all()){
+        for (Video v : VideoFactory.getFactoryInstance().allWithFriendId(getId())){
             if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING && v.getDownloadRetryCount() > 0)
                 return true;
         }
