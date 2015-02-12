@@ -16,10 +16,7 @@ import com.noplanbees.tbm.network.aws.S3FileTransferAgent;
 public abstract class FileTransferService extends NonStopIntentService {
     private final String TAG = getClass().getSimpleName();
 
-    public static final String ACTION_INTERRUPT = "ACTION_INTERRUPT";
-    public static final String ACTION_STOP = "STOP";
-
-	private final static Integer MAX_RETRIES = 100;
+    private final static Integer MAX_RETRIES = 100;
 
 	protected String id;
 	

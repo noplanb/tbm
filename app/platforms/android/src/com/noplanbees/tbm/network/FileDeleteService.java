@@ -3,9 +3,7 @@ package com.noplanbees.tbm.network;
 import android.content.Context;
 import android.content.Intent;
 
-import com.noplanbees.tbm.RemoteStorageHandler;
 import com.noplanbees.tbm.model.Video;
-import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 
 
 public class FileDeleteService extends FileTransferService {
@@ -14,7 +12,7 @@ public class FileDeleteService extends FileTransferService {
 	
 	public static void restartTransfersPendingRetry(Context context) {
 		Intent intent = new Intent(context, FileDeleteService.class);
-		intent.setAction(FileTransferService.ACTION_INTERRUPT);
+		intent.setAction(ACTION_INTERRUPT);
 		context.startService(intent);
 	}	
 	
