@@ -145,6 +145,15 @@ public class VideoPlayer implements OnCompletionListener{
 		}
 	}
 	
+    public void stop(){
+        Log.i(TAG, "stop");
+        audioManager.abandonAudioFocus(audioFocusChangeListener);
+        videoView.stopPlayback();
+        videoView.suspend();
+        videoBody.setVisibility(View.GONE);
+        notifyStopPlaying();
+    }
+	
 	public void release(Context context){
 	    stop();
 	}
@@ -195,15 +204,6 @@ public class VideoPlayer implements OnCompletionListener{
 			onCompletion(null);
 		}
 	}
-
-    private void stop(){
-        Log.i(TAG, "stop");
-        audioManager.abandonAudioFocus(audioFocusChangeListener);
-        videoView.stopPlayback();
-        videoView.suspend();
-        videoBody.setVisibility(View.GONE);
-        notifyStopPlaying();
-    }
     
     @Override
     public void onCompletion(MediaPlayer mp) {
