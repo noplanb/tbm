@@ -14,8 +14,11 @@ import com.noplanbees.tbm.network.aws.S3FileTransferAgent;
 
 
 public abstract class FileTransferService extends NonStopIntentService {
-	private final String TAG = getClass().getSimpleName();
-	private final static String STAG = FileTransferService.class.getSimpleName();
+    private final String TAG = getClass().getSimpleName();
+
+    public static final String ACTION_INTERRUPT = "ACTION_INTERRUPT";
+    public static final String ACTION_STOP = "STOP";
+
 	private final static Integer MAX_RETRIES = 100;
 
 	protected String id;
@@ -57,40 +60,44 @@ public abstract class FileTransferService extends NonStopIntentService {
 
     @Override
 	protected void onHandleIntent(Intent intent, int startId) {
-		if (intent.getAction() != null && intent.getAction().equals("INTERRUPT")){
+        String action = intent.getAction();
+        if (action != null && action.equals(ACTION_STOP)){
 			// Non stop intent service has already acted on the interrupt when it got it possibly out of order.
 			// Our only job here is to stopSelf for this intent as it has come up in the queue so we are calling 
 			// stop self for this intent in the same order that it came in.
-			Log.i(TAG, "Calling stopSelf for an interrupt intent.");
+			Log.i(TAG, "Calling stopSelf for an stop intent.");
 			stopSelf(startId);
-			return;
-		}
-		
-		try {
-			Log.i(TAG, "onHandleIntent");
-			fileTransferAgent.setInstanceVariables(intent);
-		} catch (InterruptedException e) {
-			Log.i(TAG, "Interrupt caught for Restart retry outside of loop.");
-			intent.putExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
-		}
+		}else if (action != null && action.equals(ACTION_INTERRUPT)){
+            //This will interrupt service which will be restarted with old intent
+            Log.i(TAG, "Calling stopSelf for an interrupt intent.");
+        }else{
+            try {
+                Log.i(TAG, "onHandleIntent");
+                fileTransferAgent.setInstanceVariables(intent);
+            } catch (InterruptedException e) {
+                Log.i(TAG, "Interrupt caught for Restart retry outside of loop.");
+                intent.putExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
+            }
 
-		while(true){
-			try {
-				if (intent.getIntExtra(IntentFields.RETRY_COUNT_KEY, 0) > MAX_RETRIES){
-					Log.i(TAG, "onHandleIntent: MAX_RETRIES reached: " + MAX_RETRIES);
-					maxRetriesReached(intent);
-					break;
-				}
-				if (doTransfer(intent))
-					break;
-				retrySleep(intent);
-			} catch (InterruptedException e) {
-				Log.i(TAG, "Interrupt caught for Restart retry inside loop.");
-				intent.putExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
-			}
-		}
-		
-		stopSelf(startId);
+            while(true){
+                try {
+                    if (intent.getIntExtra(IntentFields.RETRY_COUNT_KEY, 0) > MAX_RETRIES){
+                        Log.i(TAG, "onHandleIntent: MAX_RETRIES reached: " + MAX_RETRIES);
+                        maxRetriesReached(intent);
+                        break;
+                    }
+                    if (doTransfer(intent))
+                        break;
+                    retrySleep(intent);
+                } catch (InterruptedException e) {
+                    Log.i(TAG, "Interrupt caught for Restart retry inside loop.");
+                    intent.putExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
+                }
+            }
+
+            stopSelf(startId);
+        }
+
 	}
 
 	public void reportStatus(Intent intent, int status){

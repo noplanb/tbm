@@ -61,13 +61,13 @@ public abstract class NonStopIntentService extends Service {
 			return START_STICKY;
     	}
     	
-		if (intent.getAction() != null && intent.getAction().equals("INTERRUPT")){
+		if (intent.getAction() != null && intent.getAction().equals("ACTION_INTERRUPT")){
 			// Let the interrupt take effect immediately to interrupt a transfer waiting on a long retry delay. 
 			// But also add the interrupt intent to the queue so that when it comes up we can call stop self in turn
 			// it is important that stopSelf is called in order for each intent that comes in because 
 			// android tracks them for the purpose of START_REDELIVER_INTENT. Calling stop self out of order
 			// can have unknown consequences.
-			Log.i(TAG, "onStart: Got a request to INTERRUPT");
+			Log.i(TAG, "onStart: Got a request to ACTION_INTERRUPT");
 	        mServiceLooper.getThread().interrupt();
 		}
 		

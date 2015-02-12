@@ -15,7 +15,7 @@ public class FileUploadService extends FileTransferService {
 	
 	public static void restartTransfersPendingRetry(Context context) {
 		Intent intent = new Intent(context, FileUploadService.class);
-		intent.setAction("INTERRUPT");
+		intent.setAction(FileTransferService.ACTION_INTERRUPT);
 		context.startService(intent);
 	}	
 	

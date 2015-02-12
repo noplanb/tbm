@@ -14,7 +14,7 @@ public class FileDeleteService extends FileTransferService {
 	
 	public static void restartTransfersPendingRetry(Context context) {
 		Intent intent = new Intent(context, FileDeleteService.class);
-		intent.setAction("INTERRUPT");
+		intent.setAction(FileTransferService.ACTION_INTERRUPT);
 		context.startService(intent);
 	}	
 	
