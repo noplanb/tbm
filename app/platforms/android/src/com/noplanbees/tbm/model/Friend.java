@@ -419,30 +419,30 @@ public class Friend extends ActiveModel{
             Dispatch.dispatch("createThumb: no video file found for friend=" + getUniqueName());
             res = false;
         }else{
-            String vidPath = videoFromPath(videoId);
-
-            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(vidPath);
-            
-            String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            long duration = Long.parseLong( time );
-            Log.d(TAG, "Duration: " + duration);
-            
-            long pos;
-            if(duration>2500)
-                pos = duration - 2000;
-            else
-                pos = duration/2;
-            
-            Log.d(TAG, "Pos: " + pos);
-
-            Bitmap thumb = retriever.getFrameAtTime(pos*1000);
-            File thumbFile = thumbFile(videoId);
             try {
+                String vidPath = videoFromPath(videoId);
+
+                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                retriever.setDataSource(vidPath);
+
+                String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+                long duration = Long.parseLong( time );
+                Log.d(TAG, "Duration: " + duration);
+
+                long pos;
+                if(duration>2500)
+                    pos = duration - 2000;
+                else
+                    pos = duration/2;
+
+                Log.d(TAG, "Pos: " + pos);
+
+                Bitmap thumb = retriever.getFrameAtTime(pos*1000);
+                File thumbFile = thumbFile(videoId);
                 FileOutputStream fos = FileUtils.openOutputStream(thumbFile);
                 thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
                 res = true;
-            } catch (IOException| NullPointerException e) {
+            } catch (IOException| RuntimeException e) {
                 Dispatch.dispatch("createThumb: " + e.getMessage() + e.toString());
                 res = false;
             }
