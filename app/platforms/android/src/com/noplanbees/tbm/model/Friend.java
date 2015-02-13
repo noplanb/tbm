@@ -426,6 +426,7 @@ public class Friend extends ActiveModel{
             
             String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             long duration = Long.parseLong( time );
+            Log.d(TAG, "Duration: " + duration);
             
             long pos;
             if(duration>1500)
@@ -433,6 +434,8 @@ public class Friend extends ActiveModel{
             else
                 pos = duration/2;
             
+            Log.d(TAG, "Pos: " + pos);
+
             Bitmap thumb = retriever.getFrameAtTime(pos*1000);
             File thumbFile = thumbFile(videoId);
             try {

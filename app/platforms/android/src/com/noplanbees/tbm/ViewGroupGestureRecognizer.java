@@ -92,12 +92,10 @@ public abstract class ViewGroupGestureRecognizer {
         
         if (ev.getAction() == MotionEvent.ACTION_DOWN)
             intercept = false;
-        Log.d(TAG, "dispatchTouchEvent: ev: " + ev.getAction() + "intercept: " + intercept);
         handleTouchEvent(ev);
     }
     
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
-	    Log.d(TAG, "onInterceptTouchEvent: ev: " + ev.getAction() + "intercept: " + intercept);
 	    return intercept;
 	}
 	

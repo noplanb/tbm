@@ -5,12 +5,14 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
+
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
@@ -21,7 +23,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-public class VideoPlayer implements OnCompletionListener {
+public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 
 	private static final String TAG = VideoPlayer.class.getSimpleName();
 
@@ -70,6 +72,7 @@ public class VideoPlayer implements OnCompletionListener {
         this.videoBody = videoBody;
         this.videoView = videoView;
         this.videoView.setOnCompletionListener(this);
+        this.videoView.setOnPreparedListener(this);
 
         audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
 
@@ -175,11 +178,11 @@ public class VideoPlayer implements OnCompletionListener {
         friend.setAndNotifyIncomingVideoViewed(videoId);
 
         if (videoIsPlayable()){
-			videoBody.setVisibility(View.VISIBLE);
-			videoView.setVideoPath(friend.videoFromPath(videoId));
-
             // TODO: GARF: Andrey what happens if it is not granted!
             if (requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                videoBody.setVisibility(View.VISIBLE);
+                videoView.setVideoPath(friend.videoFromPath(videoId));
+                videoView.seekTo(1000);
                 videoView.start();
                 notifyStartPlaying();
             }
@@ -188,6 +191,11 @@ public class VideoPlayer implements OnCompletionListener {
 			onCompletion(null);
 		}
 	}
+    
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        Log.d(TAG, "onPrepared");
+    }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
@@ -199,6 +207,8 @@ public class VideoPlayer implements OnCompletionListener {
         else
             stop();
     }
+    
+
 
     //---------------
 	// Helper methods
@@ -248,5 +258,7 @@ public class VideoPlayer implements OnCompletionListener {
                 // Request permanent focus.
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
     }
+
+
 
 }
