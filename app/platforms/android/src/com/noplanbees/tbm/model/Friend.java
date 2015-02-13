@@ -429,8 +429,8 @@ public class Friend extends ActiveModel{
             Log.d(TAG, "Duration: " + duration);
             
             long pos;
-            if(duration>1500)
-                pos = duration - 1000;
+            if(duration>2500)
+                pos = duration - 2000;
             else
                 pos = duration/2;
             
