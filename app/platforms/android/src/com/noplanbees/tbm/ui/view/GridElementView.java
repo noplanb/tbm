@@ -14,15 +14,13 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.noplanbees.tbm.R;
-import com.noplanbees.tbm.ShortClickListener;
-import com.noplanbees.tbm.multimedia.VideoPlayer;
 import com.noplanbees.tbm.utilities.Convenience;
 
 public class GridElementView extends RelativeLayout implements View.OnClickListener {
 
-	private static final String TAG = "GridElementView";
-
-    private FriendViewListener viewEventListener;
+    private static final String TAG = "GridElementView";
+    private static final int ANIMATION_DELAY_MILLIS = 200;
+    private static final int ANIMATION_DURATION_MILLIS = 400;
 
     public interface ClickListener {
 		void onNudgeClicked();
@@ -51,9 +49,8 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
 	private ClickListener mClickListener;
 
-	private VideoPlayer videoPlayer;
-	private boolean needToHideIndicators;
 	private View buttonsBody;
+    private FriendViewListener viewEventListener;
 
     public GridElementView(Context context) {
         super(context);
@@ -208,10 +205,8 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         progressLine.setVisibility(visible ? VISIBLE : INVISIBLE);
     }
 
-	public void animateUploading() {
+	public void animateUploading(final Runnable task) {
         Log.d(TAG, this + "animateUploading");
-
-		int durationMillis = 400;
 		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
         progressLine.setVisibility(VISIBLE);
         Interpolator interpolator = new AccelerateDecelerateInterpolator();
@@ -220,44 +215,41 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 				1f, 1f, 
 				Animation.RELATIVE_TO_SELF, (float) 0,
 				Animation.RELATIVE_TO_SELF, (float) 0);
-		scale.setDuration(durationMillis);
+		scale.setDuration(ANIMATION_DURATION_MILLIS);
+        scale.setStartOffset(ANIMATION_DELAY_MILLIS);
         scale.setInterpolator(interpolator);
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
-		float fromXDelta = -getMeasuredWidth() + imgUploading.getMeasuredWidth();
-		float toXDelta = 0;
+		float fromXDelta = 0;
+		float toXDelta = getMeasuredWidth() - imgUploading.getMeasuredWidth();
 
 		TranslateAnimation trAn = new TranslateAnimation(
-				Animation.ABSOLUTE, fromXDelta, 
-				Animation.RELATIVE_TO_SELF,	toXDelta, 
+				Animation.RELATIVE_TO_SELF, fromXDelta,
+				Animation.ABSOLUTE,	toXDelta,
 				Animation.RELATIVE_TO_SELF, fromYDelta, 
 				Animation.RELATIVE_TO_SELF, toYDelta);
-		trAn.setDuration(durationMillis);
+		trAn.setDuration(ANIMATION_DURATION_MILLIS);
+        trAn.setStartOffset(ANIMATION_DELAY_MILLIS);
         trAn.setFillAfter(true);
         trAn.setInterpolator(interpolator);
         trAn.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onAnimationStart(Animation animation) {
-                Log.d(TAG, "onAnimationStart");
-            }
+            public void onAnimationStart(Animation animation) {}
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                Log.d(TAG, "onAnimationEnd");
+                postDelayed(task, ANIMATION_DELAY_MILLIS);
             }
 
             @Override
-            public void onAnimationRepeat(Animation animation) {
-                Log.d(TAG, "");
-            }
+            public void onAnimationRepeat(Animation animation) {}
         });
 		imgUploading.startAnimation(trAn);
 		progressLine.startAnimation(scale);
 	}
 
 	public void animateDownloading(final Runnable task) {
-		int durationMillis = 400;
 		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
         progressLine.setVisibility(VISIBLE);
         Interpolator interpolator = new AccelerateDecelerateInterpolator();
@@ -266,7 +258,8 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 				1f, 1f, 
 				Animation.RELATIVE_TO_SELF, 1.0f,
 				Animation.RELATIVE_TO_SELF, 0.0f);
-		scale.setDuration(durationMillis);
+		scale.setDuration(ANIMATION_DURATION_MILLIS);
+        scale.setStartOffset(ANIMATION_DELAY_MILLIS);
         scale.setInterpolator(interpolator);
 
 		float fromYDelta = 0;
@@ -279,7 +272,8 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 				Animation.ABSOLUTE,	toXDelta,
 				Animation.RELATIVE_TO_SELF, fromYDelta, 
 				Animation.RELATIVE_TO_SELF, toYDelta);
-		trAn.setDuration(durationMillis);
+		trAn.setDuration(ANIMATION_DURATION_MILLIS);
+        trAn.setStartOffset(ANIMATION_DELAY_MILLIS);
         trAn.setFillAfter(true);
         trAn.setInterpolator(interpolator);
         trAn.setAnimationListener(new Animation.AnimationListener() {
@@ -288,7 +282,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                postDelayed(task, 200);
+                postDelayed(task, ANIMATION_DELAY_MILLIS);
             }
 
             @Override
@@ -296,6 +290,9 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         });
         imgDownloading.startAnimation(trAn);
         progressLine.startAnimation(scale);
-	}
+    }
 
+    public boolean isAnimating() {
+        return imgDownloading.getAnimation() != null || imgUploading.getAnimation() != null;
+    }
 }
