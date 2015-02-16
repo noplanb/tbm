@@ -1,12 +1,14 @@
 package com.noplanbees.tbm.utilities;
 
 import android.util.Log;
+import com.noplanbees.tbm.Config;
 
 import java.io.FileWriter;
 
 public class Logger {
 
 	private static final boolean IS_NEED_TO_SAVE = true;
+    private static final boolean DEBUG = Config.DEPLOYMENT_TYPE == Config.DeploymentType.DEVELOPMENT;
 	private static FileWriter fileWriter;
 
 	public static void e(String string, String string2, Exception e) {
@@ -39,7 +41,9 @@ public class Logger {
 	}
 
 	public static void d(String tag2, String string) {
-		Log.d(tag2, string);
+        if (DEBUG) {
+            Log.d(tag2, string);
+        }
 		if (IS_NEED_TO_SAVE)
 			printToFile(tag2 + "\t" + string);
 	}

@@ -4,8 +4,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.Telephony;
 import android.util.Log;
-
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -14,6 +14,7 @@ import com.noplanbees.tbm.ContactsManager;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.UserFactory;
 import com.noplanbees.tbm.utilities.AsyncTaskManager;
+import com.noplanbees.tbm.utilities.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,14 +32,11 @@ public class SmsStatsHandler {
 		public static final String NUM_MESSAGES = "numMessages";
 		public static final String RAW_CONTACT_ID = "rawContactId";
 	}
-	
-	public static class SmsColumnNames{
-		
-//		public static final String person = Sms.Inbox.PERSON;
-//	    public static final String address = Sms.Inbox.ADDRESS;
-		public static final String PERSON = "person";
-	    public static final String ADDRESS = "address";
-	}
+
+    public static class SmsColumnNames {
+        public static final String PERSON = Telephony.Sms.PERSON;
+        public static final String ADDRESS = Telephony.Sms.ADDRESS;
+    }
 
 	public static SmsStatsHandler instance;
 	
@@ -46,8 +44,7 @@ public class SmsStatsHandler {
 		public void didRecieveRankedPhoneData(ArrayList<LinkedTreeMap<String, String>> rankedPhoneData);
 	}
 
-	private final String TAG = getClass().getSimpleName();
-	private static final String STAG = SmsStatsHandler.class.getSimpleName();
+	private static final String TAG = SmsStatsHandler.class.getSimpleName();
 
 	private Context context;
 	private Cursor messagesCursor;
@@ -127,17 +124,15 @@ public class SmsStatsHandler {
 
 	private void rankPhoneData(){
 		setNumMessages();
-		Log.i(TAG, "numMessages: " + numMessages);
+        Logger.d(TAG, "numMessages: " + numMessages);
 		printColumnNames(messagesCursor);
 //		rawContactIdByPhone();
-		Log.i(TAG, "rawContactIdByPhone: " + rawContactIdByPhone );
+        Logger.d(TAG, "rawContactIdByPhone: " + rawContactIdByPhone);
 		setRankedPhones();
-		Log.i(TAG, "rankedPhones: " + rankedPhones);
+        Logger.d(TAG, "rankedPhones: " + rankedPhones);
 		setRankedPhoneData();
-		Log.i(TAG, "rankedPhoneData: " + rankedPhoneData);
+        Logger.d(TAG, "rankedPhoneData: " + rankedPhoneData);
 	}
-
-
 
 	private void setNumMessages(){
 		if (messagesCursor == null || messagesCursor.getCount() == 0){
@@ -242,20 +237,20 @@ public class SmsStatsHandler {
 	}
 	
 	public static void printRankedPhoneData(ArrayList<LinkedTreeMap<String, String>> rankedPhoneData){
-		Log.i(STAG, "printRankedPhoneData");
+        Logger.d(TAG, "printRankedPhoneData");
 		if (rankedPhoneData == null){
-			Log.i(STAG, "no Ranked Phone Data");
+            Logger.d(TAG, "no Ranked Phone Data");
 			return;
 		}
 		for (LinkedTreeMap<String, String>e : rankedPhoneData){
-			Log.i(STAG, e.get(Keys.FIRST_NAME) + "-" + e.get(Keys.LAST_NAME) + " " + e.get(Keys.DISPLAY_NAME) + " " + e.get(Keys.MOBILE_NUMBER) + " " + e.get(Keys.NUM_MESSAGES));
+            Logger.d(TAG, e.get(Keys.FIRST_NAME) + "-" + e.get(Keys.LAST_NAME) + " " + e.get(Keys.DISPLAY_NAME) + " " + e.get(Keys.MOBILE_NUMBER) + " " + e.get(Keys.NUM_MESSAGES));
 		}
 	}
 
 	private void printColumnNames(Cursor c) {
-		Log.i(TAG, "printColumnNames: ");
+        Logger.d(TAG, "printColumnNames: ");
 		if (c == null){
-			Log.i(TAG, "printColumnNames: got null cursor");
+            Logger.d(TAG, "printColumnNames: got null cursor");
 			return;
 		}
 		
@@ -263,7 +258,7 @@ public class SmsStatsHandler {
 		for (int i=0; i< c.getColumnCount(); i++){
 			s += c.getColumnName(i) + " ";
 		}
-		Log.i(TAG, s);
+        Logger.d(TAG, s);
 		return;
 	}
 
