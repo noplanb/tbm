@@ -186,9 +186,10 @@ public class ContactsManager implements OnItemClickListener {
 		return result;
 	}
 
+    private static final String[] DISPLAY_NAME_PROJECTION = new String[] {PhoneLookup.DISPLAY_NAME};
 	public static LinkedTreeMap<String, String> getFirstLastWithPhone(Context context, String phoneNumber) {
 		Uri uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
-		Cursor c = context.getContentResolver().query(uri, null, null, null, null);
+		Cursor c = context.getContentResolver().query(uri, DISPLAY_NAME_PROJECTION, null, null, null);
 
 		String displayName = null;
 		if (c != null && c.getCount() != 0) {

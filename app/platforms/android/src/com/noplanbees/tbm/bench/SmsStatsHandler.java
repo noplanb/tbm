@@ -50,8 +50,6 @@ public class SmsStatsHandler {
 	private Cursor messagesCursor;
 	private LinkedTreeMap<String, Integer> numMessages;
 
-	private LinkedTreeMap<String, String>rawContactIdByPhone;
-
 	private ArrayList<String> rankedPhones;
 	private ArrayList<LinkedTreeMap<String, String>> rankedPhoneData;
 	
@@ -118,16 +116,14 @@ public class SmsStatsHandler {
 	}
 
 	private void setMessagesCursor(){
-		messagesCursor = context.getContentResolver().query(Uri.parse("content://sms/inbox"), null, null, null, null);
+        final String[] projection = new String[] {SmsColumnNames.ADDRESS};
+		messagesCursor = context.getContentResolver().query(Uri.parse("content://sms/inbox"), projection, null, null, SmsColumnNames.ADDRESS + " ASC");
 		Log.i(TAG, "setMessagesCursor: count=" + messagesCursor.getCount());
 	}
 
 	private void rankPhoneData(){
 		setNumMessages();
         Logger.d(TAG, "numMessages: " + numMessages);
-		printColumnNames(messagesCursor);
-//		rawContactIdByPhone();
-        Logger.d(TAG, "rawContactIdByPhone: " + rawContactIdByPhone);
 		setRankedPhones();
         Logger.d(TAG, "rankedPhones: " + rankedPhones);
 		setRankedPhoneData();
@@ -150,12 +146,12 @@ public class SmsStatsHandler {
 			// Ignore if not valid number. Should always be a valid number though since it has received sms.
 			if (mobileNumber == null)
 				continue;
-			
+
 			Integer n = numMessages.get(mobileNumber);
 			if (n == null)
 				numMessages.put(mobileNumber, 1);
 			else
-				numMessages.put(mobileNumber, n+1);				
+				numMessages.put(mobileNumber, n+1);
 		} while (messagesCursor.moveToNext());
 	}
 	
@@ -170,25 +166,6 @@ public class SmsStatsHandler {
             //Log.e(TAG, "ERROR: found sms number not valid. Not expected to ever happen.");
 		}
 		return r;
-	}
-
-	// Not used we get the contact from the phone number as the person field is not always filled
-	// on jills samsung the person field is never filled.
-	private void rawContactIdByPhone(){
-		if (messagesCursor == null || messagesCursor.getCount() == 0)
-			return;
-
-		rawContactIdByPhone = new LinkedTreeMap<String, String>();
-
-		int addrCol = messagesCursor.getColumnIndex(SmsColumnNames.ADDRESS);
-		int persCol = messagesCursor.getColumnIndex(SmsColumnNames.PERSON);
-
-		messagesCursor.moveToFirst();
-		do {
-			String phone = messagesCursor.getString(addrCol);
-			String person = messagesCursor.getString(persCol);
-			rawContactIdByPhone.put(phone, person);
-		} while (messagesCursor.moveToNext());
 	}
 
 	private void setRankedPhones(){
@@ -245,21 +222,6 @@ public class SmsStatsHandler {
 		for (LinkedTreeMap<String, String>e : rankedPhoneData){
             Logger.d(TAG, e.get(Keys.FIRST_NAME) + "-" + e.get(Keys.LAST_NAME) + " " + e.get(Keys.DISPLAY_NAME) + " " + e.get(Keys.MOBILE_NUMBER) + " " + e.get(Keys.NUM_MESSAGES));
 		}
-	}
-
-	private void printColumnNames(Cursor c) {
-        Logger.d(TAG, "printColumnNames: ");
-		if (c == null){
-            Logger.d(TAG, "printColumnNames: got null cursor");
-			return;
-		}
-		
-		String s = "";
-		for (int i=0; i< c.getColumnCount(); i++){
-			s += c.getColumnName(i) + " ";
-		}
-        Logger.d(TAG, s);
-		return;
 	}
 
 }
