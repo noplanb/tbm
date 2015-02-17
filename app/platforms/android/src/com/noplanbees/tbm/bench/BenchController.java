@@ -32,17 +32,17 @@ import com.noplanbees.tbm.utilities.DialogShower;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnItemClickListener,
+public class BenchController implements BenchDataHandler.BenchDataHandlerCallback, OnItemClickListener,
         ContactsManager.ContactSelected, SelectPhoneNumberDialog.Callbacks, BenchViewManager {
 
 	private final String TAG = getClass().getSimpleName();
 
 	private Activity activity;
 	private ListView listView;
-  private DrawerLayout drawerLayout;
-  private BenchAdapter adapter;
+    private DrawerLayout drawerLayout;
+    private BenchAdapter adapter;
 	private FriendFactory friendFactory;
-	private SmsStatsHandler smsStatsHandler;
+	private BenchDataHandler benchDataHandler;
 	private ArrayList<BenchObject> smsBenchObjects;
 	private ArrayList<BenchObject> currentAllOnBench;
 	private ContactsManager contactsManager;
@@ -52,24 +52,24 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	// ----------------------
 	public BenchController(Activity a) {
 		activity = a;
-    drawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
-    adapter = new BenchAdapter(activity, null);
+        drawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
+        adapter = new BenchAdapter(activity, null);
 
-    listView = (ListView) activity.findViewById(R.id.bench_list);
+        listView = (ListView) activity.findViewById(R.id.bench_list);
 		listView.setOnItemClickListener(this);
 
 		contactsManager = new ContactsManager(activity, this);
-		smsStatsHandler = new SmsStatsHandler(activity);
-        smsStatsHandler.setListener(this);
+		benchDataHandler = new BenchDataHandler(activity);
+        benchDataHandler.setListener(this);
 	}
 
 	public void onDataLoaded() {
         friendFactory = FriendFactory.getFactoryInstance();
-		smsStatsHandler.getRankedPhoneData();
+		benchDataHandler.getRankedPhoneData();
 	}
 
 	public void callSms() {
-		smsStatsHandler.getRankedPhoneData();
+		benchDataHandler.getRankedPhoneData();
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 
         hideBench();
 		BenchObject bo = currentAllOnBench.get(position);
-		Log.i(TAG, "Postion:" + position + " " + bo.displayName);
+        Log.i(TAG, "Position:" + position + " " + bo.displayName);
 
 		Friend friend = (Friend) friendFactory.find(bo.friendId);
 		if (friend == null) {
@@ -150,14 +150,14 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 	// Sms Contacts
 	// -------------
 	@Override
-	public void didRecieveRankedPhoneData(ArrayList<LinkedTreeMap<String, String>> rankedPhoneData) {
+	public void receivePhoneData(ArrayList<LinkedTreeMap<String, String>> phoneData) {
 		smsBenchObjects = new ArrayList<BenchObject>();
-		for (LinkedTreeMap<String, String> e : rankedPhoneData) {
+		for (LinkedTreeMap<String, String> e : phoneData) {
 			LinkedTreeMap<String, String> b = new LinkedTreeMap<String, String>();
-			b.put(BenchObject.Keys.FIRST_NAME, e.get(SmsStatsHandler.Keys.FIRST_NAME));
-			b.put(BenchObject.Keys.LAST_NAME, e.get(SmsStatsHandler.Keys.LAST_NAME));
-			b.put(BenchObject.Keys.DISPLAY_NAME, e.get(SmsStatsHandler.Keys.DISPLAY_NAME));
-			b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(SmsStatsHandler.Keys.MOBILE_NUMBER));
+			b.put(BenchObject.Keys.FIRST_NAME, e.get(BenchDataHandler.Keys.FIRST_NAME));
+			b.put(BenchObject.Keys.LAST_NAME, e.get(BenchDataHandler.Keys.LAST_NAME));
+			b.put(BenchObject.Keys.DISPLAY_NAME, e.get(BenchDataHandler.Keys.DISPLAY_NAME));
+			b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(BenchDataHandler.Keys.MOBILE_NUMBER));
 			smsBenchObjects.add(new BenchObject(b));
 		}
 

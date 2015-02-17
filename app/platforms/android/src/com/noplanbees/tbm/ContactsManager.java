@@ -96,7 +96,7 @@ public class ContactsManager implements OnItemClickListener {
 			// String selection = Contacts.HAS_PHONE_NUMBER + "=1";
 			Cursor c = context.getContentResolver().query(Contacts.CONTENT_URI, projection, null, null, null);
 			if (c == null || c.getCount() == 0) {
-                Log.i(TAG, "ERROR: setAutoCompleteData: got null cursor from contacs query");
+                Log.i(TAG, "ERROR: setAutoCompleteData: got null cursor from contacts query");
 				if (c != null)
 					c.close();
 				return null;
@@ -205,7 +205,7 @@ public class ContactsManager implements OnItemClickListener {
 		return getFirstLastWithDisplayName(displayName);
 	}
 
-	private static LinkedTreeMap<String, String> getFirstLastWithDisplayName(String displayName) {
+	public static LinkedTreeMap<String, String> getFirstLastWithDisplayName(String displayName) {
 		LinkedTreeMap<String, String> r = new LinkedTreeMap<String, String>();
 		if (displayName != null) {
 			r.put(Contact.ContactKeys.DISPLAY_NAME, displayName);
@@ -222,6 +222,16 @@ public class ContactsManager implements OnItemClickListener {
 		return r;
 	}
 
+    public static String getPhoneWithId(Context context, String id) {
+        Cursor cursor = context.getContentResolver().query(CommonDataKinds.Phone.CONTENT_URI, null, CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{id}, null);
+        String phone = null;
+        while (cursor.moveToNext()) {
+            phone = cursor.getString(cursor.getColumnIndex(CommonDataKinds.Phone.NUMBER));
+            break;
+        }
+        cursor.close();
+        return phone;
+    }
 	// --------------------------
 	// Phone numbers for contact
 	// --------------------------
