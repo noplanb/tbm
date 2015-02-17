@@ -59,7 +59,8 @@ public class BenchController implements SmsStatsHandler.SmsManagerCallback, OnIt
 		listView.setOnItemClickListener(this);
 
 		contactsManager = new ContactsManager(activity, this);
-		smsStatsHandler = SmsStatsHandler.getInstance(activity, this);
+		smsStatsHandler = new SmsStatsHandler(activity);
+        smsStatsHandler.setListener(this);
 	}
 
 	public void onDataLoaded() {

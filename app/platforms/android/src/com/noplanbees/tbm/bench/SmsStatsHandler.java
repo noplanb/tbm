@@ -36,10 +36,9 @@ public class SmsStatsHandler {
     public static class SmsColumnNames {
         public static final String PERSON = Telephony.Sms.PERSON;
         public static final String ADDRESS = Telephony.Sms.ADDRESS;
+        public static final String COUNT = "messages_count";
     }
 
-	public static SmsStatsHandler instance;
-	
 	public static interface SmsManagerCallback{
 		public void didRecieveRankedPhoneData(ArrayList<LinkedTreeMap<String, String>> rankedPhoneData);
 	}
@@ -52,35 +51,24 @@ public class SmsStatsHandler {
 
 	private ArrayList<String> rankedPhones;
 	private ArrayList<LinkedTreeMap<String, String>> rankedPhoneData;
-	
+
 	private SmsManagerCallback delegate;
 
-    private boolean isRequestRunning;
-    private boolean isRequestComplete;
+    private volatile boolean isRequestRunning;
+    private volatile boolean isRequestComplete;
 
-	//------------
+    //------------
 	// Constructor
 	//------------
-	private SmsStatsHandler(Context c){
-		context = c;
+	public SmsStatsHandler(Context c) {
+		context = c.getApplicationContext();
         rankedPhoneData = new ArrayList<>();
 	}
-    
-	// Singleton instance.
-	public static SmsStatsHandler getInstance(Context c, SmsManagerCallback d){
-		if (instance == null)
-			instance = new SmsStatsHandler(c);
-        
-		instance.setDelegate(d);
-		return instance;		
-	}
-	
-    // Single delegate allowed.
-	public void setDelegate(SmsManagerCallback d){
+
+	public void setListener(SmsManagerCallback d){
 		delegate = d;
-//		notifyDelegate();
 	}
-	
+
 	private void notifyDelegate(){
 		if (rankedPhoneData != null && delegate != null)
 			delegate.didRecieveRankedPhoneData(rankedPhoneData);
@@ -116,16 +104,16 @@ public class SmsStatsHandler {
 	}
 
 	private void setMessagesCursor(){
-        final String[] projection = new String[] {SmsColumnNames.ADDRESS};
-		messagesCursor = context.getContentResolver().query(Uri.parse("content://sms/inbox"), projection, null, null, SmsColumnNames.ADDRESS + " ASC");
-		Log.i(TAG, "setMessagesCursor: count=" + messagesCursor.getCount());
+        final String[] projection = new String[] {SmsColumnNames.ADDRESS, "count(" + SmsColumnNames.ADDRESS + ") AS " + SmsColumnNames.COUNT};
+        final String where = SmsColumnNames.ADDRESS + " != '') GROUP BY (" + SmsColumnNames.ADDRESS;
+        final String orderBy = SmsColumnNames.COUNT + " DESC";
+		messagesCursor = context.getContentResolver().query(Uri.parse("content://sms/inbox"), projection, where, null, orderBy);
+		Log.i(TAG, "setMessagesContacts: count=" + messagesCursor.getCount());
 	}
 
 	private void rankPhoneData(){
 		setNumMessages();
         Logger.d(TAG, "numMessages: " + numMessages);
-		setRankedPhones();
-        Logger.d(TAG, "rankedPhones: " + rankedPhones);
 		setRankedPhoneData();
         Logger.d(TAG, "rankedPhoneData: " + rankedPhoneData);
 	}
@@ -138,23 +126,19 @@ public class SmsStatsHandler {
 
 		numMessages = new LinkedTreeMap<String, Integer>();
 		int addrCol = messagesCursor.getColumnIndex(SmsColumnNames.ADDRESS);
-
+        int countCol = messagesCursor.getColumnIndex(SmsColumnNames.COUNT);
 		messagesCursor.moveToFirst();
 		do {
 			String mobileNumber = messagesCursor.getString(addrCol);
+            int count = messagesCursor.getInt(countCol);
 			mobileNumber = getValidE164ForNumber(mobileNumber);
 			// Ignore if not valid number. Should always be a valid number though since it has received sms.
 			if (mobileNumber == null)
 				continue;
-
-			Integer n = numMessages.get(mobileNumber);
-			if (n == null)
-				numMessages.put(mobileNumber, 1);
-			else
-				numMessages.put(mobileNumber, n+1);
+            numMessages.put(mobileNumber, count);
 		} while (messagesCursor.moveToNext());
 	}
-	
+
 	private String getValidE164ForNumber(String phone){
 		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
 		String r = null;
@@ -183,11 +167,11 @@ public class SmsStatsHandler {
 	}
 
 	private void setRankedPhoneData(){
-		if (rankedPhones == null)
+		if (numMessages == null)
 			return;
 
 		rankedPhoneData = new ArrayList<LinkedTreeMap<String, String>>();
-		for(String mobileNumber : rankedPhones){
+		for(String mobileNumber : numMessages.keySet()){
 			LinkedTreeMap<String, String> entry = new LinkedTreeMap<String, String>();
 			entry.put(Keys.MOBILE_NUMBER, mobileNumber);
 			entry.put(Keys.NUM_MESSAGES, numMessages.get(mobileNumber).toString());
@@ -195,7 +179,7 @@ public class SmsStatsHandler {
 			// Map<String, String> firstLast = ContactsManager.getFirstLastWithRawContactId(context, rawContactId);
 			// This is more effective on my phone than using the RawContactId in person. It caught amit where the former did not.
 			Map<String, String> firstLast = ContactsManager.getFirstLastWithPhone(context, mobileNumber);
-			
+
 			if (firstLast == null)
 				continue;
 

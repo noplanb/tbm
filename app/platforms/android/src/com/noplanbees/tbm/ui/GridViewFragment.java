@@ -150,14 +150,13 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             }
             viewControllers.clear();
         }
-        int i = 0;
         BenchViewManager benchViewManager;
         try {
             benchViewManager = ((BenchViewManager.Provider) getActivity()).getBenchViewManager();
         } catch (ClassCastException e) {
             throw new RuntimeException("Activity must inherit BenchViewManagerProvider.");
         }
-
+        int i = 0;
         for (GridElement ge : GridElementFactory.getFactoryInstance().all()) {
             GridElementController gec = new GridElementController(getActivity(), ge, nineViewGroup.getSurroundingFrame(i), benchViewManager);
             viewControllers.add(gec);

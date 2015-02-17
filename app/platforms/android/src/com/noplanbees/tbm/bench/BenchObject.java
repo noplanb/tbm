@@ -36,4 +36,10 @@ public class BenchObject {
 		mobileNumber = params.get(Keys.MOBILE_NUMBER);
 	}
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(displayName).append(", ").append(mobileNumber);
+        return builder.toString();
+    }
 }
