@@ -270,16 +270,18 @@ public class ContactsManager implements OnItemClickListener {
 		String r = null;
 
 		if (c != null && c.getCount() != 0) {
-			r = "";
+			StringBuilder rb = new StringBuilder();
 			c.moveToFirst();
 			int i = 0;
+            int idIndex = c.getColumnIndex(Contacts._ID);
 			do {
 				if (i != 0)
-					r += ",";
+                    rb.append(",");
 
-				r += "'" + c.getString(c.getColumnIndex(Contacts._ID)) + "'";
+				rb.append("'").append(c.getString(idIndex)).append("'");
 				i++;
 			} while (c.moveToNext());
+            r = rb.toString();
 		}
 
 		if (c != null)
@@ -294,18 +296,20 @@ public class ContactsManager implements OnItemClickListener {
 		String r = null;
 
 		if (c != null && c.getCount() != 0) {
-			r = "";
+            StringBuilder rb = new StringBuilder();
 			// Log.i(TAG, "rawContactIds count: " + c.getCount());
 
 			c.moveToFirst();
 			int i = 0;
+            int idIndex = c.getColumnIndex(RawContacts._ID);
 			do {
-				if (i != 0)
-					r += ",";
-
-				r += "'" + (c.getString(c.getColumnIndex(RawContacts._ID))) + "'";
+				if (i != 0) {
+                    rb.append(",");
+                }
+                rb.append("'").append(c.getString(idIndex)).append("'");
 				i++;
 			} while (c.moveToNext());
+            r = rb.toString();
 		}
 		if (c != null)
 			c.close();
