@@ -10,6 +10,7 @@
     <!-- Dialogs -->
     <string name="dialog_action_quit">Quit</string>
     <string name="dialog_action_try_again">Try Again</string>
+    <string name="dialog_action_cancel">Cancel</string>
     <string name="dialog_bad_connection_title">Bad Connection</string>
     <string name="dialog_bad_connection_message">Trouble downloading. Check your connection</string>
     <string name="dialog_camera_exception_no_camera_title">No Camera</string>
@@ -36,6 +37,7 @@
     <string name="dialog_register_server_error_message">Can\'t reach %1$s.\n\nCheck your connection and try again.</string>
     <string name="dialog_register_bad_code_title">Bad Code</string>
     <string name="dialog_register_bad_code_message">The code you entered is wrong. Please try again.</string>
+    <string name="dialog_select_phone_number">Select number to invite %1$s</string>
 
     <string name="toast_downloading">Downloading...</string>
 </resources>

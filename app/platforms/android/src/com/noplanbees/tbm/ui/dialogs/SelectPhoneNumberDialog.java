@@ -39,8 +39,8 @@ public class SelectPhoneNumberDialog extends AbstractDialogFragment implements A
         super.onViewCreated(view, savedInstanceState);
         contact = getArguments().getParcelable(CONTACT_KEY);
 
-        setTitle(contact.getFirstName() + "'s mobile?");
-        setNegativeButton("Cancel", null);
+        setTitle(getString(R.string.dialog_select_phone_number, contact.getFirstName()));
+        setNegativeButton(getString(R.string.dialog_action_cancel), null);
         setPositiveButton(null, null);
         ListView listView = new ListView(getActivity());
 		listView.setOnItemClickListener(this);
@@ -53,6 +53,7 @@ public class SelectPhoneNumberDialog extends AbstractDialogFragment implements A
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (getListener() instanceof Callbacks)
             ((Callbacks) getListener()).phoneSelected(contact, position);
+        dismiss();
     }
 
     public class PhoneNumberListAdapter extends BaseAdapter{

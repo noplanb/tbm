@@ -6,19 +6,19 @@ import android.content.Intent;
 import android.net.Uri;
 import android.telephony.SmsManager;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.Config.DeploymentType;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.IntentHandler;
+import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.dispatch.Dispatch;
+import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.network.HttpRequest;
 import com.noplanbees.tbm.ui.MainActivity;
-import com.noplanbees.tbm.ui.dialogs.ProgressDialogFragment;
 
 public class InviteManager{
 	private static InviteManager inviteManager;
@@ -31,6 +31,7 @@ public class InviteManager{
         void onShowInfoDialog(String title, String msg);
         void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, int actionId);
         void onShowProgressDialog(String title, String msg);
+        void onShowSelectPhoneNumberDialog(Contact contact);
         void onDismissProgressDialog();
     }
 
@@ -55,11 +56,28 @@ public class InviteManager{
         this.listener = listener;
     }
 
-	public void invite(BenchObject bo){
+	public void invite(BenchObject bo) {
 		benchObject = bo;
 		Log.i(TAG, "invite: " + benchObject.displayName +" "+ benchObject.firstName +" "+ benchObject.lastName+" "+ benchObject.mobileNumber);
 		checkHasApp();
 	}
+
+    public void invite(Contact contact, int phoneIndex) {
+        BenchObject bo = BenchObject.benchObjectWithContact(contact, contact.phoneObjects.get(phoneIndex));
+        invite(bo);
+    }
+
+    public void invite(Contact contact) {
+        int phonesNumber = contact.phoneObjects.size();
+        if (phonesNumber == 0) {
+            listener.onShowInfoDialog(context.getString(R.string.dialog_no_valid_phones_title),
+                    context.getString(R.string.dialog_no_valid_phones_message, contact.getDisplayName(), contact.getFirstName()));
+        } else if (phonesNumber == 1) {
+            invite(contact, 0);
+        } else {
+            listener.onShowSelectPhoneNumberDialog(contact);
+        }
+    }
 
 	public void nudge(Friend f){
 		friend = f;

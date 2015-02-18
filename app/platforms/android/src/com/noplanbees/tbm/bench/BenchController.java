@@ -17,7 +17,6 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.ContactsManager;
 import com.noplanbees.tbm.GridManager;
@@ -26,16 +25,14 @@ import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.Friend.Attributes;
 import com.noplanbees.tbm.model.FriendFactory;
-import com.noplanbees.tbm.ui.dialogs.SelectPhoneNumberDialog;
-import com.noplanbees.tbm.utilities.DialogShower;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BenchController implements BenchDataHandler.BenchDataHandlerCallback, OnItemClickListener,
-        ContactsManager.ContactSelected, SelectPhoneNumberDialog.Callbacks, BenchViewManager {
+        ContactsManager.ContactSelected, BenchViewManager {
 
-	private final String TAG = getClass().getSimpleName();
+    private static final String TAG = BenchController.class.getSimpleName();
 
 	private Activity activity;
 	private ListView listView;
@@ -214,33 +211,10 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 			return;
 		}
 
-		if (contact.phoneObjects.size() == 0) {
-			showNoValidPhonesDialog(contact);
-			return;
-		}
-
-		if (contact.phoneObjects.size() == 1) {
-			invite(contact, contact.phoneObjects.get(0));
-			return;
-		}
-
-        DialogShower.showSelectPhoneNumberDialog(activity, contact, this);
+        InviteManager.getInstance().invite(contact);
 	}
 
-    private void showNoValidPhonesDialog(Contact contact) {
-        DialogShower.showInfoDialog(activity, activity.getString(R.string.dialog_no_valid_phones_title),
-                activity.getString(R.string.dialog_no_valid_phones_message, contact.getDisplayName(), contact.getFirstName()));
-    }
 
-	private void invite(Contact contact, LinkedTreeMap<String, String> mobileNumber) {
-		BenchObject bo = BenchObject.benchObjectWithContact(contact, mobileNumber);
-        InviteManager.getInstance().invite(bo);
-	}
-
-    @Override
-    public void phoneSelected(Contact contact, int phoneIndex) {
-        InviteManager.getInstance().invite(BenchObject.benchObjectWithContact(contact, contact.phoneObjects.get(phoneIndex)));
-    }
 
     private class BenchAdapter extends BaseAdapter{
 

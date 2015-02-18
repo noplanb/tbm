@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-
 import com.noplanbees.tbm.R;
 
 abstract public class AbstractDialogFragment extends DialogFragment {
@@ -136,6 +135,9 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 
     protected void setDialogListener(Bundle args, DialogListener listener, int dialogId) {
         DialogListenerType type = DialogListenerType.getType(listener);
+        if (type == DialogListenerType.NONE && listener != null) {
+            throw new ClassCastException("DialogListener must be overridden by Fragment or Activity");
+        }
         args.putSerializable(TARGET_TYPE, type);
         args.putInt(ID, dialogId);
         if (type == DialogListenerType.FRAGMENT) {

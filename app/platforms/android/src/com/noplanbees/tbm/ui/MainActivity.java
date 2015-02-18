@@ -25,16 +25,18 @@ import com.noplanbees.tbm.bench.BenchViewManager;
 import com.noplanbees.tbm.bench.InviteManager;
 import com.noplanbees.tbm.bench.InviteManager.InviteDialogListener;
 import com.noplanbees.tbm.dispatch.Dispatch;
+import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.gcm.GcmHandler;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
 import com.noplanbees.tbm.ui.dialogs.ProgressDialogFragment;
+import com.noplanbees.tbm.ui.dialogs.SelectPhoneNumberDialog;
 import com.noplanbees.tbm.utilities.DialogShower;
 
 public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback,
-        InviteDialogListener, BenchViewManager.Provider {
+        InviteDialogListener, BenchViewManager.Provider, SelectPhoneNumberDialog.Callbacks {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -184,6 +186,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 	}
 
     @Override
+    public void phoneSelected(Contact contact, int phoneIndex) {
+        inviteManager.invite(contact, phoneIndex);
+    }
+
+    @Override
     public void onShowInfoDialog(String title, String msg) {
         DialogShower.showInfoDialog(this, title, msg);
     }
@@ -196,6 +203,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     public void onShowProgressDialog(String title, String msg) {
         pd = ProgressDialogFragment.getInstance("Checking", null);
         pd.show(getFragmentManager(), null);
+    }
+
+    @Override
+    public void onShowSelectPhoneNumberDialog(Contact contact) {
+        DialogShower.showSelectPhoneNumberDialog(this, contact, this);
     }
 
     @Override
