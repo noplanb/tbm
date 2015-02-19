@@ -19,6 +19,7 @@ import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.network.HttpRequest;
 import com.noplanbees.tbm.ui.MainActivity;
+import com.noplanbees.tbm.utilities.Logger;
 
 public class InviteManager{
 	private static InviteManager inviteManager;
@@ -56,15 +57,16 @@ public class InviteManager{
         this.listener = listener;
     }
 
-	public void invite(BenchObject bo) {
-		benchObject = bo;
-		Log.i(TAG, "invite: " + benchObject.displayName +" "+ benchObject.firstName +" "+ benchObject.lastName+" "+ benchObject.mobileNumber);
-		checkHasApp();
-	}
+    public void invite(BenchObject bo) {
+        Logger.d(TAG, "invite: " + bo);
+        benchObject = bo;
+        checkHasApp();
+    }
 
     public void invite(Contact contact, int phoneIndex) {
-        BenchObject bo = BenchObject.benchObjectWithContact(contact, contact.phoneObjects.get(phoneIndex));
-        invite(bo);
+        Logger.d(TAG, "invite: " + contact + " (" + phoneIndex + ")");
+        benchObject = BenchObject.benchObjectWithContact(contact, contact.phoneObjects.get(phoneIndex));
+        checkHasApp();
     }
 
     public void invite(Contact contact) {
@@ -238,7 +240,7 @@ public class InviteManager{
 
 		if (Config.DEPLOYMENT_TYPE == DeploymentType.DEVELOPMENT)
 		    addr = "+16502453537";
-		
+
 		Log.i(TAG, "sendSms: " + addr + ": " + body);
 		SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
 	}

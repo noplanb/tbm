@@ -59,9 +59,9 @@ public class ContactsManager implements OnItemClickListener {
 		contactSelectedDelegate = delegate;
 	}
 
-	public ContactsManager(Context c) {
-		context = c;
-	}
+    public ContactsManager(Context c) {
+        this(c, null);
+    }
 
 	// -------------------------
 	// AutocompleteContactsView
@@ -199,15 +199,13 @@ public class ContactsManager implements OnItemClickListener {
 		if (c != null)
 			c.close();
 
-		if (displayName == null)
-			return null;
-
 		return getFirstLastWithDisplayName(displayName);
 	}
 
 	public static LinkedTreeMap<String, String> getFirstLastWithDisplayName(String displayName) {
-		LinkedTreeMap<String, String> r = new LinkedTreeMap<String, String>();
+		LinkedTreeMap<String, String> r = null;
 		if (displayName != null) {
+            r = new LinkedTreeMap<String, String>();
 			r.put(Contact.ContactKeys.DISPLAY_NAME, displayName);
 
 			int spaceI = displayName.indexOf(' ');
@@ -236,11 +234,22 @@ public class ContactsManager implements OnItemClickListener {
 	// Phone numbers for contact
 	// --------------------------
 	public Contact contactWithDisplayName(String displayName) {
+        if (displayName == null) {
+            throw new NullPointerException("contact must have display name");
+        }
 		LinkedTreeMap<String, String> c = getFirstLastWithDisplayName(displayName);
-		c.put(Contact.ContactKeys.DISPLAY_NAME, displayName);
 		ArrayList<LinkedTreeMap<String, String>> vpos = validPhoneObjectsWithDisplayName(displayName);
 		return new Contact(c, vpos);
 	}
+
+    public Contact contactWithId(String id, String displayName) {
+        if (id == null || displayName == null) {
+            throw new NullPointerException("contact must have id and display name");
+        }
+        LinkedTreeMap<String, String> c = getFirstLastWithDisplayName(displayName);
+        ArrayList<LinkedTreeMap<String, String>> vpos = validPhoneObjectsWithContactIds(id);
+        return new Contact(c, vpos);
+    }
 
 	public ArrayList<LinkedTreeMap<String, String>> validPhoneObjectsWithDisplayName(String displayName) {
 		Log.i(TAG, "validPhoneObjectsWithDisplayName: " + displayName);

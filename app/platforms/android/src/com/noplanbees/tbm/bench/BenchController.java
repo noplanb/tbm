@@ -69,21 +69,42 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 		benchDataHandler.getRankedPhoneData();
 	}
 
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
         hideBench();
-		BenchObject bo = currentAllOnBench.get(position);
+        BenchObject bo = currentAllOnBench.get(position);
         Log.i(TAG, "Position:" + position + " " + bo.displayName);
 
-		Friend friend = (Friend) friendFactory.find(bo.friendId);
-		if (friend == null) {
+        Friend friend = (Friend) friendFactory.find(bo.friendId);
+        if (friend != null) {
+            GridManager.getInstance().moveFriendToGrid(friend);
+            return;
+        }
+        if (bo.hasFixedContact()) {
             InviteManager.getInstance().invite(bo);
-			return;
-		}
+        } else {
+            Contact contact = contactsManager.contactWithId(bo.contactId, bo.displayName);
+            InviteManager.getInstance().invite(contact);
+        }
+    }
 
-		GridManager.getInstance().moveFriendToGrid(friend);
-	}
+    // ---------------------
+    // Contact List Contact
+    // ---------------------
+    @Override
+    public void contactSelected(Contact contact) {
+        Log.i(TAG, contact.toString());
+
+        hideBench();
+        Friend friend = friendMatchingContact(contact);
+        if (friend != null) {
+            GridManager.getInstance().moveFriendToGrid(friend);
+            return;
+        }
+
+        InviteManager.getInstance().invite(contact);
+    }
 
     @Override
     public void showBench() {
@@ -155,6 +176,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 			b.put(BenchObject.Keys.LAST_NAME, e.get(BenchDataHandler.Keys.LAST_NAME));
 			b.put(BenchObject.Keys.DISPLAY_NAME, e.get(BenchDataHandler.Keys.DISPLAY_NAME));
 			b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(BenchDataHandler.Keys.MOBILE_NUMBER));
+            b.put(BenchObject.Keys.CONTACT_ID, e.get(BenchDataHandler.Keys.CONTACT_ID));
 			smsBenchObjects.add(new BenchObject(b));
 		}
 
@@ -194,27 +216,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 		}
 		return null;
 	}
-
-	// ---------------------
-	// Contact List Contact
-	// ---------------------
-
-	@Override
-	public void contactSelected(Contact contact) {
-		Log.i(TAG, contact.toString());
-
-        hideBench();
-
-		Friend f = friendMatchingContact(contact);
-		if (f != null) {
-			GridManager.getInstance().moveFriendToGrid(f);
-			return;
-		}
-
-        InviteManager.getInstance().invite(contact);
-	}
-
-
 
     private class BenchAdapter extends BaseAdapter{
 

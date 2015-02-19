@@ -131,7 +131,7 @@ public class BenchDataHandler {
             }
             return null;
         }
-        List<Map<String, String>> numMessages = new ArrayList<>();
+        List<Map<String, String>> smsPhoneData = new ArrayList<>();
         int addrCol = cursor.getColumnIndex(SmsColumnNames.ADDRESS);
         int countCol = cursor.getColumnIndex(SmsColumnNames.COUNT);
         cursor.moveToFirst();
@@ -145,11 +145,11 @@ public class BenchDataHandler {
             Map<String, String> map = new HashMap<>();
             map.put(Keys.MOBILE_NUMBER, mobileNumber);
             map.put(Keys.NUM_MESSAGES, count);
-            numMessages.add(map);
+            smsPhoneData.add(map);
         } while (cursor.moveToNext());
         cursor.close();
-        Logger.d(TAG, "numMessages: " + numMessages);
-        return numMessages;
+        Logger.d(TAG, "numMessages: " + smsPhoneData);
+        return smsPhoneData;
     }
 
     private List<Map<String, String>> getContactsPhoneData() {
@@ -161,19 +161,20 @@ public class BenchDataHandler {
             }
             return null;
         }
-        List<Map<String, String>> numContacts = new ArrayList<>();
+        List<Map<String, String>> contactsPhoneData = new ArrayList<>();
         int nameCol = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
         int idCol = cursor.getColumnIndex(ContactsContract.Contacts._ID);
         cursor.moveToFirst();
         do {
             String name = cursor.getString(nameCol);
             String id = cursor.getString(idCol);
-            LinkedTreeMap<String, String> map = ContactsManager.getFirstLastWithDisplayName(name);
+            LinkedTreeMap<String, String> map = new LinkedTreeMap<String, String>();
+            map.put(Keys.DISPLAY_NAME, name);
             map.put(Keys.CONTACT_ID, id);
-            numContacts.add(map);
+            contactsPhoneData.add(map);
         } while (cursor.moveToNext());
         cursor.close();
-        return numContacts;
+        return contactsPhoneData;
     }
 
 	private String getValidE164ForNumber(String phone){
@@ -201,29 +202,28 @@ public class BenchDataHandler {
         boolean result = false;
         rankedPhoneData = new ArrayList<LinkedTreeMap<String, String>>();
         Map<String, String> firstLast = null;
-        String mobileNumber = null;
-        String numMessage = null;
-        for (Map<String, String> data : phoneData) {
 
+        for (Map<String, String> data : phoneData) {
+            String id = null;
+            String mobileNumber = null;
+            String numMessage = null;
             if (data.containsKey(Keys.MOBILE_NUMBER)) {
                 mobileNumber = data.get(Keys.MOBILE_NUMBER);
                 numMessage = data.get(Keys.NUM_MESSAGES);
                 firstLast = ContactsManager.getFirstLastWithPhone(context, mobileNumber);
             } else if (data.containsKey(Keys.CONTACT_ID)) {
-                String id = data.get(Keys.CONTACT_ID);
-                mobileNumber = ContactsManager.getPhoneWithId(context, id);
-                // TODO check phone numbers in inner format
-                mobileNumber = getValidE164ForNumber(mobileNumber);
+                id = data.get(Keys.CONTACT_ID);
                 numMessage = "0";
-                firstLast = data;
+                firstLast = ContactsManager.getFirstLastWithDisplayName(data.get(Keys.DISPLAY_NAME));
             }
 
-            if (firstLast == null || mobileNumber == null)
-                continue;
+            if (firstLast == null || (mobileNumber == null && id == null))
+                continue; // continue if current phoneData doesn't contain valid contact
 
             LinkedTreeMap<String, String> entry = new LinkedTreeMap<String, String>();
             entry.put(Keys.MOBILE_NUMBER, mobileNumber);
             entry.put(Keys.NUM_MESSAGES, numMessage);
+            entry.put(Keys.CONTACT_ID, id);
             entry.put(Keys.FIRST_NAME, firstLast.get(Contact.ContactKeys.FIRST_NAME));
             entry.put(Keys.LAST_NAME, firstLast.get(Contact.ContactKeys.LAST_NAME));
             entry.put(Keys.DISPLAY_NAME, firstLast.get(Contact.ContactKeys.DISPLAY_NAME));
@@ -246,9 +246,14 @@ public class BenchDataHandler {
             Logger.d(TAG, "no Ranked Phone Data");
 			return;
 		}
-		for (LinkedTreeMap<String, String>e : rankedPhoneData){
-            Logger.d(TAG, e.get(Keys.FIRST_NAME) + "-" + e.get(Keys.LAST_NAME) + " " + e.get(Keys.DISPLAY_NAME) + " " + e.get(Keys.MOBILE_NUMBER) + " " + e.get(Keys.NUM_MESSAGES));
-		}
-	}
+
+        for (LinkedTreeMap<String, String> e : rankedPhoneData) {
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append(e.get(Keys.FIRST_NAME)).append("-").append(e.get(Keys.LAST_NAME)).append(" ");
+            logBuilder.append(e.get(Keys.DISPLAY_NAME)).append(" ").append(e.get(Keys.MOBILE_NUMBER)).append(" ");
+            logBuilder.append(e.get(Keys.NUM_MESSAGES)).append(" ").append(e.get(Keys.CONTACT_ID));
+            Logger.d(TAG, logBuilder.toString());
+        }
+    }
 
 }
