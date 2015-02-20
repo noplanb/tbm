@@ -40,7 +40,7 @@ import com.noplanbees.tbm.utilities.Convenience;
 import com.noplanbees.tbm.utilities.DialogShower;
 
 public class RegisterActivity extends Activity implements EnterCodeDialogFragment.Callbacks{
-	private final String TAG = this.getClass().getSimpleName();
+	private static final String TAG = RegisterActivity.class.getSimpleName();
 	private UserFactory userFactory;
 	private User user;
 

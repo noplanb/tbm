@@ -1,6 +1,7 @@
 package com.noplanbees.tbm;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
 
 import com.noplanbees.tbm.dispatch.Dispatch;
@@ -9,15 +10,8 @@ import java.io.File;
 import java.util.regex.Pattern;
 
 public class Config {
-	String TAG = Config.class.getSimpleName();
+    private static final String TAG = Config.class.getSimpleName();
 
-	public static class DeploymentType{
-	       public static int DEVELOPMENT = 0;
-	       public static int PRODUCTION = 1;
-	}
-	
-	public final static int DEPLOYMENT_TYPE = DeploymentType.DEVELOPMENT;
-	
 //	public final static String SERVER_HOST = "192.168.1.82";
 //    public static final int SERVER_PORT = 3000;
 //    public final static String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;

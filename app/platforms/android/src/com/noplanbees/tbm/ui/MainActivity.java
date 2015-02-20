@@ -34,6 +34,7 @@ import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogLi
 import com.noplanbees.tbm.ui.dialogs.ProgressDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.SelectPhoneNumberDialog;
 import com.noplanbees.tbm.utilities.DialogShower;
+import com.noplanbees.tbm.debug.ZazoGestureListener;
 
 public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback,
         InviteDialogListener, BenchViewManager.Provider, SelectPhoneNumberDialog.Callbacks {
@@ -85,9 +86,10 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 		actionBar.setDisplayShowCustomEnabled(true);
 		actionBar.setDisplayUseLogoEnabled(false);
 		actionBar.setDisplayShowTitleEnabled(false);
-		getActionBar().setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent))); 
+		actionBar.setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
 		ImageView v = new ImageView(this);
 		v.setImageResource(R.drawable.zazo_type);
+        v.setOnTouchListener(new ZazoGestureListener(this));
 		actionBar.setCustomView(v);
 	}
 
@@ -225,4 +227,5 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     public BenchViewManager getBenchViewManager() {
         return benchController;
     }
+
 }

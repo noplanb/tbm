@@ -1,20 +1,19 @@
 package com.noplanbees.tbm.network;
 
-import java.util.Set;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-
-import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.NonStopIntentService;
+import com.noplanbees.tbm.debug.DebugConfig;
 import com.noplanbees.tbm.network.aws.S3FileTransferAgent;
+
+import java.util.Set;
 
 
 
 public abstract class FileTransferService extends NonStopIntentService {
-    private final String TAG = getClass().getSimpleName();
+    private static final String TAG = FileTransferService.class.getSimpleName();
 
     private final static Integer MAX_RETRIES = 100;
 
@@ -112,7 +111,7 @@ public abstract class FileTransferService extends NonStopIntentService {
 
 
 		Long sleepTime;
-		if (Config.DEPLOYMENT_TYPE == Config.DeploymentType.DEVELOPMENT)
+		if (DebugConfig.getInstance(this).isDebugEnabled())
 		    sleepTime = (long) 1000;
 		else
 		    sleepTime = sleepTime(retryCount);

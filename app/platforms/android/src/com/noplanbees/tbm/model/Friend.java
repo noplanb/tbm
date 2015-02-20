@@ -13,6 +13,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.RemoteStorageHandler;
+import com.noplanbees.tbm.debug.DebugConfig;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.multimedia.VideoIdUtils;
 import com.noplanbees.tbm.network.FileDeleteService;
@@ -732,7 +733,7 @@ public class Friend extends ActiveModel{
     }
 
     public String getDisplayName(){
-        if (Config.DEPLOYMENT_TYPE == Config.DeploymentType.DEVELOPMENT)
+        if (DebugConfig.getInstance(context).isDebugEnabled())
             return getStatusString();
         else
             return getUniqueName();

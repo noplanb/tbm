@@ -66,6 +66,10 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Black.NoTitleBar" />
+        <activity
+                android:name=".debug.DebugSettingsActivity"
+                android:launchMode="singleTask"
+                android:screenOrientation="portrait"/>
 
         <receiver
             android:name=".notification.gcm.GcmBroadcastReceiver"

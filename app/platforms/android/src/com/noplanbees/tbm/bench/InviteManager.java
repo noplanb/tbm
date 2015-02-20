@@ -9,7 +9,6 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.Config;
-import com.noplanbees.tbm.Config.DeploymentType;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
@@ -238,8 +237,7 @@ public class InviteManager{
 		if (benchObject != null)
 			addr = benchObject.mobileNumber;
 
-		if (Config.DEPLOYMENT_TYPE == DeploymentType.DEVELOPMENT)
-		    addr = "+16502453537";
+        //addr = "+16502453537"; Only for Sani, it is not a development option
 
 		Log.i(TAG, "sendSms: " + addr + ": " + body);
 		SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
