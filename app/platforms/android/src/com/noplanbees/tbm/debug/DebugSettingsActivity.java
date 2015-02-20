@@ -1,6 +1,7 @@
 package com.noplanbees.tbm.debug;
 
 import android.app.Activity;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.CompoundButton;
@@ -12,7 +13,6 @@ import com.noplanbees.tbm.R;
  * Created by skamenkovych@codeminders.com on 2/20/2015.
  */
 public class DebugSettingsActivity extends Activity {
-    private static final String BUILD_SHA = "b4d573b7";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,16 +23,19 @@ public class DebugSettingsActivity extends Activity {
     }
 
     private void setUpVersion() {
-        String version = "";
+        String versionName = "";
+        String versionCode = "";
         try {
-            version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+            versionName = info.versionName;
+            versionCode = String.valueOf(info.versionCode);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        TextView versionView = (TextView) findViewById(R.id.version);
-        TextView buildView = (TextView) findViewById(R.id.build);
-        versionView.setText(version);
-        buildView.setText(BUILD_SHA);
+        TextView versionView = (TextView) findViewById(R.id.version_name);
+        TextView buildView = (TextView) findViewById(R.id.version_code);
+        versionView.setText(versionName);
+        buildView.setText(versionCode);
     }
 
     private void setUpDebugMode() {

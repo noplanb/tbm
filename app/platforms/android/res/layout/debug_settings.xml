@@ -14,7 +14,7 @@
             android:textColor="@android:color/white"/>
 
     <TextView
-            android:id="@+id/version"
+            android:id="@+id/version_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/version_label"
@@ -28,16 +28,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/version_label"
-            android:text="Build: "
             android:textColor="@android:color/white"/>
 
     <TextView
-            android:id="@+id/build"
+            android:id="@+id/version_code"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/build_label"
             android:layout_alignBaseline="@id/build_label"
-            android:layout_alignLeft="@id/version"
+            android:layout_alignLeft="@id/version_name"
             android:text="00000000"
             android:textColor="@android:color/white"/>
 
