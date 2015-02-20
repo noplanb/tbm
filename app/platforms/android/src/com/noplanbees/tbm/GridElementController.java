@@ -220,9 +220,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             @Override
                             public void run() {
                                 updateContent(false);
-                                gridElementView.showUploadingMark(false);
                             }
                         });
+                        break;
+                    case Friend.OutgoingVideoStatus.VIEWED:
+                        gridElementView.showUploadingMark(false);
+                        updateContent(gridElementView.isAnimating());
                         break;
                     default:
                         updateContent(gridElementView.isAnimating());
