@@ -50,4 +50,14 @@
             android:layout_below="@+id/build_label"
             android:layout_alignParentLeft="true"/>
 
+    <Switch
+            android:id="@+id/send_sms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Send real sms"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="5dp"
+            android:layout_below="@+id/debug_mode"
+            android:layout_alignParentLeft="true"/>
+
 </RelativeLayout>

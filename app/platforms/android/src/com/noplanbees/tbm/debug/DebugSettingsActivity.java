@@ -20,6 +20,7 @@ public class DebugSettingsActivity extends Activity {
         setContentView(R.layout.debug_settings);
         setUpVersion();
         setUpDebugMode();
+        setUpSendSms();
     }
 
     private void setUpVersion() {
@@ -46,6 +47,18 @@ public class DebugSettingsActivity extends Activity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 config.enableDebug(isChecked);
+            }
+        });
+    }
+
+    private void setUpSendSms() {
+        Switch debugMode = (Switch) findViewById(R.id.send_sms);
+        final DebugConfig config = DebugConfig.getInstance(this);
+        debugMode.setChecked(config.shouldSendSms());
+        debugMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                config.enableSendSms(isChecked);
             }
         });
     }

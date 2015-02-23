@@ -12,6 +12,7 @@ import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.IntentHandler;
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.debug.DebugConfig;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.Friend;
@@ -240,7 +241,12 @@ public class InviteManager{
         //addr = "+16502453537"; Only for Sani, it is not a development option
 
 		Log.i(TAG, "sendSms: " + addr + ": " + body);
-		SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
+        if (DebugConfig.getInstance(context).shouldSendSms()) {
+            SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
+        } else {
+            listener.onShowInfoDialog("Fake SMS invitation", "It is a fake SMS invitation to number " + addr
+                    + " with text: \"" + body + "\"");
+        }
 	}
 
 	public void moveFriendToGrid(){

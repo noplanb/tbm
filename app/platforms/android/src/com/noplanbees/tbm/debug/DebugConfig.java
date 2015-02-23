@@ -13,6 +13,7 @@ import java.util.Set;
 public class DebugConfig {
     private static final String DEBUG_SETTINGS = "zazo_debug";
     private static final String KEY_MODE = "mode";
+    private static final String KEY_SEND_SMS = "send_sms";
     public static final boolean DEBUG_LOG = true;
 
     private static volatile DebugConfig instance;
@@ -29,6 +30,7 @@ public class DebugConfig {
     private Set<DebugConfigChangesCallback> callbacks = new HashSet<>();
     private Context context;
     private int mode;
+    private boolean shouldSendSms;
 
     private DebugConfig() {
     }
@@ -57,10 +59,21 @@ public class DebugConfig {
         this.context = context;
         final SharedPreferences sp = context.getSharedPreferences(DEBUG_SETTINGS, Context.MODE_PRIVATE);
         mode = sp.getInt(KEY_MODE, DeploymentType.PRODUCTION);
+        shouldSendSms = sp.getBoolean(KEY_SEND_SMS, true);
     }
 
     public boolean isDebugEnabled() {
         return mode == DeploymentType.DEVELOPMENT;
+    }
+
+    public boolean shouldSendSms() {
+        return shouldSendSms;
+    }
+
+    public void enableSendSms(boolean sendSms) {
+        shouldSendSms = sendSms;
+        putBooleanPref(KEY_SEND_SMS, sendSms);
+        notifyChanges();
     }
 
     public void enableDebug(boolean enable) {
@@ -72,6 +85,12 @@ public class DebugConfig {
     private void putIntPref(String key, int value) {
         SharedPreferences.Editor editor = context.getSharedPreferences(DEBUG_SETTINGS, Context.MODE_PRIVATE).edit();
         editor.putInt(key, value);
+        editor.commit();
+    }
+
+    private void putBooleanPref(String key, boolean value) {
+        SharedPreferences.Editor editor = context.getSharedPreferences(DEBUG_SETTINGS, Context.MODE_PRIVATE).edit();
+        editor.putBoolean(key, value);
         editor.commit();
     }
 
