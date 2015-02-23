@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import com.noplanbees.tbm.R;
@@ -17,11 +18,14 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 
     private static final String TARGET_TYPE = "target_type";
     private static final String ID = "dialog_id";
+    private static final String EDITED_MESSAGE = "edited_message";
+    private static final String EDITABLE = "editable";
 
 	private Button btnCancel;
 	private Button btnOk;
 	private TextView twTitle;
 	private TextView twMsg;
+    private EditText editMsg;
 	private FrameLayout body;
 	private View btnsDivider;
     private DialogListener listener;
@@ -46,9 +50,10 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 		btnOk = (Button)v.findViewById(R.id.btn_dialog_ok);
 		
 		twTitle = (TextView)v.findViewById(R.id.dlg_title);
-		twMsg = (TextView)v.findViewById(R.id.dlg_msg);
-		
-		body = (FrameLayout)v.findViewById(R.id.dlg_body);
+        twMsg = (TextView) v.findViewById(R.id.dlg_msg);
+        editMsg = (EditText) v.findViewById(R.id.dlg_edit_msg);
+
+        body = (FrameLayout)v.findViewById(R.id.dlg_body);
 		
 		btnOk.setOnClickListener(new OnClickListener() {
 			@Override
@@ -100,15 +105,22 @@ abstract public class AbstractDialogFragment extends DialogFragment {
             twTitle.setText(title);
         }
 	}
-	
-	protected void setMessage(String message){
-        if(message!=null){
-            twMsg.setVisibility(View.VISIBLE);
-            twMsg.setText(message);
+
+    protected void setMessage(String message) {
+        boolean editable = getArguments() != null && getArguments().getBoolean(EDITABLE);
+        if (message != null) {
+            if (editable) {
+                editMsg.setVisibility(View.VISIBLE);
+                editMsg.setText(message);
+            } else {
+                twMsg.setVisibility(View.VISIBLE);
+                twMsg.setText(message);
+            }
+
         }
-	}
-	
-	protected void setPositiveButton(String name, OnClickListener clickListener){
+    }
+
+    protected void setPositiveButton(String name, OnClickListener clickListener){
 		if(name != null){
 			btnOk.setVisibility(View.VISIBLE);
 			btnOk.setText(name);
@@ -133,13 +145,18 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 		body.addView(ll, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT));
 	}
 
-    protected void setDialogListener(Bundle args, DialogListener listener, int dialogId) {
+    /**
+     * Set up dialog listener. Call this only after setting arguments
+     * @param listener
+     * @param dialogId
+     */
+    protected void setDialogListener(DialogListener listener, int dialogId) {
         DialogListenerType type = DialogListenerType.getType(listener);
         if (type == DialogListenerType.NONE && listener != null) {
             throw new ClassCastException("DialogListener must be overridden by Fragment or Activity");
         }
-        args.putSerializable(TARGET_TYPE, type);
-        args.putInt(ID, dialogId);
+        getArguments().putSerializable(TARGET_TYPE, type);
+        getArguments().putInt(ID, dialogId);
         if (type == DialogListenerType.FRAGMENT) {
             setTargetFragment((Fragment) listener, dialogId);
         }
@@ -149,5 +166,29 @@ abstract public class AbstractDialogFragment extends DialogFragment {
         if (getArguments() != null)
             return getArguments().getInt(ID, -1);
         return -1;
+    }
+
+    protected void setEditable(boolean editable) {
+        if (getArguments() != null)
+            getArguments().putBoolean(EDITABLE, editable);
+    }
+
+    protected boolean isEditable() {
+        return getArguments() != null && getArguments().getBoolean(EDITABLE);
+    }
+
+    protected String getEditedMessage() {
+        return editMsg.getText().toString();
+    }
+
+    public static String getEditedMessage(Bundle bundle) {
+        if (bundle != null) {
+            return bundle.getString(EDITED_MESSAGE, "");
+        }
+        return "";
+    }
+
+    protected static void putEditedMessage(Bundle bundle, String message) {
+        bundle.putString(EDITED_MESSAGE, message);
     }
 }

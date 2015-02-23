@@ -23,8 +23,8 @@ public class SelectPhoneNumberDialog extends AbstractDialogFragment implements A
         SelectPhoneNumberDialog f = new SelectPhoneNumberDialog();
         Bundle args = new Bundle();
         args.putParcelable(CONTACT_KEY, contact);
-        f.setDialogListener(args, callbacks, 0);
         f.setArguments(args);
+        f.setDialogListener(callbacks, 0);
         return f;
     }
 

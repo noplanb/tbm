@@ -33,8 +33,8 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
         args.putString(MSG, message);
         args.putString(ACTION_POSITIVE, actionPositive);
         args.putString(ACTION_NEGATIVE, actionNegative);
-        fragment.setDialogListener(args, listener, id);
         fragment.setArguments(args);
+        fragment.setDialogListener(listener, id);
         return fragment;
     }
 

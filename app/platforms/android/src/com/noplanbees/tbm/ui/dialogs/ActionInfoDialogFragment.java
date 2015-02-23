@@ -11,26 +11,27 @@ public class ActionInfoDialogFragment extends AbstractDialogFragment {
 	private static final String MSG = "msg";
 	private static final String ACTION = "action";
 	private static final String NEED_CANCEL = "need_cancel";
-	
+
 	public interface ActionInfoDialogListener extends DialogListener {
-		void onActionClicked(int id);
+		void onActionClicked(int id, Bundle bundle);
 	}
 
     public static DialogFragment getInstance(String title, String message, String action,
                                              boolean isNeedToCancel) {
-        return getInstance(title, message, action, -1, isNeedToCancel, null);
+        return getInstance(title, message, action, -1, isNeedToCancel, false, null);
     }
 
     public static DialogFragment getInstance(String title, String message, String action,
-                                             int actionId, boolean isNeedToCancel, DialogListener listener) {
+                                             int actionId, boolean isNeedToCancel, boolean editable, DialogListener listener) {
         AbstractDialogFragment fragment = new ActionInfoDialogFragment();
         Bundle args = new Bundle();
         args.putString(TITLE, title);
         args.putString(MSG, message);
         args.putString(ACTION, action);
         args.putBoolean(NEED_CANCEL, isNeedToCancel);
-        fragment.setDialogListener(args, listener, actionId);
         fragment.setArguments(args);
+        fragment.setDialogListener(listener, actionId);
+        fragment.setEditable(editable);
         return fragment;
     }
 
@@ -48,7 +49,13 @@ public class ActionInfoDialogFragment extends AbstractDialogFragment {
 			@Override
 			public void onClick(View v) {
                 if (getListener() instanceof ActionInfoDialogListener) {
-                    ((ActionInfoDialogListener) getListener()).onActionClicked(getDialogId());
+                    if (isEditable()) {
+                        Bundle bundle = new Bundle();
+                        putEditedMessage(bundle, getEditedMessage());
+                        ((ActionInfoDialogListener) getListener()).onActionClicked(getDialogId(), bundle);
+                    } else {
+                        ((ActionInfoDialogListener) getListener()).onActionClicked(getDialogId(), null);
+                    }
                 }
 				dismiss();
 			}

@@ -36,6 +36,18 @@
             android:gravity="center"
             android:text="TextView" />
 
+        <EditText
+                android:id="@+id/dlg_edit_msg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:visibility="gone"
+                android:background="@drawable/dlg_input_bg"
+                android:padding="5dp"
+                android:textColor="@color/dialog_textcolor"
+                android:gravity="start"
+                android:text="EditText" />
+
     </FrameLayout>
 
     <View

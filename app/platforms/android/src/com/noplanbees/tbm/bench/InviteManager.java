@@ -29,7 +29,7 @@ public class InviteManager{
 
     public static interface InviteDialogListener {
         void onShowInfoDialog(String title, String msg);
-        void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, int actionId);
+        void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, boolean editable, int actionId);
         void onShowProgressDialog(String title, String msg);
         void onShowSelectPhoneNumberDialog(Contact contact);
         void onDismissProgressDialog();
@@ -189,7 +189,7 @@ public class InviteManager{
 		String msg = "You and "+ benchObject.firstName +" are connected.\n\nRecord a welcome "
 	+ Config.appName + " to " + benchObject.firstName + " now.";
 
-        listener.onShowActionInfoDialog("You are Connected", msg, "Okay", false, MainActivity.CONNECTED_DIALOG);
+        listener.onShowActionInfoDialog("You are Connected", msg, "Okay", false, false, MainActivity.CONNECTED_DIALOG);
 	}
 
 	private void serverError(){
@@ -206,28 +206,28 @@ public class InviteManager{
 	private void preNudgeDialog(){
         String msg = friend.get(Friend.Attributes.FIRST_NAME) + " still hasn't installed " + Config.appName + ". Send them the link again.";
         String title = "Nudge " + friend.get(Friend.Attributes.FIRST_NAME);
-        listener.onShowActionInfoDialog(title, msg, "Send", false, MainActivity.NUDGE_DIALOG);
+        listener.onShowActionInfoDialog(title, msg, "Send", false, false, MainActivity.NUDGE_DIALOG);
 	}
 
 
 	private void preSmsDialog(){
         String value = benchObject.firstName + " has not installed " + Config.appName + " yet.\n\nSend them a link!";
-        listener.onShowActionInfoDialog("Invite", value, "Send", false, MainActivity.SMS_DIALOG);
+        listener.onShowActionInfoDialog("Invite", value, "Send", true, false, MainActivity.SMS_DIALOG);
 	}
 
 	public void showSms(){
-        listener.onShowActionInfoDialog("Send Link", smsMessage(), "Send", false, MainActivity.SENDLINK_DIALOG);
+        listener.onShowActionInfoDialog("Send Link", getDefaultInviteMessage(), "Send", true, true, MainActivity.SENDLINK_DIALOG);
 	}
 
-	public void sendLink(){
-		sendSms(smsMessage());
+	public void sendInvite(String message){
+		sendSms(message);
 		if (friend == null)
 			getFriendFromServer();
 	}
-	
-	private String smsMessage(){
-	    return "I sent you a message on " + Config.appName + ". Get the app! " + Config.landingPageUrl;
-	}
+
+    public String getDefaultInviteMessage() {
+        return context.getString(R.string.dialog_invite_message, Config.appName, Config.landingPageUrl);
+    }
 
 	private void sendSms(String body){
 		String addr = null;

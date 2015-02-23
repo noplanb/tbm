@@ -24,17 +24,18 @@ import com.noplanbees.tbm.bench.BenchController;
 import com.noplanbees.tbm.bench.BenchViewManager;
 import com.noplanbees.tbm.bench.InviteManager;
 import com.noplanbees.tbm.bench.InviteManager.InviteDialogListener;
+import com.noplanbees.tbm.debug.ZazoGestureListener;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.network.aws.S3CredentialsGetter;
 import com.noplanbees.tbm.notification.NotificationAlertManager;
 import com.noplanbees.tbm.notification.gcm.GcmHandler;
+import com.noplanbees.tbm.ui.dialogs.AbstractDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
 import com.noplanbees.tbm.ui.dialogs.ProgressDialogFragment;
 import com.noplanbees.tbm.ui.dialogs.SelectPhoneNumberDialog;
 import com.noplanbees.tbm.utilities.DialogShower;
-import com.noplanbees.tbm.debug.ZazoGestureListener;
 
 public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback,
         InviteDialogListener, BenchViewManager.Provider, SelectPhoneNumberDialog.Callbacks {
@@ -169,23 +170,23 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         }
     }
 
-	@Override
-	public void onActionClicked(int id) {
-		switch(id){
-		case CONNECTED_DIALOG:
-			inviteManager.moveFriendToGrid();
-			break;
-		case NUDGE_DIALOG:
-			inviteManager.showSms();
-			break;
-		case SMS_DIALOG: 
-			inviteManager.showSms();
-			break;
-		case SENDLINK_DIALOG:
-			inviteManager.sendLink();
-			break;
-		}
-	}
+    @Override
+    public void onActionClicked(int id, Bundle bundle) {
+        switch (id) {
+            case CONNECTED_DIALOG:
+                inviteManager.moveFriendToGrid();
+                break;
+            case NUDGE_DIALOG:
+                inviteManager.showSms();
+                break;
+            case SMS_DIALOG:
+                inviteManager.showSms();
+                break;
+            case SENDLINK_DIALOG:
+                inviteManager.sendInvite(AbstractDialogFragment.getEditedMessage(bundle));
+                break;
+        }
+    }
 
     @Override
     public void phoneSelected(Contact contact, int phoneIndex) {
@@ -197,8 +198,8 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         DialogShower.showInfoDialog(this, title, msg);
     }
 
-    public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, int actionId){
-        DialogShower.showActionInfoDialog(this, title, msg, actionTitle, isNeedCancel, actionId, this);
+    public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, boolean editable, int actionId){
+        DialogShower.showActionInfoDialog(this, title, msg, actionTitle, isNeedCancel, editable, actionId, this);
     }
 
     @Override

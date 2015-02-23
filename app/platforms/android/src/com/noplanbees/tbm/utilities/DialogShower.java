@@ -42,13 +42,13 @@ public class DialogShower {
         Resources res = activity.getResources();
         showActionInfoDialog(activity, res.getString(R.string.dialog_bad_connection_title),
                 res.getString(R.string.dialog_bad_connection_message), res.getString(R.string.dialog_action_try_again),
-                false, -1, null);
+                false, false, -1, null);
     }
 
     public static void showActionInfoDialog(Activity activity, String title, String message, String action,
-                                            boolean needCancel, int actionId, AbstractDialogFragment.DialogListener listener) {
+                                            boolean needCancel, boolean editable, int actionId, AbstractDialogFragment.DialogListener listener) {
         DialogFragment dialog = ActionInfoDialogFragment.getInstance(title, message, action, actionId,
-                needCancel, listener);
+                needCancel, editable, listener);
         dialog.show(activity.getFragmentManager(), null);
     }
 

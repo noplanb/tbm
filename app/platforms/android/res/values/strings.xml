@@ -38,6 +38,7 @@
     <string name="dialog_register_bad_code_title">Bad Code</string>
     <string name="dialog_register_bad_code_message">The code you entered is wrong. Please try again.</string>
     <string name="dialog_select_phone_number">Select number to invite %1$s</string>
+    <string name="dialog_invite_message">"I sent you a message on %1$s. Get the app! %2$s</string>
 
     <string name="toast_downloading">Downloading...</string>
 </resources>
