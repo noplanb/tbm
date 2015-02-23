@@ -25,6 +25,7 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment {
     public static DialogFragment getInstance(String phoneNumber, Callbacks callbacks){
         AbstractDialogFragment fragment = new EnterCodeDialogFragment();
         Bundle args = new Bundle();
+        args.putString(PHONE_NUMBER, phoneNumber);
         fragment.setArguments(args);
         fragment.setDialogListener(callbacks, 0);
         return fragment;

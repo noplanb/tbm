@@ -4,7 +4,7 @@
     <string name="app_name">Zazo</string>
     <string name="nudge">NUDGE</string>
     <string name="record">RECORD</string>
-    <string name="enter_code_dlg_msg">We sent a code via text message\nto %s.</string>
+    <string name="enter_code_dlg_msg">We sent a code via text message\nto %1$s.</string>
     <string name="enter_code_dlg_helper">Enter Code</string>
 
     <!-- Dialogs -->
