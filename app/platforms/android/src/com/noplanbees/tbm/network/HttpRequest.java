@@ -159,7 +159,7 @@ public class HttpRequest {
         }
 
         http.getCredentialsProvider().setCredentials(
-                new AuthScope(Config.SERVER_HOST, AuthScope.ANY_PORT, "zazo.com"),
+                new AuthScope(Config.getServerHost(), AuthScope.ANY_PORT, "zazo.com"),
                 new UsernamePasswordCredentials(login, pass)
         );
 

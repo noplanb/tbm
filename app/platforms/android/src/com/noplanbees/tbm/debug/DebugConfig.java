@@ -14,6 +14,9 @@ public class DebugConfig {
     private static final String DEBUG_SETTINGS = "zazo_debug";
     private static final String KEY_MODE = "mode";
     private static final String KEY_SEND_SMS = "send_sms";
+    private static final String KEY_CUSTOM_HOST = "custom_host";
+    private static final String KEY_CUSTOM_URI = "custom_uri";
+    private static final String KEY_USE_CUSTOM_SERVER = "use_custom_server";
     public static final boolean DEBUG_LOG = true;
 
     private static volatile DebugConfig instance;
@@ -31,6 +34,9 @@ public class DebugConfig {
     private Context context;
     private int mode;
     private boolean shouldSendSms;
+    private String customServerHost;
+    private String customServerUri;
+    private boolean useCustomServer;
 
     private DebugConfig() {
     }
@@ -55,11 +61,18 @@ public class DebugConfig {
         return localInstance;
     }
 
+    public static DebugConfig getInstance() {
+        return instance;
+    }
+
     private void init(Context context) {
         this.context = context;
         final SharedPreferences sp = context.getSharedPreferences(DEBUG_SETTINGS, Context.MODE_PRIVATE);
         mode = sp.getInt(KEY_MODE, DeploymentType.PRODUCTION);
         shouldSendSms = sp.getBoolean(KEY_SEND_SMS, true);
+        customServerHost = sp.getString(KEY_CUSTOM_HOST, "");
+        customServerUri = sp.getString(KEY_CUSTOM_URI, "");
+        useCustomServer = sp.getBoolean(KEY_USE_CUSTOM_SERVER, false);
     }
 
     public boolean isDebugEnabled() {
@@ -68,6 +81,18 @@ public class DebugConfig {
 
     public boolean shouldSendSms() {
         return shouldSendSms;
+    }
+
+    public boolean shouldUseCustomServer() {
+        return useCustomServer;
+    }
+
+    public String getCustomHost() {
+        return customServerHost;
+    }
+
+    public String getCustomUri() {
+        return customServerUri;
     }
 
     public void enableSendSms(boolean sendSms) {
@@ -79,6 +104,24 @@ public class DebugConfig {
     public void enableDebug(boolean enable) {
         mode = enable ? DeploymentType.DEVELOPMENT : DeploymentType.PRODUCTION;
         putIntPref(KEY_MODE, mode);
+        notifyChanges();
+    }
+
+    public void useCustomServer(boolean use) {
+        useCustomServer = use;
+        putBooleanPref(KEY_USE_CUSTOM_SERVER, use);
+        notifyChanges();
+    }
+
+    public void setCustomServerHost(String host) {
+        customServerHost = host;
+        putStringPref(KEY_CUSTOM_HOST, host);
+        notifyChanges();
+    }
+
+    public void setCustomServerUri(String uri) {
+        customServerUri = uri;
+        putStringPref(KEY_CUSTOM_URI, uri);
         notifyChanges();
     }
 
@@ -94,8 +137,18 @@ public class DebugConfig {
         editor.commit();
     }
 
+    private void putStringPref(String key, String value) {
+        SharedPreferences.Editor editor = context.getSharedPreferences(DEBUG_SETTINGS, Context.MODE_PRIVATE).edit();
+        editor.putString(key, value);
+        editor.commit();
+    }
+
     public void savePrefs() {
         putIntPref(KEY_MODE, mode);
+        putBooleanPref(KEY_SEND_SMS, shouldSendSms);
+        putStringPref(KEY_CUSTOM_HOST, customServerHost);
+        putStringPref(KEY_CUSTOM_URI, customServerUri);
+        putBooleanPref(KEY_USE_CUSTOM_SERVER, useCustomServer);
     }
 
     public void addCallback(DebugConfigChangesCallback callback) {

@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import com.noplanbees.tbm.debug.DebugConfig;
 
 public class TbmApplication extends Application {
 
@@ -22,6 +23,7 @@ public class TbmApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 		Log.d(TAG, "onCreate");
+        DebugConfig.getInstance(this);
 		application = this;
 		
 		

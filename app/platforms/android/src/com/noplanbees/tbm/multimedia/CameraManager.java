@@ -24,7 +24,7 @@ public class CameraManager {
         void onCameraException(CameraException exception);
     }
 
-	private static String TAG = CameraManager.class.getSimpleName();
+    private static final String TAG = CameraManager.class.getSimpleName();
 
 	// Allow registration of a single delegate to handle exceptions.
 	private static CameraExceptionHandler cameraExceptionHandler;

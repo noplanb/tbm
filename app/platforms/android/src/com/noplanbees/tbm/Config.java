@@ -1,9 +1,8 @@
 package com.noplanbees.tbm;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Environment;
-
+import com.noplanbees.tbm.debug.DebugConfig;
 import com.noplanbees.tbm.dispatch.Dispatch;
 
 import java.io.File;
@@ -16,9 +15,11 @@ public class Config {
 //    public static final int SERVER_PORT = 3000;
 //    public final static String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;
 
-  public final static String SERVER_HOST = "zazo-dev1-5.elasticbeanstalk.com";
-  public final static String SERVER_URI = "http://"+SERVER_HOST;
-	
+    //private final static String SERVER_HOST = "zazo.10.0.1.5.xip.io";
+
+    private final static String SERVER_HOST = "zazo-dev1-5.elasticbeanstalk.com";
+    private final static String SERVER_URI = "http://" + SERVER_HOST;
+
 	public final static String appName = "Zazo";
     public static final String landingPageUrl = "http://www.zazoapp.com";
 
@@ -54,7 +55,7 @@ public class Config {
 		if (Pattern.compile("http:").matcher(uri).find()){
 			url = uri;
 		} else {
-			url = Config.SERVER_URI + slash + uri;
+			url = getServerUri() + slash + uri;
 		}
 		return url;
 	}
@@ -79,4 +80,13 @@ public class Config {
 		return new File(recordingFilePath(context));
 	}
 
+    public static String getServerHost() {
+        final DebugConfig config = DebugConfig.getInstance();
+        return (config != null && config.shouldUseCustomServer() && !config.getCustomHost().isEmpty()) ? config.getCustomHost() : SERVER_HOST;
+    }
+
+    public static String getServerUri() {
+        final DebugConfig config = DebugConfig.getInstance();
+        return (config != null && config.shouldUseCustomServer() && !config.getCustomHost().isEmpty()) ? config.getCustomUri() : SERVER_URI;
+    }
 }

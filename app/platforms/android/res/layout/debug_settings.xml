@@ -3,61 +3,127 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="@color/bg_main">
-
-    <TextView
-            android:id="@+id/version_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:text="Version: "
-            android:textColor="@android:color/white"/>
-
-    <TextView
-            android:id="@+id/version_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/version_label"
-            android:layout_alignBaseline="@id/version_label"
-            android:layout_marginLeft="20dp"
-            android:text="0.1"
-            android:textColor="@android:color/white"/>
-
-    <TextView
-            android:id="@+id/build_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/version_label"
-            android:textColor="@android:color/white"/>
-
-    <TextView
-            android:id="@+id/version_code"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/build_label"
-            android:layout_alignBaseline="@id/build_label"
-            android:layout_alignLeft="@id/version_name"
-            android:text="00000000"
-            android:textColor="@android:color/white"/>
-
-    <Switch
-            android:id="@+id/debug_mode"
+    <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Debug mode"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="5dp"
-            android:layout_below="@+id/build_label"
-            android:layout_alignParentLeft="true"/>
+            android:layout_height="match_parent">
+        <RelativeLayout android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+            <TextView
+                    android:id="@+id/version_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:text="Version: "
+                    android:textColor="@android:color/white"/>
 
-    <Switch
-            android:id="@+id/send_sms"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Send real sms"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="5dp"
-            android:layout_below="@+id/debug_mode"
-            android:layout_alignParentLeft="true"/>
+            <TextView
+                    android:id="@+id/version_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/version_label"
+                    android:layout_alignBaseline="@id/version_label"
+                    android:layout_marginLeft="20dp"
+                    android:text="0.1"
+                    android:textColor="@android:color/white"/>
+
+            <TextView
+                    android:id="@+id/build_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/version_label"
+                    android:textColor="@android:color/white"/>
+
+            <TextView
+                    android:id="@+id/version_code"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/build_label"
+                    android:layout_alignBaseline="@id/build_label"
+                    android:layout_alignLeft="@id/version_name"
+                    android:text="00000000"
+                    android:textColor="@android:color/white"/>
+
+            <Switch
+                    android:id="@+id/debug_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Debug mode"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@+id/build_label"
+                    android:layout_alignParentLeft="true"/>
+
+            <Switch
+                    android:id="@+id/send_sms"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Send real sms"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@+id/debug_mode"
+                    android:layout_alignParentLeft="true"/>
+
+            <Switch
+                    android:id="@+id/custom_server"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Use custom server"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="5dp"
+                    android:enabled="false"
+                    android:layout_below="@id/send_sms"
+                    android:layout_alignParentLeft="true"/>
+
+            <LinearLayout
+                    android:id="@+id/server_host_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@+id/custom_server">
+
+                <TextView
+                        android:id="@+id/server_host_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:text="Server host: "
+                        android:textColor="@android:color/white"/>
+
+                <EditText
+                        android:id="@+id/server_host"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBaseline="@id/server_host_label"
+                        android:layout_marginLeft="20dp"
+                        android:textColor="@android:color/white"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:id="@+id/server_uri_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@id/server_host_layout">
+                <TextView
+                        android:id="@+id/server_uri_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Server uri: "
+                        android:textColor="@android:color/white"/>
+
+                <EditText
+                        android:id="@+id/server_uri"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBaseline="@id/server_uri_label"
+                        android:layout_marginLeft="20dp"
+                        android:textColor="@android:color/white"/>
+            </LinearLayout>
+
+        </RelativeLayout>
+    </ScrollView>
+
 
 </RelativeLayout>
