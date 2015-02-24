@@ -7,14 +7,18 @@ import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.User;
 import com.noplanbees.tbm.model.UserFactory;
 import com.noplanbees.tbm.network.HttpRequest;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.util.ArrayList;
 
 
 public class RemoteStorageHandler {
-	private final static String TAG = RemoteStorageHandler.class.getSimpleName();
+    private final static String TAG = RemoteStorageHandler.class.getSimpleName();
+    private static final String VIDEO_ID_KV_KEY = "-VideoIdKVKey";
+    private static final String VIDEO_STATUS_KV_KEY = "-VideoStatusKVKey";
 
-	//--------------------------------
+    //--------------------------------
 	// Data structures keys and values
 	//--------------------------------
 	private static class DataKeys{
@@ -44,14 +48,13 @@ public class RemoteStorageHandler {
         setRemoteKV(outgoingVideoIdsRemoteKVKey(friend), videoId, data);
     }
 
-    
     public static void setRemoteIncomingVideoStatus(Friend friend, String videoId, String status){
         LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
         data.put(DataKeys.VIDEO_ID_KEY, videoId);
         data.put(DataKeys.STATUS_KEY, status);
         setRemoteKV(incomingVideoStatusRemoteKVKey(friend), data);
     }
-    
+
     //--------
     // Getters
     //--------
@@ -82,8 +85,7 @@ public class RemoteStorageHandler {
             return friend;
         }
     }
-    
-    
+
     // OutgoingVideoStatus
     public static abstract class GetRemoteOutgoingVideoStatus extends GetRemoteKV{
         private final Friend friend;
@@ -120,40 +122,66 @@ public class RemoteStorageHandler {
 	// Keys for remote storage
 	//------------------------
 	public static String outgoingVideoRemoteFilename(Friend friend) {
-		return outgoingConnectionKey(friend) + "-" + friend.getOutgoingVideoId() + "-filename";
+		return buildOutgoingVideoFilenameKey(friend, friend.getOutgoingVideoId());
 	}
 
 	public static String incomingVideoRemoteFilename(Friend friend, String videoId) {
-		return incomingConnectionKey(friend) + "-" + videoId + "-filename";
+		return buildIncomingVideoFilenameKey(friend, videoId);
 	}
 
 	private static String outgoingVideoIdsRemoteKVKey(Friend friend) {
-		return outgoingConnectionKey(friend) + "-VideoIdKVKey";
+		return buildOutgoingKvKey(friend, VIDEO_ID_KV_KEY);
 	}
 
 	private static String incomingVideoIdsRemoteKVKey(Friend friend) {
-		return incomingConnectionKey(friend) + "-VideoIdKVKey";
+		return buildIncomingKvKey(friend, VIDEO_ID_KV_KEY);
 	}
 
 	private static String outgoingVideoStatusRemoteKVKey(Friend friend) {
-		return outgoingConnectionKey(friend) + "-VideoStatusKVKey";
+		return buildOutgoingKvKey(friend, VIDEO_STATUS_KV_KEY);
 	}
 
 	private static String incomingVideoStatusRemoteKVKey(Friend friend) {
-		return incomingConnectionKey(friend) + "-VideoStatusKVKey";
+		return buildIncomingKvKey(friend, VIDEO_STATUS_KV_KEY);
 	}
-	
-	private static String outgoingConnectionKey(Friend friend){
-		return UserFactory.current_user().get(User.Attributes.MKEY) + "-" + friend.get(Friend.Attributes.MKEY)
-                + "-" + friend.get(Friend.Attributes.CKEY);
-	}
-	
-	private static String incomingConnectionKey(Friend friend){
-		return friend.get(Friend.Attributes.MKEY) + "-" + UserFactory.current_user().get(User.Attributes.MKEY)
-                + "-" + friend.get(Friend.Attributes.CKEY);
-	}
-	
 
+    public static String buildIncomingVideoFilenameKey(Friend friend, String videoId) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(friend.get(Friend.Attributes.MKEY)).append("-");
+        builder.append(UserFactory.current_user().get(User.Attributes.MKEY)).append("-");
+        builder.append(md5(friend.get(Friend.Attributes.CKEY) + videoId));
+        return builder.toString();
+    }
+
+    public static String buildOutgoingVideoFilenameKey(Friend friend, String videoId) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(UserFactory.current_user().get(User.Attributes.MKEY)).append("-");
+        builder.append(friend.get(Friend.Attributes.MKEY)).append("-");
+        builder.append(md5(friend.get(Friend.Attributes.CKEY) + videoId));
+        return builder.toString();
+    }
+
+    public static String buildIncomingKvKey(Friend friend, String suffix) {
+        StringBuilder builder = new StringBuilder();
+        String sender = friend.get(Friend.Attributes.MKEY);
+        String receiver = UserFactory.current_user().get(User.Attributes.MKEY);
+        String ckey = friend.get(Friend.Attributes.CKEY);
+        builder.append(sender).append("-").append(receiver).append("-");
+        builder.append(md5(sender + receiver + ckey));
+        builder.append(suffix);
+        return builder.toString();
+    }
+
+    public static String buildOutgoingKvKey(Friend friend, String suffix) {
+        StringBuilder builder = new StringBuilder();
+        String sender = UserFactory.current_user().get(User.Attributes.MKEY);
+        String receiver = friend.get(Friend.Attributes.MKEY);
+        String ckey = friend.get(Friend.Attributes.CKEY);
+        builder.append(sender).append("-").append(receiver).append("-");
+        builder.append(md5(sender + receiver + ckey));
+        builder.append(suffix);
+        return builder.toString();
+    }
 	//--------------------------
 	// Set Get and Delete Remote
 	//--------------------------
@@ -292,5 +320,9 @@ public class RemoteStorageHandler {
                 }
             });
         }
+    }
+
+    private static String md5(String data) {
+        return new String(Hex.encodeHex(DigestUtils.md5(data)));
     }
 }
