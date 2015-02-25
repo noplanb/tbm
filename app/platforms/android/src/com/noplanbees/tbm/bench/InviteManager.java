@@ -147,12 +147,12 @@ public class InviteManager{
 		.appendQueryParameter(FriendFactory.ServerParamKeys.LAST_NAME, benchObject.lastName);
 		String url = builder.build().toString();
 		Log.i(TAG, url);
-		new GetFriendRequest(url);
+		new InviteFriendRequest(url);
 	}
 
-	private class GetFriendRequest extends HttpRequest{
+	private class InviteFriendRequest extends HttpRequest{
 
-        public GetFriendRequest(String uri) {
+        public InviteFriendRequest(String uri) {
 			super(uri, new Callbacks() {
                 @Override
                 public void success(String response) {

@@ -10,7 +10,10 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
+import com.google.i18n.phonenumbers.Phonenumber;
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.model.User;
+import com.noplanbees.tbm.model.UserFactory;
 
 /**
  * Created by skamenkovych@codeminders.com on 2/20/2015.
@@ -29,6 +32,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         config = DebugConfig.getInstance(this);
         setUpVersion();
         setUpDebugMode();
+        setUpUserInfo();
         setUpSendSms();
         setUpServer();
     }
@@ -114,6 +118,20 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 serverUri.setEnabled(isChecked);
             }
         });
+    }
+
+    private void setUpUserInfo() {
+        StringBuilder info = new StringBuilder();
+        User user = UserFactory.current_user();
+        if (user == null) {
+            info.append("Not signed in");
+        } else {
+            info.append(user.getFirstName()).append(", ").append(user.getLastName()).append("\n");
+            Phonenumber.PhoneNumber phone = user.getPhoneNumberObj();
+            info.append("(").append(phone.getCountryCode()).append(") ").append(phone.getNationalNumber());
+        }
+        final TextView userInfo = (TextView) findViewById(R.id.user_info);
+        userInfo.setText(info.toString());
     }
 
     @Override

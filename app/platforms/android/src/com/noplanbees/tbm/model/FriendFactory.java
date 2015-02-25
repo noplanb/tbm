@@ -3,16 +3,14 @@ package com.noplanbees.tbm.model;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-
 import com.google.gson.internal.LinkedTreeMap;
 import com.noplanbees.tbm.GridManager;
 import com.noplanbees.tbm.model.Friend.VideoStatusChangedCallback;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class FriendFactory extends ActiveModelFactory{
@@ -46,21 +44,21 @@ public class FriendFactory extends ActiveModelFactory{
         instances.add(i);
         return i;
     }
-    
+
     /**
-     * @param context
-     * @param params (server params)
+     *
+     * @param context context
+     * @param friend friend to update
+     * @param remoteHasApp true if on remote server it marks as has app
      * @return Returns a friend only one was found and changed. Otherwise returns null.
      */
-    public Friend updateWithServerParams(Context context, LinkedTreeMap<String, String> params){
-        boolean servHasApp = servHasApp(params);
-        Friend f = getFriendFromMkey(params.get(ServerParamKeys.MKEY));
-        if (f != null){
-            if (f.hasApp() ^ servHasApp){
-                f.setHasApp(servHasApp);
-                GridManager.getInstance().rankingActionOccurred(f);
-                notifyStatusChanged(f);
-                return f;
+    private Friend updateWithServerParams(Context context, Friend friend, boolean remoteHasApp){
+        if (friend != null){
+            if (friend.hasApp() ^ remoteHasApp){
+                friend.setHasApp(remoteHasApp);
+                GridManager.getInstance().rankingActionOccurred(friend);
+                notifyStatusChanged(friend);
+                return friend;
             }
         }
         return null;
@@ -91,7 +89,22 @@ public class FriendFactory extends ActiveModelFactory{
         notifyStatusChanged(f);
         return f;
     }
-    
+
+    public void reconcileFriends(Context context, final List<LinkedTreeMap<String, String>> remoteFriends) {
+        for (LinkedTreeMap<String, String> friendParams : remoteFriends) {
+            Friend f = getFriendFromMkey(friendParams.get(ServerParamKeys.MKEY));
+            if (f != null) {
+                f = updateWithServerParams(context, f, servHasApp(friendParams));
+            } else {
+                f = createWithServerParams(context, friendParams);
+            }
+            // if friend was updated or created then move him to grid
+            if (f != null) {
+                GridManager.getInstance().moveFriendToGrid(f);
+            }
+        }
+    }
+
     public boolean servHasApp(LinkedTreeMap<String, String> servParams){
         return servParams.get(ServerParamKeys.HAS_APP).equalsIgnoreCase(ServerParamKeys.HAS_APP_TRUE_VALUE);
     }

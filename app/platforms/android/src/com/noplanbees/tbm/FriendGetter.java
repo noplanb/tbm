@@ -1,21 +1,19 @@
 package com.noplanbees.tbm;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
 import com.noplanbees.tbm.network.HttpRequest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FriendGetter {
 	
-	private final String TAG = getClass().getSimpleName();
+	private static final String TAG = FriendGetter.class.getSimpleName();
 	
 	private Context context;
 	private boolean destroyAll;
@@ -55,18 +53,7 @@ public class FriendGetter {
 		if (destroyAll)
 			FriendFactory.getFactoryInstance().destroyAll(context);
 
-        GridManager gm = GridManager.getInstance();
-        FriendFactory ff = FriendFactory.getFactoryInstance();
-		for (LinkedTreeMap<String, String> fparams : friendList){
-            Friend f = ff.updateWithServerParams(context, fparams);
-            
-            if (f == null)
-                f = ff.createWithServerParams(context, fparams);
-            
-            // If one was either updated or created then move him to grid.
-            if(f !=null)
-                gm.moveFriendToGrid(f);
-		}
+        FriendFactory.getFactoryInstance().reconcileFriends(context, friendList);
         success();
 	}
 }

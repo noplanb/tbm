@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public abstract class ActiveModel {
-	protected final String TAG = this.getClass().getSimpleName();
+	protected static final String TAG = ActiveModel.class.getSimpleName();
 
 	public LinkedTreeMap<String, String> attributes = new LinkedTreeMap<String, String>();
 
