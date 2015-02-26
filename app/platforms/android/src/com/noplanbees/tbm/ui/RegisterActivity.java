@@ -89,6 +89,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		setupListeners();
 		addShortcutIcon();
         setAdditionalViewHeight();
+        setUpView();
 	}
 
     private void setAdditionalViewHeight() {
@@ -105,13 +106,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         pd.show(getFragmentManager(), null);
 		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 	}
-	
-	@Override
-	protected void onResume(){
-		super.onResume();
-		setUpView();
-	}
-	
+
 	@Override
 	protected void onStop() {
 		super.onStop();
@@ -151,10 +146,10 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	private void prefillTextFields() {
 		Contact contact = new ContactsManager(this).userProfile(this);
 		Log.i(TAG, "profile: " + contact);
-		
+
 		if(contact == null)
 			return;
-		
+
 		if (contact.getFirstName() != null)
 			firstNameTxt.setText(contact.getFirstName());
 
