@@ -20,6 +20,8 @@ import com.noplanbees.tbm.model.UserFactory;
  */
 public class DebugSettingsActivity extends Activity implements DebugConfig.DebugConfigChangesCallback {
 
+    public static final String EXTRA_SERVER_OPTION = "server_option";
+
     private EditText serverHost;
     private EditText serverUri;
     private DebugConfig config;
@@ -35,6 +37,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         setUpUserInfo();
         setUpSendSms();
         setUpServer();
+        setUpCameraOption();
     }
 
     @Override
@@ -108,7 +111,9 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         serverHost.setEnabled(isEnabled);
         serverUri.setEnabled(isEnabled);
 
+        boolean serverOptionEnabled = getIntent().getBooleanExtra(EXTRA_SERVER_OPTION, false);
         Switch useCustomServer = (Switch) findViewById(R.id.custom_server);
+        useCustomServer.setEnabled(serverOptionEnabled);
         useCustomServer.setChecked(config.shouldUseCustomServer());
         useCustomServer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -123,7 +128,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     private void setUpUserInfo() {
         StringBuilder info = new StringBuilder();
         User user = UserFactory.current_user();
-        if (user == null) {
+        if (user == null || user.getId().isEmpty()) {
             info.append("Not signed in");
         } else {
             info.append(user.getFirstName()).append(", ").append(user.getLastName()).append("\n");
@@ -132,6 +137,17 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         }
         final TextView userInfo = (TextView) findViewById(R.id.user_info);
         userInfo.setText(info.toString());
+    }
+
+    private void setUpCameraOption() {
+        Switch cameraOption = (Switch) findViewById(R.id.use_rear_camera);
+        cameraOption.setChecked(config.shouldUseRearCamera());
+        cameraOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                config.useRearCamera(isChecked);
+            }
+        });
     }
 
     @Override

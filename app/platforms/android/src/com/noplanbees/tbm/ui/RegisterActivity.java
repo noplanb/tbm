@@ -28,6 +28,7 @@ import com.noplanbees.tbm.DataHolderService;
 import com.noplanbees.tbm.DataHolderService.LocalBinder;
 import com.noplanbees.tbm.FriendGetter;
 import com.noplanbees.tbm.R;
+import com.noplanbees.tbm.debug.DebugSettingsActivity;
 import com.noplanbees.tbm.model.ActiveModelsHandler;
 import com.noplanbees.tbm.model.Contact;
 import com.noplanbees.tbm.model.User;
@@ -367,7 +368,12 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
             pd.show(getFragmentManager(), null);
 		}
 	}
-	
+
+    private void debugPage() {
+        Intent intent = new Intent(this, DebugSettingsActivity.class);
+        intent.putExtra(DebugSettingsActivity.EXTRA_SERVER_OPTION, true);
+        startActivity(intent);
+    }
 	//---------------------
 	// Add user and friends
 	//---------------------
@@ -451,6 +457,13 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 				debugGetUser();
 			}
 		});
+        debugBtn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                debugPage();
+                return true;
+            }
+        });
 	}
 
 

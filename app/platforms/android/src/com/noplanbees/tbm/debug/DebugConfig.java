@@ -17,6 +17,8 @@ public class DebugConfig {
     private static final String KEY_CUSTOM_HOST = "custom_host";
     private static final String KEY_CUSTOM_URI = "custom_uri";
     private static final String KEY_USE_CUSTOM_SERVER = "use_custom_server";
+    private static final String KEY_USE_REAR_CAMERA = "use_rear_camera";
+
     public static final boolean DEBUG_LOG = true;
 
     private static volatile DebugConfig instance;
@@ -37,6 +39,7 @@ public class DebugConfig {
     private String customServerHost;
     private String customServerUri;
     private boolean useCustomServer;
+    private boolean useRearCamera;
 
     private DebugConfig() {
     }
@@ -73,6 +76,7 @@ public class DebugConfig {
         customServerHost = sp.getString(KEY_CUSTOM_HOST, "");
         customServerUri = sp.getString(KEY_CUSTOM_URI, "");
         useCustomServer = sp.getBoolean(KEY_USE_CUSTOM_SERVER, false);
+        useRearCamera = sp.getBoolean(KEY_USE_REAR_CAMERA, false);
     }
 
     public boolean isDebugEnabled() {
@@ -93,6 +97,10 @@ public class DebugConfig {
 
     public String getCustomUri() {
         return customServerUri;
+    }
+
+    public boolean shouldUseRearCamera() {
+        return useRearCamera;
     }
 
     public void enableSendSms(boolean sendSms) {
@@ -125,6 +133,12 @@ public class DebugConfig {
         notifyChanges();
     }
 
+    public void useRearCamera(boolean use) {
+        useRearCamera = use;
+        putBooleanPref(KEY_USE_REAR_CAMERA, use);
+        notifyChanges();
+    }
+
     private void putIntPref(String key, int value) {
         SharedPreferences.Editor editor = context.getSharedPreferences(DEBUG_SETTINGS, Context.MODE_PRIVATE).edit();
         editor.putInt(key, value);
@@ -149,6 +163,7 @@ public class DebugConfig {
         putStringPref(KEY_CUSTOM_HOST, customServerHost);
         putStringPref(KEY_CUSTOM_URI, customServerUri);
         putBooleanPref(KEY_USE_CUSTOM_SERVER, useCustomServer);
+        putBooleanPref(KEY_USE_REAR_CAMERA, useRearCamera);
     }
 
     public void addCallback(DebugConfigChangesCallback callback) {

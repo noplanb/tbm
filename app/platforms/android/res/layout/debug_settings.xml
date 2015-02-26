@@ -82,6 +82,16 @@
                     android:layout_alignParentLeft="true"/>
 
             <Switch
+                    android:id="@+id/use_rear_camera"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Use rear camera"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@+id/send_sms"
+                    android:layout_alignParentLeft="true"/>
+
+            <Switch
                     android:id="@+id/custom_server"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -89,7 +99,7 @@
                     android:textColor="@android:color/white"
                     android:layout_marginTop="5dp"
                     android:enabled="false"
-                    android:layout_below="@id/send_sms"
+                    android:layout_below="@id/use_rear_camera"
                     android:layout_alignParentLeft="true"/>
 
             <LinearLayout

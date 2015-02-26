@@ -7,6 +7,7 @@ import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
 import android.util.Log;
+import com.noplanbees.tbm.debug.DebugConfig;
 import com.noplanbees.tbm.dispatch.Dispatch;
 
 import java.util.Collections;
@@ -99,12 +100,18 @@ public class CameraManager {
 				cameraExceptionHandler.onCameraException(CameraException.NO_HARDWARE);
 			return camera;
 		}
-		
-		Integer cameraNum = frontCameraNum();
-		if (cameraNum < 0)
-			return camera;
-		
-		try {
+
+        int cameraNum;
+        if (DebugConfig.getInstance(context).shouldUseRearCamera()) {
+            cameraNum = rearCameraNum();
+        } else {
+            cameraNum = frontCameraNum();
+        }
+        if (cameraNum < 0) {
+            return camera;
+        }
+
+        try {
 			camera = Camera.open(cameraNum);
 		} catch (Exception e) {
 			Dispatch.dispatch("getFrontCamera: ERROR: camera not available.");
@@ -127,21 +134,33 @@ public class CameraManager {
 		return false;
 	}
 
-	// -1 if no camera else the number of the front camera.
-	private static int frontCameraNum(){
-		Integer r = -1;
-		Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-		for (int i=0; i<Camera.getNumberOfCameras(); i++){
-			Camera.getCameraInfo(i, cameraInfo);
-			if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT)
-				r = i;
-		}
-		if (r < 0  && cameraExceptionHandler != null)
-			cameraExceptionHandler.onCameraException(CameraException.NO_FRONT_CAMERA);
-		return r;
-	}
-	
-	private static void notifyCameraInUse(){
+    // -1 if no camera else the number of the front camera.
+    private static int frontCameraNum() {
+        int r = -1;
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
+            Camera.getCameraInfo(i, cameraInfo);
+            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT)
+                r = i;
+        }
+        if (r < 0 && cameraExceptionHandler != null)
+            cameraExceptionHandler.onCameraException(CameraException.NO_FRONT_CAMERA);
+        return r;
+    }
+
+    // -1 if no camera else the number of the rear camera.
+    private static int rearCameraNum() {
+        int r = -1;
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
+            Camera.getCameraInfo(i, cameraInfo);
+            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
+                r = i;
+        }
+        return r;
+    }
+
+    private static void notifyCameraInUse(){
 		if (cameraExceptionHandler != null)
 			cameraExceptionHandler.onCameraException(CameraException.CAMERA_IN_USE);
 	}
