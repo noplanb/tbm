@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.PowerManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -23,11 +24,15 @@ import com.noplanbees.tbm.dispatch.Dispatch;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 public class Convenience {
-	public final static String STAG = Convenience.class.getSimpleName();
+    public static final String TAG = Convenience.class.getSimpleName();
 
 	public static float dpToPx(Context context, float dp){
 		Resources r = context.getResources();
@@ -58,7 +63,7 @@ public class Convenience {
 	        bmp = BitmapFactory.decodeStream(fis);
 		} catch (IOException e) {
 			String msg = "bitmapWithFile: IOException: " + e.getMessage();
-			Log.i(STAG, msg);
+			Log.i(TAG, msg);
 			Dispatch.dispatch(msg);
 		}
 		return bmp;
@@ -89,10 +94,10 @@ public class Convenience {
 	}
 	
 	public static void printOurTaskInfo(Context context){
-		Log.i(STAG, "printOurTaskInfo");
+		Log.i(TAG, "printOurTaskInfo");
 		ActivityManager.RunningTaskInfo ti = ourTaskInfo(context);
 		if (ti == null){
-			Log.i(STAG, "printOurTaskInfo: NULL");
+			Log.i(TAG, "printOurTaskInfo: NULL");
 			return;
 		}
 		printTaskInfo(ti);
@@ -107,25 +112,25 @@ public class Convenience {
 	}
 	
 	public static void printTaskInfo(ActivityManager.RunningTaskInfo ti){
-		Log.i(STAG, "--------");
-		Log.i(STAG, "baseActivity: " + ti.baseActivity.toShortString());
-		Log.i(STAG,"baseActivity package name: " + ti.baseActivity.getPackageName());
-		Log.i(STAG, "our package: " + Convenience.class.getPackage());
-		Log.i(STAG, "numActivities: " + ti.numActivities);
-		Log.i(STAG, "numRunning: " + ti.numRunning);
-		Log.i(STAG, "topActivity: " + ti.topActivity.toString());
+		Log.i(TAG, "--------");
+		Log.i(TAG, "baseActivity: " + ti.baseActivity.toShortString());
+		Log.i(TAG,"baseActivity package name: " + ti.baseActivity.getPackageName());
+		Log.i(TAG, "our package: " + Convenience.class.getPackage());
+		Log.i(TAG, "numActivities: " + ti.numActivities);
+		Log.i(TAG, "numRunning: " + ti.numRunning);
+		Log.i(TAG, "topActivity: " + ti.topActivity.toString());
 	}
 
 	public static void printBundle(Bundle bundle) {
 		if (bundle == null){
-			Log.d(STAG, "null bundle");
+			Log.d(TAG, "null bundle");
 			return;
 		}
 		for(String key : bundle.keySet()){
 			if (bundle.get(key) == null){
-				Log.d(STAG, key + "=null");
+				Log.d(TAG, key + "=null");
 			} else {
-				Log.d(STAG, key + "=" + bundle.get(key).toString());
+				Log.d(TAG, key + "=" + bundle.get(key).toString());
 			}
 		}
 	}
@@ -138,7 +143,7 @@ public class Convenience {
 				msgData += " " + c.getColumnName(i) + ":" + c.getString(i) + "\n";
 			}
 			msgData += "=============\n";
-			Log.i(STAG, msgData);
+			Log.i(TAG, msgData);
 		} while (c.moveToNext());
 	}
 
@@ -178,5 +183,50 @@ public class Convenience {
 
     public static boolean screenIsLockedOrOff(Context context) {
         return screenIsLocked(context) || screenIsOff(context);
+    }
+
+    public static void copy(File src, File dst) {
+        Log.d(TAG, "copying " + src.getName() + " " + String.valueOf(src.length()));
+        if (dst == null) {
+            String root = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator + "ZazoVideos"+File.separator;
+            dst = new File(root);
+            if(!dst.exists()) {
+                dst.mkdir();
+            }
+            dst = new File(root + src.getName());
+        }
+
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = new FileInputStream(src);
+            out = new FileOutputStream(dst);
+
+            // Transfer bytes from in to out
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

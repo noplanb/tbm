@@ -7,17 +7,17 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.media.RingtoneManager;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.net.Uri;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-
 import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.IntentHandler;
-import com.noplanbees.tbm.ui.LockScreenAlertActivity;
 import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.model.Friend;
+import com.noplanbees.tbm.ui.LockScreenAlertActivity;
 import com.noplanbees.tbm.ui.MainActivity;
 
 
@@ -68,7 +68,28 @@ public class NotificationAlertManager {
 		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		nm.cancelAll();
 	}
-	
+
+    @SuppressWarnings("deprecation")
+    public static void playTone(Context context) {
+        SoundPool pool;
+        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        //    AudioAttributes.Builder attrsBuilder = new AudioAttributes.Builder();
+        //    attrsBuilder.setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT);
+        //    attrsBuilder.setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION);
+        //    pool = new SoundPool.Builder().setAudioAttributes(attrsBuilder.build()).build();
+        //} else {
+            pool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
+        //}
+        final int id = pool.load(context, R.raw.notification_tone, 1);
+        pool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                soundPool.play(id, 1f, 1f, 0, 0, 1);
+                soundPool.release();
+            }
+        });
+    }
+
 	// Private 
 	private static void postNativeAlert(Context context, Friend friend, String videoId) {
 		Log.i(STAG, "postNativeAlert");
@@ -78,7 +99,7 @@ public class NotificationAlertManager {
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, makePlayVideoIntent(intent, context, friend), 0);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-		.setSound(Uri.parse("android.resource://"+ context.getPackageName() + "/" + R.raw.notification_tone))
+		.setSound(getNotificationToneUri(context))
 		.setLargeIcon(largeImage(friend, videoId))
 		.setSmallIcon(smallIcon)
 		.setContentTitle(title(friend))
@@ -128,4 +149,7 @@ public class NotificationAlertManager {
 			return (Boolean) !pm.isInteractive();
 	}
 
+    private static Uri getNotificationToneUri(Context context) {
+        return Uri.parse("android.resource://"+ context.getPackageName() + "/" + R.raw.notification_tone);
+    }
 }

@@ -15,7 +15,6 @@ import com.noplanbees.tbm.Config;
 import com.noplanbees.tbm.RemoteStorageHandler;
 import com.noplanbees.tbm.debug.DebugConfig;
 import com.noplanbees.tbm.dispatch.Dispatch;
-import com.noplanbees.tbm.multimedia.VideoIdUtils;
 import com.noplanbees.tbm.network.FileDeleteService;
 import com.noplanbees.tbm.network.FileDownloadService;
 import com.noplanbees.tbm.network.FileTransferService;
@@ -33,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Friend extends ActiveModel{
+
+    private static final String MP4 = ".mp4";
 
     public static interface VideoStatusChangedCallback {
         public void onVideoStatusChanged(Friend friend);
@@ -306,34 +307,40 @@ public class Friend extends ActiveModel{
         Collections.sort(videos, new Video.VideoTimestampComparator());
         return videos;
     }
-    
-
 
     //----------------
     // Video and thumb
     //----------------
-    public String videoFromPath(String videoId){
-        return Config.homeDirPath(context) + "/vid_from_" + getId() + "_" + videoId + ".mp4";
+    public String videoFromPath(String videoId) {
+        return buildPath(videoId, "vid_from", MP4);
     }
 
-    public File videoFromFile(String videoId){
+    public File videoFromFile(String videoId) {
         return new File(videoFromPath(videoId));
     }
 
-    public String videoToPath(){
-        return Config.homeDirPath(context) + "/vid_to_" + getId() + ".mp4";
+    public String videoToPath(String videoId) {
+        return buildPath(videoId, "vid_to", MP4);
     }
 
-    public File videoToFile(){
-        return new File(videoToPath());
+    public File videoToFile(String videoId) {
+        return new File(videoToPath(videoId));
     }
 
-    public String thumbPath(String videoId){
-        return Config.homeDirPath(context) + "/thumb_from_" + getId() + "_" + videoId + ".mp4";
+    public String thumbPath(String videoId) {
+        return buildPath(videoId, "thumb_from", MP4);
     }
 
     public File thumbFile(String videoId){
         return new File(thumbPath(videoId));
+    }
+
+    private String buildPath(String videoId, String prefix, String extension) {
+        StringBuilder path = new StringBuilder(Config.homeDirPath(context));
+        path.append(File.separator).append(prefix);
+        path.append("_").append(videoId);
+        path.append(extension);
+        return path.toString();
     }
 
     public File lastThumbFile(){
@@ -454,20 +461,15 @@ public class Friend extends ActiveModel{
     //--------------------------
     // Video upload and download
     //--------------------------
-    private void setOutGoingVideoId(){
-        Log.i(TAG, "setOutGoingVideoId.");
-        setOutGoingVideoId(VideoIdUtils.generateId());
-    }
 
     public void uploadVideo(){
         Log.i(TAG, "uploadVideo. For friend=" + getUniqueName());
 
         setAndNotifyOutgoingVideoStatus(OutgoingVideoStatus.QUEUED);
-        setOutGoingVideoId();
 
         Intent i = new Intent(context, FileUploadService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
-        i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath());
+        i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(getOutgoingVideoId()));
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, getOutgoingVideoId());
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this));
         // This is here so the old saving files on server vs s3 work
