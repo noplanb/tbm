@@ -31,7 +31,7 @@ public class S3CredentialsGetter {
 
 	private void getCredentials(){
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-		String uri = new Uri.Builder().appendPath("s3_infos").appendPath("info").build().toString();
+		String uri = new Uri.Builder().appendPath("s3_credentials").appendPath("info").build().toString();
 		new GetCredentials(uri, params);
 	}
 
