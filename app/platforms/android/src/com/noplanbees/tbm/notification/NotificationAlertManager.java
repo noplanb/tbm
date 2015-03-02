@@ -7,9 +7,12 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -22,11 +25,10 @@ import com.noplanbees.tbm.ui.MainActivity;
 
 
 public class NotificationAlertManager {
-	
-	private final String TAG = this.getClass().getSimpleName();
-	private final static String STAG = NotificationAlertManager.class.getSimpleName();
-	
-	// ----------------------------
+
+    private static final String TAG = NotificationAlertManager.class.getSimpleName();
+
+    // ----------------------------
 	// Attributes for notifications
 	// ----------------------------
 	public static final String TITLE_KEY = "titleKey";
@@ -55,7 +57,7 @@ public class NotificationAlertManager {
 	
 	// Public methods
 	public static void alert(Context context, Friend friend, String videoId){
-		Log.i(STAG, "alert");
+		Log.i(TAG, "alert");
 		
 		if ( screenIsLocked(context) || screenIsOff(context))
 			postLockScreenAlert(context, friend, videoId);
@@ -64,7 +66,7 @@ public class NotificationAlertManager {
 	}
 	
 	public static void cancelNativeAlerts(Context context){
-		Log.i(STAG, "cancelNativeAlerts");
+		Log.i(TAG, "cancelNativeAlerts");
 		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		nm.cancelAll();
 	}
@@ -72,27 +74,33 @@ public class NotificationAlertManager {
     @SuppressWarnings("deprecation")
     public static void playTone(Context context) {
         SoundPool pool;
-        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        //    AudioAttributes.Builder attrsBuilder = new AudioAttributes.Builder();
-        //    attrsBuilder.setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT);
-        //    attrsBuilder.setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION);
-        //    pool = new SoundPool.Builder().setAudioAttributes(attrsBuilder.build()).build();
-        //} else {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AudioAttributes.Builder attrsBuilder = new AudioAttributes.Builder();
+            attrsBuilder.setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT);
+            attrsBuilder.setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION);
+            pool = new SoundPool.Builder().setAudioAttributes(attrsBuilder.build()).build();
+        } else {
             pool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
-        //}
-        final int id = pool.load(context, R.raw.notification_tone, 1);
+        }
         pool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
             @Override
-            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-                soundPool.play(id, 1f, 1f, 0, 0, 1);
-                soundPool.release();
+            public void onLoadComplete(final SoundPool soundPool, int sampleId, int status) {
+                soundPool.play(sampleId, 0.3f, 0.3f, 0, 0, 1);
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        soundPool.release();
+                    }
+                }, 1000);
             }
         });
+        pool.load(context, R.raw.beep, 1);
     }
 
 	// Private 
 	private static void postNativeAlert(Context context, Friend friend, String videoId) {
-		Log.i(STAG, "postNativeAlert");
+		Log.i(TAG, "postNativeAlert");
 		final int NOTIFICATION_ID = 1;
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
@@ -112,7 +120,7 @@ public class NotificationAlertManager {
 	}
 
 	private static void postLockScreenAlert(Context context, Friend friend, String videoId) {
-		Log.i(STAG, "postLockScreenAlert");
+		Log.i(TAG, "postLockScreenAlert");
 		Intent ri = new Intent(context, LockScreenAlertActivity.class);
 		Intent i = makePlayVideoIntent(ri, context, friend);
 		i.putExtra(IntentHandler.IntentParamKeys.FRIEND_ID, friend.getId());
