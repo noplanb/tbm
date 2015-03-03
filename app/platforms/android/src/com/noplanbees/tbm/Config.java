@@ -16,7 +16,8 @@ public class Config {
 //    public final static String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;
 
     //private final static String SERVER_HOST = "zazo.10.0.1.5.xip.io";
-    private final static String SERVER_HOST = "zazo-dev1-5.elasticbeanstalk.com";
+    //private final static String SERVER_HOST = "zazo-dev1-5.elasticbeanstalk.com";
+    private final static String SERVER_HOST = "prod.zazoapp.com";
     private final static String SERVER_URI = "http://" + SERVER_HOST;
 
 	public final static String appName = "Zazo";
