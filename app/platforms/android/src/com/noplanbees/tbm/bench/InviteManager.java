@@ -132,7 +132,8 @@ public class InviteManager{
 		boolean hasApp = hasAppStr != null && hasAppStr.equalsIgnoreCase("true");
 		if (hasApp)
 			getFriendFromServer();
-		else if (hasSim()) {
+		else if (hasSim() || !DebugConfig.getInstance(context).shouldSendSms()) {
+            friend = null; // to clear previous nudged or invited friend
             preSmsDialog();
         } else {
             failureNoSimDialog();
