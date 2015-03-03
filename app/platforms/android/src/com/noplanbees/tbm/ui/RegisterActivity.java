@@ -177,7 +177,11 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		countryCodeTxt.setText(countryCode);
 		mobileNumber = cleanNumber(mobileNumberTxt.getText().toString());
 		mobileNumberTxt.setText(mobileNumber);
-		e164 = "+" + countryCode + mobileNumber;
+        String newE164 = "+" + countryCode + mobileNumber;
+        if (!newE164.equals(e164)) {
+            enterCodeDialog = null; // is need to update dialog
+        }
+        e164 = newE164;
 
 		if (!isValidName(firstName)){
 			firstNameError();

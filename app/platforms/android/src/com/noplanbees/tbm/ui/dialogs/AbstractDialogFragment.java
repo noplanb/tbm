@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -14,7 +16,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import com.noplanbees.tbm.R;
 
-abstract public class AbstractDialogFragment extends DialogFragment {
+abstract public class AbstractDialogFragment extends DialogFragment implements TextWatcher {
 
     private static final String TARGET_TYPE = "target_type";
     private static final String ID = "dialog_id";
@@ -52,6 +54,7 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 		twTitle = (TextView)v.findViewById(R.id.dlg_title);
         twMsg = (TextView) v.findViewById(R.id.dlg_msg);
         editMsg = (EditText) v.findViewById(R.id.dlg_edit_msg);
+        editMsg.addTextChangedListener(this);
 
         body = (FrameLayout)v.findViewById(R.id.dlg_body);
 		
@@ -190,5 +193,19 @@ abstract public class AbstractDialogFragment extends DialogFragment {
 
     protected static void putEditedMessage(Bundle bundle, String message) {
         bundle.putString(EDITED_MESSAGE, message);
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        int textLength = s.toString().length();
+        btnOk.setEnabled(textLength != 0);
     }
 }

@@ -67,7 +67,7 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:text="@android:string/cancel"
-            android:textColor="@color/dialog_textcolor"
+            android:textColor="@color/dialog_action_text"
             android:textSize="18sp" 
             android:visibility="gone"/>
 
@@ -85,7 +85,7 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:text="@android:string/ok"
-            android:textColor="@color/dialog_textcolor"
+            android:textColor="@color/dialog_action_text"
             android:textStyle="bold"
             android:textSize="18sp"
             android:visibility="gone"/>

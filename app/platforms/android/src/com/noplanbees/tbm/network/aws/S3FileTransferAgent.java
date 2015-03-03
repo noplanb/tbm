@@ -1,10 +1,7 @@
 package com.noplanbees.tbm.network.aws;
 
-import java.io.File;
-
 import android.content.Intent;
 import android.util.Log;
-
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.AmazonServiceException.ErrorType;
@@ -24,6 +21,8 @@ import com.noplanbees.tbm.model.Video;
 import com.noplanbees.tbm.network.FileTransferService;
 import com.noplanbees.tbm.network.FileTransferService.IntentFields;
 import com.noplanbees.tbm.network.IFileTransferAgent;
+
+import java.io.File;
 
 public class S3FileTransferAgent implements IFileTransferAgent {
 	private static final String TAG = S3FileTransferAgent.class.getSimpleName();
@@ -87,6 +86,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
             PutObjectRequest _putObjectRequest = new PutObjectRequest(s3Bucket, filename, file);
 			Upload upload = tm.upload(_putObjectRequest);
 			upload.waitForUploadResult();
+            file.delete(); // remove uploaded file
 		} catch (AmazonServiceException e) {
 			handleServiceException(e);
 			return notRetryableServiceException(e);

@@ -2,11 +2,7 @@ package com.noplanbees.tbm;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.util.Log;
-
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.model.FriendFactory;
@@ -159,7 +155,7 @@ public class IntentHandler {
 				NotificationAlertManager.alert(context, friend, videoId);
 			} else {
 				// TODO: play the notification tone only if we are not currently playing or recording.
-				playNotificationTone();
+                NotificationAlertManager.playTone(context);
 			}
 		}
 		
@@ -205,11 +201,5 @@ public class IntentHandler {
             throw new RuntimeException();
         }
     }
-    
-	private void playNotificationTone() {
-		Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		Ringtone r = RingtoneManager.getRingtone(context.getApplicationContext(), notification);
-		r.play();
-	}
 
 }

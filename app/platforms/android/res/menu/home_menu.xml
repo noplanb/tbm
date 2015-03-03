@@ -5,7 +5,7 @@
         android:id="@+id/action_bench"
         android:icon="@drawable/drawer"
         android:showAsAction="always"
-        android:title="Bench"/>
+        android:title="@string/menu_bench"/>
 <!-- 
     <item
         android:id="@+id/action_get_contacts"

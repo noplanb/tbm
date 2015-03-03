@@ -5,13 +5,10 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
-import android.media.SoundPool;
 import android.util.Log;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
-
 import com.noplanbees.tbm.Config;
-import com.noplanbees.tbm.R;
 import com.noplanbees.tbm.dispatch.Dispatch;
 import com.noplanbees.tbm.model.Friend;
 import com.noplanbees.tbm.ui.view.PreviewTextureFrame;
@@ -186,9 +183,11 @@ public class VideoRecorder implements SurfaceTextureListener {
     // Private Methods
     // ---------------
     private void moveRecordingToFriend(Friend friend) {
-        File ed = friend.videoToFile();
+        String videoId = VideoIdUtils.generateId();
+        File ed = friend.videoToFile(videoId);
         File ing = Config.recordingFile(context);
         ing.renameTo(ed);
+        friend.setOutGoingVideoId(videoId);
     }
 
     // ---------------------------------
