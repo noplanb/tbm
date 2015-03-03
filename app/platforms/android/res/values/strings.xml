@@ -37,6 +37,8 @@
     <string name="dialog_register_server_error_message">Can\'t reach %1$s.\n\nCheck your connection and try again.</string>
     <string name="dialog_register_bad_code_title">Bad Code</string>
     <string name="dialog_register_bad_code_message">The code you entered is wrong. Please try again.</string>
+    <string name="dialog_send_sms_failure_title">Unable to send SMS</string>
+    <string name="dialog_send_sms_failure_message">It looks like you can\'t send a link by SMS. Perhaps you can just call or email %1$s and tell them about %2$s.</string>
     <string name="dialog_select_phone_number">Select number to invite %1$s</string>
     <string name="dialog_invite_message">"I sent you a message on %1$s. Get the app! %2$s</string>
 

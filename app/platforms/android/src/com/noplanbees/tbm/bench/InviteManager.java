@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.telephony.SmsManager;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
@@ -131,8 +132,12 @@ public class InviteManager{
 		boolean hasApp = hasAppStr != null && hasAppStr.equalsIgnoreCase("true");
 		if (hasApp)
 			getFriendFromServer();
-		else
-			preSmsDialog();
+		else if (hasSim() || !DebugConfig.getInstance(context).shouldSendSms()) {
+            friend = null; // to clear previous nudged or invited friend
+            preSmsDialog();
+        } else {
+            failureNoSimDialog();
+        }
 
 	}
 	//-----------------------
@@ -216,6 +221,11 @@ public class InviteManager{
         listener.onShowActionInfoDialog("Invite", value, "Send", true, false, MainActivity.SMS_DIALOG);
 	}
 
+    private void failureNoSimDialog() {
+        listener.onShowInfoDialog(context.getString(R.string.dialog_send_sms_failure_title),
+                context.getString(R.string.dialog_send_sms_failure_message, benchObject.displayName, Config.appName));
+    }
+
 	public void showSms(){
         listener.onShowActionInfoDialog("Send Link", getDefaultInviteMessage(), "Send", true, true, MainActivity.SENDLINK_DIALOG);
 	}
@@ -272,4 +282,8 @@ public class InviteManager{
         }
     }
 
+    private boolean hasSim() {
+        TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        return tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT;
+    }
 }
