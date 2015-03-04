@@ -114,11 +114,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         unbindService(conn);
 	}
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
     // TODO: Serhii please clean up per our design guidelines.
     private void onLoadComplete() {
 		Log.i(TAG, "onLoadComplete");
@@ -204,7 +199,8 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public void onShowProgressDialog(String title, String msg) {
-        pd = ProgressDialogFragment.getInstance("Checking", null);
+        dismissProgressDialog();
+        pd = ProgressDialogFragment.getInstance(title, msg);
         pd.show(getFragmentManager(), null);
     }
 
@@ -215,7 +211,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public void onDismissProgressDialog() {
-        if(pd!=null)
+        dismissProgressDialog();
+    }
+
+    private void dismissProgressDialog() {
+        if (pd != null)
             pd.dismiss();
     }
 
