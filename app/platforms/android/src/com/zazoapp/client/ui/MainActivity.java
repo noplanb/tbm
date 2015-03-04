@@ -204,6 +204,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public void onShowProgressDialog(String title, String msg) {
+        dismissProgressDialog();
         pd = ProgressDialogFragment.getInstance("Checking", null);
         pd.show(getFragmentManager(), null);
     }
@@ -215,7 +216,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public void onDismissProgressDialog() {
-        if(pd!=null)
+        dismissProgressDialog();
+    }
+
+    private void dismissProgressDialog() {
+        if (pd != null)
             pd.dismiss();
     }
 
