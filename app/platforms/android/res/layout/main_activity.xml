@@ -30,7 +30,7 @@
         android:padding="5dp"
         android:layout_gravity="end" >
 
-        <com.noplanbees.tbm.ui.view.ClearableAutoCompleteTextView
+        <com.zazoapp.client.ui.view.ClearableAutoCompleteTextView
             android:id="@+id/contacts_auto_complete_text_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
