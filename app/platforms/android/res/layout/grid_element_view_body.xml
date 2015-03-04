@@ -78,7 +78,7 @@
             android:visibility="invisible"
             android:background="@drawable/friend_body_unread_border"/>
 
-    <com.noplanbees.tbm.ui.view.StatusIndicator
+    <com.zazoapp.client.ui.view.StatusIndicator
             android:id="@+id/img_viewed"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -95,7 +95,7 @@
             android:layout_height="2dp"
             android:visibility="invisible"/>
 
-    <com.noplanbees.tbm.ui.view.StatusIndicator
+    <com.zazoapp.client.ui.view.StatusIndicator
             android:id="@+id/img_uploading"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -105,7 +105,7 @@
             android:src="@drawable/uploading"
             android:visibility="invisible"/>
 
-    <com.noplanbees.tbm.ui.view.StatusIndicator
+    <com.zazoapp.client.ui.view.StatusIndicator
             android:id="@+id/img_downloading"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
