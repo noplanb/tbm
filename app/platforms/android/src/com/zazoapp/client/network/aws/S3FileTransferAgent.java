@@ -86,7 +86,6 @@ public class S3FileTransferAgent implements IFileTransferAgent {
             PutObjectRequest _putObjectRequest = new PutObjectRequest(s3Bucket, filename, file);
 			Upload upload = tm.upload(_putObjectRequest);
 			upload.waitForUploadResult();
-            file.delete(); // remove uploaded file
 		} catch (AmazonServiceException e) {
 			handleServiceException(e);
 			return notRetryableServiceException(e);
@@ -94,6 +93,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			handleClientException(e);
 			return notRetryableClientException(e);
 		}
+        file.delete(); // remove uploaded file
 		fileTransferService.reportStatus(intent, Friend.OutgoingVideoStatus.UPLOADED);
 		return true;
 	}
