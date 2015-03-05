@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zazoapp.client"
-    android:versionCode="38"
-    android:versionName="2.0.1" > <!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
+    android:versionCode="39"
+    android:versionName="2.0.2" > <!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
 
     <uses-sdk
         android:minSdkVersion="14"
