@@ -197,6 +197,29 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         DialogShower.showCameraException(getActivity(), exception, this, exception.ordinal());
     }
 
+    // -------------------------------
+    // Hints
+    // -------------------------------
+    private void checkAndShowHint() {
+        ArrayList<Friend> friends = FriendFactory.getFactoryInstance().all();
+        boolean hasVideo = false;
+        for (Friend friend : friends) {
+            if (friend.incomingVideoNotViewed()) {
+                hasVideo = true;
+                break;
+            }
+        }
+        if (!friends.isEmpty()) {
+            if (hasVideo) {
+                DialogShower.showInfoDialog(getActivity(), getString(R.string.dialog_hint_title),
+                        getString(R.string.dialog_play_hint_message));
+            } else {
+                DialogShower.showInfoDialog(getActivity(), getString(R.string.dialog_hint_title),
+                        getString(R.string.dialog_record_hint_message));
+            }
+        }
+    }
+
     // TODO: Sani, should friend be moved to the grid on new message? --Serhii
     // Yes if user clicks on notification which opens app for an intent
     // Friend should be moved to the grid and play started automatically.
@@ -330,16 +353,14 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
         @Override
         public boolean onCenterClick(View view) {
-            // TODO: add proper alert
-            Log.d(TAG, "onCenterClick");
-            return false;
+            checkAndShowHint();
+            return true;
         }
 
         @Override
         public boolean onCenterStartLongpress(View view) {
-            // TODO: add proper alert
-            Log.d(TAG, "onCenterStartLongpress");
-            return false;
+            checkAndShowHint();
+            return true;
         }
     }
     
