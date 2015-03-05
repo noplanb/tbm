@@ -186,11 +186,16 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     }
 
     public void showUploadingMark(boolean visible) {
-        imgUploading.setVisibility(visible ? VISIBLE : GONE);
-        if (!visible) {
-            imgUploading.clearAnimation();
-            progressLine.setVisibility(INVISIBLE);
+        if (visible) {
+            RelativeLayout.LayoutParams params = (LayoutParams) imgUploading.getLayoutParams();
+            params.addRule(ALIGN_PARENT_RIGHT);
+            params.addRule(ALIGN_PARENT_LEFT, 0); // remove rule
+            imgUploading.setLayoutParams(params);
         }
+        imgUploading.clearAnimation();
+        progressLine.setVisibility(INVISIBLE);
+        imgUploading.setVisibility(visible ? VISIBLE : GONE);
+
     }
 
     public void showDownloadingMark(boolean visible) {
@@ -224,6 +229,11 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 		float fromXDelta = 0;
 		float toXDelta = getMeasuredWidth() - imgUploading.getMeasuredWidth();
 
+        RelativeLayout.LayoutParams params = (LayoutParams) imgUploading.getLayoutParams();
+        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        params.addRule(ALIGN_PARENT_RIGHT, 0); // remove rule
+        imgUploading.setLayoutParams(params);
+        imgUploading.setVisibility(VISIBLE);
 		TranslateAnimation trAn = new TranslateAnimation(
 				Animation.RELATIVE_TO_SELF, fromXDelta,
 				Animation.ABSOLUTE,	toXDelta,

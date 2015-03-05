@@ -33,6 +33,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private BenchViewManager benchViewManager;
     private Activity activity;
     private boolean isVideoPlaying = false;
+    private boolean lastEventOutgoing = false;
+
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
     public GridElementController(Activity activity, GridElement gridElement, ViewGroup container, BenchViewManager benchViewManager) {
@@ -131,9 +133,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     /**
      * Update content. Should be called from UI thread
      *
-     * @param hideIndicators hide indicators flag
+     * @param animating hide indicators flag
      */
-    private void updateContent(boolean hideIndicators) {
+    private void updateContent(boolean animating) {
         Friend friend = gridElement.getFriend();
         if (friend == null) {
             return;
@@ -141,10 +143,17 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         gridElementView.showEmpty(false);
         int unreadMsgCount = friend.incomingVideoNotViewedCount();
 
+        boolean showNewMessages = unreadMsgCount > 0 && !animating && !isVideoPlaying;
+        boolean showVideoViewed = friend.getOutgoingVideoStatus() == Friend.OutgoingVideoStatus.VIEWED
+                && !showNewMessages && lastEventOutgoing;
         gridElementView.showNudge(!friend.hasApp());
+        gridElementView.setVideoViewed(showVideoViewed);
+        if (!animating) {
+            gridElementView.showUploadingMark(isUploading() && !showNewMessages);
+            gridElementView.showDownloadingMark(isDownloading() && !showNewMessages);
+        }
 
-        gridElementView.setVideoViewed(friend.getOutgoingVideoStatus() == Friend.OutgoingVideoStatus.VIEWED && !hideIndicators);
-        gridElementView.setUnreadCount(unreadMsgCount > 0 && !hideIndicators, unreadMsgCount);
+        gridElementView.setUnreadCount(showNewMessages, unreadMsgCount);
         if (friend.thumbExists()) {
             gridElementView.setThumbnail(friend.lastThumbBitmap());
             gridElementView.showButtons(false);
@@ -152,7 +161,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             gridElementView.setThumbnail(null);
             gridElementView.showButtons(true);
         }
-        gridElementView.showDownloadingMark(isDownloading() && hideIndicators);
 
         gridElementView.setName(friend.getDisplayName());
 
@@ -170,6 +178,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         int outgoingStatus = friend.getOutgoingVideoStatus();
 
         Log.d(TAG, this + "| incomingStatus=" + incomingStatus + ", outgoingStatus=" + outgoingStatus);
+        // We want to preserve previous status if last event type is incoming and status is VIEWED
+        if (!(lastEventType == Friend.VideoStatusEventType.INCOMING && incomingStatus == Video.IncomingVideoStatus.VIEWED)) {
+            lastEventOutgoing = lastEventType == Friend.VideoStatusEventType.OUTGOING;
+        }
 
         // if video is currently not played we update view content and show animation if needed
         if (!isVideoPlaying) {
@@ -189,7 +201,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                     case Video.IncomingVideoStatus.NEW:
                     case Video.IncomingVideoStatus.QUEUED:
                     case Video.IncomingVideoStatus.DOWNLOADING:
-                        updateContent(true);
+                        updateContent(false);
                         break;
                     case Video.IncomingVideoStatus.DOWNLOADED:
                         updateContent(true);
@@ -215,7 +227,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                 switch (status) {
                     case Friend.OutgoingVideoStatus.QUEUED:
                         updateContent(true);
-                        gridElementView.showUploadingMark(true);
                         gridElementView.animateUploading(new Runnable() {
                             @Override
                             public void run() {
@@ -240,11 +251,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         boolean result = friend != null;
         if (result) {
             int outgoingStatus = friend.getOutgoingVideoStatus();
-            int lastEventType = friend.getLastEventType();
-            result = lastEventType == Friend.VideoStatusEventType.OUTGOING &&
-                    (outgoingStatus == Friend.OutgoingVideoStatus.NEW ||
-                            outgoingStatus == Friend.OutgoingVideoStatus.UPLOADING ||
-                            outgoingStatus == Friend.OutgoingVideoStatus.QUEUED);
+            result = (outgoingStatus != Friend.OutgoingVideoStatus.NONE &&
+                    outgoingStatus != Friend.OutgoingVideoStatus.VIEWED &&
+                    outgoingStatus != Friend.OutgoingVideoStatus.FAILED_PERMANENTLY &&
+                    lastEventOutgoing);
         }
         return result;
     }
