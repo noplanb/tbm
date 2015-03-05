@@ -43,7 +43,7 @@
     <string name="dialog_invite_message">I sent you a message on %1$s. Get the app! %2$s</string>
     <string name="dialog_hint_title">Hint</string>
     <string name="dialog_play_hint_message">Hint: Tap a friend to play.</string>
-    <string name="dialog_record_hint_message">Hint: Press and hold a friend to record.\nRelease to stop recording.</string>
+    <string name="dialog_record_hint_message">Hint: Press and hold a friend to record.</string>
 
     <string name="toast_downloading">Downloading...</string>
 

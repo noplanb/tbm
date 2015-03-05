@@ -44,5 +44,8 @@ public class VideoFactory extends ActiveModelFactory {
 	public ArrayList<Video> allWithFriendId(String FriendId){
 		return allWhere(Video.Attributes.FRIEND_ID, FriendId);
 	}
-	
+
+    public int allNotViewedCount() {
+        return allWhere(Video.Attributes.STATUS, String.valueOf(Video.IncomingVideoStatus.DOWNLOADED)).size();
+    }
 }
