@@ -59,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" >
 
-                <com.noplanbees.tbm.ui.view.SignEditText
+                <com.zazoapp.client.ui.view.SignEditText
                     android:id="@+id/country_code_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
