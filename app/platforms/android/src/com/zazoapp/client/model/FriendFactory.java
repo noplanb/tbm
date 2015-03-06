@@ -69,7 +69,7 @@ public class FriendFactory extends ActiveModelFactory{
      * @param context
      * @param params (server params)
      * @return Returns a friend only if a new one was created. It only creates a new friend if  
-     * none was found with the same id as in params.
+     * none was found with the same id as in params. Returns null if friend is already exist.
      */
     public Friend createWithServerParams(Context context, LinkedTreeMap<String, String> params){
         Log.i(TAG, "createFriendFromServerParams: " + params);
@@ -88,6 +88,10 @@ public class FriendFactory extends ActiveModelFactory{
         GridManager.getInstance().rankingActionOccurred(f);
         notifyStatusChanged(f);
         return f;
+    }
+
+    public Friend getExistingFriend(LinkedTreeMap<String, String> params) {
+        return (Friend) find(params.get(ServerParamKeys.ID).toString());
     }
 
     public void reconcileFriends(Context context, final List<LinkedTreeMap<String, String>> remoteFriends) {
