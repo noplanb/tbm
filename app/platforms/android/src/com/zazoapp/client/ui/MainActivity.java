@@ -105,13 +105,14 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 		super.onStart();
         bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
 		versionHandler.checkVersionCompatibility();
-		NotificationAlertManager.cancelNativeAlerts(this);
+        NotificationAlertManager.init(this);
     }
 
 	@Override
 	protected void onStop() {
 		super.onStop();
         unbindService(conn);
+        NotificationAlertManager.cleanUp();
 	}
 
     // TODO: Serhii please clean up per our design guidelines.
