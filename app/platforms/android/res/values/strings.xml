@@ -11,7 +11,7 @@
     <string name="dialog_action_quit">Quit</string>
     <string name="dialog_action_try_again">Try Again</string>
     <string name="dialog_action_cancel">Cancel</string>
-    <string name="dialog_action_ok">Okay</string>
+    <string name="dialog_action_ok">OK</string>
     <string name="dialog_bad_connection_title">Bad Connection</string>
     <string name="dialog_bad_connection_message">Trouble downloading. Check your connection</string>
     <string name="dialog_camera_exception_no_camera_title">No Camera</string>
