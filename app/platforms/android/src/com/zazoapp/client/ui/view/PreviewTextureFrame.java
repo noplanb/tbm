@@ -6,21 +6,21 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.FontMetrics;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
+import android.view.View;
 import android.widget.FrameLayout;
-
-import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.R;
+import com.zazoapp.client.utilities.Convenience;
 
 public class PreviewTextureFrame extends FrameLayout {
 
     private static final String TAG = "PreviewTextureFrame";
     private TextureView textureView;
+    private View recordBorder;
 	private boolean isRecording;
 
 	public PreviewTextureFrame(Context context, AttributeSet attrs, int defStyle) {
@@ -41,6 +41,10 @@ public class PreviewTextureFrame extends FrameLayout {
 	private void init() {
 		textureView = new TextureView(getContext());
 		addView(textureView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        recordBorder = new View(getContext());
+        recordBorder.setBackgroundResource(R.drawable.record_frame_border);
+        recordBorder.setVisibility(GONE);
+        addView(recordBorder, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setClipToPadding(true);
 	}
 
@@ -50,6 +54,7 @@ public class PreviewTextureFrame extends FrameLayout {
 
 	public void setRecording(boolean isRecording) {
 		this.isRecording = isRecording;
+        recordBorder.setVisibility(isRecording ? VISIBLE : GONE);
 		invalidate();
 	}
 
@@ -97,12 +102,6 @@ public class PreviewTextureFrame extends FrameLayout {
 		c.drawCircle(0 + 2*radius, 
 				text_y - radius,
 				radius, paint);
-		
-		//draw borders
-        Rect border = new Rect(0, 0, c.getWidth(), c.getHeight());
-		paint.setStyle(Paint.Style.STROKE);
-		paint.setStrokeWidth(Convenience.dpToPx(getContext(), 2.5f));
-		c.drawRect(border, paint);
 
 	}
 }
