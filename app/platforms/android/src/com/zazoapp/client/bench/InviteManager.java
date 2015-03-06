@@ -187,18 +187,31 @@ public class InviteManager{
 			return;
 
 		friend = FriendFactory.getFactoryInstance().createWithServerParams(context, params);
-		connectedDialog();
+        if (friend != null) {
+            connectedDialog();
+        } else { // if friend is already exist
+            friend = FriendFactory.getFactoryInstance().getExistingFriend(params);
+            alreadyConnectedDialog();
+        }
+
 	}
 
-	//-----------------
-	// Connected Dialog
-	//-----------------
-	private void connectedDialog(){
-		String msg = "You and "+ benchObject.firstName +" are connected.\n\nRecord a welcome "
-	+ Config.appName + " to " + benchObject.firstName + " now.";
+    //-----------------
+    // Connected Dialog
+    //-----------------
+    private void connectedDialog() {
+        String msg = context.getString(R.string.dialog_connected_message, benchObject.firstName, Config.appName, benchObject.firstName);
+        String title = context.getString(R.string.dialog_connected_title);
+        String action = context.getString(R.string.dialog_action_ok);
+        listener.onShowActionInfoDialog(title, msg, action, false, false, MainActivity.CONNECTED_DIALOG);
+    }
 
-        listener.onShowActionInfoDialog("You are Connected", msg, "Okay", false, false, MainActivity.CONNECTED_DIALOG);
-	}
+    private void alreadyConnectedDialog() {
+        String msg = context.getString(R.string.dialog_already_connected_message, benchObject.firstName, Config.appName, benchObject.firstName);
+        String title = context.getString(R.string.dialog_already_connected_title);
+        String action = context.getString(R.string.dialog_action_ok);
+        listener.onShowActionInfoDialog(title, msg, action, false, false, MainActivity.CONNECTED_DIALOG);
+    }
 
 	private void serverError(){
 		showErrorDialog("Can't reach " + Config.appName + ".\n\nCheck your connection and try again.");

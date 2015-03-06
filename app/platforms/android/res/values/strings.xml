@@ -11,6 +11,7 @@
     <string name="dialog_action_quit">Quit</string>
     <string name="dialog_action_try_again">Try Again</string>
     <string name="dialog_action_cancel">Cancel</string>
+    <string name="dialog_action_ok">Okay</string>
     <string name="dialog_bad_connection_title">Bad Connection</string>
     <string name="dialog_bad_connection_message">Trouble downloading. Check your connection</string>
     <string name="dialog_camera_exception_no_camera_title">No Camera</string>
@@ -44,6 +45,10 @@
     <string name="dialog_hint_title">Hint</string>
     <string name="dialog_play_hint_message">Hint: Tap a friend to play.</string>
     <string name="dialog_record_hint_message">Hint: Press and hold a friend to record.</string>
+    <string name="dialog_already_connected_title">You are Connected</string>
+    <string name="dialog_already_connected_message">It seems that %1$s is already connected with you.\n\nRecord %2$s to %3$s now.</string>
+    <string name="dialog_connected_title">You are Connected</string>
+    <string name="dialog_connected_message">You and %1$s are connected.\n\nRecord a welcome %2$s to %3$s now.</string>
 
     <string name="toast_downloading">Downloading...</string>
 
