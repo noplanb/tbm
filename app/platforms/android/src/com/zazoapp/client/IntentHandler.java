@@ -155,7 +155,7 @@ public class IntentHandler {
 				NotificationAlertManager.alert(context, friend, videoId);
 			} else {
 				// TODO: play the notification tone only if we are not currently playing or recording.
-                NotificationAlertManager.playTone(context);
+                NotificationAlertManager.playTone();
 			}
 		}
 		

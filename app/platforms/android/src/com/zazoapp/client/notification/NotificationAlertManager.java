@@ -12,7 +12,6 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -38,8 +37,10 @@ public class NotificationAlertManager {
 	
 	private static final String subTitle = Config.appName;
 	private static int smallIcon = R.drawable.ic_launcher;
+    private static SoundPool soundPool;
+    private static int beepTone;
 
-	private static Bitmap largeImage(Friend friend, String videoId){
+    private static Bitmap largeImage(Friend friend, String videoId){
 		return friend.sqThumbBitmap(videoId);
 	}
 
@@ -65,37 +66,36 @@ public class NotificationAlertManager {
 		postNativeAlert(context, friend, videoId);
 	}
 	
-	public static void cancelNativeAlerts(Context context){
+	private static void cancelNativeAlerts(Context context){
 		Log.i(TAG, "cancelNativeAlerts");
 		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		nm.cancelAll();
 	}
 
     @SuppressWarnings("deprecation")
-    public static void playTone(Context context) {
-        SoundPool pool;
+    public static void init(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             AudioAttributes.Builder attrsBuilder = new AudioAttributes.Builder();
             attrsBuilder.setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT);
             attrsBuilder.setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION);
-            pool = new SoundPool.Builder().setAudioAttributes(attrsBuilder.build()).build();
+            soundPool = new SoundPool.Builder().setAudioAttributes(attrsBuilder.build()).build();
         } else {
-            pool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
+            soundPool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
         }
-        pool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-            @Override
-            public void onLoadComplete(final SoundPool soundPool, int sampleId, int status) {
-                soundPool.play(sampleId, 0.3f, 0.3f, 0, 0, 1);
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        soundPool.release();
-                    }
-                }, 1000);
-            }
-        });
-        pool.load(context, R.raw.beep, 1);
+        beepTone = soundPool.load(context, R.raw.beep, 1);
+
+        cancelNativeAlerts(context);
+    }
+
+    public static void cleanUp() {
+        if (soundPool != null) {
+            soundPool.release();
+            soundPool = null;
+        }
+    }
+
+    public static void playTone() {
+        soundPool.play(beepTone, 0.3f, 0.3f, 0, 0, 1);
     }
 
 	// Private 
