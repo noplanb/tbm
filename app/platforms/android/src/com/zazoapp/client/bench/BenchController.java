@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BenchController implements BenchDataHandler.BenchDataHandlerCallback, OnItemClickListener,
-        ContactsManager.ContactSelected, BenchViewManager {
+        ContactsManager.ContactSelected, BenchViewManager, DrawerLayout.DrawerListener {
 
     private static final String TAG = BenchController.class.getSimpleName();
 
@@ -50,6 +50,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	public BenchController(Activity a) {
 		activity = a;
         drawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
+        drawerLayout.setDrawerListener(this);
         adapter = new BenchAdapter(activity, null);
 
         listView = (ListView) activity.findViewById(R.id.bench_list);
@@ -216,6 +217,25 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 		}
 		return null;
 	}
+
+    @Override
+    public void onDrawerSlide(View view, float v) {
+    }
+
+    @Override
+    public void onDrawerOpened(View view) {
+    }
+
+    @Override
+    public void onDrawerClosed(View view) {
+        if (contactsManager != null) {
+            contactsManager.hideKeyboard();
+        }
+    }
+
+    @Override
+    public void onDrawerStateChanged(int i) {
+    }
 
     private class BenchAdapter extends BaseAdapter{
 
