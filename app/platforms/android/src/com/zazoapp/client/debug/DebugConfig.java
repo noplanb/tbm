@@ -19,7 +19,7 @@ public class DebugConfig {
     private static final String KEY_USE_CUSTOM_SERVER = "use_custom_server";
     private static final String KEY_USE_REAR_CAMERA = "use_rear_camera";
 
-    public static final boolean DEBUG_LOG = true;
+    public static final boolean DEBUG_LOG = false;
 
     private static volatile DebugConfig instance;
 
