@@ -87,7 +87,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		getActionBar().hide();
 		setContentView(R.layout.register);
 		setupListeners();
-		addShortcutIcon();
+
         setAdditionalViewHeight();
         setUpView();
 	}
