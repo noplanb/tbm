@@ -134,8 +134,9 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	//----------
 	private void setUpView(){
 		initTxtFields();
-		prefillTextFields();
+		//prefillTextFields(); issue 250
 	}
+
 	private void initTxtFields() {
 		firstNameTxt = (EditText) findViewById(R.id.first_name_txt);
 		lastNameTxt = (EditText) findViewById(R.id.last_name_txt);
