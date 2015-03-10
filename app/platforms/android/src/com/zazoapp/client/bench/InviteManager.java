@@ -118,7 +118,7 @@ public class InviteManager{
                     listener.onDismissProgressDialog();
                 }
             });
-            listener.onShowProgressDialog("Checking", null);
+            listener.onShowProgressDialog(context.getString(R.string.dialog_checking_title), null);
 		}
 
     }
@@ -142,25 +142,24 @@ public class InviteManager{
         }
 
 	}
-	//-----------------------
-	// get friend from server
-	//-----------------------
-	private void getFriendFromServer() {
-		Uri.Builder builder = new Uri.Builder();
-		builder.appendPath("invitation")
-		.appendPath("invite")
-		.appendQueryParameter(FriendFactory.ServerParamKeys.MOBILE_NUMBER, benchObject.mobileNumber)
-		.appendQueryParameter(FriendFactory.ServerParamKeys.FIRST_NAME, benchObject.firstName)
-		.appendQueryParameter(FriendFactory.ServerParamKeys.LAST_NAME, benchObject.lastName);
-		String url = builder.build().toString();
-		Log.i(TAG, url);
-		new InviteFriendRequest(url);
-	}
+
+    //-----------------------
+    // get friend from server
+    //-----------------------
+    private void getFriendFromServer() {
+        Uri.Builder builder = new Uri.Builder();
+        String uri = builder.appendPath("invitation").appendPath("invite").build().toString();
+        LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+        params.put(FriendFactory.ServerParamKeys.MOBILE_NUMBER, benchObject.mobileNumber);
+        params.put(FriendFactory.ServerParamKeys.FIRST_NAME, benchObject.firstName);
+        params.put(FriendFactory.ServerParamKeys.LAST_NAME, benchObject.lastName);
+        new InviteFriendRequest(uri, params);
+    }
 
 	private class InviteFriendRequest extends HttpRequest{
 
-        public InviteFriendRequest(String uri) {
-			super(uri, new Callbacks() {
+        public InviteFriendRequest(String uri, LinkedTreeMap<String, String> params) {
+			super(uri, params, new Callbacks() {
                 @Override
                 public void success(String response) {
                     Log.i(TAG, "Success: " + response);
@@ -174,7 +173,8 @@ public class InviteManager{
                     listener.onDismissProgressDialog();
                 }
             });
-            listener.onShowProgressDialog("Checking", null);
+            Logger.d(TAG, "Invitation: " + uri + " " + params);
+            listener.onShowProgressDialog(context.getString(R.string.dialog_checking_title), null);
 		}
     }
 	@SuppressWarnings("unchecked")

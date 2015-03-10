@@ -134,8 +134,9 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	//----------
 	private void setUpView(){
 		initTxtFields();
-		prefillTextFields();
+		//prefillTextFields(); issue 250
 	}
+
 	private void initTxtFields() {
 		firstNameTxt = (EditText) findViewById(R.id.first_name_txt);
 		lastNameTxt = (EditText) findViewById(R.id.last_name_txt);
@@ -262,7 +263,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
                     serverError();
                 }
             });
-            pd = ProgressDialogFragment.getInstance("Checking", null);
+            pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
 			pd.show(getFragmentManager(), null);
 		}
 	}
@@ -319,7 +320,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
                 }
 
             });
-            pd = ProgressDialogFragment.getInstance("Checking", null);
+            pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
 			pd.show(getFragmentManager(), null);
 		}
 	}
@@ -363,7 +364,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
                     serverError();
                 }
             });
-            pd = ProgressDialogFragment.getInstance("Checking", null);
+            pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
             pd.show(getFragmentManager(), null);
 		}
 	}
@@ -390,7 +391,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	private class RegFriendGetter extends FriendGetter{
         public RegFriendGetter(Context c, boolean destroyAll) {
             super(c, destroyAll);
-            pd = ProgressDialogFragment.getInstance("Checking", null);
+            pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
             pd.show(getFragmentManager(), null);
         }
         

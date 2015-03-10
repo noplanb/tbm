@@ -12,6 +12,7 @@
     <string name="dialog_action_try_again">Try Again</string>
     <string name="dialog_action_cancel">Cancel</string>
     <string name="dialog_action_ok">OK</string>
+    <string name="dialog_checking_title">Checking</string>
     <string name="dialog_bad_connection_title">Bad Connection</string>
     <string name="dialog_bad_connection_message">Trouble downloading. Check your connection</string>
     <string name="dialog_camera_exception_no_camera_title">No Camera</string>
@@ -55,4 +56,8 @@
     <string name="menu_bench">Contacts</string>
 
     <string name="recording">Recording</string>
+    <string name="register_first_name">Your First Name</string>
+    <string name="register_last_name">Last Name</string>
+    <string name="register_mobile_number">Mobile Number</string>
+    <string name="register_sign_in">Sign In</string>
 </resources>
