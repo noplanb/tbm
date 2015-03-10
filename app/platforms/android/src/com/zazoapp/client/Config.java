@@ -25,6 +25,8 @@ public class Config {
 
     private static File publicDir = null;
 
+    public static final boolean SHOW_RED_DOT = false;
+
 	public static File getPublicDir() {
 		if (publicDir !=null) 
 			return publicDir;

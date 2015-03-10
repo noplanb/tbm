@@ -13,6 +13,7 @@ import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 import android.widget.FrameLayout;
+import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.utilities.Convenience;
 
@@ -78,7 +79,7 @@ public class PreviewTextureFrame extends FrameLayout {
 		paint.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
 		paint.setTextAlign(Align.CENTER);
 		FontMetrics fm = paint.getFontMetrics();
-		String text = "Recording";
+		String text = getContext().getString(R.string.recording);
 		int text_x = c.getWidth()/2;
 		int text_y = (int) (c.getHeight() - fm.bottom);
 
@@ -96,12 +97,14 @@ public class PreviewTextureFrame extends FrameLayout {
 		c.drawText(text, text_x, text_y, paint);
 
 		paint.setColor(getResources().getColor(R.color.recording_border_color));
-		
-		//draw circle
-		int radius = Convenience.dpToPx(getContext(), 4);
-		c.drawCircle(0 + 2*radius, 
-				text_y - radius,
-				radius, paint);
+
+        if (Config.SHOW_RED_DOT) {
+            //draw circle
+            int radius = Convenience.dpToPx(getContext(), 4);
+            c.drawCircle(0 + 2 * radius,
+                    text_y - radius,
+                    radius, paint);
+        }
 
 	}
 }
