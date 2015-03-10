@@ -69,8 +69,11 @@ public class PreviewTextureFrame extends FrameLayout {
 		if(isRecording)
 			drawIndicator(canvas);
 	}
-	
+
 	private void drawIndicator(Canvas c){
+        int padding = getResources().getDimensionPixelSize(R.dimen.record_frame_thickness);
+        c.clipRect(padding, padding, c.getWidth() - padding, c.getHeight() - padding); // draw only inside frame
+
 		Paint paint = new Paint();
 		paint.setStyle(Paint.Style.FILL);
 
@@ -81,7 +84,7 @@ public class PreviewTextureFrame extends FrameLayout {
 		FontMetrics fm = paint.getFontMetrics();
 		String text = getContext().getString(R.string.recording);
 		int text_x = c.getWidth()/2;
-		int text_y = (int) (c.getHeight() - fm.bottom);
+		int text_y = (int) (c.getHeight() - fm.bottom - padding);
 
 		RectF r = new RectF(0, 
 				text_y + fm.top,
