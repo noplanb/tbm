@@ -118,7 +118,7 @@ public class InviteManager{
                     listener.onDismissProgressDialog();
                 }
             });
-            listener.onShowProgressDialog("Checking", null);
+            listener.onShowProgressDialog(context.getString(R.string.dialog_checking_title), null);
 		}
 
     }
@@ -174,7 +174,7 @@ public class InviteManager{
                     listener.onDismissProgressDialog();
                 }
             });
-            listener.onShowProgressDialog("Checking", null);
+            listener.onShowProgressDialog(context.getString(R.string.dialog_checking_title), null);
 		}
     }
 	@SuppressWarnings("unchecked")
