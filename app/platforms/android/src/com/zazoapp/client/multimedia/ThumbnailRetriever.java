@@ -42,6 +42,7 @@ public class ThumbnailRetriever {
             long pos = getPos(nativeDuration);
             thumb = nativeRetriever.getFrameAtTime(pos*1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             if (thumb == null) {
+                Log.e(TAG, "native: Error getting thumb");
                 thumb = nativeRetriever.getFrameAtTime(nativeDuration*1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
                 if (thumb == null) {
                     Log.e(TAG, "native: Error getting end frame");
