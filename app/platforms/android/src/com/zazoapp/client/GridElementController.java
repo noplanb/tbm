@@ -200,13 +200,17 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         updateContent(false);
                         break;
                     case Video.IncomingVideoStatus.DOWNLOADED:
-                        updateContent(true);
-                        gridElementView.animateDownloading(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateContent(false);
-                            }
-                        });
+                        if (gridElementView.isReadyToAnimate()) {
+                            updateContent(true);
+                            gridElementView.animateDownloading(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateContent(false);
+                                }
+                            });
+                        } else {
+                            updateContent(false);
+                        }
                         break;
                     default:
                         updateContent(gridElementView.isAnimating());
