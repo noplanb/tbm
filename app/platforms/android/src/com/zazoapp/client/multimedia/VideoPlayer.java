@@ -187,9 +187,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
                     @Override
                     public void onPrepared(MediaPlayer mp) {
                         Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
-                        if (videoView.getDuration() > 2000) {
-                            videoView.seekTo(500);
-                        }
                         videoView.start();
                         notifyStartPlaying();
                     }
