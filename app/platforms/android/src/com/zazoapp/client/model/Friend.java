@@ -568,7 +568,10 @@ public class Friend extends ActiveModel{
 
             // Only notify the UI of changes in status to the last incoming video.
             if (newestIncomingVideo().getId().equals(videoId)){
-                setLastEventTypeIncoming();
+                // We want to preserve previous status if last event type is incoming and status is VIEWED
+                if (status != Video.IncomingVideoStatus.VIEWED) {
+                    setLastEventTypeIncoming();
+                }
                 FriendFactory.getFactoryInstance().notifyStatusChanged(this);
             }
         }

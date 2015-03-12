@@ -33,7 +33,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private BenchViewManager benchViewManager;
     private Activity activity;
     private boolean isVideoPlaying = false;
-    private boolean lastEventOutgoing = false;
 
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
@@ -142,6 +141,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         }
         gridElementView.showEmpty(false);
         int unreadMsgCount = friend.incomingVideoNotViewedCount();
+        boolean lastEventOutgoing = friend.getLastEventType() == Friend.VideoStatusEventType.OUTGOING;
 
         boolean showNewMessages = unreadMsgCount > 0 && !animating && !isVideoPlaying;
         boolean showVideoViewed = friend.getOutgoingVideoStatus() == Friend.OutgoingVideoStatus.VIEWED
@@ -178,10 +178,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         int outgoingStatus = friend.getOutgoingVideoStatus();
 
         Log.d(TAG, this + "| incomingStatus=" + incomingStatus + ", outgoingStatus=" + outgoingStatus);
-        // We want to preserve previous status if last event type is incoming and status is VIEWED
-        if (!(lastEventType == Friend.VideoStatusEventType.INCOMING && incomingStatus == Video.IncomingVideoStatus.VIEWED)) {
-            lastEventOutgoing = lastEventType == Friend.VideoStatusEventType.OUTGOING;
-        }
 
         // if video is currently not played we update view content and show animation if needed
         if (!isVideoPlaying) {
@@ -204,13 +200,17 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         updateContent(false);
                         break;
                     case Video.IncomingVideoStatus.DOWNLOADED:
-                        updateContent(true);
-                        gridElementView.animateDownloading(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateContent(false);
-                            }
-                        });
+                        if (gridElementView.isReadyToAnimate()) {
+                            updateContent(true);
+                            gridElementView.animateDownloading(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateContent(false);
+                                }
+                            });
+                        } else {
+                            updateContent(false);
+                        }
                         break;
                     default:
                         updateContent(gridElementView.isAnimating());
@@ -250,11 +250,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         Friend friend = gridElement.getFriend();
         boolean result = friend != null;
         if (result) {
+            int lastEventType = friend.getLastEventType();
             int outgoingStatus = friend.getOutgoingVideoStatus();
             result = (outgoingStatus != Friend.OutgoingVideoStatus.NONE &&
                     outgoingStatus != Friend.OutgoingVideoStatus.VIEWED &&
                     outgoingStatus != Friend.OutgoingVideoStatus.FAILED_PERMANENTLY &&
-                    lastEventOutgoing);
+                    lastEventType == Friend.VideoStatusEventType.OUTGOING);
         }
         return result;
     }

@@ -194,12 +194,12 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         }
         imgUploading.clearAnimation();
         progressLine.setVisibility(INVISIBLE);
-        imgUploading.setVisibility(visible ? VISIBLE : GONE);
+        imgUploading.setVisibility(visible ? VISIBLE : INVISIBLE);
 
     }
 
     public void showDownloadingMark(boolean visible) {
-        imgDownloading.setVisibility(visible ? VISIBLE : GONE);
+        imgDownloading.setVisibility(visible ? VISIBLE : INVISIBLE);
         if (!visible) {
             imgDownloading.clearAnimation();
             progressLine.setVisibility(INVISIBLE);
@@ -304,5 +304,9 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public boolean isAnimating() {
         return imgDownloading.getAnimation() != null || imgUploading.getAnimation() != null;
+    }
+
+    public boolean isReadyToAnimate() {
+        return getMeasuredWidth() != 0;
     }
 }
