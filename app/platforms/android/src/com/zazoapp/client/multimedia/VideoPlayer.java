@@ -137,6 +137,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
         Log.i(TAG, "stop");
         audioManager.abandonAudioFocus(audioFocusChangeListener);
         videoView.stopPlayback();
+        videoView.setVideoURI(null);
         videoView.suspend();
         videoBody.setVisibility(View.GONE);
         notifyStopPlaying();
@@ -181,10 +182,19 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
             // TODO: GARF: Andrey what happens if it is not granted!
             if (requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 videoBody.setVisibility(View.VISIBLE);
-                videoView.setVideoPath(friend.videoFromPath(videoId));
-                videoView.seekTo(1000);
-                videoView.start();
-                notifyStartPlaying();
+                final String path = friend.videoFromPath(videoId);
+                videoView.setOnPreparedListener(new OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
+                        if (videoView.getDuration() > 2000) {
+                            videoView.seekTo(500);
+                        }
+                        videoView.start();
+                        notifyStartPlaying();
+                    }
+                });
+                videoView.setVideoPath(path);
             }
 
 		} else {

@@ -59,6 +59,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     private SensorManager sensorManager;
     private Sensor proximitySensor;
+    private boolean viewLoaded;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,6 +83,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
+        viewLoaded = false;
         View v = inflater.inflate(R.layout.nineviewgroup_fragment, container, false);
 
         setupVideoPlayer(v);
@@ -98,6 +100,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     public void onResume() {
         super.onResume();
         Logger.i(TAG, "onResume");
+        handleIntentAction(getActivity().getIntent());
         videoRecorderManager.onResume();
         sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
@@ -132,6 +135,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             public void onLayoutComplete() {
                 setupGridElements();
                 layoutVideoRecorder();
+                viewLoaded = true;
                 handleIntentAction(getActivity().getIntent());
             }
         });
@@ -247,7 +251,10 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             Log.i(TAG, "handleIntentAction: no intent. Exiting.");
             return;
         }
-
+        if (!viewLoaded) {
+            Log.i(TAG, "View is not loaded yet. Ignore for now.");
+            return;
+        }
         Log.i(TAG, "handleIntentAction: " + currentIntent.toString());
 
         String action = currentIntent.getAction();
