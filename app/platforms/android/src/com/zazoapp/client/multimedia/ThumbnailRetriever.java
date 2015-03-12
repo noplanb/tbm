@@ -28,8 +28,8 @@ public class ThumbnailRetriever {
         try {
             try {
                 nativeRetriever.setDataSource(path);
-            } catch (IllegalArgumentException e) {
-                markFailed("native: Error setting datasource", e.toString());
+            } catch (RuntimeException e) {
+                markFailed("native: Error setting datasource. Assume that file is corrupted", e.toString());
                 return null;
             }
 
@@ -40,10 +40,10 @@ public class ThumbnailRetriever {
             }
             long nativeDuration = Long.parseLong(time);
             long pos = getPos(nativeDuration);
-            thumb = nativeRetriever.getFrameAtTime(pos*1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            thumb = nativeRetriever.getFrameAtTime(pos*1000);
             if (thumb == null) {
                 Log.e(TAG, "native: Error getting thumb");
-                thumb = nativeRetriever.getFrameAtTime(nativeDuration*1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                thumb = nativeRetriever.getFrameAtTime(nativeDuration*1000);
                 if (thumb == null) {
                     Log.e(TAG, "native: Error getting end frame");
                     thumb = nativeRetriever.getFrameAtTime();

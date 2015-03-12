@@ -144,13 +144,16 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 				return false;
 			}
 		}
-		f.renameTo(FileUtils.getFile(filePath));
-		Log.i(TAG, "download SUCCESS" + params.toString());
-		reportStatus(intent, Video.IncomingVideoStatus.DOWNLOADED);
-		return true;
-	}
-	
-	@Override
+        if (f.renameTo(FileUtils.getFile(filePath))) {
+            Log.i(TAG, "download SUCCESS" + params.toString());
+            reportStatus(intent, Video.IncomingVideoStatus.DOWNLOADED);
+            return true;
+        }
+        Dispatch.dispatch("download: error renaming");
+        return false;
+    }
+
+    @Override
 	public boolean delete() {
 		deleteRemoteFile(filename);
 		return true;
