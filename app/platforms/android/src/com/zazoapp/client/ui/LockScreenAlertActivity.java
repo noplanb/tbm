@@ -21,7 +21,7 @@ import com.zazoapp.client.utilities.Convenience;
 
 public class LockScreenAlertActivity extends Activity {
 
-	private final String TAG = getClass().getSimpleName();
+	private static final String TAG = LockScreenAlertActivity.class.getSimpleName();
 
 	//-------------------
 	// Activity lifecycle
