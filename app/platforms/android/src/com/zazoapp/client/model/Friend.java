@@ -1,5 +1,13 @@
 package com.zazoapp.client.model;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -22,14 +30,6 @@ import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.utilities.Convenience;
 import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 public class Friend extends ActiveModel{
 
@@ -432,8 +432,17 @@ public class Friend extends ActiveModel{
                 ThumbnailRetriever retriever = new ThumbnailRetriever();
                 Bitmap thumb = retriever.getThumbnail(vidPath);
                 File thumbFile = thumbFile(videoId);
-                FileOutputStream fos = FileUtils.openOutputStream(thumbFile);
-                thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                FileOutputStream fos = null;
+                try {
+                    fos = FileUtils.openOutputStream(thumbFile);
+                    thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                } finally {
+                    if (fos != null) {
+                        try {
+                            fos.close();
+                        } catch (IOException e) {}
+                    }
+                }
                 res = true;
             } catch (IOException | RuntimeException | ThumbnailRetriever.ThumbnailBrokenException e) {
                 Dispatch.dispatch("createThumb: " + e.getMessage() + e.toString());
