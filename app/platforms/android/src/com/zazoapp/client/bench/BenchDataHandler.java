@@ -2,6 +2,7 @@ package com.zazoapp.client.bench;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
@@ -12,6 +13,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.ContactsManager;
+import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.utilities.AsyncTaskManager;
@@ -103,12 +105,35 @@ public class BenchDataHandler {
         }
     }
 
+    /**
+     * Tries to return messages cursor with address and count of messages columns.
+     * If operation is not successful returns null
+     * @param context context
+     * @return cursor with {@link SmsColumnNames#ADDRESS} and {@link SmsColumnNames#COUNT} columns
+     */
     private static Cursor getMessagesCursor(Context context) {
         final String[] projection = new String[]{SmsColumnNames.ADDRESS, "count(" + SmsColumnNames.ADDRESS + ") AS " + SmsColumnNames.COUNT};
         final String where = SmsColumnNames.ADDRESS + " != '') GROUP BY (" + SmsColumnNames.ADDRESS;
         final String orderBy = SmsColumnNames.COUNT + " DESC";
-        Cursor cursor = context.getContentResolver().query(Uri.parse("content://sms/inbox"), projection, where, null, orderBy);
-        Log.i(TAG, "getMessagesContacts: count=" + cursor.getCount());
+        final Uri sentBox = Uri.parse("content://sms/sent");
+        Cursor cursor = null;
+        try {
+            cursor = context.getContentResolver().query(sentBox, projection, where, null, orderBy);
+        } catch (SQLiteException e) {
+            // an issue on custom firmware on some devices like OnePlus One
+            final String customWhere = SmsColumnNames.ADDRESS + " != '')) GROUP BY ((" + SmsColumnNames.ADDRESS;
+            try {
+                cursor = context.getContentResolver().query(sentBox, projection, customWhere, null, orderBy);
+            } catch (SQLiteException e1) {
+                // This case must be very specific so just dispatch an error
+                // User will see contacts in bench as if he doesn't have sms contacts
+                Log.e(TAG, e1.toString(), e1);
+                Dispatch.dispatch(e1.getMessage());
+            }
+        }
+        if (cursor != null) {
+            Log.i(TAG, "getMessagesContacts: count=" + cursor.getCount());
+        }
         return cursor;
     }
 
@@ -131,7 +156,8 @@ public class BenchDataHandler {
             }
             return null;
         }
-        List<Map<String, String>> smsPhoneData = new ArrayList<>();
+        // One contact may have address in both e164 and national formats with sent sms so we filter this case on map
+        Map<String, String> smsPhones = new LinkedTreeMap<>();
         int addrCol = cursor.getColumnIndex(SmsColumnNames.ADDRESS);
         int countCol = cursor.getColumnIndex(SmsColumnNames.COUNT);
         cursor.moveToFirst();
@@ -142,12 +168,22 @@ public class BenchDataHandler {
             // Ignore if not valid number. Should always be a valid number though since it has received sms.
             if (mobileNumber == null)
                 continue;
-            Map<String, String> map = new HashMap<>();
-            map.put(Keys.MOBILE_NUMBER, mobileNumber);
-            map.put(Keys.NUM_MESSAGES, count);
-            smsPhoneData.add(map);
+            String currentCount = smsPhones.get(mobileNumber);
+            if (currentCount != null) {
+                int newCount = Integer.parseInt(currentCount) + Integer.parseInt(count);
+                count = String.valueOf(newCount);
+            }
+            smsPhones.put(mobileNumber, count);
+
         } while (cursor.moveToNext());
         cursor.close();
+        List<Map<String, String>> smsPhoneData = new ArrayList<>();
+        for (Map.Entry<String, String> entry : smsPhones.entrySet()) {
+            Map<String, String> map = new HashMap<>();
+            map.put(Keys.MOBILE_NUMBER, entry.getKey());
+            map.put(Keys.NUM_MESSAGES, entry.getValue());
+            smsPhoneData.add(map);
+        }
         Logger.d(TAG, "numMessages: " + smsPhoneData);
         return smsPhoneData;
     }
