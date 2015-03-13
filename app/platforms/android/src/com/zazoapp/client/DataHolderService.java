@@ -150,14 +150,13 @@ public class DataHolderService extends Service {
             @Override
             public void uncaughtException(Thread thread, Throwable ex) {
                 Log.w("UnexpectedTerminationHelper", "uncaughtException", ex);
+                final Thread.UncaughtExceptionHandler oldHandler = mOldUncaughtExceptionHandler;
                 releaseResources();
                 Dispatch.dispatch("UnexpectedTerminationHelper: " + ex.getMessage(), true);
-                if (mOldUncaughtExceptionHandler != null) {
+                if (oldHandler != null) {
                     // it displays the "force close" dialog
-                    mOldUncaughtExceptionHandler.uncaughtException(thread, ex);
+                    oldHandler.uncaughtException(thread, ex);
                 }
-                android.os.Process.killProcess(android.os.Process.myPid());
-                System.exit(10);
             }
         };
 
