@@ -6,13 +6,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import com.zazoapp.client.debug.DebugConfig;
+import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
 public class TbmApplication extends Application {
 
 	protected static final String TAG = "TbmApplication";
 
 	private static TbmApplication application;
-	
+
+    private UnexpectedTerminationHelper unexpectedTerminationHelper = new UnexpectedTerminationHelper();
+
 	private int foreground;
 	
 	public static TbmApplication getInstance(){
@@ -23,6 +26,7 @@ public class TbmApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 		Log.d(TAG, "onCreate");
+        unexpectedTerminationHelper.init();
         DebugConfig.getInstance(this);
 		application = this;
 		
@@ -51,8 +55,8 @@ public class TbmApplication extends Application {
 			public void onActivityCreated(Activity activity, Bundle savedInstanceState) {}
 		});
 	}
-	
-	private void setForeground(boolean isForeground){
+
+    private void setForeground(boolean isForeground){
 		if(isForeground)
 			foreground++;
 		else
@@ -62,5 +66,8 @@ public class TbmApplication extends Application {
 	public boolean isForeground(){
 		return foreground>0;
 	}
-	
+
+    public void addCleanUpCallback(UnexpectedTerminationHelper.CleanUpCallback callback) {
+        unexpectedTerminationHelper.addCleanUpCallback(callback);
+    }
 }

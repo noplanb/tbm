@@ -37,7 +37,7 @@ public class ActiveModelsHandler {
 	public void saveAll(){
 		saveUser();
 		saveFriend();
-		Log.i(TAG, "saveAll: saving " + VideoFactory.getFactoryInstance().count() + "videos");
+		Log.i(TAG, "saveAll: saving " + VideoFactory.getFactoryInstance().count() + " videos");
 		saveVideo();
 		saveGridElement();
 		Log.i(TAG, "saveAll end");

@@ -21,6 +21,7 @@ import com.zazoapp.client.GridManager;
 import com.zazoapp.client.IntentHandler;
 import com.zazoapp.client.R;
 import com.zazoapp.client.SyncManager;
+import com.zazoapp.client.TbmApplication;
 import com.zazoapp.client.bench.BenchViewManager;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -45,7 +46,7 @@ import java.util.ArrayList;
 
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
-public class GridViewFragment extends Fragment implements CameraExceptionHandler, SensorEventListener, DoubleActionDialogListener {
+public class GridViewFragment extends Fragment implements CameraExceptionHandler, SensorEventListener, DoubleActionDialogListener, UnexpectedTerminationHelper.CleanUpCallback {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
 
@@ -55,8 +56,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     private VideoPlayer videoPlayer;
     private VideoRecorderManager videoRecorderManager;
 
-    private UnexpectedTerminationHelper unexpectedTerminationHelper = new UnexpectedTerminationHelper();
-
     private SensorManager sensorManager;
     private Sensor proximitySensor;
     private boolean viewLoaded;
@@ -65,11 +64,9 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate");
-
+        TbmApplication.getInstance().addCleanUpCallback(this);
         CameraManager.addExceptionHandlerDelegate(this);
         videoRecorderManager = new VideoRecorderManager(getActivity());
-
-        unexpectedTerminationHelper.init();
 
         sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
@@ -119,12 +116,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         videoRecorderManager.onPause();
         videoPlayer.release();
         sensorManager.unregisterListener(this);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        unexpectedTerminationHelper.finish();
     }
 
     private void setupNineViewGroup(View v) {
@@ -306,6 +297,25 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         for (GridElementController controller : viewControllers) {
             task.onEvent(controller);
         }
+    }
+
+    @Override
+    public void onRelease() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (videoRecorderManager != null) {
+                    videoRecorderManager.onPause();
+                }
+                CameraManager.releaseCamera();
+                if (videoPlayer != null) {
+                    videoPlayer.release();
+                }
+                if (sensorManager != null) {
+                    sensorManager.unregisterListener(GridViewFragment.this);
+                }
+            }
+        });
     }
 
     // TODO: again let us remove this and have the gridElementControllers registerFor and handle the callbacks they need
