@@ -19,8 +19,8 @@ public class UnexpectedTerminationHelper {
         @Override
         public void uncaughtException(Thread thread, Throwable ex) {
             Log.w(TAG, "uncaughtException", ex);
-            final Thread.UncaughtExceptionHandler oldHandler = mOldUncaughtExceptionHandler;
-            finish();
+            notifyCallbacks();
+            final Thread.UncaughtExceptionHandler oldHandler = restoreSystemHandler();
             Dispatch.dispatch(TAG + ": " + ex.getMessage(), true);
             if (oldHandler != null) {
                 // it displays the "force close" dialog
@@ -34,13 +34,18 @@ public class UnexpectedTerminationHelper {
         Thread.setDefaultUncaughtExceptionHandler(mUncaughtExceptionHandler);
     }
 
-    public void finish() {
-        Thread.setDefaultUncaughtExceptionHandler(mOldUncaughtExceptionHandler);
-        mOldUncaughtExceptionHandler = null;
+    private void notifyCallbacks() {
         for (TerminationCallback callback : terminationCallbacks) {
             callback.onTerminate();
         }
         terminationCallbacks.clear();
+    }
+
+    private Thread.UncaughtExceptionHandler restoreSystemHandler() {
+        Thread.UncaughtExceptionHandler oldHandler = mOldUncaughtExceptionHandler;
+        Thread.setDefaultUncaughtExceptionHandler(mOldUncaughtExceptionHandler);
+        mOldUncaughtExceptionHandler = null;
+        return oldHandler;
     }
 
     public void addTerminationCallback(TerminationCallback callback) {
