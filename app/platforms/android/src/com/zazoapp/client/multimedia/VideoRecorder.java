@@ -280,7 +280,9 @@ public class VideoRecorder implements SurfaceTextureListener {
     }
 
     private void hideRecordingIndicator() {
-        preview.setRecording(false);
+        if (preview != null) {
+            preview.setRecording(false);
+        }
     }
 
     public View getView() {

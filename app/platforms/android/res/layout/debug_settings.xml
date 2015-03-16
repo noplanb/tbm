@@ -148,6 +148,26 @@
                         android:layout_marginLeft="20dp"
                         android:textColor="@android:color/white"/>
             </LinearLayout>
+            <LinearLayout
+                    android:id="@+id/crash_button_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/server_uri_layout">
+                <ImageButton
+                        android:id="@+id/crash_main_button"
+                        android:layout_width="60dp"
+                        android:layout_height="50dp"
+                        android:contentDescription="Throw in main"
+                        android:src="@android:drawable/ic_delete"/>
+                <ImageButton
+                        android:id="@+id/crash_thread_button"
+                        android:layout_width="60dp"
+                        android:layout_height="50dp"
+                        android:contentDescription="Throw in other thread"
+                        android:src="@android:drawable/presence_busy"/>
+
+            </LinearLayout>
+
 
         </RelativeLayout>
     </ScrollView>
