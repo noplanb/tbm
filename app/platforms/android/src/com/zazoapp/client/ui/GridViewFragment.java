@@ -113,9 +113,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     public void onPause() {
         Logger.i(TAG, "onPause");
         super.onPause();
-        videoRecorderManager.onPause();
-        videoPlayer.release();
-        sensorManager.unregisterListener(this);
+        releaseResources();
     }
 
     private void setupNineViewGroup(View v) {
@@ -304,18 +302,22 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (videoRecorderManager != null) {
-                    videoRecorderManager.onPause();
-                }
-                CameraManager.releaseCamera();
-                if (videoPlayer != null) {
-                    videoPlayer.release();
-                }
-                if (sensorManager != null) {
-                    sensorManager.unregisterListener(GridViewFragment.this);
-                }
+                releaseResources();
             }
         });
+    }
+
+    private void releaseResources() {
+        if (videoRecorderManager != null) {
+            videoRecorderManager.onPause();
+        }
+        CameraManager.releaseCamera();
+        if (videoPlayer != null) {
+            videoPlayer.release();
+        }
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
+        }
     }
 
     // TODO: again let us remove this and have the gridElementControllers registerFor and handle the callbacks they need
