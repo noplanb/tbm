@@ -16,7 +16,7 @@ import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Logger;
 
-public class DataHolderService extends Service implements UnexpectedTerminationHelper.CleanUpCallback {
+public class DataHolderService extends Service implements UnexpectedTerminationHelper.TerminationCallback {
 	private final String TAG = this.getClass().getSimpleName();
 	
     private String mName;
@@ -57,7 +57,7 @@ public class DataHolderService extends Service implements UnexpectedTerminationH
 		super.onCreate();
 		Logger.d(TAG, "onCreate");
 
-        TbmApplication.getInstance().addCleanUpCallback(this);
+        TbmApplication.getInstance().addTerminationCallback(this);
 
         HandlerThread thread = new HandlerThread("IntentService[" + mName + "]");
         thread.start();
@@ -138,7 +138,7 @@ public class DataHolderService extends Service implements UnexpectedTerminationH
     }
 
     @Override
-    public void onRelease() {
+    public void onTerminate() {
         releaseResources();
     }
 

@@ -46,7 +46,7 @@ import java.util.ArrayList;
 
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
-public class GridViewFragment extends Fragment implements CameraExceptionHandler, SensorEventListener, DoubleActionDialogListener, UnexpectedTerminationHelper.CleanUpCallback {
+public class GridViewFragment extends Fragment implements CameraExceptionHandler, SensorEventListener, DoubleActionDialogListener, UnexpectedTerminationHelper.TerminationCallback {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
 
@@ -64,7 +64,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate");
-        TbmApplication.getInstance().addCleanUpCallback(this);
+        TbmApplication.getInstance().addTerminationCallback(this);
         CameraManager.addExceptionHandlerDelegate(this);
         videoRecorderManager = new VideoRecorderManager(getActivity());
 
@@ -300,7 +300,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     @Override
-    public void onRelease() {
+    public void onTerminate() {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {

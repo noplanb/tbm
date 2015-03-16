@@ -67,7 +67,7 @@ public class TbmApplication extends Application {
 		return foreground>0;
 	}
 
-    public void addCleanUpCallback(UnexpectedTerminationHelper.CleanUpCallback callback) {
-        unexpectedTerminationHelper.addCleanUpCallback(callback);
+    public void addTerminationCallback(UnexpectedTerminationHelper.TerminationCallback callback) {
+        unexpectedTerminationHelper.addTerminationCallback(callback);
     }
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 public class UnexpectedTerminationHelper {
     private static final String TAG =  UnexpectedTerminationHelper.class.getSimpleName();
 
-    private Set<CleanUpCallback> cleanUpCallbacks = new HashSet<>();
+    private Set<TerminationCallback> terminationCallbacks = new HashSet<>();
     private Thread.UncaughtExceptionHandler mOldUncaughtExceptionHandler = null;
     private Thread.UncaughtExceptionHandler mUncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
         // gets called on the same (main) thread
@@ -37,17 +37,17 @@ public class UnexpectedTerminationHelper {
     public void finish() {
         Thread.setDefaultUncaughtExceptionHandler(mOldUncaughtExceptionHandler);
         mOldUncaughtExceptionHandler = null;
-        for (CleanUpCallback callback : cleanUpCallbacks) {
-            callback.onRelease();
+        for (TerminationCallback callback : terminationCallbacks) {
+            callback.onTerminate();
         }
-        cleanUpCallbacks.clear();
+        terminationCallbacks.clear();
     }
 
-    public void addCleanUpCallback(CleanUpCallback callback) {
-        cleanUpCallbacks.add(callback);
+    public void addTerminationCallback(TerminationCallback callback) {
+        terminationCallbacks.add(callback);
     }
 
-    public interface CleanUpCallback {
-        void onRelease();
+    public interface TerminationCallback {
+        void onTerminate();
     }
 }
