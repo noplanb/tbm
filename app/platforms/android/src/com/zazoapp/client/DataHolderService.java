@@ -12,12 +12,11 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-
-import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Logger;
 
-public class DataHolderService extends Service {
+public class DataHolderService extends Service implements UnexpectedTerminationHelper.TerminationCallback {
 	private final String TAG = this.getClass().getSimpleName();
 	
     private String mName;
@@ -26,7 +25,6 @@ public class DataHolderService extends Service {
 
 	private ActiveModelsHandler activeModelsHandler;
 	private ShutdownReceiver receiver;
-
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -42,7 +40,7 @@ public class DataHolderService extends Service {
 		super();
         mName = "DataHolderService";
 	}
-	
+
 	@Override
 	public IBinder onBind(Intent intent) {
 		return new LocalBinder();
@@ -59,8 +57,8 @@ public class DataHolderService extends Service {
 		super.onCreate();
 		Logger.d(TAG, "onCreate");
 
-        mUnexpectedTerminationHelper.init();
-		
+        TbmApplication.getInstance().addTerminationCallback(this);
+
         HandlerThread thread = new HandlerThread("IntentService[" + mName + "]");
         thread.start();
 
@@ -137,40 +135,11 @@ public class DataHolderService extends Service {
     private void releaseResources() {
         activeModelsHandler.saveAll();
         unregisterReceiver(receiver);
-        mUnexpectedTerminationHelper.finish();
     }
 
-    private UnexpectedTerminationHelper mUnexpectedTerminationHelper = new UnexpectedTerminationHelper();
-
-    private class UnexpectedTerminationHelper {
-        private Thread mThread;
-        private Thread.UncaughtExceptionHandler mOldUncaughtExceptionHandler = null;
-        private Thread.UncaughtExceptionHandler mUncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
-            // gets called on the same (main) thread
-            @Override
-            public void uncaughtException(Thread thread, Throwable ex) {
-                Log.w("UnexpectedTerminationHelper", "uncaughtException", ex);
-                final Thread.UncaughtExceptionHandler oldHandler = mOldUncaughtExceptionHandler;
-                releaseResources();
-                Dispatch.dispatch("UnexpectedTerminationHelper: " + ex.getMessage(), true);
-                if (oldHandler != null) {
-                    // it displays the "force close" dialog
-                    oldHandler.uncaughtException(thread, ex);
-                }
-            }
-        };
-
-        void init() {
-            mThread = Thread.currentThread();
-            mOldUncaughtExceptionHandler = mThread.getUncaughtExceptionHandler();
-            mThread.setUncaughtExceptionHandler(mUncaughtExceptionHandler);
-        }
-
-        void finish() {
-            mThread.setUncaughtExceptionHandler(mOldUncaughtExceptionHandler);
-            mOldUncaughtExceptionHandler = null;
-            mThread = null;
-        }
+    @Override
+    public void onTerminate() {
+        releaseResources();
     }
 
 }
