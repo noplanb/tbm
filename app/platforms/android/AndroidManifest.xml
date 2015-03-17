@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zazoapp.client"
     android:versionCode="42"
-    android:versionName="2.0.5" > <!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
+    android:versionName="2.0.6" > <!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
 
     <uses-sdk
         android:minSdkVersion="14"
