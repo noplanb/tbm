@@ -99,7 +99,7 @@ public class S3TransferTest extends ActivityInstrumentationTestCase2<MainActivit
         final int MAX_RUNS = 10000;
         final CountDownLatch latch = new CountDownLatch(MAX_RUNS);
         final long startTime = System.currentTimeMillis();
-        final int TIME_MINUTES = 2;
+        final int TIME_MINUTES = 100;
 
         // DO NOT FORGET to uncomment service in PUT's AndroidManifest
         FileDownloadServiceTest.setListener(new FileDownloadServiceTest.DownloadCallback() {
@@ -107,7 +107,7 @@ public class S3TransferTest extends ActivityInstrumentationTestCase2<MainActivit
             final Runnable postProgress = new Runnable() {
                 @Override
                 public void run() {
-                    activity.onShowProgressDialog(message, null);
+                    //activity.onShowProgressDialog(message, null);
                 }
             };
             @Override
@@ -153,7 +153,7 @@ public class S3TransferTest extends ActivityInstrumentationTestCase2<MainActivit
         long broken = brokenCounter.get();
         String message = "Downloaded: " + success + " from " + runs + ", broken " + broken;
         Log.i(TAG, message);
-        activity.onDismissProgressDialog();
+        //activity.onDismissProgressDialog();
         if (runs < 10) {
             Assert.fail("Too few attempts");
         }

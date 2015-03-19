@@ -1,6 +1,5 @@
 package com.zazoapp.client.tests;
 
-import android.app.Instrumentation;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.test.ActivityInstrumentationTestCase2;
@@ -28,7 +27,6 @@ public class ThumbnailGenerationTest extends ActivityInstrumentationTestCase2<Te
     protected void setUp() throws Exception {
         super.setUp();
         AssetManager am = getInstrumentation().getContext().getAssets();
-        Instrumentation.ActivityMonitor activityMonitor = getInstrumentation().addMonitor(TestActivity.class.getName(), null, false);
         Context context = getActivity();
         video = Utils.createFileFromAssets(am, buildPath(context), FILE_NAME);
     }
@@ -37,7 +35,8 @@ public class ThumbnailGenerationTest extends ActivityInstrumentationTestCase2<Te
     public void testThumbnailGeneration() throws Exception {
         Assert.assertNotNull(video);
         final StringBuilder errors = new StringBuilder();
-        for (int i = 0; i < 10000; i++) {
+        int i = 0;
+        for (; i < 10000; i++) {
             ThumbnailRetriever retriever = new ThumbnailRetriever();
             try {
                 retriever.getThumbnail(video.getPath());
@@ -45,7 +44,9 @@ public class ThumbnailGenerationTest extends ActivityInstrumentationTestCase2<Te
                 errors.append(i).append(" repeat: ").append(e.getMessage()).append("\n\n");
             }
         }
-        Assert.assertEquals(errors.toString(), true, errors.length() == 0);
+        boolean noErrors = errors.length() == 0;
+        errors.append("Total tries: ").append(i);
+        Assert.assertEquals(errors.toString(), true, noErrors);
     }
 
     @Override
