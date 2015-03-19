@@ -9,7 +9,6 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.Video;
 import com.zazoapp.client.network.FileTransferService;
-import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.utilities.Convenience;
@@ -162,15 +161,7 @@ public class IntentHandler {
 		
 		if (status == Video.IncomingVideoStatus.FAILED_PERMANENTLY){
 			Log.i(TAG, "deleteRemoteVideoAndKV for a video that failed permanently");
-			deleteRemoteVideoAndKV(new HttpRequest.Callbacks() {
-                @Override
-                public void success(String response) {
-                    friend.deleteVideo(videoId);
-                }
-
-                @Override
-                public void error(String errorString) {}
-            });
+			deleteRemoteVideoAndKV();
 		}
 		
 		if (status == Video.IncomingVideoStatus.DOWNLOADING){
@@ -187,16 +178,12 @@ public class IntentHandler {
 	// Helpers
 	//--------
 	private void deleteRemoteVideoAndKV(){
-        deleteRemoteVideoAndKV(null);
-	}
-
-    private void deleteRemoteVideoAndKV(HttpRequest.Callbacks callbacks) {
         // Note it is ok if deleting the file fails as s3 will clean itself up after a few days.
         // Delete remote video.
         friend.deleteRemoteVideo(videoId);
 
         // Delete kv for video.
-        RemoteStorageHandler.deleteRemoteIncomingVideoId(friend, videoId, callbacks);
+        RemoteStorageHandler.deleteRemoteIncomingVideoId(friend, videoId);
     }
 
     public void updateStatus(){

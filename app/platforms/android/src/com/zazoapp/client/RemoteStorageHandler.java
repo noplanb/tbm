@@ -114,8 +114,8 @@ public class RemoteStorageHandler {
     //-------
     // Delete
     //-------
-    public static void deleteRemoteIncomingVideoId(Friend friend, String videoId, HttpRequest.Callbacks callbacks){
-        deleteRemoteKV(incomingVideoIdsRemoteKVKey(friend), videoId, callbacks);
+    public static void deleteRemoteIncomingVideoId(Friend friend, String videoId){
+        deleteRemoteKV(incomingVideoIdsRemoteKVKey(friend), videoId);
     }
 	
 	//------------------------
@@ -301,12 +301,18 @@ public class RemoteStorageHandler {
     //-----------------
     // DeleteRemoteKV
     //-----------------
-    private static void deleteRemoteKV(String key1, String key2, HttpRequest.Callbacks callbacks){
+    private static void deleteRemoteKV(String key1, String key2){
         LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
         params.put(DataKeys.KEY1_KEY, key1);
         if (key2 != null)
             params.put(DataKeys.KEY2_KEY, key2);
-        new HttpRequest("kvstore/delete", params, "GET", callbacks);
+        new HttpRequest("kvstore/delete", params, "GET", new HttpRequest.Callbacks() {
+            @Override
+            public void success(String response) {}
+
+            @Override
+            public void error(String errorString) {}
+        });
     }
 
     private static String md5(String data) {
