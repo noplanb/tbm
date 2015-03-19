@@ -1,13 +1,5 @@
 package com.zazoapp.client.model;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -30,6 +22,14 @@ import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.utilities.Convenience;
 import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public class Friend extends ActiveModel{
 
@@ -178,7 +178,8 @@ public class Friend extends ActiveModel{
 
     public void deleteAllViewedVideos(){
         for (Video v : getIncomingVideos()){
-            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.VIEWED)
+            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.VIEWED ||
+                    v.getIncomingVideoStatus() == Video.IncomingVideoStatus.FAILED_PERMANENTLY)
                 deleteVideo(v.getId());
         }
     }

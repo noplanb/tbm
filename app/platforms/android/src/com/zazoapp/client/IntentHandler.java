@@ -178,14 +178,13 @@ public class IntentHandler {
 	// Helpers
 	//--------
 	private void deleteRemoteVideoAndKV(){
-		// Note it is ok if deleting the file fails as s3 will clean itself up after a few days.
-		// Delete remote video.
-		friend.deleteRemoteVideo(videoId);
+        // Note it is ok if deleting the file fails as s3 will clean itself up after a few days.
+        // Delete remote video.
+        friend.deleteRemoteVideo(videoId);
 
-		// Delete kv for video.
-		RemoteStorageHandler.deleteRemoteIncomingVideoId(friend, videoId);
-	}
-
+        // Delete kv for video.
+        RemoteStorageHandler.deleteRemoteIncomingVideoId(friend, videoId);
+    }
 
     public void updateStatus(){
         if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD)){

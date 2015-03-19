@@ -95,7 +95,8 @@ public class NotificationAlertManager {
     }
 
     public static void playTone() {
-        soundPool.play(beepTone, 0.3f, 0.3f, 0, 0, 1);
+        if (soundPool != null)
+            soundPool.play(beepTone, 0.3f, 0.3f, 0, 0, 1);
     }
 
 	// Private 

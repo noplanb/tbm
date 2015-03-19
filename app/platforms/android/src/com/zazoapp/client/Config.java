@@ -15,8 +15,8 @@ public class Config {
 //    public static final int SERVER_PORT = 3000;
 //    public final static String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;
 
-    //private final static String SERVER_HOST = "zazo.10.0.1.5.xip.io";
-    //private final static String SERVER_HOST = "zazo-dev1-5.elasticbeanstalk.com";
+    private final static String STAGE_HOST = "staging.zazoapp.com";
+    private final static String STAGE_URI = "http://" + STAGE_HOST;
     private final static String SERVER_HOST = "prod.zazoapp.com";
     private final static String SERVER_URI = "http://" + SERVER_HOST;
 
@@ -84,11 +84,25 @@ public class Config {
 
     public static String getServerHost() {
         final DebugConfig config = DebugConfig.getInstance();
-        return (config != null && config.shouldUseCustomServer() && !config.getCustomHost().isEmpty()) ? config.getCustomHost() : SERVER_HOST;
+        if (config != null && config.shouldUseCustomServer()) {
+            if (config.getCustomHost().isEmpty()) {
+                return STAGE_HOST;
+            } else {
+                return config.getCustomHost();
+            }
+        }
+        return SERVER_HOST;
     }
 
     public static String getServerUri() {
         final DebugConfig config = DebugConfig.getInstance();
-        return (config != null && config.shouldUseCustomServer() && !config.getCustomHost().isEmpty()) ? config.getCustomUri() : SERVER_URI;
+        if (config != null && config.shouldUseCustomServer()) {
+            if (config.getCustomHost().isEmpty()) {
+                return STAGE_URI;
+            } else {
+                return config.getCustomUri();
+            }
+        }
+        return SERVER_URI;
     }
 }

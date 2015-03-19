@@ -306,20 +306,7 @@ public class RemoteStorageHandler {
         params.put(DataKeys.KEY1_KEY, key1);
         if (key2 != null)
             params.put(DataKeys.KEY2_KEY, key2);
-        new DeleteRemote("kvstore/delete", params, "GET");
-    }
-
-    private static class DeleteRemote extends HttpRequest{
-        public DeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){
-            super(uri, params, method, new Callbacks() {
-                @Override
-                public void success(String response) {
-                }
-                @Override
-                public void error(String errorString) {
-                }
-            });
-        }
+        new HttpRequest("kvstore/delete", params, "GET", null);
     }
 
     private static String md5(String data) {
