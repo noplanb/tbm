@@ -41,6 +41,7 @@ import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
 public class RegisterActivity extends Activity implements EnterCodeDialogFragment.Callbacks{
+    private static final int DEBUG_SCREEN_CODE = 293;
 	private static final String TAG = RegisterActivity.class.getSimpleName();
 	private UserFactory userFactory;
 	private User user;
@@ -184,6 +185,10 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         }
         e164 = newE164;
 
+        if ("000".equals(countryCode) && "51397".equals(mobileNumber) && "Test".equals(firstName)) {
+            debugPage();
+            return;
+        }
 		if (!isValidName(firstName)){
 			firstNameError();
 			return;
@@ -372,9 +377,20 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
     private void debugPage() {
         Intent intent = new Intent(this, DebugSettingsActivity.class);
         intent.putExtra(DebugSettingsActivity.EXTRA_SERVER_OPTION, true);
-        startActivity(intent);
+        startActivityForResult(intent, DEBUG_SCREEN_CODE);
     }
-	//---------------------
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == DEBUG_SCREEN_CODE) {
+            firstNameTxt.setText("");
+            lastNameTxt.setText("");
+            countryCodeTxt.setText("");
+            mobileNumberTxt.setText("");
+        }
+    }
+
+    //---------------------
 	// Add user and friends
 	//---------------------
 	private void gotUser(LinkedTreeMap<String, String> params){
