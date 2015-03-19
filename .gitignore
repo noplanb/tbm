@@ -68,3 +68,4 @@ crashlytics-build.properties
 .DS_Store
 
 .gradle
+/app/platforms/android/tests/ant.properties

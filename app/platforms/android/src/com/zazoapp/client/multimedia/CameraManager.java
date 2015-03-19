@@ -50,9 +50,9 @@ public class CameraManager {
 	}
 	
 	public static void releaseCamera(){
-		Log.i(TAG, "releaseCamera");
 		if (camera != null){
-			camera.stopPreview();
+            Log.i(TAG, "releaseCamera");
+            camera.stopPreview();
 			lockCamera(); // lock camera in case it was unlocked by the VideoRecorder.
 			camera.release();
 		}

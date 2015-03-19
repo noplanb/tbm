@@ -3,10 +3,13 @@ package com.zazoapp.client.debug;
 import android.app.Activity;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -38,6 +41,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         setUpSendSms();
         setUpServer();
         setUpCameraOption();
+        setUpCrashButton();
     }
 
     @Override
@@ -82,6 +86,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 config.enableDebug(isChecked);
+                findViewById(R.id.crash_button_layout).setVisibility(isChecked ? View.VISIBLE : View.GONE);
             }
         });
     }
@@ -148,6 +153,32 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 config.useRearCamera(isChecked);
             }
         });
+    }
+
+
+    private void setUpCrashButton() {
+        ImageButton crashMainButton = (ImageButton) findViewById(R.id.crash_main_button);
+        crashMainButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                throw new NullPointerException("Main thread crash button: Stop touching me!");
+            }
+        });
+
+        ImageButton crashThreadButton = (ImageButton) findViewById(R.id.crash_thread_button);
+        crashThreadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        throw new NullPointerException("Other thread crash button: Stop touching me!");
+                    }
+                }.execute((Void[]) null);
+            }
+        });
+
+        findViewById(R.id.crash_button_layout).setVisibility(config.isDebugEnabled() ? View.VISIBLE : View.GONE);
     }
 
     @Override
