@@ -306,13 +306,7 @@ public class RemoteStorageHandler {
         params.put(DataKeys.KEY1_KEY, key1);
         if (key2 != null)
             params.put(DataKeys.KEY2_KEY, key2);
-        new HttpRequest("kvstore/delete", params, "GET", new HttpRequest.Callbacks() {
-            @Override
-            public void success(String response) {}
-
-            @Override
-            public void error(String errorString) {}
-        });
+        new HttpRequest("kvstore/delete", params, "GET", null);
     }
 
     private static String md5(String data) {
