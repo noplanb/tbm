@@ -185,10 +185,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         }
         e164 = newE164;
 
-        if ("000".equals(countryCode) && "51397".equals(mobileNumber) && "Test".equals(firstName)) {
-            debugPage();
-            return;
-        }
 		if (!isValidName(firstName)){
 			firstNameError();
 			return;
@@ -477,6 +473,16 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
             @Override
             public boolean onLongClick(View v) {
                 debugPage();
+                return true;
+            }
+        });
+
+        findViewById(R.id.app_logo).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if ("000".equals(countryCodeTxt.getText().toString())) {
+                    debugPage();
+                }
                 return true;
             }
         });

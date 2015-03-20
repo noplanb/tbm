@@ -110,7 +110,7 @@ public class ActiveModelsHandler {
 			Log.i(TAG, "GridElement present in memory");
 	        r = gf;
 		} else if (gf.retrieve(context)){
-			Log.i(TAG, "Retrieved GrideElement from local storage.");
+			Log.i(TAG, "Retrieved GridElement from local storage.");
 			r = gf;
 		} else {
             Log.i(TAG, "GridElement not retrievable from local storage");
