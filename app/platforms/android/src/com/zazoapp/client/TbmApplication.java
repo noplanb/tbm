@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import com.zazoapp.client.debug.DebugConfig;
+import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
 public class TbmApplication extends Application {
@@ -48,7 +49,13 @@ public class TbmApplication extends Application {
 			@Override
 			public void onActivityResumed(Activity activity) {}
 			@Override
-			public void onActivityPaused(Activity activity) {}
+			public void onActivityPaused(Activity activity) {
+                // TODO temporary until we fix storing model on its update
+                ActiveModelsHandler model = ActiveModelsHandler.getActiveModelsHandler();
+                if (model != null) {
+                    model.saveAll();
+                }
+            }
 			@Override
 			public void onActivityDestroyed(Activity activity) {}
 			@Override
