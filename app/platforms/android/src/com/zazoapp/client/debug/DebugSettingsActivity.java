@@ -15,6 +15,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.zazoapp.client.R;
+import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 
@@ -105,7 +106,8 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     private void setUpServer() {
         final LinearLayout serverHostLayout = (LinearLayout) findViewById(R.id.server_host_layout);
         final LinearLayout serverUriLayout = (LinearLayout) findViewById(R.id.server_uri_layout);
-        boolean isEnabled = config.shouldUseCustomServer();
+        boolean serverOptionEnabled = getIntent().getBooleanExtra(EXTRA_SERVER_OPTION, false);
+        boolean isEnabled = config.shouldUseCustomServer() && serverOptionEnabled;
         serverHostLayout.setEnabled(isEnabled);
         serverUriLayout.setEnabled(isEnabled);
 
@@ -116,7 +118,6 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         serverHost.setEnabled(isEnabled);
         serverUri.setEnabled(isEnabled);
 
-        boolean serverOptionEnabled = getIntent().getBooleanExtra(EXTRA_SERVER_OPTION, false);
         Switch useCustomServer = (Switch) findViewById(R.id.custom_server);
         useCustomServer.setEnabled(serverOptionEnabled);
         useCustomServer.setChecked(config.shouldUseCustomServer());
@@ -142,6 +143,13 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         }
         final TextView userInfo = (TextView) findViewById(R.id.user_info);
         userInfo.setText(info.toString());
+
+        findViewById(R.id.user_info_dispatch).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Dispatch.dispatchUserInfo(DebugSettingsActivity.this);
+            }
+        });
     }
 
     private void setUpCameraOption() {

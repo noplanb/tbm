@@ -1,8 +1,8 @@
 package com.zazoapp.client.dispatch;
 
+import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.network.HttpRequest;
@@ -48,6 +48,16 @@ public class Dispatch {
         }
     }
 
+    public static void dispatchUserInfo(Context context) {
+        if (isEnabled) {
+            String uri = new Uri.Builder().appendPath("dispatch").appendPath("post_dispatch").build().toString();
+            countDownLatch = new CountDownLatch(1);
+            LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+            params.put("msg", UserInfoCollector.collect(context));
+            //params.put("msg", "Test");
+            new DispatchPost(uri, params);
+        }
+    }
 
     private static class DispatchPost extends HttpRequest {
 
