@@ -1,6 +1,7 @@
 package com.zazoapp.client.multimedia;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.media.MediaMetadataRetriever;
 import android.util.Log;
 
@@ -38,6 +39,9 @@ public class ThumbnailRetriever {
                 markFailed("native: Error getting duration");
                 return null;
             }
+            String width = nativeRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            String height = nativeRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            Log.i(TAG, String.format("Extracting thumbnail from video d: %s w: %s h: %s", time, width, height));
             long nativeDuration = Long.parseLong(time);
             long pos = getPos(nativeDuration);
             thumb = nativeRetriever.getFrameAtTime(pos*1000);
@@ -51,6 +55,12 @@ public class ThumbnailRetriever {
                         markFailed("native: Error getting representative frame");
                     }
                 }
+            }
+            // TODO for test video, normally video should be in portrait orientation
+            if (thumb != null && thumb.getWidth() > thumb.getHeight()) {
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90);
+                thumb = Bitmap.createBitmap(thumb, 0, 0, thumb.getWidth(), thumb.getHeight(), matrix, true);
             }
         } finally {
             verifyAndRelease();

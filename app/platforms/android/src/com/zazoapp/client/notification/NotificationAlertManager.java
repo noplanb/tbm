@@ -40,12 +40,12 @@ public class NotificationAlertManager {
     private static SoundPool soundPool;
     private static int beepTone;
 
-    private static Bitmap largeImage(Friend friend, String videoId){
-		return friend.sqThumbBitmap(videoId);
+    private static Bitmap largeImage(Friend friend){
+		return friend.sqThumbBitmap();
 	}
 
-	private static String largeImagePath(Friend friend, String videoId){
-		return friend.thumbPath(videoId);
+	private static String largeImagePath(Friend friend){
+		return friend.thumbPath();
 	}
 
 	private static String title(Friend friend){
@@ -109,7 +109,7 @@ public class NotificationAlertManager {
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
 		.setSound(getNotificationToneUri(context))
-		.setLargeIcon(largeImage(friend, videoId))
+		.setLargeIcon(largeImage(friend))
 		.setSmallIcon(smallIcon)
 		.setContentTitle(title(friend))
 		.setStyle(new NotificationCompat.BigTextStyle().bigText(title(friend)))
@@ -125,7 +125,7 @@ public class NotificationAlertManager {
 		Intent ri = new Intent(context, LockScreenAlertActivity.class);
 		Intent i = makePlayVideoIntent(ri, context, friend);
 		i.putExtra(IntentHandler.IntentParamKeys.FRIEND_ID, friend.getId());
-		i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend, videoId));
+		i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend));
 		i.putExtra(SMALL_ICON_KEY, smallIcon);
 		i.putExtra(TITLE_KEY, title(friend));
 		i.putExtra(SUB_TITLE_KEY, subTitle);

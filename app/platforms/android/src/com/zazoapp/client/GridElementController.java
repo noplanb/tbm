@@ -154,8 +154,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         }
 
         gridElementView.setUnreadCount(showNewMessages, unreadMsgCount);
-        if (friend.thumbExists()) {
-            gridElementView.setThumbnail(friend.lastThumbBitmap());
+        if (friend.hasIncomingPlayableVideos()) {
+            if (friend.thumbExists()) {
+                gridElementView.setThumbnail(friend.thumbBitmap());
+            } else {
+                gridElementView.setThumbnail(R.drawable.ic_no_pic_z); // normally should not happen
+            }
             gridElementView.showButtons(false);
         } else {
             gridElementView.setThumbnail(null);

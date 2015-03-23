@@ -181,6 +181,11 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         }
     }
 
+    public void setThumbnail(int id) {
+        imgThumb.setImageResource(id);
+        imgThumb.setVisibility(VISIBLE);
+    }
+
     public void showButtons(boolean visible) {
         buttonsBody.setVisibility(visible ? VISIBLE : GONE);
     }
