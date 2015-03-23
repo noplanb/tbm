@@ -139,11 +139,8 @@ public class IntentHandler {
 			// Always set status for sender to downloaded and send status notification even if the video we got is not corrupted.
 			RemoteStorageHandler.setRemoteIncomingVideoStatus(friend, videoId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
 			NotificationHandler.sendForVideoStatusUpdate(friend, videoId, NotificationHandler.StatusEnum.DOWNLOADED);
-			
-			if(!friend.createThumb(videoId)){
-	           friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
-               return;
-            }
+
+            friend.createThumb(videoId);
 
 			// TODO: create a new state for local videos called marked_for_remote_deletion.
 			// do not show videos in that state during play

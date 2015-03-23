@@ -174,15 +174,25 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void setThumbnail(Bitmap bitmap) {
         if (bitmap != null) {
+            imgThumb.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imgThumb.setImageBitmap(bitmap);
+            imgThumb.setBackgroundDrawable(null);
+            LayoutParams params = (LayoutParams) imgThumb.getLayoutParams();
+            params.setMargins(0, 0, 0, 0);
+            imgThumb.setLayoutParams(params);
             imgThumb.setVisibility(VISIBLE);
         } else {
-            imgThumb.setVisibility(GONE);
+            imgThumb.setVisibility(INVISIBLE);
         }
     }
 
-    public void setThumbnail(int id) {
-        imgThumb.setImageResource(id);
+    public void setStubThumbnail() {
+        imgThumb.setScaleType(ImageView.ScaleType.CENTER);
+        imgThumb.setBackgroundResource(R.drawable.background_no_thumb);
+        imgThumb.setImageResource(R.drawable.icon_no_pic_z);
+        LayoutParams params = (LayoutParams) imgThumb.getLayoutParams();
+        params.setMargins(0, 0, 0, twName.getHeight());
+        imgThumb.setLayoutParams(params);
         imgThumb.setVisibility(VISIBLE);
     }
 

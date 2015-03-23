@@ -92,9 +92,15 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onThumbViewClicked() {
-        // As it has thumb it must have friend, so play video
-        VideoPlayer videoPlayer = VideoPlayer.getInstance();
-        videoPlayer.togglePlayOverView(container, gridElement.getFriendId());
+        // As it has thumb it must have friend, so play/stop video if there are any.
+        // Otherwise show toast "Video is not playable"
+        Friend friend = gridElement.getFriend();
+        if (friend.hasIncomingPlayableVideos()) {
+            VideoPlayer videoPlayer = VideoPlayer.getInstance();
+            videoPlayer.togglePlayOverView(container, gridElement.getFriendId());
+        } else {
+            DialogShower.showToast(activity, activity.getString(R.string.video_is_not_playable));
+        }
     }
 
     @Override
@@ -112,6 +118,18 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             Log.d(TAG, "onVideoStopPlaying " + friendId);
             isVideoPlaying = false;
             updateContentFromUi(false);
+        }
+    }
+
+    @Override
+    public void onVideoPlaybackError(String friendId, String videoId) {
+        if (isForMe(friendId)) {
+            Friend friend = gridElement.getFriend();
+            if (!friend.hasIncomingPlayableVideos()) {
+                DialogShower.showInfoDialog(activity,
+                        activity.getString(R.string.dialog_video_error_title),
+                        activity.getString(R.string.dialog_video_error_message));
+            }
         }
     }
 
@@ -154,12 +172,13 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         }
 
         gridElementView.setUnreadCount(showNewMessages, unreadMsgCount);
-        if (friend.hasIncomingPlayableVideos()) {
-            if (friend.thumbExists()) {
-                gridElementView.setThumbnail(friend.thumbBitmap());
-            } else {
-                gridElementView.setThumbnail(R.drawable.ic_no_pic_z); // normally should not happen
-            }
+        boolean thumbExists = friend.thumbExists();
+        if (thumbExists) {
+            gridElementView.setThumbnail(friend.thumbBitmap());
+            gridElementView.showButtons(false);
+        } else if (!thumbExists && friend.hasIncomingPlayableVideos()) {
+            // Normally should not happen. Only for case of the very first video whose thumb is broken
+            gridElementView.setStubThumbnail();
             gridElementView.showButtons(false);
         } else {
             gridElementView.setThumbnail(null);

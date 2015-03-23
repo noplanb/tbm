@@ -43,6 +43,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         setUpServer();
         setUpCameraOption();
         setUpCrashButton();
+        setUpSendBrokenVideo();
     }
 
     @Override
@@ -110,6 +111,8 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         boolean isEnabled = config.shouldUseCustomServer() && serverOptionEnabled;
         serverHostLayout.setEnabled(isEnabled);
         serverUriLayout.setEnabled(isEnabled);
+        serverHostLayout.setVisibility(config.shouldUseCustomServer() ? View.VISIBLE : View.GONE);
+        serverUriLayout.setVisibility(config.shouldUseCustomServer() ? View.VISIBLE : View.GONE);
 
         serverHost = (EditText) findViewById(R.id.server_host);
         serverUri = (EditText) findViewById(R.id.server_uri);
@@ -187,6 +190,17 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         });
 
         findViewById(R.id.crash_button_layout).setVisibility(config.isDebugEnabled() ? View.VISIBLE : View.GONE);
+    }
+
+    private void setUpSendBrokenVideo() {
+        Switch sendBrokenVideoOption = (Switch) findViewById(R.id.send_broken_video);
+        sendBrokenVideoOption.setChecked(config.shouldSendBrokenVideo());
+        sendBrokenVideoOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                config.setSendBrokenVideo(isChecked);
+            }
+        });
     }
 
     @Override

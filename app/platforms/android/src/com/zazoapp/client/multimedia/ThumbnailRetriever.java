@@ -56,7 +56,8 @@ public class ThumbnailRetriever {
                     }
                 }
             }
-            // TODO for test video, normally video should be in portrait orientation
+            // TODO Some versions on Android do not detecting orientation properly.
+            // Normally video should be in portrait orientation
             if (thumb != null && thumb.getWidth() > thumb.getHeight()) {
                 Matrix matrix = new Matrix();
                 matrix.postRotate(90);

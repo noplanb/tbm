@@ -3,6 +3,7 @@ package com.zazoapp.client;
 import android.content.Context;
 import android.os.Environment;
 import com.zazoapp.client.debug.DebugConfig;
+import com.zazoapp.client.debug.DebugUtils;
 import com.zazoapp.client.dispatch.Dispatch;
 
 import java.io.File;
@@ -77,10 +78,18 @@ public class Config {
 	public static String recordingFilePath(Context context){
 		return homeDirPath(context) + "/new.mp4";
 	}
-	
-	public static File recordingFile(Context context){
-		return new File(recordingFilePath(context));
-	}
+
+    public static File recordingFile(Context context) {
+        File recordingFile = null;
+        DebugConfig config = DebugConfig.getInstance(context);
+        if (config.shouldSendBrokenVideo()) {
+            recordingFile = DebugUtils.getBrokenVideoFile(context);
+        }
+        if (recordingFile == null) {
+            recordingFile = new File(recordingFilePath(context));
+        }
+        return recordingFile;
+    }
 
     public static String getServerHost() {
         final DebugConfig config = DebugConfig.getInstance();

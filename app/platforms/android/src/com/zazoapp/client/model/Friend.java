@@ -309,6 +309,9 @@ public class Friend extends ActiveModel{
             if (v.getId().equals(videoId))
                 found = true;
         }
+        if (!found) {
+            return getFirstVideoIdInList(videoList);
+        }
         return null;
     }
     
@@ -375,12 +378,12 @@ public class Friend extends ActiveModel{
 
     public synchronized boolean thumbExists() {
         if (!thumbFile().exists()) {
-            renameOldThumbs();
+            migrateLegacyThumbs();
         }
         return thumbFile().exists();
     }
 
-    private void renameOldThumbs() {
+    private void migrateLegacyThumbs() {
         Iterator<Video> videos = getSortedIncomingVideos().iterator();
         while (videos.hasNext()) {
             Video video = videos.next();
@@ -557,10 +560,6 @@ public class Friend extends ActiveModel{
     }
 
     // Incoming video status
-    public void setAndNotifyIncomingVideoViewed(String videoId) {
-        setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
-    }
-
     public void setAndNotifyIncomingVideoStatus(String videoId, int status){
         Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
