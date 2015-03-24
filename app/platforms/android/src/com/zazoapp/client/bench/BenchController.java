@@ -27,6 +27,8 @@ import com.zazoapp.client.model.Friend.Attributes;
 import com.zazoapp.client.model.FriendFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class BenchController implements BenchDataHandler.BenchDataHandlerCallback, OnItemClickListener,
@@ -162,7 +164,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 			e.put(BenchObject.Keys.LAST_NAME, f.get(Friend.Attributes.LAST_NAME));
 			r.add(new BenchObject(e));
 		}
-		return r;
+        sortBench(r);
+        return r;
 	}
 
 	// -------------
@@ -197,6 +200,15 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 		}
 		return r;
 	}
+
+    private void sortBench(List<BenchObject> list) {
+        Collections.sort(list, new Comparator<BenchObject>() {
+            @Override
+            public int compare(BenchObject lhs, BenchObject rhs) {
+                return lhs.displayName.compareTo(rhs.displayName);
+            }
+        });
+    }
 
 	private boolean isBenchObjectAFriend(BenchObject bo) {
 		for (Friend f : FriendFactory.getFactoryInstance().all()) {
