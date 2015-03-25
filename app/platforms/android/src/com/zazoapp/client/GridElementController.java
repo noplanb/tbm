@@ -126,9 +126,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (isForMe(friendId)) {
             Friend friend = gridElement.getFriend();
             if (!friend.hasIncomingPlayableVideos()) {
-                DialogShower.showInfoDialog(activity,
-                        activity.getString(R.string.dialog_video_error_title),
-                        activity.getString(R.string.dialog_video_error_message));
+                DialogShower.showToast(activity, activity.getString(R.string.video_is_not_playable));
             }
         }
     }

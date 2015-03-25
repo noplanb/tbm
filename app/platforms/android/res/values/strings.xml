@@ -50,8 +50,6 @@
     <string name="dialog_already_connected_message">It seems that %1$s is already connected with you.\n\nRecord %2$s to %3$s now.</string>
     <string name="dialog_connected_title">You are Connected</string>
     <string name="dialog_connected_message">You and %1$s are connected.\n\nRecord a welcome %2$s to %3$s now.</string>
-    <string name="dialog_video_error_title">Video error</string>
-    <string name="dialog_video_error_message">This message can\'t be played.\nProbably it is broken or its format is not supported.</string>
 
     <string name="toast_downloading">Downloading...</string>
 
