@@ -309,6 +309,8 @@ public class Friend extends ActiveModel{
             if (v.getId().equals(videoId))
                 found = true;
         }
+        // As videoList may not contain videoId at all, for example it gets deleted during playing,
+        // or between stop and start methods of player we decided to play first item from the list if it is
         if (!found) {
             return getFirstVideoIdInList(videoList);
         }
