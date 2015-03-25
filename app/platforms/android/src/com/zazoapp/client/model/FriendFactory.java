@@ -153,6 +153,7 @@ public class FriendFactory extends ActiveModelFactory{
         for (ActiveModel a : instances) {
             Friend f = (Friend) a;
             f.deleteAllVideos();
+            f.deleteThumb();
         }
 
         super.destroyAll(context);

@@ -1,6 +1,5 @@
 package com.zazoapp.client.model;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -34,6 +33,7 @@ import java.util.List;
 public class Friend extends ActiveModel{
 
     private static final String MP4 = ".mp4";
+    private static final String PNG = ".png";
 
     public static interface VideoStatusChangedCallback {
         public void onVideoStatusChanged(Friend friend);
@@ -169,8 +169,6 @@ public class Friend extends ActiveModel{
     public void deleteVideo(String videoId){
         // Delete videoFile
         videoFromFile(videoId).delete();
-        // Delete thumbFile
-        thumbFile(videoId).delete();
         // Delete video object
         VideoFactory vf = VideoFactory.getFactoryInstance();
         vf.delete(videoId);
@@ -189,7 +187,11 @@ public class Friend extends ActiveModel{
             deleteVideo(v.getId());
         }
     }
-    
+
+    public synchronized void deleteThumb() {
+        // Delete thumbFile
+        thumbFile().delete();
+    }
     //--------------------------
     // All incoming (Any status)
     //--------------------------
@@ -267,7 +269,20 @@ public class Friend extends ActiveModel{
         }
         return videos;
     } 
-    
+
+    public boolean hasIncomingPlayableVideos() {
+        ArrayList<Video> videos = getIncomingVideos();
+        Iterator<Video> i = videos.iterator();
+        while (i.hasNext()) {
+            Video v = i.next();
+            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED ||
+                    v.getIncomingVideoStatus() == Video.IncomingVideoStatus.VIEWED) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public ArrayList<Video> getSortedIncomingPlayableVideos(){
         Log.i(TAG, "getSortedIncomingPlayableVideos: " + sortVideosByTimeStamp(getIncomingPlayableVideos()));
         return sortVideosByTimeStamp(getIncomingPlayableVideos());
@@ -293,6 +308,11 @@ public class Friend extends ActiveModel{
             }
             if (v.getId().equals(videoId))
                 found = true;
+        }
+        // As videoList may not contain videoId at all, for example it gets deleted during playing,
+        // or between stop and start methods of player we decided to play first item from the list if it is
+        if (!found) {
+            return getFirstVideoIdInList(videoList);
         }
         return null;
     }
@@ -328,48 +348,29 @@ public class Friend extends ActiveModel{
         return new File(videoToPath(videoId));
     }
 
-    public String thumbPath(String videoId) {
-        return buildPath(videoId, "thumb_from", MP4);
+    public String thumbPath() {
+        return buildPath(getId(), "thumb_from", PNG);
     }
 
-    public File thumbFile(String videoId){
-        return new File(thumbPath(videoId));
+    public File thumbFile(){
+        return new File(thumbPath());
     }
 
-    private String buildPath(String videoId, String prefix, String extension) {
+    private String buildPath(String id, String prefix, String extension) {
         StringBuilder path = new StringBuilder(Config.homeDirPath(context));
         path.append(File.separator).append(prefix);
-        path.append("_").append(videoId);
+        path.append("_").append(id);
         path.append(extension);
         return path.toString();
     }
 
-    public File lastThumbFile(){
-        File f = null;
-        for (Video v: getSortedIncomingVideos()){
-            if (thumbFile(v.getId()).exists()){
-                f = thumbFile(v.getId());
-            }
-        }
-        return f;
+    public synchronized Bitmap thumbBitmap(){
+        return Convenience.bitmapWithFile(thumbFile());
     }
 
-    public Bitmap thumbBitmap(String videoId){
-        return Convenience.bitmapWithFile(thumbFile(videoId));
-    }
-
-    public Bitmap lastThumbBitmap(){
-        Bitmap b = null;
-        File f = lastThumbFile();
-        if (f != null)
-            b = Convenience.bitmapWithFile(f);
-        return b;
-    }
-
-    @SuppressLint("NewApi")
-    public Bitmap sqThumbBitmap(String videoId){
+    public Bitmap sqThumbBitmap(){
         Bitmap sq = null;
-        Bitmap thumbBmp = thumbBitmap(videoId);
+        Bitmap thumbBmp = thumbBitmap();
         if (thumbBmp != null){
             sq = ThumbnailUtils.extractThumbnail(thumbBmp, thumbBmp.getWidth(), thumbBmp.getWidth());
             Log.i(TAG, "sqThumbBitmap: size = " + String.valueOf(sq.getByteCount()));
@@ -377,19 +378,29 @@ public class Friend extends ActiveModel{
         return sq;
     }
 
-    public boolean thumbExists(){
-        for (Video v : getIncomingVideos()){
-            if (thumbFile(v.getId()).exists()){
-                return true;
+    public synchronized boolean thumbExists() {
+        if (!thumbFile().exists()) {
+            migrateLegacyThumbs();
+        }
+        return thumbFile().exists();
+    }
+
+    private void migrateLegacyThumbs() {
+        Iterator<Video> videos = getSortedIncomingVideos().iterator();
+        while (videos.hasNext()) {
+            Video video = videos.next();
+            File thumb = new File(buildPath(video.getId(), "thumb_from", MP4));
+            if (thumb.exists()) {
+                thumb.renameTo(thumbFile());
             }
         }
-        return false;
     }
 
     public boolean incomingVideoNotViewed(){
         // Return true if any of the incoming videos are status DOWNLOADED
-        for (Video v : getIncomingVideos()){
-            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED){
+        Iterator<Video> iterator = getIncomingVideos().iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED){
                 return true;
             }
         }
@@ -398,9 +409,10 @@ public class Friend extends ActiveModel{
 
     public int incomingVideoNotViewedCount(){
         // Return true if any of the incoming videos are status DOWNLOADED
-        int i =0;
-        for (Video v : getIncomingVideos()){
-            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED){
+        int i = 0;
+        Iterator<Video> iterator = getIncomingVideos().iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED) {
                 i++;
             }
         }
@@ -432,10 +444,9 @@ public class Friend extends ActiveModel{
                 String vidPath = videoFromPath(videoId);
                 ThumbnailRetriever retriever = new ThumbnailRetriever();
                 Bitmap thumb = retriever.getThumbnail(vidPath);
-                File thumbFile = thumbFile(videoId);
                 FileOutputStream fos = null;
                 try {
-                    fos = FileUtils.openOutputStream(thumbFile);
+                    fos = FileUtils.openOutputStream(thumbFile());
                     thumb.compress(Bitmap.CompressFormat.PNG, 100, fos);
                 } finally {
                     if (fos != null) {
@@ -551,10 +562,6 @@ public class Friend extends ActiveModel{
     }
 
     // Incoming video status
-    public void setAndNotifyIncomingVideoViewed(String videoId) {
-        setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
-    }
-
     public void setAndNotifyIncomingVideoStatus(String videoId, int status){
         Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
@@ -627,15 +634,18 @@ public class Friend extends ActiveModel{
     }
     
     public boolean hasDownloadingVideo(){
-        for (Video v : getIncomingVideos()) {
-            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING)
+        Iterator<Video> iterator = getIncomingVideos().iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING)
                 return true;
         }
         return false;
     }
     
     public boolean hasRetryingDownload(){
-        for (Video v : getIncomingVideos()){
+        Iterator<Video> iterator = getIncomingVideos().iterator();
+        while (iterator.hasNext()) {
+            Video v = iterator.next();
             if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING && v.getDownloadRetryCount() > 0)
                 return true;
         }

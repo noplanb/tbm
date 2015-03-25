@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public abstract class ActiveModelFactory {
 	private static final String TAG = ActiveModelFactory.class.getSimpleName();
@@ -133,27 +134,28 @@ public abstract class ActiveModelFactory {
 		return !instances.isEmpty();
 	}
 
+    public ActiveModel findWhere(String a, String v) {
+        Iterator<ActiveModel> it = instances.iterator();
+        while (it.hasNext()) {
+            ActiveModel model = it.next();
+            if (model.get(a).equals(v)) {
+                return model;
+            }
+        }
+        return null;
+    }
 
-	public ActiveModel findWhere(String a, String v){
-		ActiveModel found = null;
-		for (ActiveModel i : instances){
-			if (i.get(a).equals(v)){
-				found = i;
-				break;
-			}
-		}
-		return found;
-	}
-
-	public ArrayList<ActiveModel> findAllWhere(String a, String v){
-		ArrayList<ActiveModel> result = new ArrayList<ActiveModel>();
-		for (ActiveModel i: instances) {
-			if ( i.get(a).equals(v) ){
-				result.add(i);
-			}
-		}
-		return result;
-	}
+    public ArrayList<ActiveModel> findAllWhere(String a, String v) {
+        ArrayList<ActiveModel> result = new ArrayList<ActiveModel>();
+        Iterator<ActiveModel> it = instances.iterator();
+        while (it.hasNext()) {
+            ActiveModel model = it.next();
+            if (model.get(a).equals(v)) {
+                result.add(model);
+            }
+        }
+        return result;
+    }
 
 	public ActiveModel find(String id){
 		if (id == null)
@@ -168,19 +170,16 @@ public abstract class ActiveModelFactory {
 			return true;
 	}
 
-	public void delete(String id){
-		Integer found = null;
-		Integer index = 0;
-		for (ActiveModel am : instances){
-			if (am.getId().equals(id)){
-				found = index;
-				break;
-			}
-			index ++;
-		}
-		if (found != null)
-			instances.remove(found);	
-	}
+    public void delete(String id) {
+        Iterator<ActiveModel> it = instances.iterator();
+        while (it.hasNext()) {
+            ActiveModel model = it.next();
+            if (model.getId().equals(id)) {
+                it.remove();
+                break;
+            }
+        }
+    }
 
 	public int count(){
 		return instances.size();

@@ -3,11 +3,11 @@ package com.zazoapp.client.utilities;
 import android.app.ActivityManager;
 import android.app.KeyguardManager;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,10 +18,8 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.WindowManager;
-
-import org.apache.commons.io.FileUtils;
-
 import com.zazoapp.client.dispatch.Dispatch;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,9 +60,6 @@ public class Convenience {
 	        FileInputStream fis;
 			fis = FileUtils.openInputStream(thumbFile);
 	        bmp = BitmapFactory.decodeStream(fis);
-            if (bmp == null) { // create test bitmap as creation of file was failed TODO check thumb creation
-                bmp = Bitmap.createBitmap(new int[] {Color.YELLOW}, 1, 1, Bitmap.Config.ARGB_8888);
-            }
 		} catch (IOException e) {
 			String msg = "bitmapWithFile: IOException: " + e.getMessage();
 			Log.i(TAG, msg);
@@ -232,5 +227,37 @@ public class Convenience {
                 }
             }
         }
+    }
+
+    public static File createFileFromAssets(AssetManager am, String dstPath, String assetFile) throws Exception {
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        File f = new File(dstPath);
+        if (f.exists()) {
+            return f;
+        }
+        try{
+            inputStream = am.open(assetFile);
+            outputStream = new FileOutputStream(f);
+            byte buffer[] = new byte[1024];
+            int length = 0;
+
+            while((length=inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer,0,length);
+            }
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {}
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {}
+            }
+        }
+
+        return f;
     }
 }

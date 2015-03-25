@@ -1,6 +1,7 @@
 package com.zazoapp.client.multimedia;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.media.MediaMetadataRetriever;
 import android.util.Log;
 
@@ -29,16 +30,23 @@ public class ThumbnailRetriever {
             try {
                 nativeRetriever.setDataSource(path);
             } catch (RuntimeException e) {
-                markFailed("native: Error setting datasource. Assume that file is corrupted", e.toString());
+                markFailed("native: Error setting datasource. Assume that file is corrupted", e.toString(), path);
                 return null;
             }
 
             String time = nativeRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             if (time == null) {
-                markFailed("native: Error getting duration");
+                markFailed("native: Error getting duration", path);
                 return null;
             }
+            String width = nativeRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            String height = nativeRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            Log.i(TAG, String.format("Extracting thumbnail from video d: %s w: %s h: %s", time, width, height));
             long nativeDuration = Long.parseLong(time);
+            if (nativeDuration == 0) {
+                markFailed("native: null length of video", path);
+                return null;
+            }
             long pos = getPos(nativeDuration);
             thumb = nativeRetriever.getFrameAtTime(pos*1000);
             if (thumb == null) {
@@ -48,9 +56,16 @@ public class ThumbnailRetriever {
                     Log.e(TAG, "native: Error getting end frame");
                     thumb = nativeRetriever.getFrameAtTime();
                     if (thumb == null) {
-                        markFailed("native: Error getting representative frame");
+                        markFailed("native: Error getting representative frame", path);
                     }
                 }
+            }
+            // TODO Some versions on Android do not detecting orientation properly.
+            // Normally video should be in portrait orientation
+            if (thumb != null && thumb.getWidth() > thumb.getHeight()) {
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90);
+                thumb = Bitmap.createBitmap(thumb, 0, 0, thumb.getWidth(), thumb.getHeight(), matrix, true);
             }
         } finally {
             verifyAndRelease();

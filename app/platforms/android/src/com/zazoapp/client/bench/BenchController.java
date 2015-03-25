@@ -298,7 +298,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 			Friend friend = (Friend) FriendFactory.getFactoryInstance().find(item.friendId);
 			if (friend!=null){
                 if(friend.thumbExists())
-             	    holder.thumb.setImageBitmap(friend.lastThumbBitmap());
+             	    holder.thumb.setImageBitmap(friend.thumbBitmap());
                 else
                     holder.thumb.setImageResource(R.drawable.ic_no_pic_z);
                 holder.thumb.setVisibility(View.VISIBLE);

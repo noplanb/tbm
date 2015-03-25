@@ -14,8 +14,10 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
 
 import com.zazoapp.client.R;
+import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.model.Video;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -30,6 +32,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 	public interface StatusCallbacks{
 		void onVideoPlaying(String friendId, String videoId);
 		void onVideoStopPlaying(String friendId);
+        void onVideoPlaybackError(String friendId, String videoId);
 	}
 
 	private static VideoPlayer videoPlayer;
@@ -115,6 +118,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 		}
 	}
 
+    private void notifyPlaybackError(){
+        for (StatusCallbacks callbacks : statusCallbacks) {
+            callbacks.onVideoPlaybackError(friendId, videoId);
+        }
+    }
+
     //---------------
     // Public actions
     //---------------
@@ -176,7 +185,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
     private void play(){
         Log.i(TAG, "play");
         // Always set it to viewed whether it is playable or not so it eventually gets deleted.
-        friend.setAndNotifyIncomingVideoViewed(videoId);
+        friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
 
         if (videoIsPlayable()){
             // TODO: GARF: Andrey what happens if it is not granted!
@@ -189,6 +198,18 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
                         Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
                         videoView.start();
                         notifyStartPlaying();
+                    }
+                });
+                videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+                        final String brokenVideoId = videoId;
+                        mp.reset();
+                        onCompletion(mp);
+                        friend.setAndNotifyIncomingVideoStatus(brokenVideoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
+                        notifyPlaybackError();
+                        Dispatch.dispatch(String.format("Error while playing video %s %d %d", brokenVideoId, what, extra));
+                        return true;
                     }
                 });
                 videoView.setVideoPath(path);
