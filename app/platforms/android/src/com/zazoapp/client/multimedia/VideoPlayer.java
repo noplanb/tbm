@@ -14,6 +14,7 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
 
 import com.zazoapp.client.R;
+import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.Video;
@@ -207,6 +208,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
                         onCompletion(mp);
                         friend.setAndNotifyIncomingVideoStatus(brokenVideoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
                         notifyPlaybackError();
+                        Dispatch.dispatch(String.format("Error while playing video %s %d %d", brokenVideoId, what, extra));
                         return true;
                     }
                 });
