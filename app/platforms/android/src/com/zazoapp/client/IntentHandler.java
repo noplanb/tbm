@@ -69,15 +69,11 @@ public class IntentHandler {
 	// Convenience
 	// ------------
 	private Boolean isUploadIntent() {
-		if (transferType == null)
-			return false;
-		return transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
+		return transferType != null && transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
 	}
 
 	private Boolean isDownloadIntent() {
-		if (transferType == null)
-			return false;
-		return transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+		return transferType != null && transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
 	}
 
     // ---------------------
@@ -148,11 +144,9 @@ public class IntentHandler {
 			// actually delete the video object locally.
 			friend.deleteAllViewedVideos();
 
+			// if application is in foreground, alert is decided by GridElementController and connected to animation start
 			if (!TbmApplication.getInstance().isForeground() || Convenience.screenIsLockedOrOff(context)) {
 				NotificationAlertManager.alert(context, friend, videoId);
-			} else {
-				// TODO: play the notification tone only if we are not currently playing or recording.
-                NotificationAlertManager.playTone();
 			}
 		}
 		

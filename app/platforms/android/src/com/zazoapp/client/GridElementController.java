@@ -16,6 +16,7 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.Video;
 import com.zazoapp.client.multimedia.VideoPlayer;
+import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -174,7 +175,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (thumbExists) {
             gridElementView.setThumbnail(friend.thumbBitmap());
             gridElementView.showButtons(false);
-        } else if (!thumbExists && friend.hasIncomingPlayableVideos()) {
+        } else if (friend.hasIncomingPlayableVideos()) {
             // Normally should not happen. Only for case of the very first video whose thumb is broken
             gridElementView.setStubThumbnail();
             gridElementView.showButtons(false);
@@ -222,6 +223,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         break;
                     case Video.IncomingVideoStatus.DOWNLOADED:
                         if (gridElementView.isReadyToAnimate()) {
+                            NotificationAlertManager.playTone();
                             updateContent(true);
                             gridElementView.animateDownloading(new Runnable() {
                                 @Override
