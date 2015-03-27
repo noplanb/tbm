@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,10 +13,10 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.zazoapp.client.R;
+import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.notification.NotificationAlertManager;
-import com.zazoapp.client.utilities.Convenience;
 
 public class LockScreenAlertActivity extends Activity {
 
@@ -98,8 +97,13 @@ public class LockScreenAlertActivity extends Activity {
 		((TextView) this.findViewById(R.id.titleTextView)).setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));
 		((TextView) this.findViewById(R.id.subtitleTextView)).setText(i.getStringExtra(NotificationAlertManager.SUB_TITLE_KEY));
 		((ImageView) this.findViewById(R.id.logoImage)).setBackgroundResource(i.getIntExtra(NotificationAlertManager.SMALL_ICON_KEY, 0));
-		Bitmap thumb = Convenience.bitmapWithPath(i.getStringExtra(NotificationAlertManager.LARGE_IMAGE_PATH_KEY));
-		((ImageView) this.findViewById(R.id.thumbImage)).setImageBitmap(thumb);
+		Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
+		ImageView thumbImage = (ImageView) this.findViewById(R.id.thumbImage);
+		if (friend.thumbExists()) {
+			thumbImage.setImageBitmap(friend.thumbBitmap());
+		} else {
+			thumbImage.setImageResource(R.drawable.ic_no_pic_z);
+		}
 	}
 
 

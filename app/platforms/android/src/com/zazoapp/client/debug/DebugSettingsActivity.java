@@ -130,6 +130,8 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 config.useCustomServer(isChecked);
                 serverHost.setEnabled(isChecked);
                 serverUri.setEnabled(isChecked);
+                serverHostLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+                serverUriLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
             }
         });
     }

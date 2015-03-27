@@ -43,10 +43,6 @@ public class ThumbnailRetriever {
             String height = nativeRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
             Log.i(TAG, String.format("Extracting thumbnail from video d: %s w: %s h: %s", time, width, height));
             long nativeDuration = Long.parseLong(time);
-            if (nativeDuration == 0) {
-                markFailed("native: null length of video", path);
-                return null;
-            }
             long pos = getPos(nativeDuration);
             thumb = nativeRetriever.getFrameAtTime(pos*1000);
             if (thumb == null) {
