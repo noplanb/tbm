@@ -7,9 +7,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -170,7 +170,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
 
 
     private void setUpCrashButton() {
-        ImageButton crashMainButton = (ImageButton) findViewById(R.id.crash_main_button);
+        Button crashMainButton = (Button) findViewById(R.id.crash_main_button);
         crashMainButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -178,7 +178,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
             }
         });
 
-        ImageButton crashThreadButton = (ImageButton) findViewById(R.id.crash_thread_button);
+        Button crashThreadButton = (Button) findViewById(R.id.crash_thread_button);
         crashThreadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

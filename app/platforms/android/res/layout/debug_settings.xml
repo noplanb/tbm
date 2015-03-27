@@ -75,20 +75,44 @@
         <LinearLayout
                 android:id="@+id/crash_button_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            <ImageButton
-                    android:id="@+id/crash_main_button"
-                    android:layout_width="60dp"
-                    android:layout_height="50dp"
-                    android:contentDescription="Throw in main"
-                    android:src="@android:drawable/ic_delete"/>
-            <ImageButton
-                    android:id="@+id/crash_thread_button"
-                    android:layout_width="60dp"
-                    android:layout_height="50dp"
-                    android:contentDescription="Throw in other thread"
-                    android:src="@android:drawable/presence_busy"/>
-
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Crash in main thread"
+                        android:layout_weight="1"
+                        android:textColor="@android:color/white"
+                        android:layout_gravity="center_vertical"/>
+                <Button
+                        android:id="@+id/crash_main_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Throw"
+                        android:textColor="@android:color/white"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Crash in background thread"
+                        android:layout_weight="1"
+                        android:textColor="@android:color/white"
+                        android:layout_gravity="center_vertical"/>
+                <Button
+                        android:id="@+id/crash_thread_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Throw"
+                        android:textColor="@android:color/white"/>
+            </LinearLayout>
         </LinearLayout>
         <Switch
                 android:id="@+id/send_sms"
