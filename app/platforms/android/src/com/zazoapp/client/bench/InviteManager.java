@@ -84,10 +84,14 @@ public class InviteManager{
         }
     }
 
-	public void nudge(Friend f){
-		friend = f;
-		preNudgeDialog();
-	}
+    public void nudge(Friend f) {
+        friend = f;
+        if (hasSim() || !DebugConfig.getInstance(context).shouldSendSms()) {
+            preNudgeDialog();
+        } else {
+            failureNoSimDialog(friend.getFullName());
+        }
+    }
 
 	//--------------
 	// Check has app
@@ -138,7 +142,7 @@ public class InviteManager{
             friend = null; // to clear previous nudged or invited friend
             preSmsDialog();
         } else {
-            failureNoSimDialog();
+            failureNoSimDialog(benchObject.displayName);
         }
 
 	}
@@ -236,9 +240,9 @@ public class InviteManager{
         listener.onShowActionInfoDialog("Invite", value, "Send", true, false, MainActivity.SMS_DIALOG);
 	}
 
-    private void failureNoSimDialog() {
+    private void failureNoSimDialog(String friendName) {
         listener.onShowInfoDialog(context.getString(R.string.dialog_send_sms_failure_title),
-                context.getString(R.string.dialog_send_sms_failure_message, benchObject.displayName, Config.appName));
+                context.getString(R.string.dialog_send_sms_failure_message, friendName, Config.appName));
     }
 
 	public void showSms(){
