@@ -45,7 +45,7 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment {
 
 		setTitle("Enter Code");
 
-		View v = LayoutInflater.from(getActivity()).inflate(R.layout.enter_code_dialog, 
+		View v = LayoutInflater.from(getActivity()).inflate(R.layout.enter_code_dialog,
 				null, false);
 		TextView twMsg = (TextView) v.findViewById(R.id.tw_msg);
 		final EditText edtVerificationCode = (EditText) v.findViewById(R.id.edt_code);
@@ -55,17 +55,24 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment {
 
 		setCustomView(v);
 
-		setPositiveButton("Enter", new OnClickListener() {
+        setPositiveButton("Enter", new OnClickListener() {
 			@Override
 			public void onClick(View v) {
                 if (getListener() instanceof Callbacks) {
                     ((Callbacks) getListener()).didEnterCode(edtVerificationCode.getText().toString().replaceAll("\\s+", ""));
                 }
-				dismiss();
-			}
-		});
-		setNegativeButton("Cancel", null);
-	}
+                edtVerificationCode.setText("");
+                dismiss();
+            }
+        });
+        setNegativeButton("Cancel", new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                edtVerificationCode.setText("");
+                dismiss();
+            }
+        });
+    }
 
 	//-------------
 	// Convenience
