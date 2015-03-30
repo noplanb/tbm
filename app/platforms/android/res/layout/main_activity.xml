@@ -38,6 +38,7 @@
             android:completionThreshold="1"
             android:ems="10"
             android:padding="10dp"
+            android:hint="@string/search_all_contacts_hint"
             android:background="@drawable/search_border" 
             android:textColor="@android:color/white"
             android:inputType="textNoSuggestions"
