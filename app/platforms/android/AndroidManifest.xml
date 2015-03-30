@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zazoapp.client"
-    android:versionCode="44"
-    android:versionName="2.0.8" > <!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
+    android:versionCode="45"
+    android:versionName="2.0.9" > <!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:maxSdkVersion="19"
-        android:targetSdkVersion="21" />
+        android:targetSdkVersion="22" />
 
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" />
-
+    <uses-permission android:name="android.permission.CAMERA" /> <!-- imply camera, autofocus features -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAPTURE_VIDEO_OUTPUT" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -30,8 +30,8 @@
     <uses-permission android:name="com.google.android.c2dm.SEND" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
-    <uses-permission android:name="android.permission.SEND_SMS"/>
-    <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.SEND_SMS"/> <!-- imply telephony feature -->
+    <uses-permission android:name="android.permission.READ_SMS"/> <!-- imply telephony feature -->
     <uses-permission android:name="android.permission.READ_PROFILE"/>
 
     <application
