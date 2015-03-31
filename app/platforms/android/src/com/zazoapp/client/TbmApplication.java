@@ -18,7 +18,7 @@ public class TbmApplication extends Application {
     private UnexpectedTerminationHelper unexpectedTerminationHelper = new UnexpectedTerminationHelper();
 
 	private int foreground;
-	
+
 	public static TbmApplication getInstance(){
 		return application;
 	}
@@ -51,7 +51,7 @@ public class TbmApplication extends Application {
 			@Override
 			public void onActivityPaused(Activity activity) {
                 // TODO temporary until we fix storing model on its update
-                ActiveModelsHandler model = ActiveModelsHandler.getActiveModelsHandler();
+                ActiveModelsHandler model = ActiveModelsHandler.getInstance(TbmApplication.this);
                 if (model != null) {
                     model.saveAll();
                 }

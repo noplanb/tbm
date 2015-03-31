@@ -7,12 +7,11 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-
 import com.zazoapp.client.bench.BenchViewManager;
 import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.model.ActiveModel;
-import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.Video;
 import com.zazoapp.client.multimedia.VideoPlayer;
@@ -56,7 +55,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         gridElement.addCallback(this);
 
-        ActiveModelsHandler.getActiveModelsHandler().getFf().addVideoStatusObserver(this);
+        FriendFactory.getFactoryInstance().addVideoStatusObserver(this);
 
         VideoPlayer videoPlayer = VideoPlayer.getInstance();
         videoPlayer.registerStatusCallbacks(this);
@@ -311,7 +310,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         VideoPlayer videoPlayer = VideoPlayer.getInstance();
         videoPlayer.unregisterStatusCallbacks(this);
         gridElement.removeCallback(this);
-        ActiveModelsHandler.getActiveModelsHandler().getFf().removeOnVideoStatusChangedObserver(this);
+        FriendFactory.getFactoryInstance().removeOnVideoStatusChangedObserver(this);
     }
 
     @Override

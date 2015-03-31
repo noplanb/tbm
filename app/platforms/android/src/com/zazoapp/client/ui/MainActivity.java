@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import com.zazoapp.client.DataHolderService;
+import com.zazoapp.client.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.VersionHandler;
 import com.zazoapp.client.bench.BenchController;
@@ -26,8 +27,8 @@ import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.bench.InviteManager.InviteDialogListener;
 import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
-import com.zazoapp.client.model.User;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
@@ -67,6 +68,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        PreferencesHelper preferences = new PreferencesHelper(this);
+        if (!preferences.getBoolean(ActiveModelsHandler.USER_REGISTERED, false)) {
+            startRegisterActivity();
+            return;
+        }
 		setContentView(R.layout.main_activity);
 
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -118,15 +124,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     // TODO: Serhii please clean up per our design guidelines.
     private void onLoadComplete() {
 		Log.i(TAG, "onLoadComplete");
-
-		if (!User.isRegistered(this)) {
-			Log.i(TAG, "Not registered. Starting RegisterActivity");
-			Intent i = new Intent(this, RegisterActivity.class);
-			startActivity(i);
-			finish();
-			return;
-		} 
-
 		mainFragment = getFragmentManager().findFragmentByTag("main");
 		if(mainFragment == null){
 			mainFragment = new GridViewFragment();
@@ -230,4 +227,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         return benchController;
     }
 
+
+    private void startRegisterActivity() {
+        Log.i(TAG, "Not registered. Starting RegisterActivity");
+        Intent i = new Intent(this, RegisterActivity.class);
+        startActivity(i);
+        finish();
+    }
 }

@@ -125,7 +125,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	// Init
 	//-----
 	private void init(){
-		userFactory = activeModelsHandler.getUf();
+		userFactory = UserFactory.getFactoryInstance();
 		userFactory.destroyAll(this);
 		user = userFactory.makeInstance(this);
 	}
