@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:gravity="center"
+        android:textColor="@color/dialog_textcolor"
         android:text="@string/enter_code_dlg_msg" />
 
     <TextView
@@ -20,6 +21,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="5dp"
         android:layout_marginTop="20dp"
+        android:textColor="@color/dialog_textcolor"
         android:text="@string/enter_code_dlg_helper"
         android:textStyle="bold" />
 
@@ -29,6 +31,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:background="@drawable/dlg_input_bg"
+        android:textColor="@color/dialog_textcolor"
         android:padding="5dp"
         android:inputType="number" >
 

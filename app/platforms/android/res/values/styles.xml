@@ -3,13 +3,16 @@
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+
+
+
     -->
-    <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+    <style name="AppBaseTheme" parent="android:Theme.Holo">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
+            backward-compatibility can go here.
         -->
     </style>
 
@@ -20,6 +23,7 @@
         <item name="android:actionBarStyle">@style/ZazoActionBar</item>
         <item name="android:actionBarSize">55dp</item>
         <item name="android:dropDownListViewStyle">@style/DropDownListViewStyle</item>
+        <item name="android:windowBackground">@color/splash_background</item>
         
     </style>
 

@@ -48,6 +48,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private void setUpView() {
         if (container.getChildCount() == 0) {
             gridElementView = new GridElementView(activity);
+            container.setVisibility(View.INVISIBLE); // hide view until content isn't loaded
             container.addView(gridElementView);
         }
         gridElementView.setOnClickListener(this);
@@ -153,6 +154,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private void updateContent(boolean animating) {
         Friend friend = gridElement.getFriend();
         if (friend == null) {
+            container.setVisibility(View.VISIBLE); // as content is loaded, display view
             return;
         }
         gridElementView.showEmpty(false);
@@ -186,11 +188,13 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         gridElementView.setName(friend.getDisplayName());
 
         ((View) container.getParent()).invalidate();
+        container.setVisibility(View.VISIBLE); // as content is loaded, display view
     }
 
     private void updateVideoStatus() {
         Friend friend = gridElement.getFriend();
         if (friend == null) {
+            updateContent(false);
             return;
         }
         int lastEventType = friend.getLastEventType();

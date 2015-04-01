@@ -124,12 +124,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     // TODO: Serhii please clean up per our design guidelines.
     private void onLoadComplete() {
 		Log.i(TAG, "onLoadComplete");
-		mainFragment = getFragmentManager().findFragmentByTag("main");
-		if(mainFragment == null){
-			mainFragment = new GridViewFragment();
-			getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
-		}
-
+        mainFragment = getFragmentManager().findFragmentByTag("main");
+        if (mainFragment == null) {
+            mainFragment = new GridViewFragment();
+            getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
+        }
 		if (gcmHandler.checkPlayServices()){
 			gcmHandler.registerGcm();
 		} else {
