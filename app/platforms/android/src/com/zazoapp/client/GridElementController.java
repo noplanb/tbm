@@ -7,12 +7,11 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-
 import com.zazoapp.client.bench.BenchViewManager;
 import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.model.ActiveModel;
-import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.Video;
 import com.zazoapp.client.multimedia.VideoPlayer;
@@ -49,6 +48,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private void setUpView() {
         if (container.getChildCount() == 0) {
             gridElementView = new GridElementView(activity);
+            container.setVisibility(View.INVISIBLE); // hide view until content isn't loaded
             container.addView(gridElementView);
         }
         gridElementView.setOnClickListener(this);
@@ -56,7 +56,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         gridElement.addCallback(this);
 
-        ActiveModelsHandler.getActiveModelsHandler().getFf().addVideoStatusObserver(this);
+        FriendFactory.getFactoryInstance().addVideoStatusObserver(this);
 
         VideoPlayer videoPlayer = VideoPlayer.getInstance();
         videoPlayer.registerStatusCallbacks(this);
@@ -154,6 +154,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private void updateContent(boolean animating) {
         Friend friend = gridElement.getFriend();
         if (friend == null) {
+            container.setVisibility(View.VISIBLE); // as content is loaded, display view
             return;
         }
         gridElementView.showEmpty(false);
@@ -187,11 +188,13 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         gridElementView.setName(friend.getDisplayName());
 
         ((View) container.getParent()).invalidate();
+        container.setVisibility(View.VISIBLE); // as content is loaded, display view
     }
 
     private void updateVideoStatus() {
         Friend friend = gridElement.getFriend();
         if (friend == null) {
+            updateContent(false);
             return;
         }
         int lastEventType = friend.getLastEventType();
@@ -311,7 +314,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         VideoPlayer videoPlayer = VideoPlayer.getInstance();
         videoPlayer.unregisterStatusCallbacks(this);
         gridElement.removeCallback(this);
-        ActiveModelsHandler.getActiveModelsHandler().getFf().removeOnVideoStatusChangedObserver(this);
+        FriendFactory.getFactoryInstance().removeOnVideoStatusChangedObserver(this);
     }
 
     @Override

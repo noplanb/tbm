@@ -66,9 +66,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
-            android:text="@android:string/cancel"
+            android:text="@string/dialog_action_cancel"
             android:textColor="@color/dialog_action_text"
-            android:textSize="18sp" 
+            android:textSize="18sp"
             android:visibility="gone"/>
 
         <View
@@ -84,7 +84,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@android:color/transparent"
-            android:text="@android:string/ok"
+            android:text="@string/dialog_action_ok"
             android:textColor="@color/dialog_action_text"
             android:textStyle="bold"
             android:textSize="18sp"

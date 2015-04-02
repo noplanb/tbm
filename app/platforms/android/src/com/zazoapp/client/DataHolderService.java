@@ -17,9 +17,8 @@ import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Logger;
 
 public class DataHolderService extends Service implements UnexpectedTerminationHelper.TerminationCallback {
-	private final String TAG = this.getClass().getSimpleName();
-	
-    private String mName;
+    private static final String TAG = DataHolderService.class.getSimpleName();
+
     private volatile Looper mServiceLooper;
     private volatile ServiceHandler mServiceHandler;
 
@@ -38,7 +37,6 @@ public class DataHolderService extends Service implements UnexpectedTerminationH
     }
 	public DataHolderService() {
 		super();
-        mName = "DataHolderService";
 	}
 
 	@Override
@@ -59,7 +57,7 @@ public class DataHolderService extends Service implements UnexpectedTerminationH
 
         TbmApplication.getInstance().addTerminationCallback(this);
 
-        HandlerThread thread = new HandlerThread("IntentService[" + mName + "]");
+        HandlerThread thread = new HandlerThread("IntentService[" + TAG + "]");
         thread.start();
 
         mServiceLooper = thread.getLooper();
@@ -73,11 +71,9 @@ public class DataHolderService extends Service implements UnexpectedTerminationH
 		activeModelsHandler.ensureAll();
 
         GridManager.getInstance().initGrid(this);
-		
 		receiver = new ShutdownReceiver();
 		IntentFilter filter = new IntentFilter("android.intent.action.ACTION_SHUTDOWN");
 		registerReceiver(receiver, filter);
-		
 	}
 
 	@Override

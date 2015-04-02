@@ -1,7 +1,7 @@
 package com.zazoapp.client.network.aws;
 
 import android.content.Context;
-import android.content.SharedPreferences;
+import com.zazoapp.client.PreferencesHelper;
 
 /**
  * Created by User on 1/12/2015.
@@ -12,15 +12,13 @@ public class S3CredentialsStore {
     private static final String ACCESS_KEY_ID = "access_key";
     private static final String BUCKET_NAME = "bucket_name";
     private static final String REGION = "region";
-    private static final String SHARED_PREFERENCES_FILENAME = "zazo_preferences";
-
 
     private static S3CredentialsStore s3CredentialsStore;
 
-    private SharedPreferences sp;
+    private PreferencesHelper preferences;
 
     private S3CredentialsStore(Context context){
-        sp = context.getSharedPreferences(SHARED_PREFERENCES_FILENAME, Context.MODE_PRIVATE);
+        preferences = new PreferencesHelper(context);
     }
 
     public static S3CredentialsStore getInstance(Context context){
@@ -30,43 +28,35 @@ public class S3CredentialsStore {
     }
 
     public void saveS3AccessKey(String access_key){
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString(ACCESS_KEY_ID, access_key);
-        editor.commit();
+        preferences.putString(ACCESS_KEY_ID, access_key);
     }
 
     public String getS3AccessKey(){
-        return sp.getString(ACCESS_KEY_ID, "");
+        return preferences.getString(ACCESS_KEY_ID, "");
     }
 
     public void saveS3SecretKey(String secret_key){
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString(SECRET_KEY, secret_key);
-        editor.commit();
+        preferences.putString(SECRET_KEY, secret_key);
     }
 
     public String getS3SecretKey(){
-        return sp.getString(SECRET_KEY, "");
+        return preferences.getString(SECRET_KEY, "");
     }
 
     public void saveS3Bucket(String bucket){
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString(BUCKET_NAME, bucket);
-        editor.commit();
+        preferences.putString(BUCKET_NAME, bucket);
     }
 
     public String getS3Bucket(){
-        return sp.getString(BUCKET_NAME, "");
+        return preferences.getString(BUCKET_NAME, "");
     }
 
     public void saveS3Region(String region){
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString(REGION, region);
-        editor.commit();
+        preferences.putString(REGION, region);
     }
 
     public String getS3Region(){
-        return sp.getString(REGION, "");
+        return preferences.getString(REGION, "");
     }
     
     public boolean hasCredentials(){

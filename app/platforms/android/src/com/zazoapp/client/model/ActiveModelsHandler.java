@@ -2,12 +2,13 @@ package com.zazoapp.client.model;
 
 import android.content.Context;
 import android.util.Log;
-
+import com.zazoapp.client.PreferencesHelper;
 
 public class ActiveModelsHandler {
-	public static String TAG = "ActiveModelsHandler";
+    public static final String USER_REGISTERED = "user_registered";
+	private static final String TAG = ActiveModelsHandler.class.getSimpleName();
 	
-	private static ActiveModelsHandler activeModelsHandler;
+	private static ActiveModelsHandler instance;
 	
 	private UserFactory uf;
 	private FriendFactory ff;
@@ -19,46 +20,60 @@ public class ActiveModelsHandler {
 	private ActiveModelsHandler(Context context) {
 		this.context = context;
 	}
-	
-	public static ActiveModelsHandler getInstance(Context context){
-		if(activeModelsHandler == null)
-			activeModelsHandler = new ActiveModelsHandler(context);
-		return activeModelsHandler;
-	}
-	
-	public void ensureAll(){
+
+    public static ActiveModelsHandler getInstance(Context context) {
+        ActiveModelsHandler localInstance = instance;
+        if (localInstance != null) {
+            if (!context.getApplicationContext().equals(localInstance.context)) {
+                localInstance = null;
+            }
+        }
+        if (localInstance == null) {
+            synchronized (ActiveModelsHandler.class) {
+                localInstance = instance;
+                if (localInstance == null) {
+                    localInstance = new ActiveModelsHandler(context.getApplicationContext());
+                    instance = localInstance;
+                }
+            }
+        }
+        return instance;
+    }
+
+    public void ensureAll(){
 		ensureUser();
-		ensureFriend();
-		ensureVideo();
-		ensureGridElement();
-		Log.d(TAG, "ensureAll end");
-	}
+        ensureFriend();
+        ensureVideo();
+        ensureGridElement();
+        Log.d(TAG, "ensureAll end");
+    }
 
 	public void saveAll(){
 		saveUser();
 		saveFriend();
-		Log.i(TAG, "saveAll: saving " + VideoFactory.getFactoryInstance().count() + " videos");
-		saveVideo();
-		saveGridElement();
-		Log.i(TAG, "saveAll end");
-	}
+        Log.i(TAG, "saveAll: saving " + VideoFactory.getFactoryInstance().count() + " videos");
+        saveVideo();
+        saveGridElement();
+        new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
+        Log.i(TAG, "saveAll end");
+    }
 	
-	public void retreiveAll(){
+	public void retrieveAll(){
 		retrieveUser();
 		retrieveFriend();
-		retrieveVideo();
-		Log.i(TAG, "retreiveAll: retrieved " + VideoFactory.getFactoryInstance().count() + "videos");
-		retrieveGridElement();
-	}
-	
-	public void destroyAll(){
-		uf.destroyAll(context);
-		ff.destroyAll(context);
-		vf.destroyAll(context);
-		gf.destroyAll(context);
-	}
-	
-	public UserFactory ensureUser(){
+        retrieveVideo();
+        Log.i(TAG, "retrieveAll: retrieved " + VideoFactory.getFactoryInstance().count() + "videos");
+        retrieveGridElement();
+    }
+
+    public void destroyAll() {
+        UserFactory.getFactoryInstance().destroyAll(context);
+        FriendFactory.getFactoryInstance().destroyAll(context);
+        VideoFactory.getFactoryInstance().destroyAll(context);
+        GridElementFactory.getFactoryInstance().destroyAll(context);
+    }
+
+    public UserFactory ensureUser(){
 		uf = UserFactory.getFactoryInstance();
 		if (uf.hasInstances()){
 			Log.i(TAG, "User present in memory.");
@@ -66,7 +81,7 @@ public class ActiveModelsHandler {
 			Log.i(TAG, "Retrieved User from local storage.");
 		} else {
 			Log.i(TAG, "User not retrievable from local storage. Creating an instance.");
-			uf.makeInstance(context);
+            uf.makeInstance(context);
 		}
 		return uf;
 	}
@@ -82,7 +97,7 @@ public class ActiveModelsHandler {
 			r = ff;
 		} else {
             Log.d(TAG, "Friend not retrievable from local storage.");
-			r = null;
+            r = null;
 		}
 		return r;
 	}
@@ -183,29 +198,4 @@ public class ActiveModelsHandler {
 		}
 	}
 
-	public static String getTAG() {
-		return TAG;
-	}
-
-	public static ActiveModelsHandler getActiveModelsHandler() {
-		return activeModelsHandler;
-	}
-
-	public UserFactory getUf() {
-		return uf;
-	}
-
-	public FriendFactory getFf() {
-		return ff;
-	}
-
-	public VideoFactory getVf() {
-		return vf;
-	}
-
-	public GridElementFactory getGf() {
-		return gf;
-	}
-	
-	
 }

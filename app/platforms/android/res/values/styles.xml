@@ -3,13 +3,16 @@
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+
+
+
     -->
-    <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+    <style name="AppBaseTheme" parent="android:Theme.Holo">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
+            backward-compatibility can go here.
         -->
     </style>
 
@@ -20,7 +23,9 @@
         <item name="android:actionBarStyle">@style/ZazoActionBar</item>
         <item name="android:actionBarSize">55dp</item>
         <item name="android:dropDownListViewStyle">@style/DropDownListViewStyle</item>
-        
+        <item name="android:windowBackground">@color/splash_background</item>
+        <item name="android:listViewStyle">@style/ListViewStyle</item>
+        <item name="android:textViewStyle">@style/TextViewStyle</item>
     </style>
 
     <style name="ZazoActionBar" parent="@android:style/Widget.Holo.ActionBar">
@@ -57,6 +62,15 @@
     <style name="DropDownListViewStyle" parent="@android:style/Widget.ListView">
         <item name="android:divider">#FF000000</item>
         <item name="android:dividerHeight">1px</item>
+    </style>
+
+    <style name="ListViewStyle" parent="@android:style/Widget.Holo.ListView">
+        <item name="android:divider">#D8D7D1</item>
+        <item name="android:dividerHeight">1dp</item>
+    </style>
+
+    <style name="TextViewStyle" parent="@android:style/Widget.TextView">
+        <item name="android:textColor">@color/dialog_textcolor</item>
     </style>
 
 </resources>
