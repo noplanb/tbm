@@ -40,8 +40,7 @@ public class SelectPhoneNumberDialog extends AbstractDialogFragment implements A
         contact = getArguments().getParcelable(CONTACT_KEY);
 
         setTitle(getString(R.string.dialog_select_phone_number, contact.getFirstName()));
-        setNegativeButton(getString(R.string.dialog_action_cancel), null);
-        setPositiveButton(null, null);
+        setPositiveButton(getString(R.string.dialog_action_cancel), null);
         ListView listView = new ListView(getActivity());
 		listView.setOnItemClickListener(this);
         setCustomView(listView);
