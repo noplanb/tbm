@@ -59,6 +59,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     private SensorManager sensorManager;
     private Sensor proximitySensor;
     private boolean viewLoaded;
+    private boolean hasFocus;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -97,7 +98,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     public void onResume() {
         super.onResume();
         Logger.i(TAG, "onResume");
-        handleIntentAction(getActivity().getIntent());
         videoRecorderManager.onResume();
         sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
@@ -240,8 +240,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             Log.i(TAG, "handleIntentAction: no intent. Exiting.");
             return;
         }
-        if (!viewLoaded) {
-            Log.i(TAG, "View is not loaded yet. Ignore for now.");
+        if (!viewLoaded || !hasFocus) {
+            Log.i(TAG, "View is not loaded yet or showed to user. Ignore for now.");
             return;
         }
         Log.i(TAG, "handleIntentAction: " + currentIntent.toString());
@@ -318,6 +318,11 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         if (sensorManager != null) {
             sensorManager.unregisterListener(this);
         }
+    }
+
+    public void onWindowFocusChanged(boolean hasFocus) {
+        this.hasFocus = hasFocus;
+        handleIntentAction(getActivity().getIntent());
     }
 
     // TODO: again let us remove this and have the gridElementControllers registerFor and handle the callbacks they need

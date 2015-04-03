@@ -233,4 +233,13 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         startActivity(i);
         finish();
     }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        GridViewFragment fragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
+        if (fragment != null) {
+            fragment.onWindowFocusChanged(hasFocus);
+        }
+    }
 }
