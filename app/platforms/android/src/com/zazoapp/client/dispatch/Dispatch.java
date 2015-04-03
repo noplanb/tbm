@@ -1,10 +1,12 @@
 package com.zazoapp.client.dispatch;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import com.zazoapp.client.TbmApplication;
 import com.zazoapp.client.network.HttpRequest;
 
 import java.util.concurrent.CountDownLatch;
@@ -35,7 +37,13 @@ public class Dispatch {
         Log.e(TAG, msg);
         if(isEnabled){
             LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-            params.put("msg", msg+"\n" + LogCatCollector.collectLogCat(null));
+            String version = "x.x.x";
+            try {
+                final Context context = TbmApplication.getInstance();
+                version = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+            } catch (PackageManager.NameNotFoundException e) {
+            }
+            params.put("msg", msg + " in v" + version + "\n" + LogCatCollector.collectLogCat(null));
             String uri = new Uri.Builder().appendPath("dispatch").appendPath("post_dispatch").build().toString();
             countDownLatch = new CountDownLatch(1);
             new DispatchPost(uri, params);
