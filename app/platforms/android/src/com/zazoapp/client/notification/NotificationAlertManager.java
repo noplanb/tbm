@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -36,7 +37,7 @@ public class NotificationAlertManager {
 	public static final String SMALL_ICON_KEY = "smallIconKey";
 	
 	private static final String subTitle = Config.appName;
-	private static int smallIcon = R.drawable.ic_launcher;
+
     private static SoundPool soundPool;
     private static int beepTone;
 
@@ -52,6 +53,9 @@ public class NotificationAlertManager {
 		return "From " + friend.get(Friend.Attributes.FIRST_NAME) + "!";
 	}
 
+    private static int getNotificationIcon() {
+        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) ? R.drawable.ic_notification_white : R.drawable.ic_launcher;
+    }
 	// -------------------
 	// Notification Alerts
 	// -------------------
@@ -108,15 +112,21 @@ public class NotificationAlertManager {
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, makePlayVideoIntent(intent, context, friend), 0);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-		.setSound(getNotificationToneUri(context))
-		.setLargeIcon(largeImage(friend))
-		.setSmallIcon(smallIcon)
-		.setContentTitle(title(friend))
-		.setStyle(new NotificationCompat.BigTextStyle().bigText(title(friend)))
-		.setContentText(subTitle)
-		.setContentIntent(contentIntent)
-		.setAutoCancel(true);
-				
+                .setSound(getNotificationToneUri(context))
+                .setSmallIcon(getNotificationIcon())
+                .setContentTitle(title(friend))
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(title(friend)))
+                .setContentText(subTitle)
+                .setContentIntent(contentIntent)
+                .setColor(context.getResources().getColor(R.color.green))
+                .setAutoCancel(true);
+
+        if (friend.thumbExists()) {
+            mBuilder.setLargeIcon(largeImage(friend));
+        } else {
+            mBuilder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_no_pic_z));
+        }
+
 		notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 	}
 
@@ -126,7 +136,7 @@ public class NotificationAlertManager {
 		Intent i = makePlayVideoIntent(ri, context, friend);
 		i.putExtra(IntentHandler.IntentParamKeys.FRIEND_ID, friend.getId());
 		i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend));
-		i.putExtra(SMALL_ICON_KEY, smallIcon);
+		i.putExtra(SMALL_ICON_KEY, R.drawable.ic_launcher);
 		i.putExtra(TITLE_KEY, title(friend));
 		i.putExtra(SUB_TITLE_KEY, subTitle);
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
