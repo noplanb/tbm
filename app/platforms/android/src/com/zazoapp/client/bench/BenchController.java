@@ -79,11 +79,14 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         BenchObject bo = currentAllOnBench.get(position);
         Log.i(TAG, "Position:" + position + " " + bo.displayName);
 
+        // if it is just a friend on bench, move it to grid
         Friend friend = (Friend) friendFactory.find(bo.friendId);
         if (friend != null) {
             GridManager.getInstance().moveFriendToGrid(friend);
             return;
         }
+
+        // if it is an sms contact with fixed number: invite directly, otherwise invite as a simple contact
         if (bo.hasFixedContact()) {
             InviteManager.getInstance().invite(bo);
         } else {
@@ -100,10 +103,12 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         Log.i(TAG, contact.toString());
 
         hideBench();
-        Friend friend = friendMatchingContact(contact);
-        if (friend != null) {
-            GridManager.getInstance().moveFriendToGrid(friend);
-            return;
+        if (contact.phoneObjects.size() == 1) {
+            Friend friend = friendMatchingContact(contact);
+            if (friend != null) {
+                GridManager.getInstance().moveFriendToGrid(friend);
+                return;
+            }
         }
 
         InviteManager.getInstance().invite(contact);
@@ -121,12 +126,12 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
     @Override
     public void updateBench() {
-        new Handler(Looper.getMainLooper()).post(new Runnable(){
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 adapter.setList(allOnBench());
-                adapter.notifyDataSetChanged();                
-            }  
+                adapter.notifyDataSetChanged();
+            }
         });
 
     }
