@@ -89,7 +89,7 @@ public class SelectPhoneNumberDialog extends AbstractDialogFragment implements A
 
 			TextView leftText = (TextView)convertView.findViewById(R.id.left_text);
 			TextView rightText = (TextView)convertView.findViewById(R.id.right_text);
-			leftText.setText(contact.phoneObjects.get(position).get(Contact.PhoneNumberKeys.NATIONAL));
+			leftText.setText(contact.phoneObjects.get(position).get(Contact.PhoneNumberKeys.INTERNATIONAL));
 			rightText.setText(contact.phoneObjects.get(position).get(Contact.PhoneNumberKeys.PHONE_TYPE));
 			return convertView;
 		}
