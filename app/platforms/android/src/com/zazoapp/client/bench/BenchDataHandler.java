@@ -86,7 +86,7 @@ public class BenchDataHandler {
         protected Void doInBackground(Void... params) {
             Log.i(TAG, "GetRankedPhoneDataAsync");
             isRequestRunning = true;
-            // Issue 101. Add phone data from messages. It it is empty then add all contacts
+            // Issue 101. Add phone data from messages. If it is empty then add all contacts
             if (!addPhoneData(getMessagesPhoneData())) {
                 addPhoneData(getContactsPhoneData());
             }
@@ -142,6 +142,9 @@ public class BenchDataHandler {
         String[] projection = new String[] { ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID};
         // for contacts which have phone number
         String where = ContactsContract.Contacts.HAS_PHONE_NUMBER + " > 0";
+        //String where = null; // to show all contacts, issue 265: Contact search and contact list
+        // when no sms should include all contacts regardless of whether they have a phone
+
         // Starred contacts first, then other, alphabetically
         String orderBy = ContactsContract.Contacts.STARRED + " DESC, " + ContactsContract.Contacts.DISPLAY_NAME;
         return context.getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, projection, where, null, orderBy);

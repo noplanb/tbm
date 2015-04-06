@@ -24,7 +24,6 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
-
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -599,11 +598,11 @@ public class ContactsManager implements OnItemClickListener {
 			        // them to allMatching, use filterString.
 			        List<String> allMatching = new ArrayList<String>();
 
-			        for (String name : values) {
-						if(name!=null && name.toLowerCase().startsWith(prefixString)){
-							allMatching.add(name);
-						}
-					}
+                    for (String name : values) {
+                        if (name != null && name.toLowerCase().contains(prefixString)) {
+                            allMatching.add(name);
+                        }
+                    }
 
 			        results.values = allMatching;
 			        results.count = allMatching.size();
