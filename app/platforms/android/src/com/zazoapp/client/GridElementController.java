@@ -226,7 +226,11 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         break;
                     case Video.IncomingVideoStatus.DOWNLOADED:
                         if (gridElementView.isReadyToAnimate()) {
-                            NotificationAlertManager.playTone();
+                            // sound only if activity is really visible to user
+                            if (!(NotificationAlertManager.screenIsLocked(activity) ||
+                                    NotificationAlertManager.screenIsOff(activity))) {
+                                NotificationAlertManager.playTone();
+                            }
                             updateContent(true);
                             gridElementView.animateDownloading(new Runnable() {
                                 @Override

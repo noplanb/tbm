@@ -153,19 +153,19 @@ public class NotificationAlertManager {
 		return intent;
 	}
 	
-	public static Boolean screenIsLocked(Context context){
+	public static boolean screenIsLocked(Context context){
 		KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-		return (Boolean) km.inKeyguardRestrictedInputMode();
+		return km.inKeyguardRestrictedInputMode();
 	}
 	
 	@SuppressWarnings("deprecation")
 	@SuppressLint("NewApi")
-	private static Boolean screenIsOff(Context context){
+	public static boolean screenIsOff(Context context){
 		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
 		if (android.os.Build.VERSION.SDK_INT < 20)
-			return (Boolean) !pm.isScreenOn();
+			return !pm.isScreenOn();
 		else
-			return (Boolean) !pm.isInteractive();
+			return !pm.isInteractive();
 	}
 
     private static Uri getNotificationToneUri(Context context) {

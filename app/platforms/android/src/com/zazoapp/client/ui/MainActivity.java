@@ -3,7 +3,6 @@ package com.zazoapp.client.ui;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.app.Fragment;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -62,7 +61,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 	private GcmHandler gcmHandler;
 	private BenchController benchController;
 	private VersionHandler versionHandler;
-	private Fragment mainFragment;
+	private GridViewFragment mainFragment;
 	private InviteManager inviteManager;
     private DialogFragment pd;
 
@@ -124,7 +123,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     // TODO: Serhii please clean up per our design guidelines.
     private void onLoadComplete() {
 		Log.i(TAG, "onLoadComplete");
-        mainFragment = getFragmentManager().findFragmentByTag("main");
+        mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
         if (mainFragment == null) {
             mainFragment = new GridViewFragment();
             getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
@@ -237,9 +236,8 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        GridViewFragment fragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
-        if (fragment != null) {
-            fragment.onWindowFocusChanged(hasFocus);
+        if (mainFragment != null) {
+            mainFragment.onWindowFocusChanged(hasFocus && !NotificationAlertManager.screenIsLocked(this));
         }
     }
 }
