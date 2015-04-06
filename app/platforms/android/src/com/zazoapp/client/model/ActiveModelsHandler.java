@@ -45,6 +45,7 @@ public class ActiveModelsHandler {
         ensureFriend();
         ensureVideo();
         ensureGridElement();
+        new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
         Log.d(TAG, "ensureAll end");
     }
 

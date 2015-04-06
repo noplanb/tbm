@@ -63,14 +63,8 @@ public class DataHolderService extends Service implements UnexpectedTerminationH
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
 
-
         activeModelsHandler = ActiveModelsHandler.getInstance(this);
-		//--------------------------
-        // Try to retrieve all models from local storage
-		//--------------------------
-		activeModelsHandler.ensureAll();
 
-        GridManager.getInstance().initGrid(this);
 		receiver = new ShutdownReceiver();
 		IntentFilter filter = new IntentFilter("android.intent.action.ACTION_SHUTDOWN");
 		registerReceiver(receiver, filter);

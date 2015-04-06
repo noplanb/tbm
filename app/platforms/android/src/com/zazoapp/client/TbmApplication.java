@@ -31,7 +31,7 @@ public class TbmApplication extends Application {
         DebugConfig.getInstance(this);
 		application = this;
 		
-		
+		loadDataModel();
 		startService(new Intent(this, DataHolderService.class));
 		
 		registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
@@ -76,5 +76,11 @@ public class TbmApplication extends Application {
 
     public void addTerminationCallback(UnexpectedTerminationHelper.TerminationCallback callback) {
         unexpectedTerminationHelper.addTerminationCallback(callback);
+    }
+
+    private void loadDataModel() {
+        ActiveModelsHandler models = ActiveModelsHandler.getInstance(this);
+        models.ensureAll();
+        GridManager.getInstance().initGrid(this);
     }
 }
