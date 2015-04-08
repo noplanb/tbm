@@ -33,13 +33,14 @@ public class TbmApplication extends Application {
         application = this;
         unexpectedTerminationHelper.init();
         DebugConfig.getInstance(this);
+        loadDataModel();
+
         //Rollbar.init(this, "1fc7c2e85dfe4c9aa194d6f8e1e88a81", "development");
         Dispatch.registerTracker(this, new TbmTracker());
         Dispatch.dispatchStored();
-		loadDataModel();
-		startService(new Intent(this, DataHolderService.class));
-		
-		registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+        startService(new Intent(this, DataHolderService.class));
+
+        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
 			@Override
 			public void onActivityStopped(Activity activity) {
 				setForeground(false);

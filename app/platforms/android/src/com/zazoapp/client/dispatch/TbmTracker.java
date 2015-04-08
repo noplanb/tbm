@@ -124,8 +124,9 @@ public class TbmTracker implements ErrorTracker {
             Log.e(TAG, "tracker is not inited");
             return;
         }
-        String[] list = getStoredFilePaths();
-        for (String path : list) {
+        String[] list = getStoredFileNames();
+        for (String name : list) {
+            String path = context.getCacheDir() + File.separator + name;
             JSONObject data = readFromFile(path);
             if (data == null) {
                 new File(path).delete();
@@ -168,15 +169,16 @@ public class TbmTracker implements ErrorTracker {
             osw.write(j);
         } catch (IOException e) {
         } finally {
-            if (fos != null) {
+            if (osw != null) {
                 try {
-                    fos.close();
+                    osw.flush();
+                    osw.close();
                 } catch (IOException e) {
                 }
             }
-            if (osw != null) {
+            if (fos != null) {
                 try {
-                    osw.close();
+                    fos.close();
                 } catch (IOException e) {
                 }
             }
@@ -221,7 +223,7 @@ public class TbmTracker implements ErrorTracker {
         return path.toString();
     }
 
-    private String[] getStoredFilePaths() {
+    private String[] getStoredFileNames() {
         return context.getCacheDir().list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
