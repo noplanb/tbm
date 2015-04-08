@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.dispatch.RollbarTracker;
+import com.zazoapp.client.dispatch.TbmTracker;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
@@ -35,7 +35,7 @@ public class TbmApplication extends Application {
         DebugConfig.getInstance(this);
         loadDataModel();
 
-        Dispatch.registerTracker(this, new RollbarTracker());
+        Dispatch.registerTracker(this, new TbmTracker());
         Dispatch.dispatchStored();
         startService(new Intent(this, DataHolderService.class));
 
@@ -98,5 +98,16 @@ public class TbmApplication extends Application {
             }
         }
         return version;
+    }
+
+    public static String getVersionNumber() {
+        int version = 1;
+        if (application != null) {
+            try {
+                version = application.getPackageManager().getPackageInfo(application.getPackageName(), 0).versionCode;
+            } catch (PackageManager.NameNotFoundException e) {
+            }
+        }
+        return String.valueOf(version);
     }
 }
