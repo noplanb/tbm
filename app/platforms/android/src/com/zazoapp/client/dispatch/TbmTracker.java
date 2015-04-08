@@ -2,6 +2,7 @@ package com.zazoapp.client.dispatch;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
@@ -68,6 +69,7 @@ public class TbmTracker implements ErrorTracker {
             if (includeLogcat) {
                 msgBuilder.append("\n").append(LogCatCollector.collectLogCat(null));
             }
+            addInfo(data);
             data.put("msg", msgBuilder.toString());
         } catch (JSONException e) {
             e.printStackTrace();
@@ -100,6 +102,7 @@ public class TbmTracker implements ErrorTracker {
             if (includeLogcat) {
                 msgBuilder.append("\n").append(LogCatCollector.collectLogCat(null));
             }
+            addInfo(data);
             data.put("msg", msgBuilder.toString());
         } catch (JSONException e) {
             e.printStackTrace();
@@ -114,6 +117,10 @@ public class TbmTracker implements ErrorTracker {
             return;
         }
         String path = buildNewPath();
+        try {
+            addInfo(data);
+        } catch (JSONException e) {
+        }
         writeToFile(data, path);
         trackDataInner(data, path);
     }
@@ -234,6 +241,13 @@ public class TbmTracker implements ErrorTracker {
 
     private boolean isInit() {
         return context != null;
+    }
+
+    private static void addInfo(JSONObject data) throws JSONException {
+        data.put("device_model", String.format("%s %s", Build.BRAND, Build.MODEL));
+        data.put("os_version", Build.VERSION.RELEASE);
+        data.put("zazo_version", TbmApplication.getVersion());
+        data.put("zazo_version_number", TbmApplication.getVersionNumber());
     }
 
     private static class DispatchPost extends HttpRequest {
