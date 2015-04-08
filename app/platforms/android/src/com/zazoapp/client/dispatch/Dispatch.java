@@ -25,30 +25,52 @@ public class Dispatch {
         dispatch(msg, false);
     }
 
-    public static void dispatch(String msg, boolean needToWait){
+    public static void dispatch(final String msg, boolean needToWait){
         Log.e(TAG, msg);
-        if (tracker == null) {
-            Log.e(TAG, "Register tracker first");
-            return;
-        }
-        tracker.setIncludeLogcat(includeLogcat);
-        tracker.trackMessage(msg);
+        ensureTracker(new Runnable() {
+            @Override
+            public void run() {
+                tracker.setIncludeLogcat(includeLogcat);
+                tracker.trackMessage(msg);
+            }
+        });
     }
 
-    public static void dispatchUserInfo(Context context) {
-        if (tracker == null) {
-            Log.e(TAG, "Register tracker first");
-            return;
-        }
-        tracker.setIncludeLogcat(false);
-        tracker.trackMessage(UserInfoCollector.collect(context));
+    public static void dispatchUserInfo(final Context context) {
+        ensureTracker(new Runnable() {
+            @Override
+            public void run() {
+                tracker.setIncludeLogcat(false);
+                tracker.trackMessage(UserInfoCollector.collect(context), ErrorLevel.INFO);
+            }
+        });
     }
 
     public static void dispatchStored() {
+        ensureTracker(new Runnable() {
+            @Override
+            public void run() {
+                tracker.trackStored();
+            }
+        });
+    }
+
+    public static void dispatch(final Throwable th, String message) {
+        Log.e(TAG, message);
+        ensureTracker(new Runnable() {
+            @Override
+            public void run() {
+                tracker.setIncludeLogcat(includeLogcat);
+                tracker.trackThrowable(th, ErrorLevel.ERROR);
+            }
+        });
+    }
+
+    private static void ensureTracker(Runnable runnable) {
         if (tracker == null) {
             Log.e(TAG, "Register tracker first");
             return;
         }
-        tracker.trackStored();
+        runnable.run();
     }
 }

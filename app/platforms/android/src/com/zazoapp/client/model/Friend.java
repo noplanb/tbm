@@ -457,7 +457,7 @@ public class Friend extends ActiveModel{
                 }
                 res = true;
             } catch (IOException | RuntimeException | ThumbnailRetriever.ThumbnailBrokenException e) {
-                Dispatch.dispatch("createThumb: " + e.getMessage() + e.toString());
+                Dispatch.dispatch(e, "createThumb: " + e.getMessage() + e.toString());
                 res = false;
             }
         }

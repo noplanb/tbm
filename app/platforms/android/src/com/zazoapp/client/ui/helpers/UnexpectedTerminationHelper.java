@@ -21,7 +21,7 @@ public class UnexpectedTerminationHelper {
             Log.w(TAG, "uncaughtException", ex);
             notifyCallbacks();
             final Thread.UncaughtExceptionHandler oldHandler = restoreSystemHandler();
-            Dispatch.dispatch(TAG + ": " + ex.getMessage(), true);
+            Dispatch.dispatch(ex, TAG + ": " + ex.getMessage());
             if (oldHandler != null) {
                 // it displays the "force close" dialog
                 oldHandler.uncaughtException(thread, ex);
