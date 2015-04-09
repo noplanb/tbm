@@ -16,14 +16,13 @@ import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Logger;
 
-public class DataHolderService extends Service implements UnexpectedTerminationHelper.TerminationCallback {
-    private static final String TAG = DataHolderService.class.getSimpleName();
+public class DispatcherService extends Service implements UnexpectedTerminationHelper.TerminationCallback {
+    private static final String TAG = DispatcherService.class.getSimpleName();
 
     private volatile Looper mServiceLooper;
     private volatile ServiceHandler mServiceHandler;
 
-	private ActiveModelsHandler activeModelsHandler;
-	private ShutdownReceiver receiver;
+    private ShutdownReceiver receiver;
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -35,20 +34,6 @@ public class DataHolderService extends Service implements UnexpectedTerminationH
             onHandleIntent((Intent)msg.obj, (int)msg.arg1);
         }
     }
-	public DataHolderService() {
-		super();
-	}
-
-	@Override
-	public IBinder onBind(Intent intent) {
-		return new LocalBinder();
-	}
-
-	public class LocalBinder extends Binder {
-		public ActiveModelsHandler getActiveModelsHandler() {
-			return DataHolderService.this.activeModelsHandler;
-		}
-	}
 
 	@Override
 	public void onCreate() {
@@ -62,8 +47,6 @@ public class DataHolderService extends Service implements UnexpectedTerminationH
 
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
-
-        activeModelsHandler = ActiveModelsHandler.getInstance(this);
 
 		receiver = new ShutdownReceiver();
 		IntentFilter filter = new IntentFilter("android.intent.action.ACTION_SHUTDOWN");
@@ -100,11 +83,15 @@ public class DataHolderService extends Service implements UnexpectedTerminationH
         mServiceLooper.quit();
 	}
 
+    @Override
+    public IBinder onBind(Intent intent) {
+        return new Binder();
+    }
 
-	protected void onHandleIntent(final Intent intent, int startId) {
-		new IntentHandler(DataHolderService.this, intent).handle();
+    protected void onHandleIntent(final Intent intent, int startId) {
+		new IntentHandler(DispatcherService.this, intent).handle();
 	}
-	
+
 	@Override
 	public void onTaskRemoved(Intent rootIntent) {
 		super.onTaskRemoved(rootIntent);
@@ -112,24 +99,24 @@ public class DataHolderService extends Service implements UnexpectedTerminationH
 		releaseResources();
 	}
 
-	private class ShutdownReceiver extends BroadcastReceiver {
+    private class ShutdownReceiver extends BroadcastReceiver {
 
-	    @Override
-	    public void onReceive(Context context, Intent intent) {
-	    	Log.d("ShutdownReceiver", "onReceive");
-	       releaseResources();
-	    }
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("ShutdownReceiver", "onReceive");
+            releaseResources();
+        }
 
-	}
+    }
 
     private void releaseResources() {
-        activeModelsHandler.saveAll();
+        ActiveModelsHandler.getInstance(this).onTerminate();
         unregisterReceiver(receiver);
     }
 
     @Override
     public void onTerminate() {
-        releaseResources();
+        unregisterReceiver(receiver);
     }
 
 }

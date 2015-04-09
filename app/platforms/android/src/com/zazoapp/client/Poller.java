@@ -59,7 +59,7 @@ public class Poller {
                 intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Video.IncomingVideoStatus.NEW);
                 intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
                 intent.putExtra("friendId", friend.getId());
-                intent.setClass(context, DataHolderService.class);
+                intent.setClass(context, DispatcherService.class);
 
                 context.startService(intent);
             }

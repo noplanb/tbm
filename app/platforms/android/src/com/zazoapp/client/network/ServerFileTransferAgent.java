@@ -1,5 +1,18 @@
 package com.zazoapp.client.network;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import com.google.gson.internal.LinkedTreeMap;
+import com.zazoapp.client.Config;
+import com.zazoapp.client.DispatcherService;
+import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.Video;
+import com.zazoapp.client.network.FileTransferService.IntentFields;
+import org.apache.commons.io.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,21 +25,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
-
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
-
-import com.google.gson.internal.LinkedTreeMap;
-import com.zazoapp.client.Config;
-import com.zazoapp.client.DataHolderService;
-import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.Video;
-import com.zazoapp.client.network.FileTransferService.IntentFields;
 
 public class ServerFileTransferAgent implements IFileTransferAgent {
 	private final String TAG = getClass().getSimpleName();
@@ -173,7 +171,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 
 	protected void reportStatus(Intent intent, int status){
 		Log.i(TAG, "reportStatus");
-		intent.setClass(context, DataHolderService.class);
+		intent.setClass(context, DispatcherService.class);
 		intent.putExtra(IntentFields.STATUS_KEY, status);
 		context.startService(intent);
 	}

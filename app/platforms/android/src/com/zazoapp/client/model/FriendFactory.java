@@ -113,7 +113,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         Bundle extras = intent.getExtras();
         if (extras != null){
             if ( extras.get("friendId") != null ){
-                f = (Friend) find(extras.getString("friendId"));
+                f = find(extras.getString("friendId"));
             } else if ( extras.get("to_mkey") != null ){
                 f = getFriendFromMkey(extras.getString("to_mkey"));
             } else if ( extras.get("from_mkey") != null ){
