@@ -29,7 +29,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     }
 
     public void onRecordStart(String friendId) {
-        GridElement ge = GridElementFactory.getFactoryInstance().getGridElementByFriendId(friendId);
+        GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(friendId);
         if (!ge.hasFriend())
             return;
 

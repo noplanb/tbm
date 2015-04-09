@@ -89,7 +89,7 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
 		if (!GridElementFactory.getFactoryInstance().friendIsOnGrid(f)) {
 			nextAvailableGridElement().setFriend(f);
 		} else {
-            GridElement ge = GridElementFactory.getFactoryInstance().findWithFriend(f);
+            GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(f.getId());
             if (ge != null) {
                 ge.notifyUpdate();
             }
