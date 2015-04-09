@@ -3,8 +3,9 @@ package com.zazoapp.client.model;
 import android.content.Context;
 import android.util.Log;
 import com.zazoapp.client.PreferencesHelper;
+import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
-public class ActiveModelsHandler {
+public class ActiveModelsHandler implements UnexpectedTerminationHelper.TerminationCallback {
     public static final String USER_REGISTERED = "user_registered";
     private static final String TAG = ActiveModelsHandler.class.getSimpleName();
 
@@ -113,5 +114,10 @@ public class ActiveModelsHandler {
         } else {
             Log.i(TAG, String.format("Not Saving %s. No instances found", model));
         }
+    }
+
+    @Override
+    public void onTerminate() {
+        saveAll();
     }
 }

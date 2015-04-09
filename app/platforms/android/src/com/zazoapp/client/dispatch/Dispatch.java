@@ -26,7 +26,6 @@ public class Dispatch {
     }
 
     public static void dispatch(final String msg, boolean needToWait){
-        Log.e(TAG, msg);
         ensureTracker(new Runnable() {
             @Override
             public void run() {

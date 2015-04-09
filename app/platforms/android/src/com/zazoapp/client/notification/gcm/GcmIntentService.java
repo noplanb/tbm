@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.zazoapp.client.DataHolderService;
+import com.zazoapp.client.DispatcherService;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
@@ -92,7 +92,7 @@ public class GcmIntentService extends IntentService {
 	}
 
 	private void startDataHolderService(Intent intent) {
-		intent.setClass(getApplicationContext(), DataHolderService.class);
+		intent.setClass(getApplicationContext(), DispatcherService.class);
 		startService(intent);
 	}
 

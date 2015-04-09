@@ -65,6 +65,15 @@ public abstract class ActiveModel {
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder(this.getClass().getSimpleName());
+        for (String s : attributes.values()) {
+            builder.append(s).append(", ");
+        }
+        return builder.toString();
+    }
+
     public interface ModelChangeCallback {
         void onModelChanged();
     }
