@@ -48,6 +48,10 @@ public class GridElement extends ActiveModel {
         }
     }
 
+    public void notifyUpdate() {
+        notifyCallbacks();
+    }
+
 	public String getFriendId(){
 		return attributes.get(Attributes.FRIEND_ID);
 	}

@@ -31,7 +31,7 @@ public class InviteManager{
         public static final String SMS_RESULT = "smsResult";
     }
 
-    public static interface InviteDialogListener {
+    public interface InviteDialogListener {
         void onShowInfoDialog(String title, String msg);
         void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, boolean editable, int actionId);
         void onShowProgressDialog(String title, String msg);
