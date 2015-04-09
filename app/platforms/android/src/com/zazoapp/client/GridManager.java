@@ -88,9 +88,13 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
 		rankingActionOccurred(f);
 		if (!GridElementFactory.getFactoryInstance().friendIsOnGrid(f)) {
 			nextAvailableGridElement().setFriend(f);
-		}
+		} else {
+            GridElement ge = GridElementFactory.getFactoryInstance().findWithFriend(f);
+            if (ge != null) {
+                ge.notifyUpdate();
+            }
+        }
 	}
-
 
 	//--------
     // Ranking

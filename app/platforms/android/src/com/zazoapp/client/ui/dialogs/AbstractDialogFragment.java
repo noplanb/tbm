@@ -65,12 +65,11 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
 			}
 		});
 		btnCancel.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				dismiss();
-			}
-		});
-
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
 		return v;
 	}
 

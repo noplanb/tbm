@@ -9,7 +9,7 @@ public interface BenchViewManager {
     boolean isBenchShowed();
     void updateBench();
 
-    public interface Provider {
+    interface Provider {
         BenchViewManager getBenchViewManager();
     }
 }
