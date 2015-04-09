@@ -2,7 +2,6 @@ package com.zazoapp.client.model;
 
 import android.content.Context;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
@@ -19,17 +18,31 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public abstract class ActiveModelFactory {
-	private static final String TAG = ActiveModelFactory.class.getSimpleName();
+public abstract class ActiveModelFactory<T extends ActiveModel> {
+    private static final String TAG = ActiveModelFactory.class.getSimpleName();
 
-	public ArrayList<ActiveModel> instances = new ArrayList<ActiveModel>();
+    public ArrayList<T> instances = new ArrayList<>();
 
-	//--------------------
-	// Factory
-	//--------------------
-	abstract protected ActiveModel makeInstance(Context context);
+    public abstract Class<T> getModelClass();
 
-	public void destroyAll(Context context){
+    //--------------------
+    // Factory
+    //--------------------
+    public synchronized T makeInstance(Context context) {
+        T i = null;
+        try {
+            i = getModelClass().newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        i.init(context);
+        instances.add(i);
+        return i;
+    }
+
+	public synchronized void destroyAll(Context context){
 		instances.clear();
 		File f = new File(getSaveFilePath(context));
 		f.delete();
@@ -44,8 +57,8 @@ public abstract class ActiveModelFactory {
 		if (instances == null || instances.isEmpty())
 			return "";
 
-		ArrayList <LinkedTreeMap<String, String>> all = new ArrayList<LinkedTreeMap<String, String>>();
-		for (ActiveModel i : instances){
+		ArrayList <LinkedTreeMap<String, String>> all = new ArrayList<>();
+		for (T i : instances) {
 			all.add(i.attributes);
 		}
 		Gson g = new Gson();
@@ -109,7 +122,7 @@ public abstract class ActiveModelFactory {
 		}
 
 		for (LinkedTreeMap<String, String> ats : all){
-			ActiveModel i = makeInstance(context);
+			T i = makeInstance(context);
 			i.attributes.clear();
 			i.attributes.putAll(ats);
 		}
@@ -125,19 +138,38 @@ public abstract class ActiveModelFactory {
 		f.delete();
 	}
 
+    public ArrayList<T> all() {
+        ArrayList<T> r = new ArrayList<>();
+        Iterator<T> it = instances.iterator();
+        while (it.hasNext()) {
+            r.add(it.next());
+        }
+        return r;
+    }
 
+    public ArrayList<T> allWhere(String a, String v) {
+        ArrayList<T> result = new ArrayList<>();
+        Iterator<T> it = instances.iterator();
+        while (it.hasNext()) {
+            final T i = it.next();
+            if (i.get(a).equals(v)) {
+                result.add(i);
+            }
+        }
+        return result;
+    }
 
 	//--------------------
 	// Finders
 	//--------------------
-	public boolean hasInstances(){
+	public synchronized boolean hasInstances(){
 		return !instances.isEmpty();
 	}
 
-    public ActiveModel findWhere(String a, String v) {
-        Iterator<ActiveModel> it = instances.iterator();
+    public T findWhere(String a, String v) {
+        Iterator<T> it = instances.iterator();
         while (it.hasNext()) {
-            ActiveModel model = it.next();
+            T model = it.next();
             if (model.get(a).equals(v)) {
                 return model;
             }
@@ -145,11 +177,11 @@ public abstract class ActiveModelFactory {
         return null;
     }
 
-    public ArrayList<ActiveModel> findAllWhere(String a, String v) {
-        ArrayList<ActiveModel> result = new ArrayList<ActiveModel>();
-        Iterator<ActiveModel> it = instances.iterator();
+    public ArrayList<T> findAllWhere(String a, String v) {
+        ArrayList<T> result = new ArrayList<>();
+        Iterator<T> it = instances.iterator();
         while (it.hasNext()) {
-            ActiveModel model = it.next();
+            T model = it.next();
             if (model.get(a).equals(v)) {
                 result.add(model);
             }
@@ -157,23 +189,20 @@ public abstract class ActiveModelFactory {
         return result;
     }
 
-	public ActiveModel find(String id){
-		if (id == null)
-			return null;
-		return findWhere("id", id);
-	}
+    public T find(String id) {
+        if (id == null)
+            return null;
+        return findWhere("id", id);
+    }
 
-	public boolean existsWithId(String id){
-		if (find(id) == null)
-			return false;
-		else
-			return true;
-	}
+    public boolean existsWithId(String id) {
+        return find(id) != null;
+    }
 
-    public void delete(String id) {
-        Iterator<ActiveModel> it = instances.iterator();
+    public synchronized void delete(String id) {
+        Iterator<T> it = instances.iterator();
         while (it.hasNext()) {
-            ActiveModel model = it.next();
+            T model = it.next();
             if (model.getId().equals(id)) {
                 it.remove();
                 break;
@@ -181,8 +210,8 @@ public abstract class ActiveModelFactory {
         }
     }
 
-	public int count(){
-		return instances.size();
-	}
+    public synchronized int count() {
+        return instances.size();
+    }
 
 }
