@@ -24,8 +24,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.ContactsManager;
-import com.zazoapp.client.DataHolderService;
-import com.zazoapp.client.DataHolderService.LocalBinder;
+import com.zazoapp.client.DispatcherService;
 import com.zazoapp.client.FriendGetter;
 import com.zazoapp.client.R;
 import com.zazoapp.client.debug.DebugSettingsActivity;
@@ -62,17 +61,13 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 
     private DialogFragment pd;
 
-	protected ActiveModelsHandler activeModelsHandler;
 	private ServiceConnection conn = new ServiceConnection() {
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
-			activeModelsHandler = null;
 		}
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			activeModelsHandler = ((LocalBinder) service).getActiveModelsHandler();
-
 			onLoadComplete();
 		}
 	};
@@ -105,7 +100,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		super.onStart();
 		pd = ProgressDialogFragment.getInstance("Data", "retrieving data...");
         pd.show(getFragmentManager(), null);
-		bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
+		bindService(new Intent(this, DispatcherService.class), conn, Service.BIND_IMPORTANT);
 	}
 
 	@Override
@@ -350,7 +345,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		ub.appendPath("reg").appendPath("debug_get_user");
 		new DebugGetUser(ub.build().toString(), params);
 	}
-	
+
 	private class DebugGetUser extends HttpRequest{
 		public DebugGetUser(String uri, LinkedTreeMap<String, String> params) {
 			super(uri, params, new Callbacks() {
@@ -367,8 +362,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
             });
             pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
             pd.show(getFragmentManager(), null);
-		}
-	}
+        }
+    }
 
     private void debugPage() {
         Intent intent = new Intent(this, DebugSettingsActivity.class);
@@ -387,20 +382,19 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
     }
 
     //---------------------
-	// Add user and friends
-	//---------------------
-	private void gotUser(LinkedTreeMap<String, String> params){
-		user.set(User.Attributes.FIRST_NAME, params.get(UserFactory.ServerParamKeys.FIRST_NAME));
-		user.set(User.Attributes.LAST_NAME, params.get(UserFactory.ServerParamKeys.LAST_NAME));
-		user.set(User.Attributes.MOBILE_NUMBER, params.get(UserFactory.ServerParamKeys.MOBILE_NUMBER));
-		user.set(User.Attributes.ID, params.get(UserFactory.ServerParamKeys.ID)).toString();
-		user.set(User.Attributes.MKEY, params.get(UserFactory.ServerParamKeys.MKEY));
-		user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
-		user.set(User.Attributes.REGISTERED, "true");
-		new RegFriendGetter(this, true).getFriends();
-	}
-	
-	private class RegFriendGetter extends FriendGetter{
+    // Add user and friends
+    //---------------------
+    private void gotUser(LinkedTreeMap<String, String> params) {
+        user.set(User.Attributes.FIRST_NAME, params.get(UserFactory.ServerParamKeys.FIRST_NAME));
+        user.set(User.Attributes.LAST_NAME, params.get(UserFactory.ServerParamKeys.LAST_NAME));
+        user.set(User.Attributes.MOBILE_NUMBER, params.get(UserFactory.ServerParamKeys.MOBILE_NUMBER));
+        user.set(User.Attributes.ID, params.get(UserFactory.ServerParamKeys.ID));
+        user.set(User.Attributes.MKEY, params.get(UserFactory.ServerParamKeys.MKEY));
+        user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
+        new RegFriendGetter(this, true).getFriends();
+    }
+
+    private class RegFriendGetter extends FriendGetter{
         public RegFriendGetter(Context c, boolean destroyAll) {
             super(c, destroyAll);
             pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
@@ -442,8 +436,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
     }
 
 	private void regComplete() {
-		UserFactory.current_user().set(User.Attributes.REGISTERED, "true");
-		activeModelsHandler.saveAll();
+        user.set(User.Attributes.REGISTERED, "true");
+        ActiveModelsHandler.getInstance(this).saveAll();
 		Intent i = new Intent(this, MainActivity.class);
 		startActivity(i);
 		finish();

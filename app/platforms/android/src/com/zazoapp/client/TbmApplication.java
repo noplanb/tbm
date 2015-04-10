@@ -14,21 +14,23 @@ import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
 public class TbmApplication extends Application {
 
-	protected static final String TAG = "TbmApplication";
+    private static final String TAG = TbmApplication.class.getSimpleName();
 
-	private static TbmApplication application;
+    private static TbmApplication application;
+
+    private ActiveModelsHandler activeModelsHandler;
 
     private UnexpectedTerminationHelper unexpectedTerminationHelper = new UnexpectedTerminationHelper();
 
-	private int foreground;
+    private int foreground;
 
-	public static TbmApplication getInstance(){
-		return application;
-	}
-	
-	@Override
-	public void onCreate() {
-		super.onCreate();
+    public static TbmApplication getInstance() {
+        return application;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
         Log.d(TAG, "onCreate");
         application = this;
         unexpectedTerminationHelper.init();
@@ -37,7 +39,7 @@ public class TbmApplication extends Application {
 
         Dispatch.registerTracker(this, new TbmTracker());
         Dispatch.dispatchStored();
-        startService(new Intent(this, DataHolderService.class));
+        startService(new Intent(this, DispatcherService.class));
 
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
 			@Override
@@ -56,10 +58,7 @@ public class TbmApplication extends Application {
 			@Override
 			public void onActivityPaused(Activity activity) {
                 // TODO temporary until we fix storing model on its update
-                ActiveModelsHandler model = ActiveModelsHandler.getInstance(TbmApplication.this);
-                if (model != null) {
-                    model.saveAll();
-                }
+                activeModelsHandler.saveAll();
             }
 			@Override
 			public void onActivityDestroyed(Activity activity) {}
@@ -84,9 +83,10 @@ public class TbmApplication extends Application {
     }
 
     private void loadDataModel() {
-        ActiveModelsHandler models = ActiveModelsHandler.getInstance(this);
-        models.ensureAll();
+        activeModelsHandler = ActiveModelsHandler.getInstance(this);
+        activeModelsHandler.ensureAll();
         GridManager.getInstance().initGrid(this);
+        addTerminationCallback(activeModelsHandler);
     }
 
     public static String getVersion() {

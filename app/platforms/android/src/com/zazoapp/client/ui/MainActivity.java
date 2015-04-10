@@ -16,7 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import com.zazoapp.client.DataHolderService;
+import com.zazoapp.client.DispatcherService;
 import com.zazoapp.client.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.VersionHandler;
@@ -108,7 +108,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 	@Override
 	protected void onStart() {
 		super.onStart();
-        bindService(new Intent(this, DataHolderService.class), conn, Service.BIND_IMPORTANT);
+        bindService(new Intent(this, DispatcherService.class), conn, Service.BIND_IMPORTANT);
 		versionHandler.checkVersionCompatibility();
         NotificationAlertManager.init(this);
     }

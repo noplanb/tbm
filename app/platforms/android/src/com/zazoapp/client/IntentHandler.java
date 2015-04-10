@@ -2,6 +2,7 @@ package com.zazoapp.client;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
@@ -56,7 +57,6 @@ public class IntentHandler {
 			Log.i(TAG, "Got an intent but user was not registered. Not processing it.");
 			return;
 		}
-		
 		if (isDownloadIntent()) {
 			handleDownloadIntent();
 		} else if (isUploadIntent()) {
@@ -81,6 +81,18 @@ public class IntentHandler {
 	// ---------------------
 	private void handleUploadIntent() {
 		Log.i(TAG, "handleUploadIntent");
+        if (friend == null) {
+            StringBuilder msg = new StringBuilder("friend is null in IntentHandler\n");
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                msg.append(extras.toString()).append("\n");
+            }
+            for (Friend friend : FriendFactory.getFactoryInstance().all()) {
+                msg.append(friend.toString()).append("\n");
+            }
+            Dispatch.dispatch(msg.toString());
+            return;
+        }
 		updateStatus();
 		if (status == Friend.OutgoingVideoStatus.UPLOADED) {
 			// Set remote videoIdKV

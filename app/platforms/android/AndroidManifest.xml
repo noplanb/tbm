@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zazoapp.client"
-    android:versionCode="47"
-    android:versionName="2.1.0" > <!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
+    android:versionCode="48"
+    android:versionName="2.1.2" > <!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -83,10 +83,9 @@
         </receiver>
 
         <service android:name=".notification.gcm.GcmIntentService" />
-        
-                <service
-            android:name=".DataHolderService" />
-        
+
+        <service android:name=".DispatcherService"/>
+
         <service
             android:name=".network.FileUploadService" />
        		<!-- We can run FTS in the same process as app. I have tested and the notstop intent service restarts fine even after 
