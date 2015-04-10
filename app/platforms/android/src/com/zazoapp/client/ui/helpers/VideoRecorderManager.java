@@ -110,4 +110,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         videoRecorder.restore();
     }
 
+    public boolean isRecording() {
+        return videoRecorder.isRecording();
+    }
 }

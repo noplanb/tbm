@@ -28,17 +28,17 @@ public class VideoRecorder implements SurfaceTextureListener {
     // app though whereby we can report caught exceptions that
     // make the app unusable back to our servers for analysis.
     public interface VideoRecorderExceptionHandler {
-        public void unableToSetPreview();
+        void unableToSetPreview();
 
-        public void unableToPrepareMediaRecorder();
+        void unableToPrepareMediaRecorder();
 
-        public void recordingAborted();
+        void recordingAborted();
 
-        public void recordingTooShort();
+        void recordingTooShort();
 
-        public void illegalStateOnStart();
+        void illegalStateOnStart();
 
-        public void runtimeErrorOnStart();
+        void runtimeErrorOnStart();
     }
 
     private SurfaceTexture holder;
@@ -349,5 +349,9 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+    }
+
+    public boolean isRecording() {
+        return preview != null && preview.isRecording();
     }
 }

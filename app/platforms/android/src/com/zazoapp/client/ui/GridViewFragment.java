@@ -152,7 +152,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         }
         int i = 0;
         for (GridElement ge : GridElementFactory.getFactoryInstance().all()) {
-            GridElementController gec = new GridElementController(getActivity(), ge, nineViewGroup.getSurroundingFrame(i), benchViewManager);
+            GridElementController gec = new GridElementController(getActivity(), ge, nineViewGroup.getSurroundingFrame(i),
+                    benchViewManager, videoRecorderManager);
             viewControllers.add(gec);
             i++;
         }
