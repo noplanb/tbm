@@ -391,8 +391,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         user.set(User.Attributes.ID, params.get(UserFactory.ServerParamKeys.ID));
         user.set(User.Attributes.MKEY, params.get(UserFactory.ServerParamKeys.MKEY));
         user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
-        user.set(User.Attributes.REGISTERED, "true");
-        ActiveModelsHandler.getInstance(this).saveAll();
         new RegFriendGetter(this, true).getFriends();
     }
 
@@ -438,7 +436,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
     }
 
 	private void regComplete() {
-		ActiveModelsHandler.getInstance(this).saveAll();
+        user.set(User.Attributes.REGISTERED, "true");
+        ActiveModelsHandler.getInstance(this).saveAll();
 		Intent i = new Intent(this, MainActivity.class);
 		startActivity(i);
 		finish();
