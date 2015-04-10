@@ -16,6 +16,7 @@ import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.Video;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.notification.NotificationAlertManager;
+import com.zazoapp.client.ui.helpers.VideoRecorderManager;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -32,16 +33,18 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private GridElementView gridElementView;
     private BenchViewManager benchViewManager;
     private Activity activity;
+    private VideoRecorderManager recorderManager;
     private boolean isVideoPlaying = false;
 
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    public GridElementController(Activity activity, GridElement gridElement, ViewGroup container, BenchViewManager benchViewManager) {
+    public GridElementController(Activity activity, GridElement gridElement, ViewGroup container, BenchViewManager benchViewManager, VideoRecorderManager videoRecorderManager) {
         Log.i(TAG, "instance with view " + container);
         this.activity = activity;
         this.container = container;
         this.gridElement = gridElement;
         this.benchViewManager = benchViewManager;
+        this.recorderManager = videoRecorderManager;
         setUpView();
     }
 
@@ -229,7 +232,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             // sound only if activity is really visible to user
                             if (!(NotificationAlertManager.screenIsLocked(activity) ||
                                     NotificationAlertManager.screenIsOff(activity))) {
-                                NotificationAlertManager.playTone();
+                                if (!recorderManager.isRecording()) {
+                                    NotificationAlertManager.playTone();
+                                }
                             }
                             updateContent(true);
                             gridElementView.animateDownloading(new Runnable() {
