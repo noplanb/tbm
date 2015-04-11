@@ -7,6 +7,8 @@ import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
 import android.util.Log;
+import android.view.Surface;
+import android.view.WindowManager;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 
@@ -35,7 +37,9 @@ public class CameraManager {
 	
 	private static Camera camera = null;
 	private static Camera.Size selectedPreviewSize = null;
-	
+	private static int orientation;
+    private static boolean is15FramesAvailable;
+
 	// --------------
 	// Public methods
 	// --------------
@@ -122,9 +126,19 @@ public class CameraManager {
 			return camera;
 		}
 		
-		if ( !setCameraParams() )
+		if ( !setCameraParams(context, cameraNum) )
 			camera = null;
-		
+
+        //check is 15 frame rate value is available in camera. Wi will use this parameter to
+        //set frame rate in a VideoRecorder
+        if(camera.getParameters().getSupportedPreviewFrameRates().size()>0)
+            for (int i=0;i<camera.getParameters().getSupportedPreviewFrameRates().size();i++){
+                if(camera.getParameters().getSupportedPreviewFrameRates().get(i)==15){
+                    is15FramesAvailable = true;
+                    break;
+                }
+            }
+
 		return camera;
 	}
 	private static boolean hasCameraHardware(Context context) {
@@ -166,14 +180,14 @@ public class CameraManager {
 	}
 	
 	@SuppressLint("NewApi")
-	private static Boolean setCameraParams(){
+	private static Boolean setCameraParams(Context context, int cameraNum){
 		if (camera == null){
 			if (cameraExceptionHandler != null)
 				cameraExceptionHandler.onCameraException(CameraException.UNABLE_TO_SET_PARAMS);
 			return false;
 		}
-		
-		camera.setDisplayOrientation(90);
+
+        camera.setDisplayOrientation(getRecalculatedCameraOrientation(context, cameraNum));
 		
 		Parameters cparams = camera.getParameters();
 
@@ -322,4 +336,45 @@ public class CameraManager {
 	private static String stringWithCameraSize(Camera.Size size){
 		return size.width + "x" + size.height;
 	}
+
+    /**
+     * This function recalculates initial camera angle, and gives angle delta that we can use to
+     * properly set camera property
+     * @param context - app or activity context
+     * @param cameraNum - number of camera that need to be recalculated
+     * @return
+     */
+    private static int getRecalculatedCameraOrientation(Context context, int cameraNum){
+        android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+
+        android.hardware.Camera.getCameraInfo(cameraNum, info);
+        int rotation = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+
+        orientation = info.orientation;
+
+        return result;
+    }
+
+    public static int getOrientation() {
+        return orientation;
+    }
+
+    public static boolean is15FramesAvailable() {
+        return is15FramesAvailable;
+    }
 }
