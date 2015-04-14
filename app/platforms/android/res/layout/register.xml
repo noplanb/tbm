@@ -67,7 +67,6 @@
                     android:ems="3"
                     android:inputType="phone"
                     android:padding="10dp"
-                    android:hint="1"
                     android:textColor="@android:color/black"
                     android:textColorHint="@android:color/white"
                     android:textSize="22dp" />
@@ -77,9 +76,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="top|center_horizontal"
-                    android:text="(Country Code)"
+                    android:text="Country Code"
                     android:textColor="@android:color/white"
                     android:textSize="8dp" />
+
+                <TextView
+                        android:id="@+id/usa_hint_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|center_horizontal"
+                        android:text="(+1 USA)"
+                        android:textColor="@android:color/white"
+                        android:textSize="8dp" />
             </LinearLayout>
 
             <EditText
