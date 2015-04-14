@@ -95,14 +95,15 @@ public class VideoRecorder implements SurfaceTextureListener {
             return false;
 
         } catch (RuntimeException e) {
-            // Since this seems to get the media recorder into a wedged state I
-            // will just finish the app here.
-            Dispatch.dispatch("ERROR: RuntimeException: this should never happen according to google. But I have seen it. "
-                    + e.toString());
-            releaseMediaRecorder();
-            if (videoRecorderExceptionHandler != null)
-                videoRecorderExceptionHandler.runtimeErrorOnStart();
-            return false;
+                // Since this seems to get the media recorder into a wedged state I
+                // will just finish the app here.
+                CameraManager.releaseCamera();
+                Dispatch.dispatch("ERROR: RuntimeException: this should never happen according to google. But I have seen it. "
+                        + e.toString());
+                releaseMediaRecorder();
+                if (videoRecorderExceptionHandler != null)
+                    videoRecorderExceptionHandler.runtimeErrorOnStart();
+                return false;
         }
         showRecordingIndicator();
         return true;
@@ -225,7 +226,9 @@ public class VideoRecorder implements SurfaceTextureListener {
 
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mediaRecorder.setVideoEncodingBitRate(150000);
-        mediaRecorder.setVideoFrameRate(15);
+
+        if (CameraManager.is15FramesAvailable())
+            mediaRecorder.setVideoFrameRate(15);
 
         Camera.Size size = CameraManager.getPreviewSize();
         if (size == null) {
@@ -238,7 +241,7 @@ public class VideoRecorder implements SurfaceTextureListener {
         Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
         mediaRecorder.setOutputFile(ofile);
 
-        mediaRecorder.setOrientationHint(270);
+        mediaRecorder.setOrientationHint(CameraManager.getOrientation());
 
         // Step 6: Prepare configured MediaRecorder
         try {
