@@ -18,14 +18,19 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
     private static final String ID = "dialog_id";
 
     public interface DoubleActionDialogListener extends DialogListener {
-        public static final int BUTTON_POSITIVE = DialogInterface.BUTTON_POSITIVE;
-        public static final int BUTTON_NEGATIVE = DialogInterface.BUTTON_NEGATIVE;
+        int BUTTON_POSITIVE = DialogInterface.BUTTON_POSITIVE;
+        int BUTTON_NEGATIVE = DialogInterface.BUTTON_NEGATIVE;
 
-        void onDialogActionClicked(int id, int button);
+        void onDialogActionClicked(int id, int button, Bundle bundle);
     }
 
     public static DialogFragment getInstance(int id, String title, String message, String actionPositive,
                                              String actionNegative, DialogListener listener) {
+        return getInstance(id, title, message, actionPositive, actionNegative, false, listener);
+    }
+
+    public static DialogFragment getInstance(int id, String title, String message, String actionPositive,
+                                             String actionNegative, boolean editable, DialogListener listener) {
         AbstractDialogFragment fragment = new DoubleActionDialogFragment();
 
         Bundle args = new Bundle();
@@ -35,6 +40,7 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
         args.putString(ACTION_NEGATIVE, actionNegative);
         fragment.setArguments(args);
         fragment.setDialogListener(listener, id);
+        fragment.setEditable(editable);
         return fragment;
     }
 
@@ -54,17 +60,40 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
 
     @Override
     public void onClick(View v) {
-        if (getListener() instanceof DoubleActionDialogListener) {
-            DoubleActionDialogListener listener = ((DoubleActionDialogListener) getListener());
-            switch (v.getId()) {
-                case R.id.btn_dialog_ok:
-                    listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_POSITIVE);
-                    break;
-                case R.id.btn_dialog_cancel:
-                    listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_NEGATIVE);
-                    break;
-            }
+        switch (v.getId()) {
+            case R.id.btn_dialog_ok:
+                doPositiveAction();
+                break;
+            case R.id.btn_dialog_cancel:
+                doNegativeAction();
+                break;
         }
         dismiss();
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        doNegativeAction();
+    }
+
+    private void doNegativeAction() {
+        if (getListener() instanceof DoubleActionDialogListener) {
+            DoubleActionDialogListener listener = ((DoubleActionDialogListener) getListener());
+            listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_NEGATIVE, null);
+        }
+    }
+
+    private void doPositiveAction() {
+        if (getListener() instanceof DoubleActionDialogListener) {
+            DoubleActionDialogListener listener = ((DoubleActionDialogListener) getListener());
+            if (isEditable()) {
+                Bundle bundle = new Bundle();
+                putEditedMessage(bundle, getEditedMessage());
+                listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_POSITIVE, bundle);
+            } else {
+                listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_POSITIVE, null);
+            }
+        }
     }
 }

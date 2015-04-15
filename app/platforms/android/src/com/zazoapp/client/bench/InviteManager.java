@@ -10,6 +10,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.ContactsManager;
 import com.zazoapp.client.GridManager;
 import com.zazoapp.client.IntentHandler;
 import com.zazoapp.client.R;
@@ -34,6 +35,7 @@ public class InviteManager{
     public interface InviteDialogListener {
         void onShowInfoDialog(String title, String msg);
         void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, boolean editable, int actionId);
+        void onShowDoubleActionDialog(String title, String msg, String posText, String negText, int id, boolean editable);
         void onShowProgressDialog(String title, String msg);
         void onShowSelectPhoneNumberDialog(Contact contact);
         void onDismissProgressDialog();
@@ -68,8 +70,21 @@ public class InviteManager{
 
     public void invite(Contact contact, int phoneIndex) {
         Logger.d(TAG, "invite: " + contact + " (" + phoneIndex + ")");
-        benchObject = BenchObject.benchObjectWithContact(contact, contact.phoneObjects.get(phoneIndex));
+        LinkedTreeMap<String, String> mobileNumber = contact.phoneObjects.get(phoneIndex);
+        benchObject = BenchObject.benchObjectWithContact(contact, mobileNumber);
+        Friend friend = friendMatchingContact(contact, mobileNumber);
+        if (friend != null) {
+            this.friend = friend;
+            showAlreadyConnectedDialog();
+            return;
+        }
         checkHasApp();
+    }
+
+    public void inviteNewFriend() {
+        if (benchObject != null) {
+            getFriendFromServer();
+        }
     }
 
     public void invite(Contact contact) {
@@ -86,11 +101,17 @@ public class InviteManager{
 
     public void nudge(Friend f) {
         friend = f;
-        if (hasSim() || !DebugConfig.getInstance(context).shouldSendSms()) {
-            preNudgeDialog();
-        } else {
-            failureNoSimDialog(friend.getFullName());
+        preNudgeDialog();
+    }
+
+    private Friend friendMatchingContact(Contact contact, LinkedTreeMap<String, String> mobileNumber) {
+        for (Friend f : FriendFactory.getFactoryInstance().all()) {
+            if (ContactsManager.isPhoneNumberMatch(f.get(Friend.Attributes.MOBILE_NUMBER),
+                    mobileNumber.get(Contact.PhoneNumberKeys.E164))) {
+                return f;
+            }
         }
+        return null;
     }
 
 	//--------------
@@ -107,14 +128,14 @@ public class InviteManager{
 
 	private class CheckHasAppRequest extends HttpRequest {
 
-
         public CheckHasAppRequest(String uri) {
-			super(uri, new Callbacks() {
+            super(uri, new Callbacks() {
                 @Override
                 public void success(String response) {
                     gotHasApp(response);
                     listener.onDismissProgressDialog();
                 }
+
                 @Override
                 public void error(String errorString) {
                     Dispatch.dispatch("Error: " + errorString);
@@ -138,11 +159,9 @@ public class InviteManager{
 		boolean hasApp = hasAppStr != null && hasAppStr.equalsIgnoreCase("true");
 		if (hasApp)
 			getFriendFromServer();
-		else if (hasSim() || !DebugConfig.getInstance(context).shouldSendSms()) {
+        else {
             friend = null; // to clear previous nudged or invited friend
             preSmsDialog();
-        } else {
-            failureNoSimDialog(benchObject.displayName);
         }
 
 	}
@@ -160,10 +179,10 @@ public class InviteManager{
         new InviteFriendRequest(uri, params);
     }
 
-	private class InviteFriendRequest extends HttpRequest{
+    private class InviteFriendRequest extends HttpRequest{
 
         public InviteFriendRequest(String uri, LinkedTreeMap<String, String> params) {
-			super(uri, params, new Callbacks() {
+            super(uri, params, new Callbacks() {
                 @Override
                 public void success(String response) {
                     Log.i(TAG, "Success: " + response);
@@ -179,85 +198,101 @@ public class InviteManager{
             });
             Logger.d(TAG, "Invitation: " + uri + " " + params);
             listener.onShowProgressDialog(context.getString(R.string.dialog_checking_title), null);
-		}
+        }
     }
-	@SuppressWarnings("unchecked")
-	private void gotFriend(String response) {
-		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-		Gson g = new Gson();
-		params = g.fromJson(response, params.getClass());
 
-		if (checkIsFailureAndShowDialog(params))
-			return;
+    @SuppressWarnings("unchecked")
+    private void gotFriend(String response) {
+        LinkedTreeMap<String, String> params = new LinkedTreeMap<>();
+        Gson g = new Gson();
+        params = g.fromJson(response, params.getClass());
 
-		friend = FriendFactory.getFactoryInstance().createWithServerParams(context, params);
+        if (checkIsFailureAndShowDialog(params))
+            return;
+
+        friend = FriendFactory.getFactoryInstance().createWithServerParams(context, params);
         if (friend != null) {
-            connectedDialog();
+            if (friend.hasApp()) {
+                showConnectedDialog();
+            } else {
+                showSms();
+            }
         } else { // if friend is already exist
             friend = FriendFactory.getFactoryInstance().getExistingFriend(params);
-            alreadyConnectedDialog();
+            showAlreadyConnectedDialog();
         }
-
-	}
+    }
 
     //-----------------
     // Connected Dialog
     //-----------------
-    private void connectedDialog() {
-        String msg = context.getString(R.string.dialog_connected_message, benchObject.firstName, Config.appName, benchObject.firstName);
+    public void showConnectedDialog() {
+        String name = (friend != null) ? friend.getFirstName() : benchObject.firstName;
+        String msg = context.getString(R.string.dialog_connected_message, name, Config.appName, name);
         String title = context.getString(R.string.dialog_connected_title);
         String action = context.getString(R.string.dialog_action_ok);
         listener.onShowActionInfoDialog(title, msg, action, false, false, MainActivity.CONNECTED_DIALOG);
     }
 
-    private void alreadyConnectedDialog() {
+    private void showAlreadyConnectedDialog() {
         String msg = context.getString(R.string.dialog_already_connected_message, benchObject.firstName, Config.appName, benchObject.firstName);
         String title = context.getString(R.string.dialog_already_connected_title);
         String action = context.getString(R.string.dialog_action_ok);
         listener.onShowActionInfoDialog(title, msg, action, false, false, MainActivity.CONNECTED_DIALOG);
     }
 
-	private void serverError(){
-		showErrorDialog("Can't reach " + Config.appName + ".\n\nCheck your connection and try again.");
-	}
-
-	private void showErrorDialog(String message){
-        listener.onShowInfoDialog("No Connection", message);
-	}
-
-	//----------------------------
-	// Send Sms with download link
-	//----------------------------
-	private void preNudgeDialog(){
-        String msg = friend.get(Friend.Attributes.FIRST_NAME) + " still hasn't installed " + Config.appName + ". Send them the link again.";
-        String title = "Nudge " + friend.get(Friend.Attributes.FIRST_NAME);
-        listener.onShowActionInfoDialog(title, msg, "Send", false, false, MainActivity.NUDGE_DIALOG);
-	}
-
-
-	private void preSmsDialog(){
-        String value = benchObject.firstName + " has not installed " + Config.appName + " yet.\n\nSend them a link!";
-        listener.onShowActionInfoDialog("Invite", value, "Send", true, false, MainActivity.SMS_DIALOG);
-	}
-
-    private void failureNoSimDialog(String friendName) {
-        listener.onShowInfoDialog(context.getString(R.string.dialog_send_sms_failure_title),
-                context.getString(R.string.dialog_send_sms_failure_message, friendName, Config.appName));
+    private void serverError() {
+        String title = context.getString(R.string.dialog_server_error_title);
+        String message = context.getString(R.string.dialog_server_error_message, Config.appName);
+        listener.onShowInfoDialog(title, message);
     }
 
-	public void showSms(){
-        listener.onShowActionInfoDialog("Send Link", getDefaultInviteMessage(), "Send", true, true, MainActivity.SENDLINK_DIALOG);
-	}
+    //----------------------------
+    // Send Sms with download link
+    //----------------------------
+    private void preNudgeDialog() {
+        String name = friend.get(Friend.Attributes.FIRST_NAME);
+        String msg = context.getString(R.string.dialog_nudge_friend_message, name, Config.appName);
+        String title = context.getString(R.string.dialog_nudge_friend_title, name);
+        String action = context.getString(R.string.dialog_action_ok);
+        listener.onShowActionInfoDialog(title, msg, action, true, false, MainActivity.NUDGE_DIALOG);
+    }
 
-	public void sendInvite(String message){
-		sendSms(message);
-		if (friend == null)
-			getFriendFromServer();
-	}
+    private void preSmsDialog() {
+        String name = benchObject.firstName;
+        String msg = context.getString(R.string.dialog_invite_friend_message, name, Config.appName);
+        String title = context.getString(R.string.dialog_invite_friend_title, name);
+        String action = context.getString(R.string.dialog_action_ok);
+        listener.onShowActionInfoDialog(title, msg, action, true, false, MainActivity.SMS_DIALOG);
+    }
+
+    public void failureNoSimDialog() {
+        String friendName = (friend != null) ? friend.getFullName() : benchObject.displayName;
+        String title = context.getString(R.string.dialog_send_sms_failure_title);
+        String message = context.getString(R.string.dialog_send_sms_failure_message, friendName, Config.appName);
+        String action = context.getString(R.string.dialog_action_ok);
+        listener.onShowActionInfoDialog(title, message, action, false, false, MainActivity.NO_SIM_DIALOG);
+    }
+
+    public void showSms() {
+        String title = context.getString(R.string.dialog_invite_sms_title);
+        String posText = context.getString(R.string.dialog_invite_sms_action);
+        String negText = context.getString(R.string.dialog_action_cancel);
+        listener.onShowDoubleActionDialog(title, getDefaultInviteMessage(), posText, negText, MainActivity.SENDLINK_DIALOG, true);
+    }
+
+    public void sendInvite(String message) {
+        if (canSendSms()) {
+            sendSms(message);
+            showConnectedDialog();
+        } else {
+            failureNoSimDialog();
+        }
+    }
 
     public String getDefaultInviteMessage() {
         String mkey = UserFactory.current_user().get(User.Attributes.MKEY);
-        return context.getString(R.string.dialog_invite_message, Config.appName, Config.landingPageUrl, mkey);
+        return context.getString(R.string.dialog_invite_sms_message, Config.appName, Config.landingPageUrl, mkey);
     }
 
 	private void sendSms(String body){
@@ -279,9 +314,9 @@ public class InviteManager{
         }
 	}
 
-	public void moveFriendToGrid(){
-		GridManager.getInstance().moveFriendToGrid(friend);
-	}
+    public void moveFriendToGrid() {
+        GridManager.getInstance().moveFriendToGrid(friend);
+    }
 
 	// Not used as the intent coming back into home context is unnecessarily disruptive.
 	private PendingIntent makeSmsResultPendingIntent(){
@@ -305,5 +340,9 @@ public class InviteManager{
     private boolean hasSim() {
         TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         return tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT;
+    }
+
+    private boolean canSendSms() {
+        return hasSim() || !DebugConfig.getInstance(context).shouldSendSms();
     }
 }

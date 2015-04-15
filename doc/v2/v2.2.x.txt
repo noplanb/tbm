@@ -1,5 +1,5 @@
 Previous v2.1.0 (47)
-Current v2.2.0 (50)
+Current v2.2.1 (51)
 
 BACKGROUND CHANGES:
 - Added two error dispatch strategies: TbmTracker and RollbarTracker
@@ -16,7 +16,7 @@ When incoming message arrives it chimes even if it is currently recording
 SOLUTION:
 Check recording status before playing tone and ignore if recording 
 
-Cases:
+Testcases:
 C109
 
 ---------
@@ -41,6 +41,19 @@ PROBLEM:
 SOLUTION:
 Decide if 15 frame rate is supported by device and set if so. Otherwise use default frame rate.
 
-Cases:
+Testcases:
 C87
 C2454
+
+---------
+FIX: #353
+---------
+Add the person as a friend even if no sms is sent.
+PROBLEM:
+Currently if the user cancels just at the point of sending the invite sms we do not add the friend. This is a problem because user may wish to still add the friend but let him know about the app another way.
+
+SOLUTION:
+After user cancels at the last moment before sending an sms present dialog regarding sms not sent. But still add the friend show the friend added dialog and allow him to send a welcome message as usual.
+
+Testcases:
+C25, C26, C27, C29, C28, C2444, C30, C2239, C32, C33, C34, C36, C38, C39, C49, C2447, C44, C45, C46, C47

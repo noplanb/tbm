@@ -327,10 +327,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     @Override
-    public void onModelChanged() {
-        updateContentFromUi(false);
+    public void onModelUpdated(boolean changed) {
+        if (changed) {
+            updateContentFromUi(false);
+            benchViewManager.updateBench();
+        }
         highLightElementForFriend();
-        benchViewManager.updateBench();
     }
 
     //----------------------

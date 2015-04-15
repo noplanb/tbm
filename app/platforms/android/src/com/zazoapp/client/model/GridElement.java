@@ -43,13 +43,13 @@ public class GridElement extends ActiveModel {
         if (!currentFriendId.equals(f.getId())) {
             set(Attributes.FRIEND_ID, f.getId());
             if (notify) {
-                notifyCallbacks();
+                notifyCallbacks(true);
             }
         }
     }
 
     public void notifyUpdate() {
-        notifyCallbacks();
+        notifyCallbacks(false);
     }
 
 	public String getFriendId(){

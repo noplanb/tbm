@@ -59,9 +59,9 @@ public abstract class ActiveModel {
         callbacks.remove(callback);
     }
 
-    protected void notifyCallbacks() {
+    protected void notifyCallbacks(boolean changed) {
         for (ModelChangeCallback callback : callbacks) {
-            callback.onModelChanged();
+            callback.onModelUpdated(changed);
         }
     }
 
@@ -75,6 +75,6 @@ public abstract class ActiveModel {
     }
 
     public interface ModelChangeCallback {
-        void onModelChanged();
+        void onModelUpdated(boolean changed);
     }
 }

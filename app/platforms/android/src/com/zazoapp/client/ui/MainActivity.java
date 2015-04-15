@@ -33,19 +33,21 @@ import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
 import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
 import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
+import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
 import com.zazoapp.client.utilities.DialogShower;
 
 public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback,
-        InviteDialogListener, BenchViewManager.Provider, SelectPhoneNumberDialog.Callbacks {
+        InviteDialogListener, BenchViewManager.Provider, SelectPhoneNumberDialog.Callbacks, DoubleActionDialogFragment.DoubleActionDialogListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-	public static final int CONNECTED_DIALOG = 0;
-	public static final int NUDGE_DIALOG = 1;
-	public static final int SMS_DIALOG = 2;
-	public static final int SENDLINK_DIALOG = 3;
+    public static final int CONNECTED_DIALOG = 0;
+    public static final int NUDGE_DIALOG = 1;
+    public static final int SMS_DIALOG = 2;
+    public static final int SENDLINK_DIALOG = 3;
+    public static final int NO_SIM_DIALOG = 4;
 
 	private ServiceConnection conn = new ServiceConnection() {
 		@Override
@@ -171,11 +173,25 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 inviteManager.showSms();
                 break;
             case SMS_DIALOG:
-                inviteManager.showSms();
+                inviteManager.inviteNewFriend();
                 break;
-            case SENDLINK_DIALOG:
-                inviteManager.sendInvite(AbstractDialogFragment.getEditedMessage(bundle));
+            case NO_SIM_DIALOG:
+                inviteManager.showConnectedDialog();
                 break;
+        }
+    }
+
+    @Override
+    public void onDialogActionClicked(int id, int button, Bundle params) {
+        if (id == SENDLINK_DIALOG) {
+            switch (button) {
+                case BUTTON_POSITIVE:
+                    inviteManager.sendInvite(AbstractDialogFragment.getEditedMessage(params));
+                    break;
+                case BUTTON_NEGATIVE:
+                    inviteManager.failureNoSimDialog();
+                    break;
+            }
         }
     }
 
@@ -189,8 +205,14 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         DialogShower.showInfoDialog(this, title, msg);
     }
 
+    @Override
     public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, boolean editable, int actionId){
         DialogShower.showActionInfoDialog(this, title, msg, actionTitle, isNeedCancel, editable, actionId, this);
+    }
+
+    @Override
+    public void onShowDoubleActionDialog(String title, String msg, String posText, String negText, int id, boolean editable) {
+        DialogShower.showDoubleActionDialog(this, title, msg, posText, negText, id, editable, this);
     }
 
     @Override
