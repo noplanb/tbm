@@ -1,0 +1,46 @@
+Previous v2.1.0 (47)
+Current v2.2.0 (50)
+
+BACKGROUND CHANGES:
+- Added two error dispatch strategies: TbmTracker and RollbarTracker
+- FIX #368: Added application info to dispatch params for TbmTracker
+
+---------
+FIX: #379
+---------
+Chime plays during message recording, if new message arrives
+
+PROBLEM:
+When incoming message arrives it chimes even if it is currently recording 
+
+SOLUTION:
+Check recording status before playing tone and ignore if recording 
+
+Cases:
+C109
+
+---------
+FIX: #210
+---------
+Camera preview upside down and backwards on nexus 6 running 5.0
+
+PROBLEM:
+Hard-coded rotation of preview which ignores window orientation
+
+SOLUTION:
+Recalculated orientation with taking widow orientation into account
+
+---------
+FIX: #211
+---------
+Completely unable to record on Nexus 6 running 5.0
+
+PROBLEM:
+"Camera in use" always for Nexus 6. The reason is setting unsupported frame rate for recorder (15).
+
+SOLUTION:
+Decide if 15 frame rate is supported by device and set if so. Otherwise use default frame rate.
+
+Cases:
+C87
+C2454
