@@ -176,7 +176,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     // CameraExceptionHandler delegate
     // -------------------------------
     @Override
-    public void onDialogActionClicked(int id, int button) {
+    public void onDialogActionClicked(int id, int button, Bundle bundle) {
         switch (button) {
             case DoubleActionDialogListener.BUTTON_POSITIVE:
                 videoRecorderManager.reconnect();

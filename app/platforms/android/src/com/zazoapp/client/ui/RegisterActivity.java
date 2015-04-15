@@ -501,8 +501,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	}
 
 	private void serverError(){
-        showErrorDialog(getString(R.string.dialog_register_server_error_title),
-                getString(R.string.dialog_register_server_error_message, Config.appName));
+        showErrorDialog(getString(R.string.dialog_server_error_title),
+                getString(R.string.dialog_server_error_message, Config.appName));
 	}
 
     private void showErrorDialog(String title, String message) {

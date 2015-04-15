@@ -23,7 +23,6 @@ import com.zazoapp.client.GridManager;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.Friend.Attributes;
 import com.zazoapp.client.model.FriendFactory;
 
 import java.util.ArrayList;
@@ -80,7 +79,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         Log.i(TAG, "Position:" + position + " " + bo.displayName);
 
         // if it is just a friend on bench, move it to grid
-        Friend friend = (Friend) friendFactory.find(bo.friendId);
+        Friend friend = friendFactory.find(bo.friendId);
         if (friend != null) {
             GridManager.getInstance().moveFriendToGrid(friend);
             return;
@@ -103,14 +102,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         Log.i(TAG, contact.toString());
 
         hideBench();
-        if (contact.phoneObjects.size() == 1) {
-            Friend friend = friendMatchingContact(contact);
-            if (friend != null) {
-                GridManager.getInstance().moveFriendToGrid(friend);
-                return;
-            }
-        }
-
         InviteManager.getInstance().invite(contact);
     }
 
@@ -221,18 +212,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 				return true;
 		}
 		return false;
-	}
-
-	private Friend friendMatchingContact(Contact contact) {
-		for (Friend f : friendFactory.all()) {
-			for (LinkedTreeMap<String, String> pno : contact.phoneObjects) {
-				if (ContactsManager.isPhoneNumberMatch(f.get(Attributes.MOBILE_NUMBER),
-						pno.get(Contact.PhoneNumberKeys.E164))) {
-					return f;
-				}
-			}
-		}
-		return null;
 	}
 
     @Override

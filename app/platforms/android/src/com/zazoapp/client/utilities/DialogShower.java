@@ -52,6 +52,12 @@ public class DialogShower {
         dialog.show(activity.getFragmentManager(), null);
     }
 
+    public static void showDoubleActionDialog(Activity activity, String title, String message, String actionPositive,
+                                              String actionNegative, int dialogId, boolean editable, DoubleActionDialogListener listener) {
+        DialogFragment dialog = DoubleActionDialogFragment.getInstance(dialogId, title, message, actionPositive, actionNegative, editable, listener);
+        dialog.show(activity.getFragmentManager(), null);
+    }
+
     public static void showCameraException(final Activity activity, CameraException cameraException, final DoubleActionDialogListener listener, final int id) {
         Resources res = activity.getResources();
         final String title = res.getString(cameraException.getTitleId());

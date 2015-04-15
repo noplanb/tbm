@@ -30,19 +30,21 @@
     <string name="dialog_no_valid_phones_title">No Mobile Number</string>
     <string name="dialog_no_valid_phones_message">I could not find a valid mobile number for %1$s.\n\nPlease add a mobile number for %2$s in your device contacts and try again.</string>
     <string name="dialog_register_phone_error_title">Bad Number</string>
-    <string name="dialog_register_phone_error_message">Enter your country code and mobile number.</string>
+    <string name="dialog_register_phone_error_message">Enter your country code (+1 for USA) and mobile number.</string>
     <string name="dialog_register_last_name_error_title">Last Name</string>
     <string name="dialog_register_last_name_error_message">Enter your last name.</string>
     <string name="dialog_register_first_name_title">First Name</string>
     <string name="dialog_register_first_name_message">Enter your first name.</string>
-    <string name="dialog_register_server_error_title">No Connection</string>
-    <string name="dialog_register_server_error_message">Can\'t reach %1$s.\n\nCheck your connection and try again.</string>
+    <string name="dialog_server_error_title">No Connection</string>
+    <string name="dialog_server_error_message">Can\'t reach %1$s.\n\nCheck your connection and try again.</string>
     <string name="dialog_register_bad_code_title">Bad Code</string>
     <string name="dialog_register_bad_code_message">The code you entered is wrong. Please try again.</string>
     <string name="dialog_send_sms_failure_title">Unable to send SMS</string>
-    <string name="dialog_send_sms_failure_message">It looks like you can\'t send a link by SMS. Perhaps you can just call or email %1$s and tell them about %2$s.</string>
+    <string name="dialog_send_sms_failure_message">It looks like you can\'t or didn\'t send a link by SMS. Perhaps you can just call or email %1$s and tell them about %2$s.</string>
     <string name="dialog_select_phone_number">Select number to invite %1$s</string>
-    <string name="dialog_invite_message">I sent you a message on %1$s. Get the app: %2$s%3$s</string>
+    <string name="dialog_invite_sms_title">Send Link</string>
+    <string name="dialog_invite_sms_message">I sent you a message on %1$s. Get the app: %2$s%3$s</string>
+    <string name="dialog_invite_sms_action">Send</string>
     <string name="dialog_hint_title">Hint</string>
     <string name="dialog_play_hint_message">Hint: Tap a friend to play.</string>
     <string name="dialog_record_hint_message">Hint: Press and hold a friend to record.</string>
@@ -50,6 +52,10 @@
     <string name="dialog_already_connected_message">It seems that %1$s is already connected with you.\n\nRecord %2$s to %3$s now.</string>
     <string name="dialog_connected_title">You are Connected</string>
     <string name="dialog_connected_message">You and %1$s are connected.\n\nRecord a welcome %2$s to %3$s now.</string>
+    <string name="dialog_nudge_friend_title">Nudge %1$s</string>
+    <string name="dialog_nudge_friend_message">%1$s still hasn\'t installed %2$s.\n\nDo you want to send them a link again?</string>
+    <string name="dialog_invite_friend_title">Invite %1$s</string>
+    <string name="dialog_invite_friend_message">%1$s  has not installed %2$s.\n\nDo you want to send them a link?</string>
 
     <string name="toast_downloading">Downloading...</string>
 
