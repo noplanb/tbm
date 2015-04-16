@@ -16,8 +16,6 @@
 
 package com.zazoapp.client.ui.view;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
@@ -26,9 +24,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-
+import com.zazoapp.client.R;
 import com.zazoapp.client.ViewGroupGestureRecognizer;
 import com.zazoapp.client.utilities.Convenience;
+
+import java.util.ArrayList;
 
 public class NineViewGroup extends ViewGroup {
 	// ---------
@@ -53,7 +53,7 @@ public class NineViewGroup extends ViewGroup {
 		public boolean onCenterClick(View view);
 		public boolean onCenterStartLongpress(View view);
 		public boolean onEndLongpress();
-		public boolean onCancelLongpress(String reason);
+		public boolean onCancelLongpress(int reason);
 	}
 
 	public interface LayoutCompleteListener {
@@ -331,16 +331,16 @@ public class NineViewGroup extends ViewGroup {
 
 		@Override
 		public boolean bigMove(View v) {
-			return handleAbort(v, "Dragged finger away");
+			return handleAbort(v, R.string.toast_dragged_finger_away);
 		}
 
 		@Override
-		public boolean abort(View v, String reason) {
+		public boolean abort(View v, int reason) {
 			return handleAbort(v, reason);
 		}	
 	}
 
-	protected boolean handleAbort(View v, String reason) {
+	protected boolean handleAbort(View v, int reason) {
 		if (gestureCallbacks == null)
 			return false;
 		return gestureCallbacks.onCancelLongpress(reason);

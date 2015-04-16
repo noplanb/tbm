@@ -38,6 +38,10 @@ public class DialogShower {
         });
     }
 
+    public static void showToast(Context context, int id) {
+        showToast(context, context.getString(id));
+    }
+
     public static void showBadConnection(Activity activity) {
         Resources res = activity.getResources();
         showActionInfoDialog(activity, res.getString(R.string.dialog_bad_connection_title),

@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
-
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
@@ -79,7 +78,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 
         audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
 
-        // TODO: GARF: Andrey why are these not used?
         audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
             public void onAudioFocusChange(int focusChange) {
                 if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
@@ -171,7 +169,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 		            FileDownloadService.restartTransfersPendingRetry(activity);
 		            DialogShower.showBadConnection(activity);
 		        } else {
-		            DialogShower.showToast(activity, activity.getString(R.string.toast_downloading));
+		            DialogShower.showToast(activity, R.string.toast_downloading);
 		        }
 		    } else {
 		        Log.w(TAG, "No playable video.");
@@ -184,38 +182,38 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 
     private void play(){
         Log.i(TAG, "play");
+        if (requestAudioFocus() != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            DialogShower.showToast(activity, R.string.toast_could_not_get_audio_focus);
+            return;
+        }
         // Always set it to viewed whether it is playable or not so it eventually gets deleted.
         friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
 
-        if (videoIsPlayable()){
-            // TODO: GARF: Andrey what happens if it is not granted!
-            if (requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                videoBody.setVisibility(View.VISIBLE);
-                final String path = friend.videoFromPath(videoId);
-                videoView.setOnPreparedListener(new OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
-                        videoView.start();
-                        notifyStartPlaying();
-                    }
-                });
-                videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                    @Override
-                    public boolean onError(MediaPlayer mp, int what, int extra) {
-                        final String brokenVideoId = videoId;
-                        mp.reset();
-                        onCompletion(mp);
-                        friend.setAndNotifyIncomingVideoStatus(brokenVideoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
-                        notifyPlaybackError();
-                        Dispatch.dispatch(String.format("Error while playing video %s %d %d", brokenVideoId, what, extra));
-                        return true;
-                    }
-                });
-                videoView.setVideoPath(path);
-            }
-
-		} else {
+        if (videoIsPlayable()) {
+            videoBody.setVisibility(View.VISIBLE);
+            final String path = friend.videoFromPath(videoId);
+            videoView.setOnPreparedListener(new OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
+                    videoView.start();
+                    notifyStartPlaying();
+                }
+            });
+            videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    final String brokenVideoId = videoId;
+                    mp.reset();
+                    onCompletion(mp);
+                    friend.setAndNotifyIncomingVideoStatus(brokenVideoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
+                    notifyPlaybackError();
+                    Dispatch.dispatch(String.format("Error while playing video %s %d %d", brokenVideoId, what, extra));
+                    return true;
+                }
+            });
+            videoView.setVideoPath(path);
+        } else {
 			onCompletion(null);
 		}
 	}

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import android.view.ViewGroup;
 import com.zazoapp.client.GridManager;
+import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.GridElement;
@@ -45,7 +46,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     public void onRecordCancel() {
         // Different from abortAnyRecording because we always toast here.
         videoRecorder.stopRecording();
-        DialogShower.showToast(context, "Not sent.");
+        DialogShower.showToast(context, R.string.toast_not_sent);
     }
 
     public void onRecordStop() {
@@ -62,32 +63,32 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     // ----------------------------------------
     @Override
     public void unableToSetPreview() {
-        DialogShower.showToast(context, "unable to set preview");
+        DialogShower.showToast(context, R.string.toast_unable_to_set_preview);
     }
 
     @Override
     public void unableToPrepareMediaRecorder() {
-        DialogShower.showToast(context, "Unable to prepare MediaRecorder");
+        DialogShower.showToast(context, R.string.toast_unable_to_prepare_media_recorder);
     }
 
     @Override
     public void recordingAborted() {
-        DialogShower.showToast(context, "Recording Aborted due to Release before Stop.");
+        DialogShower.showToast(context, R.string.toast_recording_aborted_wrong_state);
     }
 
     @Override
     public void recordingTooShort() {
-        DialogShower.showToast(context, "Too short.");
+        DialogShower.showToast(context, R.string.toast_too_short);
     }
 
     @Override
     public void illegalStateOnStart() {
-        DialogShower.showToast(context, "Runtime exception on MediaRecorder.start. Quitting app.");
+        DialogShower.showToast(context, R.string.toast_illegal_media_recorder_state);
     }
 
     @Override
     public void runtimeErrorOnStart() {
-        DialogShower.showToast(context, "Unable to start recording. Try again.");
+        DialogShower.showToast(context, R.string.toast_unable_to_start_recording);
     }
 
     public void onResume() {

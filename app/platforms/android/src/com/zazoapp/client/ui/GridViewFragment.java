@@ -364,8 +364,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         }
 
         @Override
-        public boolean onCancelLongpress(String reason) {
-            Log.d(TAG, "onCancelLongpress: " + reason);
+        public boolean onCancelLongpress(int reason) {
+            Log.d(TAG, "onCancelLongpress: " + getActivity().getString(reason));
             DialogShower.showToast(getActivity(), reason);
             videoRecorderManager.onRecordCancel();
             return false;

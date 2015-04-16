@@ -103,7 +103,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             VideoPlayer videoPlayer = VideoPlayer.getInstance();
             videoPlayer.togglePlayOverView(container, gridElement.getFriendId());
         } else {
-            DialogShower.showToast(activity, activity.getString(R.string.video_is_not_playable));
+            DialogShower.showToast(activity, R.string.video_is_not_playable);
         }
     }
 
@@ -130,7 +130,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (isForMe(friendId)) {
             Friend friend = gridElement.getFriend();
             if (!friend.hasIncomingPlayableVideos()) {
-                DialogShower.showToast(activity, activity.getString(R.string.video_is_not_playable));
+                DialogShower.showToast(activity, R.string.video_is_not_playable);
             }
         }
     }

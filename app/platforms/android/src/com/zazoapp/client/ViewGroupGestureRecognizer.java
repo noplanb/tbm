@@ -21,7 +21,7 @@ public abstract class ViewGroupGestureRecognizer {
 	public abstract boolean startLongpress(View v);
 	public abstract boolean endLongpress(View v);
 	public abstract boolean bigMove(View v);
-	public abstract boolean abort(View v, String reason);	
+	public abstract boolean abort(View v, int reason);
 	
 	// ---------
 	// Constants
@@ -125,7 +125,7 @@ public abstract class ViewGroupGestureRecognizer {
 	public void cancelGesture(Boolean silent) {
 		Log.i(TAG, "cancelGesture silent=" + silent.toString());
 		if (!silent && state == State.LONGPRESS)
-			runAbort(targetView, "Gesture cancelled by controller.");
+			runAbort(targetView, R.string.toast_gesture_cancelled);
 
 		state = State.IDLE;
 	}
@@ -225,7 +225,7 @@ public abstract class ViewGroupGestureRecognizer {
 			        return;
 			    
 				state = State.IDLE;
-				runAbort(targetView, "Two Finger Touch");				
+				runAbort(targetView, R.string.toast_two_finger_touch);
 				return;
 			}
 			return;
@@ -293,7 +293,7 @@ public abstract class ViewGroupGestureRecognizer {
 		});
 	}
 
-	private void runAbort(final View v, final String reason){
+	private void runAbort(final View v, final int reason){
 		activity.runOnUiThread(new Runnable(){
 			@Override
 			public void run() {
