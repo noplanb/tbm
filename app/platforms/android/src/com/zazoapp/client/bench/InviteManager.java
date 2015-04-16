@@ -160,7 +160,7 @@ public class InviteManager{
 		if (hasApp)
 			getFriendFromServer();
         else {
-            friend = null; // to clear previous nudged or invited friend
+            friend = null; // to clear previous nudged or invited friend TODO legacy code
             preSmsDialog();
         }
 
