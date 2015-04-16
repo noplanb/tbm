@@ -160,7 +160,7 @@ public class InviteManager{
 		if (hasApp)
 			getFriendFromServer();
         else {
-            friend = null; // to clear previous nudged or invited friend TODO legacy code
+            friend = null; // to clear previous nudged or invited friend
             preSmsDialog();
         }
 
@@ -217,7 +217,7 @@ public class InviteManager{
             } else {
                 showSms();
             }
-        } else { // if friend is already exist
+        } else { // if friend is already exist TODO legacy code
             friend = FriendFactory.getFactoryInstance().getExistingFriend(params);
             showAlreadyConnectedDialog();
         }
