@@ -374,7 +374,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 
     private void debugPage() {
         Intent intent = new Intent(this, DebugSettingsActivity.class);
-        intent.putExtra(DebugSettingsActivity.EXTRA_SERVER_OPTION, true);
+        intent.putExtra(DebugSettingsActivity.EXTRA_FROM_REGISTER_SCREEN, true);
         startActivityForResult(intent, DEBUG_SCREEN_CODE);
     }
 
@@ -385,6 +385,9 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
             lastNameTxt.setText("");
             countryCodeTxt.setText("");
             mobileNumberTxt.setText("");
+            if (User.isRegistered(this)) {
+                getAWSCredentials();
+            }
         }
     }
 
