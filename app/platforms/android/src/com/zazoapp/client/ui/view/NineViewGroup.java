@@ -139,7 +139,7 @@ public class NineViewGroup extends ViewGroup {
 	    float width;
 	    float height;
 	    if (isHeightConstrained()){
-	        height = (getHeight() - 2 * (marginPx() + paddingPx()) );
+	        height = (getHeight() - 2 * (marginPx() + paddingPx()) ) / 3;
 	        width = ASPECT * height;
 	    } else {
 	        width = ( getWidth() - 2 * (marginPx() + paddingPx()) ) / 3;
