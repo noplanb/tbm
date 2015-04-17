@@ -6,18 +6,19 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
-import android.widget.VideoView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.Video;
 import com.zazoapp.client.network.FileDownloadService;
+import com.zazoapp.client.ui.view.VideoView;
 import com.zazoapp.client.utilities.DialogShower;
 
 import java.io.File;
@@ -55,7 +56,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
     /**
      * You must call init method before using VideoPlayerInstance
      * @return instance of VideoPlayer
-     * @see com.zazoapp.client.multimedia.VideoPlayer#init(android.app.Activity, android.view.ViewGroup, android.widget.VideoView)
+     * @see com.zazoapp.client.multimedia.VideoPlayer#init(android.app.Activity, android.view.ViewGroup, com.zazoapp.client.ui.view.VideoView)
      */
     public static VideoPlayer getInstance() {
         if (videoPlayer == null)
@@ -69,7 +70,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
      * @param videoBody parent layout of VideoView
      * @param videoView VideoView
      */
-    public void init(Activity activity, ViewGroup videoBody, VideoView videoView) {
+    public void init(Activity activity, ViewGroup videoBody, final VideoView videoView) {
         this.activity = activity;
         this.videoBody = videoBody;
         this.videoView = videoView;
@@ -80,14 +81,18 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 
         audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
             public void onAudioFocusChange(int focusChange) {
-                if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
-                    // Pause playback
-                } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
-                    // Resume playback
-                } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-                    //audioManager.unregisterMediaButtonEventReceiver(RemoteControlReceiver);
-                    audioManager.abandonAudioFocus(audioFocusChangeListener);
-                    // Stop playback
+                Log.i(TAG, "~~~ focus changed: " + focusChange);
+                switch (focusChange) {
+                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                    case AudioManager.AUDIOFOCUS_LOSS:
+                        stop();
+                        break;
+                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                        videoView.setVolume(0.1f);
+                        break;
+                    case AudioManager.AUDIOFOCUS_GAIN:
+                        videoView.setVolume(1.0f);
+                        break;
                 }
             }
         };
@@ -125,20 +130,20 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
     //---------------
     // Public actions
     //---------------
-	public void togglePlayOverView(View view, String friendId){
-		boolean needToPlay = !(isPlaying() && friendId.equals(this.friendId));
+    public void togglePlayOverView(View view, String friendId) {
+        boolean needToPlay = !(isPlaying() && friendId.equals(this.friendId));
 
-	    // Always stop first so that the notification goes out to reset the view we were on in case it was still playing and we are switching to another view.
-		stop();
+        // Always stop first so that the notification goes out to reset the view we were on in case it was still playing and we are switching to another view.
+        stop();
 
-		this.friendId = friendId;
-		friend = (Friend) FriendFactory.getFactoryInstance().find(friendId);
+        this.friendId = friendId;
+        friend = FriendFactory.getFactoryInstance().find(friendId);
 
-		if(needToPlay) {
-			setPlayerOverView(view);
-			start();
-		}
-	}
+        if (needToPlay) {
+            setPlayerOverView(view);
+            start();
+        }
+    }
 
     public void stop(){
         Log.i(TAG, "stop");
@@ -278,13 +283,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
     }
 
     private int requestAudioFocus() {
-        return audioManager.requestAudioFocus(audioFocusChangeListener,
-                // Use the music stream.
-                AudioManager.STREAM_MUSIC,
-                // Request permanent focus.
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+        int gainType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+                ? AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
+                : AudioManager.AUDIOFOCUS_GAIN_TRANSIENT;
+        return audioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, gainType);
     }
-
-
-
 }

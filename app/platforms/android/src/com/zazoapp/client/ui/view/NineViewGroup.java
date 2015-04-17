@@ -78,6 +78,8 @@ public class NineViewGroup extends ViewGroup {
 
 	private void init() {
 		addElementViews();
+        if (isInEditMode())
+            return;
 		addGestureRecognizer();
 	}
 

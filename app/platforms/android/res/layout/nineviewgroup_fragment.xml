@@ -20,7 +20,7 @@
 	    android:background="@color/bg_main"
         android:visibility="gone" >
 
-        <VideoView
+        <com.zazoapp.client.ui.view.VideoView
             android:id="@+id/video_view"
             android:layout_gravity="center_vertical"
             android:layout_width="match_parent"
