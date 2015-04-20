@@ -1,12 +1,9 @@
 package com.zazoapp.client.multimedia;
 
 import android.app.Activity;
-import android.content.Context;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
-import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,8 +25,9 @@ import java.util.Set;
 public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 
 	private static final String TAG = VideoPlayer.class.getSimpleName();
+    private AudioManager audioManager;
 
-	public interface StatusCallbacks{
+    public interface StatusCallbacks{
 		void onVideoPlaying(String friendId, String videoId);
 		void onVideoStopPlaying(String friendId);
         void onVideoPlaybackError(String friendId, String videoId);
@@ -46,9 +44,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 	private boolean videosAreDownloading;
 
 	private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
-
-    private AudioManager audioManager;
-    private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
 
     private VideoPlayer() {
     }
@@ -77,25 +72,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
         this.videoView.setOnCompletionListener(this);
         this.videoView.setOnPreparedListener(this);
 
-        audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
-
-        audioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
-            public void onAudioFocusChange(int focusChange) {
-                Log.i(TAG, "~~~ focus changed: " + focusChange);
-                switch (focusChange) {
-                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                    case AudioManager.AUDIOFOCUS_LOSS:
-                        stop();
-                        break;
-                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                        videoView.setVolume(0.1f);
-                        break;
-                    case AudioManager.AUDIOFOCUS_GAIN:
-                        videoView.setVolume(1.0f);
-                        break;
-                }
-            }
-        };
     }
 
 	public void registerStatusCallbacks(StatusCallbacks statusCallback){
@@ -147,7 +123,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 
     public void stop(){
         Log.i(TAG, "stop");
-        audioManager.abandonAudioFocus(audioFocusChangeListener);
         videoView.stopPlayback();
         videoView.setVideoURI(null);
         videoView.suspend();
@@ -187,7 +162,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 
     private void play(){
         Log.i(TAG, "play");
-        if (requestAudioFocus() != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+        if (!audioManager.gainFocus()) {
             DialogShower.showToast(activity, R.string.toast_could_not_get_audio_focus);
             return;
         }
@@ -282,10 +257,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
         return f.exists() && f.length() > 100;
     }
 
-    private int requestAudioFocus() {
-        int gainType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-                ? AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
-                : AudioManager.AUDIOFOCUS_GAIN_TRANSIENT;
-        return audioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, gainType);
+    public void setVolume(float volume) {
+        videoView.setVolume(volume);
     }
+
+    public void setAudioManager(AudioManager audioManager) {
+        this.audioManager = audioManager;
+    }
+
 }

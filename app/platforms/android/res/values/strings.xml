@@ -68,7 +68,7 @@
     <string name="toast_dragged_finger_away">Dragged finger away</string>
     <string name="toast_gesture_cancelled">Gesture cancelled by controller</string>
     <string name="toast_two_finger_touch">Two Finger Touch</string>
-    <string name="toast_could_not_get_audio_focus">Could not get audio focus. Try again</string>
+    <string name="toast_could_not_get_audio_focus">Could not get audio focus. Probably you are in call</string>
 
     <string name="menu_bench">Contacts</string>
 
