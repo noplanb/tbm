@@ -5,6 +5,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -62,8 +64,8 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     @Override
     protected void onPause() {
         super.onPause();
-        config.setCustomServerHost(serverHost.getText().toString());
-        config.setCustomServerUri(serverUri.getText().toString());
+        config.setCustomServerHost(serverHost.getText().toString().replace(" ", ""));
+        config.setCustomServerUri(serverUri.getText().toString().replace(" ", ""));
     }
 
     private void setUpVersion() {
@@ -121,7 +123,24 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         serverUri.setText(config.getCustomUri());
         serverHost.setEnabled(isEnabled);
         serverUri.setEnabled(isEnabled);
+        serverHost.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() > 0) {
+                    serverUri.setText("http://".concat(s.toString()));
+                } else {
+                    serverUri.setText("");
+                }
+            }
+        });
         Switch useCustomServer = (Switch) findViewById(R.id.custom_server);
         useCustomServer.setEnabled(serverOptionEnabled);
         useCustomServer.setChecked(config.shouldUseCustomServer());

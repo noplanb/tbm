@@ -172,6 +172,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignBaseline="@id/server_host_label"
                     android:layout_marginLeft="20dp"
+                    android:inputType="textNoSuggestions"
                     android:textColor="@android:color/white"/>
         </LinearLayout>
         <LinearLayout
@@ -192,6 +193,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignBaseline="@id/server_uri_label"
                     android:layout_marginLeft="20dp"
+                    android:inputType="textNoSuggestions"
                     android:textColor="@android:color/white"/>
         </LinearLayout>
 
