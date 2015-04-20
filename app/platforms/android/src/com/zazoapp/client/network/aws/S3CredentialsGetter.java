@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.network.HttpRequest;
@@ -50,10 +51,15 @@ public class S3CredentialsGetter {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void gotCredentials(Context context, String r) {
 		Gson g = new Gson();
-		Response response = g.fromJson(r, Response.class);
+        Response response;
+        try {
+            response = g.fromJson(r, Response.class);
+        } catch (JsonSyntaxException e) {
+            throw new JsonSyntaxException("gotCredentials: " + r, e);
+        }
+
 		Log.i(TAG, "gotCredentials");
 
         if(!response.getStatus().equalsIgnoreCase("success")){

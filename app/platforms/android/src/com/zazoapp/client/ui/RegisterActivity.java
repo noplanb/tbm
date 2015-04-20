@@ -18,6 +18,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -267,11 +268,14 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	//-------------------------
 	// Handle verification code 
 	//-------------------------
-	@SuppressWarnings("unchecked")
 	public void didRegister(String r) {
 		Gson g = new Gson();
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String,String>();
-		params = g.fromJson(r, params.getClass());
+        try {
+            params = g.fromJson(r, params.getClass());
+        } catch (JsonSyntaxException e) {
+            throw new JsonSyntaxException("didRegister: " + r, e);
+        }
 		Log.i(TAG, "didRegister: " + params.toString());
 
 		if ( HttpRequest.isSuccess(params.get(HttpRequest.ParamKeys.RESPONSE_STATUS)) ){
@@ -321,12 +325,15 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void didReceiveCodeResponse(String r) {
 		Log.i(TAG, "didReceiveCodeResponse: " + r);
 		Gson g = new Gson();
 		LinkedTreeMap<String,String> params = new LinkedTreeMap<String, String>();
-		params = g.fromJson(r, params.getClass());
+        try {
+            params = g.fromJson(r, params.getClass());
+        } catch (JsonSyntaxException e) {
+            throw new JsonSyntaxException("didReceiveCodeResponse: " + r, e);
+        }
 		if ( HttpRequest.isSuccess(params.get(HttpRequest.ParamKeys.RESPONSE_STATUS)) ){
 			gotUser(params);
 		} else {
