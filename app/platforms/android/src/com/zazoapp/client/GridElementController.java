@@ -53,6 +53,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             gridElementView = new GridElementView(activity);
             container.setVisibility(View.INVISIBLE); // hide view until content isn't loaded
             container.addView(gridElementView);
+        } else if (gridElementView == null) {
+            // when activity recreates we loose GridElementController but not view
+            // So here we restore gridElementView from container
+            gridElementView = (GridElementView) container.getChildAt(0);
         }
         gridElementView.setOnClickListener(this);
         gridElementView.setEventListener(this);
@@ -103,7 +107,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             VideoPlayer videoPlayer = VideoPlayer.getInstance();
             videoPlayer.togglePlayOverView(container, gridElement.getFriendId());
         } else {
-            DialogShower.showToast(activity, activity.getString(R.string.video_is_not_playable));
+            DialogShower.showToast(activity, R.string.video_is_not_playable);
         }
     }
 
@@ -130,7 +134,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (isForMe(friendId)) {
             Friend friend = gridElement.getFriend();
             if (!friend.hasIncomingPlayableVideos()) {
-                DialogShower.showToast(activity, activity.getString(R.string.video_is_not_playable));
+                DialogShower.showToast(activity, R.string.video_is_not_playable);
             }
         }
     }

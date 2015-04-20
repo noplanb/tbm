@@ -58,6 +58,17 @@
     <string name="dialog_invite_friend_message">%1$s  has not installed %2$s.\n\nDo you want to send them a link?</string>
 
     <string name="toast_downloading">Downloading...</string>
+    <string name="toast_not_sent">Not sent</string>
+    <string name="toast_unable_to_set_preview">Unable to set preview</string>
+    <string name="toast_unable_to_prepare_media_recorder">Unable to prepare MediaRecorder</string>
+    <string name="toast_recording_aborted_wrong_state">Recording Aborted due to Release before Stop</string>
+    <string name="toast_too_short">Too short</string>
+    <string name="toast_illegal_media_recorder_state">Illegal state of MediaRecorder. Try to restart app</string>
+    <string name="toast_unable_to_start_recording">Unable to start recording. Try again</string>
+    <string name="toast_dragged_finger_away">Dragged finger away</string>
+    <string name="toast_gesture_cancelled">Gesture cancelled by controller</string>
+    <string name="toast_two_finger_touch">Two Finger Touch</string>
+    <string name="toast_could_not_get_audio_focus">Could not get audio focus. Probably you are in call</string>
 
     <string name="menu_bench">Contacts</string>
 

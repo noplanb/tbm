@@ -63,6 +63,19 @@
                         android:layout_gravity="center|right"
                         android:textColor="@android:color/white"/>
             </TableRow>
+            <TableRow>
+                <View
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_span="2"/>
+                <Button
+                        android:id="@+id/user_info_backup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Backup"
+                        android:layout_gravity="center|right"
+                        android:textColor="@android:color/white"/>
+            </TableRow>
         </TableLayout>
 
         <Switch
@@ -159,6 +172,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignBaseline="@id/server_host_label"
                     android:layout_marginLeft="20dp"
+                    android:inputType="textNoSuggestions"
                     android:textColor="@android:color/white"/>
         </LinearLayout>
         <LinearLayout
@@ -179,6 +193,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignBaseline="@id/server_uri_label"
                     android:layout_marginLeft="20dp"
+                    android:inputType="textNoSuggestions"
                     android:textColor="@android:color/white"/>
         </LinearLayout>
 
