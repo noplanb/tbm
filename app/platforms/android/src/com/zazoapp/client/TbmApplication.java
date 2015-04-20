@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.dispatch.TbmTracker;
+import com.zazoapp.client.dispatch.RollbarTracker;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
@@ -37,7 +37,7 @@ public class TbmApplication extends Application {
         DebugConfig.getInstance(this);
         loadDataModel();
 
-        Dispatch.registerTracker(this, new TbmTracker());
+        Dispatch.registerTracker(this, new RollbarTracker());
         Dispatch.dispatchStored();
         startService(new Intent(this, DispatcherService.class));
 

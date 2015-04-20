@@ -6,6 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.Build;
 import android.util.Log;
+import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.ui.helpers.VideoRecorderManager;
 
 /**
@@ -64,6 +65,9 @@ public class AudioManager implements SensorEventListener {
             return true;
         }
         int result = audioManager.requestAudioFocus(focusChangeListener, android.media.AudioManager.STREAM_MUSIC, GAIN_TYPE);
+        if (result != android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            Dispatch.dispatch("AudioManager: couldn't get focus");
+        }
         return hasFocus = result == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
     }
 

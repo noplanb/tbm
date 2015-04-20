@@ -54,6 +54,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             container.setVisibility(View.INVISIBLE); // hide view until content isn't loaded
             container.addView(gridElementView);
         } else if (gridElementView == null) {
+            // when activity recreates we loose GridElementController but not view
+            // So here we restore gridElementView from container
             gridElementView = (GridElementView) container.getChildAt(0);
         }
         gridElementView.setOnClickListener(this);
