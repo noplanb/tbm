@@ -151,6 +151,9 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     protected void onPause() {
         super.onPause();
+        if (benchController.isBenchShowed()) {
+            benchController.hideBench();
+        }
         releaseManagers();
     }
 

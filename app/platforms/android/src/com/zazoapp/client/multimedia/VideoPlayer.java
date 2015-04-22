@@ -101,10 +101,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @Override
     public void stop(){
         Log.i(TAG, "stop");
+        videoBody.setVisibility(View.INVISIBLE);
         videoView.stopPlayback();
         videoView.setVideoURI(null);
         videoView.suspend();
-        videoBody.setVisibility(View.GONE);
         notifyStopPlaying();
     }
 
@@ -154,6 +154,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
 
         if (videoIsPlayable()) {
+            videoView.setVisibility(View.VISIBLE);
             videoBody.setVisibility(View.VISIBLE);
             final String path = friend.videoFromPath(videoId);
             videoView.setOnPreparedListener(new OnPreparedListener() {
@@ -206,6 +207,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 	    videoBody.setLayoutParams(params);
 	    videoBody.setX(view.getX());
 	    videoBody.setY(view.getY());
+
+        // fix for Case 253. Switching off/on clear videoView
+        if (videoView != null) {
+            videoView.setVisibility(View.INVISIBLE);
+            videoView.setVisibility(View.VISIBLE);
+        }
 	}
 
     private void determineIfDownloading() {
