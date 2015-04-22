@@ -34,3 +34,29 @@ Added AudioManager to handle described situations
 
 Testcases:
 C76, C77, C78, C79, C2455
+
+---------
+FIX #358
+---------
+Contact drawer it would be better to close automatically when Zazo goes to background.
+PROBLEM:
+Video starts to play automatically but is not visible because the drawer is open.
+
+SOLUTION:
+Hide drawer Zazo activity goes on pause
+
+Testcases:
+C111
+
+---------
+FIX #253, 244, 117, 380
+---------
+First few seconds of old video msg show to the user(old video thumbnail)
+PROBLEM:
+First few seconds of old video msg show to the user (old video thumbnail)
+
+SOLUTION:
+Switching videoView off/on to clear 
+
+Testcases:
+C9, C73, C74

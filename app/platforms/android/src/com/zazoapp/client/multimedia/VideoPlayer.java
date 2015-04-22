@@ -22,6 +22,8 @@ import com.zazoapp.client.utilities.DialogShower;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Player {
 
@@ -35,6 +37,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 	private ViewGroup videoBody;
 	private boolean videosAreDownloading;
     private ZazoManagerProvider managerProvider;
+    private Timer timer = new Timer();
+    private TimerTask onStartTask;
 
 	private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
 
@@ -105,6 +109,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         videoView.stopPlayback();
         videoView.setVideoURI(null);
         videoView.suspend();
+        cancelWaitingForStart();
         notifyStopPlaying();
     }
 
@@ -154,21 +159,20 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
 
         if (videoIsPlayable()) {
-            videoView.setVisibility(View.VISIBLE);
-            videoBody.setVisibility(View.VISIBLE);
             final String path = friend.videoFromPath(videoId);
             videoView.setOnPreparedListener(new OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
                     videoView.start();
-                    notifyStartPlaying();
+                    waitAndNotifyWhenStart();
                 }
             });
             videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                 @Override
                 public boolean onError(MediaPlayer mp, int what, int extra) {
                     final String brokenVideoId = videoId;
+                    cancelWaitingForStart();
                     mp.reset();
                     onCompletion(mp);
                     friend.setAndNotifyIncomingVideoStatus(brokenVideoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
@@ -209,11 +213,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 	    videoBody.setY(view.getY());
 
         // fix for Case 253. Switching off/on clear videoView
-        if (videoView != null) {
-            videoView.setVisibility(View.INVISIBLE);
-            videoView.setVisibility(View.VISIBLE);
-        }
-	}
+        videoView.setVisibility(View.INVISIBLE);
+        videoView.setVisibility(View.VISIBLE);
+    }
 
     private void determineIfDownloading() {
         videosAreDownloading = friend.hasDownloadingVideo();
@@ -244,6 +246,39 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private boolean videoIsPlayable(){
         File f = friend.videoFromFile(videoId);
         return f.exists() && f.length() > 100;
+    }
+
+    private void waitAndNotifyWhenStart() {
+        cancelWaitingForStart();
+        timer.purge();
+        onStartTask = new TimerTask() {
+            @Override
+            public void run() {
+                if (videoView.getCurrentPosition() > 0) {
+                    Log.i(TAG, "~~~" + videoView.getCurrentPosition());
+                    videoView.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // checks if it is playing to eliminate the case of released player
+                            if (videoView.isPlaying()) {
+                                videoView.setVisibility(View.VISIBLE);
+                                videoBody.setVisibility(View.VISIBLE);
+                                notifyStartPlaying();
+                            }
+                        }
+                    }, 100);
+                    cancel();
+                }
+            }
+        };
+        timer.schedule(onStartTask, 30, 30);
+    }
+
+    private void cancelWaitingForStart() {
+        if (onStartTask != null) {
+            onStartTask.cancel();
+            onStartTask = null;
+        }
     }
 
 }
