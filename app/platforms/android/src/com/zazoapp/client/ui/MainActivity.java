@@ -5,9 +5,12 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.drawable.ColorDrawable;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -19,15 +22,24 @@ import android.widget.ImageView;
 import com.zazoapp.client.DispatcherService;
 import com.zazoapp.client.PreferencesHelper;
 import com.zazoapp.client.R;
+import com.zazoapp.client.TbmApplication;
 import com.zazoapp.client.VersionHandler;
+import com.zazoapp.client.ZazoManagerProvider;
 import com.zazoapp.client.bench.BenchController;
 import com.zazoapp.client.bench.BenchViewManager;
+import com.zazoapp.client.bench.InviteHelper;
 import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.bench.InviteManager.InviteDialogListener;
 import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
+import com.zazoapp.client.multimedia.AudioFocusController;
+import com.zazoapp.client.multimedia.AudioManager;
+import com.zazoapp.client.multimedia.CameraManager;
+import com.zazoapp.client.multimedia.Player;
+import com.zazoapp.client.multimedia.Recorder;
+import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
@@ -36,10 +48,12 @@ import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogLi
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
+import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
+import com.zazoapp.client.ui.helpers.VideoRecorderManager;
 import com.zazoapp.client.utilities.DialogShower;
 
-public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback,
-        InviteDialogListener, BenchViewManager.Provider, SelectPhoneNumberDialog.Callbacks, DoubleActionDialogFragment.DoubleActionDialogListener {
+public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback, UnexpectedTerminationHelper.TerminationCallback,
+        InviteDialogListener, ZazoManagerProvider, SelectPhoneNumberDialog.Callbacks, DoubleActionDialogFragment.DoubleActionDialogListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -66,8 +80,13 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 	private GridViewFragment mainFragment;
 	private InviteManager inviteManager;
     private DialogFragment pd;
+    private AudioManager audioManager;
+    private SensorManager sensorManager;
+    private Sensor proximitySensor;
+    private Recorder videoRecorder;
+    private Player videoPlayer;
 
-	protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
         PreferencesHelper preferences = new PreferencesHelper(this);
         if (!preferences.getBoolean(ActiveModelsHandler.USER_REGISTERED, false)) {
@@ -82,11 +101,9 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 		gcmHandler = new GcmHandler(this);
 		versionHandler = new VersionHandler(this);
 
-        inviteManager = InviteManager.getInstance();
-        inviteManager.init(this, this);
-        benchController = new BenchController(this);
-
-		setupActionBar();
+        initManagers();
+        TbmApplication.getInstance().addTerminationCallback(this);
+        setupActionBar();
     }
 
 	private void setupActionBar() {
@@ -121,6 +138,21 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         unbindService(conn);
         NotificationAlertManager.cleanUp();
 	}
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!audioManager.gainFocus()) {
+            DialogShower.showToast(this, R.string.toast_could_not_get_audio_focus);
+        }
+        sensorManager.registerListener(audioManager, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        releaseManagers();
+    }
 
     // TODO: Serhii please clean up per our design guidelines.
     private void onLoadComplete() {
@@ -170,7 +202,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 inviteManager.moveFriendToGrid();
                 break;
             case NUDGE_DIALOG:
-                inviteManager.showSms();
+                inviteManager.showSmsDialog();
                 break;
             case SMS_DIALOG:
                 inviteManager.inviteNewFriend();
@@ -242,12 +274,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         DialogShower.showVersionHandlerDialog(this, message, negativeButton);
     }
 
-    @Override
-    public BenchViewManager getBenchViewManager() {
-        return benchController;
-    }
-
-
     private void startRegisterActivity() {
         Log.i(TAG, "Not registered. Starting RegisterActivity");
         Intent i = new Intent(this, RegisterActivity.class);
@@ -261,5 +287,61 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         if (mainFragment != null) {
             mainFragment.onWindowFocusChanged(hasFocus && !NotificationAlertManager.screenIsLocked(this));
         }
+    }
+
+    @Override
+    public BenchViewManager getBenchViewManager() {
+        return benchController;
+    }
+
+    @Override
+    public AudioFocusController getAudioFocusController() {
+        return audioManager;
+    }
+
+    @Override
+    public Recorder getRecorder() {
+        return videoRecorder;
+    }
+
+    @Override
+    public Player getPlayer() {
+        return videoPlayer;
+    }
+
+    @Override
+    public InviteHelper getInviteHelper() {
+        return inviteManager;
+    }
+
+    private void initManagers() {
+        inviteManager = new InviteManager(this, this);
+        benchController = new BenchController(this, this);
+        audioManager = new AudioManager(this, this);
+        videoRecorder = new VideoRecorderManager(this, this);
+        videoPlayer = new VideoPlayer(this, this);
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        if (proximitySensor == null) {
+            Log.i(TAG, "Proximity sensor not found");
+        }
+    }
+
+    private void releaseManagers() {
+        videoRecorder.pause();
+        CameraManager.releaseCamera();
+        videoPlayer.release();
+        audioManager.abandonFocus();
+        sensorManager.unregisterListener(audioManager);
+    }
+
+    @Override
+    public void onTerminate() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                releaseManagers();
+            }
+        });
     }
 }

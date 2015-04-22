@@ -6,30 +6,28 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.Build;
 import android.util.Log;
+import com.zazoapp.client.ZazoManagerProvider;
 import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.ui.helpers.VideoRecorderManager;
 
 /**
  * Created by skamenkovych@codeminders.com on 4/20/2015.
  */
-public class AudioManager implements SensorEventListener {
+public class AudioManager implements SensorEventListener, AudioFocusController {
 
     private static final String TAG = AudioManager.class.getSimpleName();
 
     private android.media.AudioManager.OnAudioFocusChangeListener focusChangeListener;
     private android.media.AudioManager audioManager;
-    private VideoRecorderManager recorder;
-    private VideoPlayer player;
+    private ZazoManagerProvider managerProvider;
     private boolean hasFocus;
 
     private static final int GAIN_TYPE = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
             ? android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
             : android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT;
 
-    public AudioManager(Context context, VideoRecorderManager recorder, VideoPlayer player) {
+    public AudioManager(Context context, ZazoManagerProvider managerProvider) {
         audioManager = (android.media.AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        this.recorder = recorder;
-        this.player = player;
+        this.managerProvider = managerProvider;
         initAudioFocusListener();
     }
 
@@ -37,12 +35,12 @@ public class AudioManager implements SensorEventListener {
         focusChangeListener = new android.media.AudioManager.OnAudioFocusChangeListener() {
             public void onAudioFocusChange(int focusChange) {
                 Log.i(TAG, "focus changed: " + focusChange);
+                Player player = managerProvider.getPlayer();
                 switch (focusChange) {
                     case android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                         player.stop();
                         break;
                     case android.media.AudioManager.AUDIOFOCUS_LOSS:
-                        hasFocus = false;
                         player.stop();
                         break;
                     case android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
@@ -52,14 +50,15 @@ public class AudioManager implements SensorEventListener {
                         player.setVolume(1.0f);
                         break;
                 }
+                hasFocus = focusChange == android.media.AudioManager.AUDIOFOCUS_GAIN;
+                if (!hasFocus && managerProvider.getRecorder().isRecording()) {
+                    managerProvider.getRecorder().cancel();
+                }
             }
         };
     }
 
-    /**
-     * Request audio focus
-     * @return true if audio focus has been granted
-     */
+    @Override
     public boolean gainFocus() {
         if (hasFocus) {
             return true;
@@ -71,12 +70,14 @@ public class AudioManager implements SensorEventListener {
         return hasFocus = result == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
     }
 
+    @Override
     public void abandonFocus() {
         if (hasFocus) {
             hasFocus = audioManager.abandonAudioFocus(focusChangeListener) != android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
         }
     }
 
+    @Override
     public boolean hasFocus() {
         return hasFocus;
     }
