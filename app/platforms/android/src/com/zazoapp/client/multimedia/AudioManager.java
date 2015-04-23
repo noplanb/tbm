@@ -20,6 +20,8 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
     private android.media.AudioManager audioManager;
     private ZazoManagerProvider managerProvider;
     private boolean hasFocus;
+    private int mode;
+    private boolean isSpeakerPhoneOn;
 
     private static final int GAIN_TYPE = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
             ? android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
@@ -27,6 +29,8 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
 
     public AudioManager(Context context, ZazoManagerProvider managerProvider) {
         audioManager = (android.media.AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        mode = audioManager.getMode();
+        isSpeakerPhoneOn = audioManager.isSpeakerphoneOn();
         this.managerProvider = managerProvider;
         initAudioFocusListener();
     }
@@ -96,5 +100,10 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    public void release() {
+        audioManager.setMode(mode);
+        audioManager.setSpeakerphoneOn(isSpeakerPhoneOn);
     }
 }

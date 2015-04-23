@@ -320,6 +320,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         CameraManager.releaseCamera();
         videoPlayer.release();
         audioManager.abandonFocus();
+        audioManager.release();
         sensorManager.unregisterListener(audioManager);
     }
 

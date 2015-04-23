@@ -255,7 +255,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             @Override
             public void run() {
                 if (videoView.getCurrentPosition() > 0) {
-                    Log.i(TAG, "~~~" + videoView.getCurrentPosition());
                     videoView.postDelayed(new Runnable() {
                         @Override
                         public void run() {
