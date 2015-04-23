@@ -9,6 +9,7 @@ BACKGROUND CHANGES:
 - Moved to RollbarTracker
 - Refactored manager access from different modules
 - Changed Rollbar environment to "production". Added host information to person data
+- Removed unnecessary binding to service in activities as all data is loaded on application created
 
 ---------
 FIX

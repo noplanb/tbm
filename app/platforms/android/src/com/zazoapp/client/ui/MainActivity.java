@@ -3,23 +3,18 @@ package com.zazoapp.client.ui;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import com.zazoapp.client.DispatcherService;
 import com.zazoapp.client.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.TbmApplication;
@@ -63,22 +58,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     public static final int SENDLINK_DIALOG = 3;
     public static final int NO_SIM_DIALOG = 4;
 
-	private ServiceConnection conn = new ServiceConnection() {
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-		}
-
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			onLoadComplete();
-		}
-	};
-
-	private GcmHandler gcmHandler;
-	private BenchController benchController;
-	private VersionHandler versionHandler;
-	private GridViewFragment mainFragment;
-	private InviteManager inviteManager;
+    private GcmHandler gcmHandler;
+    private BenchController benchController;
+    private VersionHandler versionHandler;
+    private GridViewFragment mainFragment;
+    private InviteManager inviteManager;
     private DialogFragment pd;
     private AudioManager audioManager;
     private SensorManager sensorManager;
@@ -87,57 +71,58 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     private Player videoPlayer;
 
     protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);
         PreferencesHelper preferences = new PreferencesHelper(this);
         if (!preferences.getBoolean(ActiveModelsHandler.USER_REGISTERED, false)) {
             startRegisterActivity();
             return;
         }
-		setContentView(R.layout.main_activity);
+        setContentView(R.layout.main_activity);
 
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-		gcmHandler = new GcmHandler(this);
-		versionHandler = new VersionHandler(this);
+        gcmHandler = new GcmHandler(this);
+        versionHandler = new VersionHandler(this);
 
         initManagers();
         TbmApplication.getInstance().addTerminationCallback(this);
         setupActionBar();
+        setupFragment();
+        new S3CredentialsGetter(this);
     }
 
-	private void setupActionBar() {
-		ActionBar actionBar = getActionBar();
-		actionBar.setDisplayShowCustomEnabled(true);
-		actionBar.setDisplayUseLogoEnabled(false);
-		actionBar.setDisplayShowTitleEnabled(false);
-		actionBar.setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
-		ImageView v = new ImageView(this);
-		v.setImageResource(R.drawable.zazo_type);
+    private void setupActionBar() {
+        ActionBar actionBar = getActionBar();
+        actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setDisplayUseLogoEnabled(false);
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
+        ImageView v = new ImageView(this);
+        v.setImageResource(R.drawable.zazo_type);
         v.setOnTouchListener(new ZazoGestureListener(this));
-		actionBar.setCustomView(v);
-	}
+        actionBar.setCustomView(v);
+    }
 
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		setIntent(intent);
-	}
-	
-	@Override
-	protected void onStart() {
-		super.onStart();
-        bindService(new Intent(this, DispatcherService.class), conn, Service.BIND_IMPORTANT);
-		versionHandler.checkVersionCompatibility();
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        versionHandler.checkVersionCompatibility();
+        checkPlayServices();
         NotificationAlertManager.init(this);
     }
 
-	@Override
-	protected void onStop() {
-		super.onStop();
-        unbindService(conn);
+    @Override
+    protected void onStop() {
+        super.onStop();
         NotificationAlertManager.cleanUp();
-	}
+    }
 
     @Override
     protected void onResume() {
@@ -157,38 +142,37 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         releaseManagers();
     }
 
-    // TODO: Serhii please clean up per our design guidelines.
-    private void onLoadComplete() {
-		Log.i(TAG, "onLoadComplete");
+    private void checkPlayServices() {
+        Log.i(TAG, "checkPlayServices");
+        if (gcmHandler.checkPlayServices()) {
+            gcmHandler.registerGcm();
+        } else {
+            Dispatch.dispatch("No valid Google Play Services APK found.");
+        }
+    }
+
+    private void setupFragment() {
         mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
         if (mainFragment == null) {
             mainFragment = new GridViewFragment();
             getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
         }
-		if (gcmHandler.checkPlayServices()){
-			gcmHandler.registerGcm();
-		} else {
-			Dispatch.dispatch("No valid Google Play Services APK found.");
-		}
+    }
 
-		benchController.onDataLoaded();
-		new S3CredentialsGetter(this);
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu items for use in the action bar
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.home_menu, menu);
-		return super.onCreateOptionsMenu(menu);
-	}
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.home_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.action_bench:
-                if(benchController.isBenchShowed()) {
+                if (benchController.isBenchShowed()) {
                     benchController.hideBench();
                 } else {
                     benchController.showBench();
@@ -241,7 +225,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     }
 
     @Override
-    public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, boolean editable, int actionId){
+    public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, boolean editable, int actionId) {
         DialogShower.showActionInfoDialog(this, title, msg, actionTitle, isNeedCancel, editable, actionId, this);
     }
 
@@ -328,6 +312,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         if (proximitySensor == null) {
             Log.i(TAG, "Proximity sensor not found");
         }
+        benchController.onDataLoaded();
     }
 
     private void releaseManagers() {

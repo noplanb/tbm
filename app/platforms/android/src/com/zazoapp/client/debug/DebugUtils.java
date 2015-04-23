@@ -47,7 +47,6 @@ public final class DebugUtils {
 
     public static void restoreBackup(Context context) {
         copy(backupFolder(), Config.homeDirPath(context));
-        DialogShower.showToast(context, "Loaded");
         // TODO add restoring settings
     }
 
