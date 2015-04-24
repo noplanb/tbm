@@ -22,7 +22,7 @@ public interface Player {
     void unregisterStatusCallbacks(StatusCallbacks statusCallback);
     boolean isPlaying();
     void rewind(int msec);
-    void restart();
+    void restartAfter(int delay);
 
     interface StatusCallbacks {
         void onVideoPlaying(String friendId, String videoId);

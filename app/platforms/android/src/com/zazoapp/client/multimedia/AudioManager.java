@@ -95,7 +95,7 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
         audioManager.setSpeakerphoneOn(isSpeakerPhoneOn);
         Player player = managerProvider.getPlayer();
         if (player.isPlaying()) {
-            player.restart();
+            player.restartAfter(1000);
         }
     }
 
