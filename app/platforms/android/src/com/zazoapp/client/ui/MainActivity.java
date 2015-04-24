@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import com.zazoapp.client.PreferencesHelper;
@@ -332,5 +333,13 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 releaseManagers();
             }
         });
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (audioManager.isSpeakerPhoneOn()) {
+            return super.dispatchTouchEvent(ev);
+        }
+        return true;
     }
 }

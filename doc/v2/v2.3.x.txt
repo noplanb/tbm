@@ -37,6 +37,15 @@ Testcases:
 C76, C77, C78, C79, C2455
 
 ---------
+NEW
+---------
+Restarting video when audio mode is changed with proximity sensor
+Disabled touches when earpiece is working
+
+Testcases:
+C81
+
+---------
 FIX #358
 ---------
 Contact drawer it would be better to close automatically when Zazo goes to background.

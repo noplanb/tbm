@@ -239,8 +239,37 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 	    this.videoId = videoId;
 	}
 
-    private boolean isPlaying(){
+    public boolean isPlaying(){
         return videoView.isPlaying();
+    }
+
+    @Override
+    public void rewind(int msec) {
+        if (videoView.isPlaying()) {
+            int current = videoView.getCurrentPosition();
+            int length = videoView.getDuration();
+            if (length > 0) {
+                int next = current + msec;
+                if (next < 0) {
+                    next = 0;
+                } else if (next > length) {
+                    next = length - 1;
+                }
+                videoView.seekTo(next);
+            }
+        }
+    }
+
+    @Override
+    public void restart() {
+        videoView.pause();
+        videoView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                videoView.seekTo(0);
+                videoView.start();
+            }
+        }, 1000);
     }
 
     private boolean videoIsPlayable(){

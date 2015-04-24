@@ -20,6 +20,9 @@ public interface Player {
     void setVolume(float volume);
     void registerStatusCallbacks(StatusCallbacks statusCallback);
     void unregisterStatusCallbacks(StatusCallbacks statusCallback);
+    boolean isPlaying();
+    void rewind(int msec);
+    void restart();
 
     interface StatusCallbacks {
         void onVideoPlaying(String friendId, String videoId);

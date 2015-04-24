@@ -20,8 +20,7 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
     private android.media.AudioManager audioManager;
     private ZazoManagerProvider managerProvider;
     private boolean hasFocus;
-    private int mode;
-    private boolean isSpeakerPhoneOn;
+    private boolean isSpeakerPhoneOn = true;
 
     private static final int GAIN_TYPE = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
             ? android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
@@ -29,8 +28,6 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
 
     public AudioManager(Context context, ZazoManagerProvider managerProvider) {
         audioManager = (android.media.AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        mode = audioManager.getMode();
-        isSpeakerPhoneOn = audioManager.isSpeakerphoneOn();
         this.managerProvider = managerProvider;
         initAudioFocusListener();
     }
@@ -88,12 +85,17 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.values[0] == 0) {
-            audioManager.setMode(android.media.AudioManager.MODE_IN_CALL);
-            audioManager.setSpeakerphoneOn(false);
+        Log.i(TAG, "Proximity is " + event.values[0]);
+        isSpeakerPhoneOn = event.values[0] != 0;
+        if (!isSpeakerPhoneOn) {
+            audioManager.setMode(android.media.AudioManager.MODE_IN_COMMUNICATION);
         } else {
             audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
-            audioManager.setSpeakerphoneOn(true);
+        }
+        audioManager.setSpeakerphoneOn(isSpeakerPhoneOn);
+        Player player = managerProvider.getPlayer();
+        if (player.isPlaying()) {
+            player.restart();
         }
     }
 
@@ -102,8 +104,13 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
 
     }
 
+    public boolean isSpeakerPhoneOn() {
+        return isSpeakerPhoneOn;
+    }
+
     public void release() {
-        audioManager.setMode(mode);
-        audioManager.setSpeakerphoneOn(isSpeakerPhoneOn);
+        audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
+        audioManager.setSpeakerphoneOn(true);
+        isSpeakerPhoneOn = true;
     }
 }
