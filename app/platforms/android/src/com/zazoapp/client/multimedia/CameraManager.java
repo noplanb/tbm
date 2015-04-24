@@ -44,17 +44,17 @@ public class CameraManager {
     // --------------
     // Public methods
     // --------------
-        public static Camera getCamera(Context context){
-            if(camera == null)
-                setupFrontCamera(context);
-            return camera;
-        }
+    public static synchronized Camera getCamera(Context context) {
+        if (camera == null)
+            setupFrontCamera(context);
+        return camera;
+    }
 
     public static Camera.Size getPreviewSize(){
         return selectedPreviewSize;
     }
 
-    public static void releaseCamera(){
+    public static synchronized void releaseCamera(){
         if (camera != null){
             Log.i(TAG, "releaseCamera");
             camera.stopPreview();
@@ -64,7 +64,7 @@ public class CameraManager {
         camera = null;
     }
 
-    public static boolean unlockCamera(){
+    public static synchronized boolean unlockCamera(){
         if (camera == null){
             notifyCameraInUse();
             return false;
@@ -80,7 +80,7 @@ public class CameraManager {
         return true;
     }
 
-    public static boolean lockCamera(){
+    public static synchronized boolean lockCamera(){
         if (camera == null)
             return false;
 

@@ -70,3 +70,11 @@ Switching videoView off/on to clear
 
 Testcases:
 C9, C73, C74
+
+---------
+FIX #409
+---------
+Proximity sensor reacts during record and during inactivity state
+
+SOLUTION:
+Switching audio with proximity only if video is currently playing
