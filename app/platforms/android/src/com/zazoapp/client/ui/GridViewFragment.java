@@ -258,7 +258,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             if (friendId != null && !friendId.equals("")) {
                 Logger.d("START RECORD");
                 videoPlayer.stop();
-                if (((ZazoManagerProvider) getActivity()).getAudioFocusController().gainFocus()) {
+                if (((ZazoManagerProvider) getActivity()).getAudioController().gainFocus()) {
                     videoRecorder.start(friendId);
                 } else {
                     DialogShower.showToast(getActivity(), R.string.toast_could_not_get_audio_focus);

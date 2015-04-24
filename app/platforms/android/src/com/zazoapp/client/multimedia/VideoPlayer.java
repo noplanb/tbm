@@ -109,6 +109,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         videoView.stopPlayback();
         videoView.setVideoURI(null);
         videoView.suspend();
+        managerProvider.getAudioController().setSpeakerPhoneOn(false);
         cancelWaitingForStart();
         notifyStopPlaying();
     }
@@ -145,13 +146,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 		    }
 		    return;
 		}
-
 		play();
 	}
 
     private void play(){
         Log.i(TAG, "play");
-        if (!managerProvider.getAudioFocusController().gainFocus()) {
+        if (!managerProvider.getAudioController().gainFocus()) {
             DialogShower.showToast(activity, R.string.toast_could_not_get_audio_focus);
             return;
         }
@@ -159,6 +159,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
 
         if (videoIsPlayable()) {
+            managerProvider.getAudioController().setSpeakerPhoneOn(true);
             final String path = friend.videoFromPath(videoId);
             videoView.setOnPreparedListener(new OnPreparedListener() {
                 @Override

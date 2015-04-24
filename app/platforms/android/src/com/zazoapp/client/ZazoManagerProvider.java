@@ -2,7 +2,7 @@ package com.zazoapp.client;
 
 import com.zazoapp.client.bench.BenchViewManager;
 import com.zazoapp.client.bench.InviteHelper;
-import com.zazoapp.client.multimedia.AudioFocusController;
+import com.zazoapp.client.multimedia.AudioController;
 import com.zazoapp.client.multimedia.Player;
 import com.zazoapp.client.multimedia.Recorder;
 
@@ -11,7 +11,7 @@ import com.zazoapp.client.multimedia.Recorder;
  */
 public interface ZazoManagerProvider {
     BenchViewManager getBenchViewManager();
-    AudioFocusController getAudioFocusController();
+    AudioController getAudioController();
     Recorder getRecorder();
     Player getPlayer();
     InviteHelper getInviteHelper();

@@ -23,7 +23,7 @@ import java.util.List;
 @SuppressWarnings("deprecation")
 public class CameraManager {
 
-    public static interface CameraExceptionHandler {
+    public interface CameraExceptionHandler {
         void onCameraException(CameraException exception);
     }
 
@@ -64,7 +64,7 @@ public class CameraManager {
         camera = null;
     }
 
-    public static Boolean unlockCamera(){
+    public static boolean unlockCamera(){
         if (camera == null){
             notifyCameraInUse();
             return false;
@@ -80,7 +80,7 @@ public class CameraManager {
         return true;
     }
 
-    public static Boolean lockCamera(){
+    public static boolean lockCamera(){
         if (camera == null)
             return false;
 
@@ -121,6 +121,7 @@ public class CameraManager {
         } catch (Exception e) {
             Dispatch.dispatch("getFrontCamera: ERROR: camera not available.");
             notifyCameraInUse();
+            return camera;
         }
         if (camera == null){
             notifyCameraInUse();
@@ -184,7 +185,7 @@ public class CameraManager {
     }
 
     @SuppressLint("NewApi")
-    private static Boolean setCameraParams(){
+    private static boolean setCameraParams(){
         if (camera == null){
             if (cameraExceptionHandler != null)
                 cameraExceptionHandler.onCameraException(CameraException.UNABLE_TO_SET_PARAMS);

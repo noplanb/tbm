@@ -12,7 +12,7 @@ import com.zazoapp.client.dispatch.Dispatch;
 /**
  * Created by skamenkovych@codeminders.com on 4/20/2015.
  */
-public class AudioManager implements SensorEventListener, AudioFocusController {
+public class AudioManager implements SensorEventListener, AudioController {
 
     private static final String TAG = AudioManager.class.getSimpleName();
 
@@ -21,6 +21,7 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
     private ZazoManagerProvider managerProvider;
     private boolean hasFocus;
     private boolean isSpeakerPhoneOn = true;
+    private boolean isProximityClose = false;
 
     private static final int GAIN_TYPE = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
             ? android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
@@ -85,18 +86,9 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.i(TAG, "Proximity is " + event.values[0]);
-        isSpeakerPhoneOn = event.values[0] != 0;
-        if (!isSpeakerPhoneOn) {
-            audioManager.setMode(android.media.AudioManager.MODE_IN_COMMUNICATION);
-        } else {
-            audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
-        }
-        audioManager.setSpeakerphoneOn(isSpeakerPhoneOn);
-        Player player = managerProvider.getPlayer();
-        if (player.isPlaying()) {
-            player.restartAfter(1000);
-        }
+        isProximityClose = event.values[0] == 0;
+        Log.i(TAG, "Proximity is close " + isProximityClose);
+        setSpeakerPhoneOn(managerProvider.getPlayer().isPlaying());
     }
 
     @Override
@@ -104,11 +96,37 @@ public class AudioManager implements SensorEventListener, AudioFocusController {
 
     }
 
+    @Override
     public boolean isSpeakerPhoneOn() {
         return isSpeakerPhoneOn;
     }
 
-    public void release() {
+    @Override
+    public void setSpeakerPhoneOn(boolean enable) {
+        Log.i(TAG, "setSpeakerPhoneOn" + isSpeakerPhoneOn + " " + enable + " " + isProximityClose);
+        if (isSpeakerPhoneOn == (!enable || !isProximityClose)) {
+            return;
+        }
+        if (enable) {
+            isSpeakerPhoneOn = !isProximityClose;
+            if (isProximityClose) {
+                audioManager.setMode(android.media.AudioManager.MODE_IN_COMMUNICATION);
+            } else {
+                audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
+            }
+            audioManager.setSpeakerphoneOn(isSpeakerPhoneOn);
+            managerProvider.getPlayer().restartAfter(1000);
+        } else {
+            resetSpeakerPhoneMode();
+        }
+    }
+
+    @Override
+    public void reset() {
+        resetSpeakerPhoneMode();
+    }
+
+    private void resetSpeakerPhoneMode() {
         audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
         audioManager.setSpeakerphoneOn(true);
         isSpeakerPhoneOn = true;

@@ -30,7 +30,7 @@ import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
-import com.zazoapp.client.multimedia.AudioFocusController;
+import com.zazoapp.client.multimedia.AudioController;
 import com.zazoapp.client.multimedia.AudioManager;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Player;
@@ -283,7 +283,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     }
 
     @Override
-    public AudioFocusController getAudioFocusController() {
+    public AudioController getAudioController() {
         return audioManager;
     }
 
@@ -321,7 +321,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         CameraManager.releaseCamera();
         videoPlayer.release();
         audioManager.abandonFocus();
-        audioManager.release();
+        audioManager.reset();
         sensorManager.unregisterListener(audioManager);
     }
 
