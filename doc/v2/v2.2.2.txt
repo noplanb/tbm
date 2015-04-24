@@ -1,0 +1,59 @@
+Previous v2.1.0 (47)
+Current v2.2.2 (52)
+
+BACKGROUND CHANGES:
+- Added two error dispatch strategies: TbmTracker and RollbarTracker
+- FIX #368: Added application info to dispatch params for TbmTracker
+
+---------
+FIX: #379
+---------
+Chime plays during message recording, if new message arrives
+
+PROBLEM:
+When incoming message arrives it chimes even if it is currently recording 
+
+SOLUTION:
+Check recording status before playing tone and ignore if recording 
+
+Testcases:
+C109
+
+---------
+FIX: #210
+---------
+Camera preview upside down and backwards on nexus 6 running 5.0
+
+PROBLEM:
+Hard-coded rotation of preview which ignores window orientation
+
+SOLUTION:
+Recalculated orientation with taking widow orientation into account
+
+---------
+FIX: #211
+---------
+Completely unable to record on Nexus 6 running 5.0
+
+PROBLEM:
+"Camera in use" always for Nexus 6. The reason is setting unsupported frame rate for recorder (15).
+
+SOLUTION:
+Decide if 15 frame rate is supported by device and set if so. Otherwise use default frame rate.
+
+Testcases:
+C87
+C2454
+
+---------
+FIX: #353
+---------
+Add the person as a friend even if no sms is sent.
+PROBLEM:
+Currently if the user cancels just at the point of sending the invite sms we do not add the friend. This is a problem because user may wish to still add the friend but let him know about the app another way.
+
+SOLUTION:
+After user cancels at the last moment before sending an sms present dialog regarding sms not sent. But still add the friend show the friend added dialog and allow him to send a welcome message as usual.
+
+Testcases:
+C25, C26, C27, C29, C28, C2444, C30, C2239, C32, C33, C34, C36, C38, C39, C49, C2447, C44, C45, C46, C47

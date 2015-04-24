@@ -7,8 +7,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import com.zazoapp.client.bench.BenchViewManager;
-import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.model.ActiveModel;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -16,7 +14,6 @@ import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.Video;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.notification.NotificationAlertManager;
-import com.zazoapp.client.ui.helpers.VideoRecorderManager;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -31,20 +28,18 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private GridElement gridElement;
     private ViewGroup container;
     private GridElementView gridElementView;
-    private BenchViewManager benchViewManager;
     private Activity activity;
-    private VideoRecorderManager recorderManager;
+    private ZazoManagerProvider managerProvider;
     private boolean isVideoPlaying = false;
 
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    public GridElementController(Activity activity, GridElement gridElement, ViewGroup container, BenchViewManager benchViewManager, VideoRecorderManager videoRecorderManager) {
+    public GridElementController(Activity activity, GridElement gridElement, ViewGroup container, ZazoManagerProvider managerProvider) {
         Log.i(TAG, "instance with view " + container);
         this.activity = activity;
         this.container = container;
         this.gridElement = gridElement;
-        this.benchViewManager = benchViewManager;
-        this.recorderManager = videoRecorderManager;
+        this.managerProvider = managerProvider;
         setUpView();
     }
 
@@ -53,6 +48,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             gridElementView = new GridElementView(activity);
             container.setVisibility(View.INVISIBLE); // hide view until content isn't loaded
             container.addView(gridElementView);
+        } else if (gridElementView == null) {
+            // when activity recreates we loose GridElementController but not view
+            // So here we restore gridElementView from container
+            gridElementView = (GridElementView) container.getChildAt(0);
         }
         gridElementView.setOnClickListener(this);
         gridElementView.setEventListener(this);
@@ -61,8 +60,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         FriendFactory.getFactoryInstance().addVideoStatusObserver(this);
 
-        VideoPlayer videoPlayer = VideoPlayer.getInstance();
-        videoPlayer.registerStatusCallbacks(this);
+        managerProvider.getPlayer().registerStatusCallbacks(this);
 
         updateVideoStatus();
     }
@@ -81,7 +79,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onNudgeClicked() {
-        InviteManager.getInstance().nudge(gridElement.getFriend());
+        managerProvider.getInviteHelper().nudge(gridElement.getFriend());
     }
 
     @Override
@@ -91,7 +89,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onEmptyViewClicked() {
-        benchViewManager.showBench();
+        managerProvider.getBenchViewManager().showBench();
     }
 
     @Override
@@ -100,10 +98,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         // Otherwise show toast "Video is not playable"
         Friend friend = gridElement.getFriend();
         if (friend.hasIncomingPlayableVideos()) {
-            VideoPlayer videoPlayer = VideoPlayer.getInstance();
-            videoPlayer.togglePlayOverView(container, gridElement.getFriendId());
+            managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId());
         } else {
-            DialogShower.showToast(activity, activity.getString(R.string.video_is_not_playable));
+            DialogShower.showToast(activity, R.string.video_is_not_playable);
         }
     }
 
@@ -130,7 +127,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (isForMe(friendId)) {
             Friend friend = gridElement.getFriend();
             if (!friend.hasIncomingPlayableVideos()) {
-                DialogShower.showToast(activity, activity.getString(R.string.video_is_not_playable));
+                DialogShower.showToast(activity, R.string.video_is_not_playable);
             }
         }
     }
@@ -232,7 +229,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             // sound only if activity is really visible to user
                             if (!(NotificationAlertManager.screenIsLocked(activity) ||
                                     NotificationAlertManager.screenIsOff(activity))) {
-                                if (!recorderManager.isRecording()) {
+                                if (!managerProvider.getRecorder().isRecording()) {
                                     NotificationAlertManager.playTone();
                                 }
                             }
@@ -320,17 +317,18 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     public void cleanUp() {
-        VideoPlayer videoPlayer = VideoPlayer.getInstance();
-        videoPlayer.unregisterStatusCallbacks(this);
+        managerProvider.getPlayer().unregisterStatusCallbacks(this);
         gridElement.removeCallback(this);
         FriendFactory.getFactoryInstance().removeOnVideoStatusChangedObserver(this);
     }
 
     @Override
-    public void onModelChanged() {
-        updateContentFromUi(false);
+    public void onModelUpdated(boolean changed) {
+        if (changed) {
+            updateContentFromUi(false);
+            managerProvider.getBenchViewManager().updateBench();
+        }
         highLightElementForFriend();
-        benchViewManager.updateBench();
     }
 
     //----------------------

@@ -38,6 +38,10 @@ public class DialogShower {
         });
     }
 
+    public static void showToast(Context context, int id) {
+        showToast(context, context.getString(id));
+    }
+
     public static void showBadConnection(Activity activity) {
         Resources res = activity.getResources();
         showActionInfoDialog(activity, res.getString(R.string.dialog_bad_connection_title),
@@ -49,6 +53,12 @@ public class DialogShower {
                                             boolean needCancel, boolean editable, int actionId, AbstractDialogFragment.DialogListener listener) {
         DialogFragment dialog = ActionInfoDialogFragment.getInstance(title, message, action, actionId,
                 needCancel, editable, listener);
+        dialog.show(activity.getFragmentManager(), null);
+    }
+
+    public static void showDoubleActionDialog(Activity activity, String title, String message, String actionPositive,
+                                              String actionNegative, int dialogId, boolean editable, DoubleActionDialogListener listener) {
+        DialogFragment dialog = DoubleActionDialogFragment.getInstance(dialogId, title, message, actionPositive, actionNegative, editable, listener);
         dialog.show(activity.getFragmentManager(), null);
     }
 

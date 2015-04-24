@@ -6,6 +6,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.rollbar.android.Rollbar;
+import com.zazoapp.client.Config;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import org.json.JSONException;
@@ -21,8 +22,7 @@ public class RollbarTracker implements ErrorTracker {
 
     @Override
     public void init(Context context) {
-        Rollbar.init(context, "1fc7c2e85dfe4c9aa194d6f8e1e88a81", "development", false);
-        //Rollbar.init(context, "1fc7c2e85dfe4c9aa194d6f8e1e88a81", "production");
+        Rollbar.init(context, "1fc7c2e85dfe4c9aa194d6f8e1e88a81", "production", false);
     }
 
     @Override
@@ -92,6 +92,16 @@ public class RollbarTracker implements ErrorTracker {
             Phonenumber.PhoneNumber phone = user.getPhoneNumberObj();
             String phoneNumber = PhoneNumberUtil.getInstance().format(phone, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
             Rollbar.setPersonData(user.getId(), user.getFullName(), phoneNumber);
+            JSONObject person = new JSONObject();
+            try {
+                person.put("id", user.getId());
+                person.put("username", user.getFullName());
+                person.put("phone_number", phoneNumber);
+                person.put("host", Config.getServerHost());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Rollbar.setPersonData(person);
         } else {
             Rollbar.setPersonData("", "", "");
         }

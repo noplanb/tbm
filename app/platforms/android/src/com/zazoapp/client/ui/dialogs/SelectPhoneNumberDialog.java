@@ -29,8 +29,8 @@ public class SelectPhoneNumberDialog extends AbstractDialogFragment implements A
     }
 
     public interface Callbacks extends DialogListener {
-		public void phoneSelected(Contact contact, int phoneIndex);
-	}
+        void phoneSelected(Contact contact, int phoneIndex);
+    }
 
 	private Contact contact;
 

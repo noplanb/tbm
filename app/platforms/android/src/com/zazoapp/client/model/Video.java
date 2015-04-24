@@ -21,14 +21,14 @@ public class Video extends ActiveModel {
 		public static final int VIEWED = 5;
 		public static final int FAILED_PERMANENTLY = 6;
 	}
-	
+
 	public static class Attributes{
 		public static final String ID  = "id";
 		public static final String FRIEND_ID = "friendId";
 		public static final String STATUS = "status";
 		public static final String DOWNLOAD_RETRY_COUNT = "downloadRetryCount";
 	}
-	
+
 	@Override
 	public String[] attributeList() {
 		final String[] a = {	
@@ -39,7 +39,7 @@ public class Video extends ActiveModel {
 		};
 		return a;
 	}
-	
+
 	@Override
 	public void init(Context context) {
 		super.init(context);
@@ -53,7 +53,6 @@ public class Video extends ActiveModel {
 	        return VideoIdUtils.timeStampFromVideoId(o1.getId()).compareTo(VideoIdUtils.timeStampFromVideoId(o2.getId()));
 	    }
 	}
-
 
 	// Incoming video status
 	public void setIncomingVideoStatus(int status){
@@ -72,6 +71,5 @@ public class Video extends ActiveModel {
 	public int getDownloadRetryCount(){
 		return Integer.parseInt(get(Attributes.DOWNLOAD_RETRY_COUNT));
 	}
-
 
 }

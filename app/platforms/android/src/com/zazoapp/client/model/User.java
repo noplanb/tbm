@@ -1,7 +1,6 @@
 package com.zazoapp.client.model;
 
 import android.content.Context;
-
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
@@ -30,21 +29,21 @@ public class User extends ActiveModel{
     		  Attributes.MOBILE_NUMBER};
       return a;
 	}
-	
-	public static boolean isRegistered(Context context){
-		UserFactory uf = ActiveModelsHandler.getInstance(context).ensureUser();
-		return uf.hasInstances() && uf.instances.get(0).get(User.Attributes.REGISTERED).startsWith("t");
-	}
-	
-	public static String userId(Context context){
-		String id = null;
-		UserFactory uf = ActiveModelsHandler.getInstance(context).ensureUser();
-		if (uf.hasInstances()){
-			id = uf.instances.get(0).getId();
-		}
-		return id;
-	}
-	
+
+    public static boolean isRegistered(Context context) {
+        UserFactory uf = ActiveModelsHandler.getInstance(context).ensureUser();
+        return uf.hasInstances() && uf.all().get(0).get(User.Attributes.REGISTERED).startsWith("t");
+    }
+
+    public static String userId(Context context) {
+        String id = null;
+        UserFactory uf = ActiveModelsHandler.getInstance(context).ensureUser();
+        if (uf.hasInstances()) {
+            id = uf.all().get(0).getId();
+        }
+        return id;
+    }
+
     public String getId(){
     	return get(User.Attributes.ID);
     }

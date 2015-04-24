@@ -21,9 +21,9 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.ContactsManager;
 import com.zazoapp.client.GridManager;
 import com.zazoapp.client.R;
+import com.zazoapp.client.ZazoManagerProvider;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.Friend.Attributes;
 import com.zazoapp.client.model.FriendFactory;
 
 import java.util.ArrayList;
@@ -37,6 +37,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private static final String TAG = BenchController.class.getSimpleName();
 
 	private Activity activity;
+    private ZazoManagerProvider managerProvider;
 	private ListView listView;
     private DrawerLayout drawerLayout;
     private BenchAdapter adapter;
@@ -49,8 +50,9 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	// ----------------------
 	// Constructor and setup
 	// ----------------------
-	public BenchController(Activity a) {
+	public BenchController(Activity a, ZazoManagerProvider mp) {
 		activity = a;
+        managerProvider = mp;
         drawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
         drawerLayout.setDrawerListener(this);
         adapter = new BenchAdapter(activity, null);
@@ -80,7 +82,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         Log.i(TAG, "Position:" + position + " " + bo.displayName);
 
         // if it is just a friend on bench, move it to grid
-        Friend friend = (Friend) friendFactory.find(bo.friendId);
+        Friend friend = friendFactory.find(bo.friendId);
         if (friend != null) {
             GridManager.getInstance().moveFriendToGrid(friend);
             return;
@@ -88,10 +90,10 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
         // if it is an sms contact with fixed number: invite directly, otherwise invite as a simple contact
         if (bo.hasFixedContact()) {
-            InviteManager.getInstance().invite(bo);
+            managerProvider.getInviteHelper().invite(bo);
         } else {
             Contact contact = contactsManager.contactWithId(bo.contactId, bo.displayName);
-            InviteManager.getInstance().invite(contact);
+            managerProvider.getInviteHelper().invite(contact);
         }
     }
 
@@ -103,15 +105,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         Log.i(TAG, contact.toString());
 
         hideBench();
-        if (contact.phoneObjects.size() == 1) {
-            Friend friend = friendMatchingContact(contact);
-            if (friend != null) {
-                GridManager.getInstance().moveFriendToGrid(friend);
-                return;
-            }
-        }
-
-        InviteManager.getInstance().invite(contact);
+        managerProvider.getInviteHelper().invite(contact);
     }
 
     @Override
@@ -221,18 +215,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 				return true;
 		}
 		return false;
-	}
-
-	private Friend friendMatchingContact(Contact contact) {
-		for (Friend f : friendFactory.all()) {
-			for (LinkedTreeMap<String, String> pno : contact.phoneObjects) {
-				if (ContactsManager.isPhoneNumberMatch(f.get(Attributes.MOBILE_NUMBER),
-						pno.get(Contact.PhoneNumberKeys.E164))) {
-					return f;
-				}
-			}
-		}
-		return null;
 	}
 
     @Override

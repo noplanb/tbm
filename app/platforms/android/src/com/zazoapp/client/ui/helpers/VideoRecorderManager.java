@@ -4,10 +4,13 @@ import android.content.Context;
 import android.util.Log;
 import android.view.ViewGroup;
 import com.zazoapp.client.GridManager;
+import com.zazoapp.client.R;
+import com.zazoapp.client.ZazoManagerProvider;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.GridElementFactory;
+import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoRecorder;
 import com.zazoapp.client.ui.view.PreviewTextureFrame;
 import com.zazoapp.client.utilities.DialogShower;
@@ -15,20 +18,23 @@ import com.zazoapp.client.utilities.DialogShower;
 /**
  * Created by skamenkovych@codeminders.com on 2/9/2015.
  */
-public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptionHandler {
+public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptionHandler, Recorder {
 
     private static final String TAG = VideoRecorderManager.class.getSimpleName();
 
     private final VideoRecorder videoRecorder;
     private final Context context;
+    private final ZazoManagerProvider managerProvider;
 
-    public VideoRecorderManager(Context context) {
+    public VideoRecorderManager(Context context, ZazoManagerProvider managerProvider) {
         this.context = context;
         videoRecorder = new VideoRecorder(context);
         videoRecorder.addExceptionHandlerDelegate(this);
+        this.managerProvider = managerProvider;
     }
 
-    public void onRecordStart(String friendId) {
+    @Override
+    public void start(String friendId) {
         GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(friendId);
         if (!ge.hasFriend())
             return;
@@ -42,13 +48,15 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         }
     }
 
-    public void onRecordCancel() {
+    @Override
+    public void cancel() {
         // Different from abortAnyRecording because we always toast here.
         videoRecorder.stopRecording();
-        DialogShower.showToast(context, "Not sent.");
+        DialogShower.showToast(context, R.string.toast_not_sent);
     }
 
-    public void onRecordStop() {
+    @Override
+    public void stop() {
         if (videoRecorder.stopRecording()) {
             Friend f = videoRecorder.getCurrentFriend();
             Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
@@ -62,54 +70,59 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     // ----------------------------------------
     @Override
     public void unableToSetPreview() {
-        DialogShower.showToast(context, "unable to set preview");
+        DialogShower.showToast(context, R.string.toast_unable_to_set_preview);
     }
 
     @Override
     public void unableToPrepareMediaRecorder() {
-        DialogShower.showToast(context, "Unable to prepare MediaRecorder");
+        DialogShower.showToast(context, R.string.toast_unable_to_prepare_media_recorder);
     }
 
     @Override
     public void recordingAborted() {
-        DialogShower.showToast(context, "Recording Aborted due to Release before Stop.");
+        DialogShower.showToast(context, R.string.toast_recording_aborted_wrong_state);
     }
 
     @Override
     public void recordingTooShort() {
-        DialogShower.showToast(context, "Too short.");
+        DialogShower.showToast(context, R.string.toast_too_short);
     }
 
     @Override
     public void illegalStateOnStart() {
-        DialogShower.showToast(context, "Runtime exception on MediaRecorder.start. Quitting app.");
+        DialogShower.showToast(context, R.string.toast_illegal_media_recorder_state);
     }
 
     @Override
     public void runtimeErrorOnStart() {
-        DialogShower.showToast(context, "Unable to start recording. Try again.");
+        DialogShower.showToast(context, R.string.toast_unable_to_start_recording);
     }
 
-    public void onResume() {
+    @Override
+    public void resume() {
         videoRecorder.onResume();
     }
 
-    public void onPause() {
+    @Override
+    public void pause() {
         videoRecorder.onPause();
         videoRecorder.stopRecording();
     }
 
-    public void addRecorderTo(ViewGroup container) {
+    @Override
+    public void addPreviewTo(ViewGroup container) {
         PreviewTextureFrame vrFrame = (PreviewTextureFrame) videoRecorder.getView();
         container.addView(vrFrame, new PreviewTextureFrame.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
+    @Override
     public void reconnect() {
         videoRecorder.dispose();
         videoRecorder.restore();
     }
 
+    @Override
     public boolean isRecording() {
         return videoRecorder.isRecording();
     }

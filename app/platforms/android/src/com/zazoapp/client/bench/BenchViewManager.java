@@ -8,8 +8,4 @@ public interface BenchViewManager {
     void hideBench();
     boolean isBenchShowed();
     void updateBench();
-
-    interface Provider {
-        BenchViewManager getBenchViewManager();
-    }
 }

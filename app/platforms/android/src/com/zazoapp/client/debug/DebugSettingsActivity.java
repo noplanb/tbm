@@ -1,10 +1,13 @@
 package com.zazoapp.client.debug;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -14,17 +17,20 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import com.google.i18n.phonenumbers.Phonenumber;
+import com.zazoapp.client.GridManager;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.utilities.DialogShower;
 
 /**
  * Created by skamenkovych@codeminders.com on 2/20/2015.
  */
 public class DebugSettingsActivity extends Activity implements DebugConfig.DebugConfigChangesCallback {
 
-    public static final String EXTRA_SERVER_OPTION = "server_option";
+    public static final String EXTRA_FROM_REGISTER_SCREEN = "from_register_screen";
 
     private EditText serverHost;
     private EditText serverUri;
@@ -61,8 +67,8 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     @Override
     protected void onPause() {
         super.onPause();
-        config.setCustomServerHost(serverHost.getText().toString());
-        config.setCustomServerUri(serverUri.getText().toString());
+        config.setCustomServerHost(serverHost.getText().toString().replace(" ", ""));
+        config.setCustomServerUri(serverUri.getText().toString().replace(" ", ""));
     }
 
     private void setUpVersion() {
@@ -107,7 +113,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     private void setUpServer() {
         final LinearLayout serverHostLayout = (LinearLayout) findViewById(R.id.server_host_layout);
         final LinearLayout serverUriLayout = (LinearLayout) findViewById(R.id.server_uri_layout);
-        boolean serverOptionEnabled = getIntent().getBooleanExtra(EXTRA_SERVER_OPTION, false);
+        boolean serverOptionEnabled = getIntent().getBooleanExtra(EXTRA_FROM_REGISTER_SCREEN, false);
         boolean isEnabled = config.shouldUseCustomServer() && serverOptionEnabled;
         serverHostLayout.setEnabled(isEnabled);
         serverUriLayout.setEnabled(isEnabled);
@@ -120,7 +126,24 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         serverUri.setText(config.getCustomUri());
         serverHost.setEnabled(isEnabled);
         serverUri.setEnabled(isEnabled);
+        serverHost.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() > 0) {
+                    serverUri.setText("http://".concat(s.toString()));
+                } else {
+                    serverUri.setText("");
+                }
+            }
+        });
         Switch useCustomServer = (Switch) findViewById(R.id.custom_server);
         useCustomServer.setEnabled(serverOptionEnabled);
         useCustomServer.setChecked(config.shouldUseCustomServer());
@@ -132,6 +155,12 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 serverUri.setEnabled(isChecked);
                 serverHostLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
                 serverUriLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+
+                // Testers request
+                if (isChecked) {
+                    Switch debugMode = (Switch) findViewById(R.id.debug_mode);
+                    debugMode.setChecked(true);
+                }
             }
         });
     }
@@ -153,6 +182,36 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
             @Override
             public void onClick(View v) {
                 Dispatch.dispatchUserInfo(DebugSettingsActivity.this);
+            }
+        });
+        final boolean restore = getIntent().getBooleanExtra(EXTRA_FROM_REGISTER_SCREEN, false);
+        Button backup = (Button) findViewById(R.id.user_info_backup);
+        backup.setText(restore ? "Restore" : "Backup");
+        backup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (restore) {
+                    Context context = DebugSettingsActivity.this;
+                    ActiveModelsHandler models = ActiveModelsHandler.getInstance(context);
+                    models.destroyAll();
+                    DebugUtils.restoreBackup(context);
+                    models.ensureAll();
+                    GridManager.getInstance().initGrid(context);
+                    if (User.isRegistered(context)) {
+                        DialogShower.showToast(context, "Loaded");
+                    } else {
+                        DialogShower.showToast(context, "Nothing to restore");
+                    }
+                } else {
+                    DebugUtils.requestCode(DebugSettingsActivity.this, new DebugUtils.InputDialogCallback() {
+                        @Override
+                        public void onReceive(String input) {
+                            if ("Sani".equalsIgnoreCase(input)) {
+                                DebugUtils.makeBackup(DebugSettingsActivity.this);
+                            }
+                        }
+                    });
+                }
             }
         });
     }

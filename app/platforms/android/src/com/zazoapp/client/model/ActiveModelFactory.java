@@ -21,7 +21,7 @@ import java.util.Iterator;
 public abstract class ActiveModelFactory<T extends ActiveModel> {
     private static final String TAG = ActiveModelFactory.class.getSimpleName();
 
-    public ArrayList<T> instances = new ArrayList<>();
+    protected ArrayList<T> instances = new ArrayList<>();
 
     public abstract Class<T> getModelClass();
 
@@ -48,7 +48,6 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
 		f.delete();
 	}
 
-
 	//--------------------
 	// Save and retrieve
 	//--------------------
@@ -68,7 +67,6 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
 			if (f.exists())
 				f.delete();
 			FileOutputStream fos = new FileOutputStream(f, true);
-			fos = new FileOutputStream(f, true);
 			OutputStreamWriter osw = new OutputStreamWriter(fos);
 			osw.write(j);
 			osw.close();

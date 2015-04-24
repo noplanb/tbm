@@ -1,13 +1,7 @@
 package com.zazoapp.client.ui;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,14 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.VideoView;
 import com.zazoapp.client.GridElementController;
 import com.zazoapp.client.GridManager;
 import com.zazoapp.client.IntentHandler;
 import com.zazoapp.client.R;
 import com.zazoapp.client.SyncManager;
-import com.zazoapp.client.TbmApplication;
-import com.zazoapp.client.bench.BenchViewManager;
+import com.zazoapp.client.ZazoManagerProvider;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
@@ -31,14 +23,14 @@ import com.zazoapp.client.model.VideoFactory;
 import com.zazoapp.client.multimedia.CameraException;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.CameraManager.CameraExceptionHandler;
-import com.zazoapp.client.multimedia.VideoPlayer;
+import com.zazoapp.client.multimedia.Player;
+import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
-import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
-import com.zazoapp.client.ui.helpers.VideoRecorderManager;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.NineViewGroup.LayoutCompleteListener;
+import com.zazoapp.client.ui.view.VideoView;
 import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.Logger;
 
@@ -46,18 +38,16 @@ import java.util.ArrayList;
 
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
-public class GridViewFragment extends Fragment implements CameraExceptionHandler, SensorEventListener, DoubleActionDialogListener, UnexpectedTerminationHelper.TerminationCallback {
+public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
 
     private ArrayList<GridElementController> viewControllers;
 
     private NineViewGroup nineViewGroup;
-    private VideoPlayer videoPlayer;
-    private VideoRecorderManager videoRecorderManager;
+    private Player videoPlayer;
+    private Recorder videoRecorder;
 
-    private SensorManager sensorManager;
-    private Sensor proximitySensor;
     private boolean viewLoaded;
     private boolean focused;
 
@@ -65,16 +55,12 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate");
-        TbmApplication.getInstance().addTerminationCallback(this);
         CameraManager.addExceptionHandlerDelegate(this);
-        videoRecorderManager = new VideoRecorderManager(getActivity());
-
-        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
-        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        if (proximitySensor == null) {
-            Log.i(TAG, "Proximity sensor not found");
+        if (!(getActivity() instanceof ZazoManagerProvider)) {
+            throw new RuntimeException("Activity must inherit ZazoManagerProvider.");
         }
-
+        videoPlayer = ((ZazoManagerProvider) getActivity()).getPlayer();
+        videoRecorder = ((ZazoManagerProvider) getActivity()).getRecorder();
         viewControllers = new ArrayList<>(GridManager.GRID_ELEMENTS_COUNT);
     }
 
@@ -90,16 +76,10 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         Logger.i(TAG, "onResume");
-        videoRecorderManager.onResume();
-        sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
+        videoRecorder.resume();
     }
 
     @Override
@@ -107,13 +87,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         super.onStart();
         restartFileTransfersPendingRetry();
         new SyncManager(getActivity()).getAndPollAllFriends();
-    }
-
-    @Override
-    public void onPause() {
-        Logger.i(TAG, "onPause");
-        super.onPause();
-        releaseResources();
     }
 
     private void setupNineViewGroup(View v) {
@@ -131,10 +104,9 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     private void setupVideoPlayer(View v) {
-        videoPlayer = VideoPlayer.getInstance();
         ViewGroup videoBody = (ViewGroup) v.findViewById(R.id.video_body);
         VideoView videoView = (VideoView) v.findViewById(R.id.video_view);
-        videoPlayer.init(getActivity(), videoBody, videoView);
+        videoPlayer.init(videoBody, videoView);
     }
 
     private void setupGridElements(){
@@ -144,16 +116,10 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             }
             viewControllers.clear();
         }
-        BenchViewManager benchViewManager;
-        try {
-            benchViewManager = ((BenchViewManager.Provider) getActivity()).getBenchViewManager();
-        } catch (ClassCastException e) {
-            throw new RuntimeException("Activity must inherit BenchViewManagerProvider.");
-        }
         int i = 0;
         for (GridElement ge : GridElementFactory.getFactoryInstance().all()) {
             GridElementController gec = new GridElementController(getActivity(), ge, nineViewGroup.getSurroundingFrame(i),
-                    benchViewManager, videoRecorderManager);
+                    (ZazoManagerProvider) getActivity());
             viewControllers.add(gec);
             i++;
         }
@@ -169,17 +135,17 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return;
         }
         Log.i(TAG, "layoutVideoRecorder: adding videoRecorder preview");
-        videoRecorderManager.addRecorderTo(fl);
+        videoRecorder.addPreviewTo(fl);
     }
 
     // -------------------------------
     // CameraExceptionHandler delegate
     // -------------------------------
     @Override
-    public void onDialogActionClicked(int id, int button) {
+    public void onDialogActionClicked(int id, int button, Bundle bundle) {
         switch (button) {
             case DoubleActionDialogListener.BUTTON_POSITIVE:
-                videoRecorderManager.reconnect();
+                videoRecorder.reconnect();
                 break;
             case DoubleActionDialogListener.BUTTON_NEGATIVE:
                 getActivity().finish();
@@ -207,18 +173,12 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         }
     }
 
-    // TODO: Sani, should friend be moved to the grid on new message? --Serhii
-    // Yes if user clicks on notification which opens app for an intent
-    // Friend should be moved to the grid and play started automatically.
-    // GridManager.getInstance().moveFriendToGrid(getActivity(), friend);
-
     public void play(String friendId) {
-        Friend f = (Friend) FriendFactory.getFactoryInstance().find(friendId);
+        Friend f = FriendFactory.getFactoryInstance().find(friendId);
 
         if (f == null)
             throw new RuntimeException("Play from notification found no friendId: " + friendId);
 
-        //GridManager.getInstance().moveFriendToGrid(getActivity(), f);
         int index = GridElementFactory.getFactoryInstance().gridElementIndexWithFriend(f);
 
         if (index == -1)
@@ -274,64 +234,11 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         }
     }
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
-        if (event.values[0] == 0) {
-            am.setMode(AudioManager.MODE_IN_CALL);
-            am.setSpeakerphoneOn(false);
-        } else {
-            am.setMode(AudioManager.MODE_NORMAL);
-            am.setSpeakerphoneOn(true);
-        }
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    }
-
-    // TODO: Serhii. Please remove this and have the controllers register directly for any callback they need.
-    // my head is spinning tracing who is calling whom.
-    private void notifyViewControllers(ViewControllerTask task) {
-        for (GridElementController controller : viewControllers) {
-            task.onEvent(controller);
-        }
-    }
-
-    @Override
-    public void onTerminate() {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                releaseResources();
-            }
-        });
-    }
-
-    private void releaseResources() {
-        if (videoRecorderManager != null) {
-            videoRecorderManager.onPause();
-        }
-        CameraManager.releaseCamera();
-        if (videoPlayer != null) {
-            videoPlayer.release();
-        }
-        if (sensorManager != null) {
-            sensorManager.unregisterListener(this);
-        }
-    }
-
     public void onWindowFocusChanged(boolean hasFocus) {
         focused = hasFocus;
         if (getActivity() != null) { // callback may come when fragment isn't attached to activity yet
             handleIntentAction(getActivity().getIntent());
         }
-    }
-
-    // TODO: again let us remove this and have the gridElementControllers registerFor and handle the callbacks they need
-    // directly with the models.
-    private interface ViewControllerTask {
-        void onEvent(GridElementController controller);
     }
 
     //------------------------------
@@ -351,7 +258,11 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             if (friendId != null && !friendId.equals("")) {
                 Logger.d("START RECORD");
                 videoPlayer.stop();
-                videoRecorderManager.onRecordStart(friendId);
+                if (((ZazoManagerProvider) getActivity()).getAudioFocusController().gainFocus()) {
+                    videoRecorder.start(friendId);
+                } else {
+                    DialogShower.showToast(getActivity(), R.string.toast_could_not_get_audio_focus);
+                }
             }
             return true;
         }
@@ -359,15 +270,15 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         @Override
         public boolean onEndLongpress() {
             Log.d(TAG, "onEndLongpress");
-            videoRecorderManager.onRecordStop();
+            videoRecorder.stop();
             return false;
         }
 
         @Override
-        public boolean onCancelLongpress(String reason) {
-            Log.d(TAG, "onCancelLongpress: " + reason);
+        public boolean onCancelLongpress(int reason) {
+            Log.d(TAG, "onCancelLongpress: " + getActivity().getString(reason));
             DialogShower.showToast(getActivity(), reason);
-            videoRecorderManager.onRecordCancel();
+            videoRecorder.cancel();
             return false;
         }
 

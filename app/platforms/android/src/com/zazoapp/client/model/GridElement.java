@@ -1,7 +1,5 @@
 package com.zazoapp.client.model;
 
-import android.content.Context;
-
 public class GridElement extends ActiveModel {
 
     static class Attributes {
@@ -16,23 +14,17 @@ public class GridElement extends ActiveModel {
         return a;
     }
 
-	@Override
-	public void init(Context context) {
-		super.init(context);
-		this.context = context;
-	}
+    public Friend getFriend() {
+        String fid = attributes.get(Attributes.FRIEND_ID);
+        if (fid.equals(""))
+            return null;
 
-	public Friend getFriend(){
-		String fid = attributes.get(Attributes.FRIEND_ID);
-		if (fid.equals(""))
-			return null;
-		
-		return (Friend) FriendFactory.getFactoryInstance().find(fid);
-	}
+        return FriendFactory.getFactoryInstance().find(fid);
+    }
 
-	public boolean hasFriend(){
-		return !attributes.get(GridElement.Attributes.FRIEND_ID).equals("");
-	}
+    public boolean hasFriend() {
+        return !attributes.get(GridElement.Attributes.FRIEND_ID).equals("");
+    }
 
     public void setFriend(Friend f) {
         setFriend(f, true);
@@ -43,16 +35,16 @@ public class GridElement extends ActiveModel {
         if (!currentFriendId.equals(f.getId())) {
             set(Attributes.FRIEND_ID, f.getId());
             if (notify) {
-                notifyCallbacks();
+                notifyCallbacks(true);
             }
         }
     }
 
     public void notifyUpdate() {
-        notifyCallbacks();
+        notifyCallbacks(false);
     }
 
-	public String getFriendId(){
-		return attributes.get(Attributes.FRIEND_ID);
-	}
+    public String getFriendId() {
+        return attributes.get(Attributes.FRIEND_ID);
+    }
 }
