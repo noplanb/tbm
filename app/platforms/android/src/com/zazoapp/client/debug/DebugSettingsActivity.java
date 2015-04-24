@@ -155,6 +155,12 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 serverUri.setEnabled(isChecked);
                 serverHostLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
                 serverUriLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+
+                // Testers request
+                if (isChecked) {
+                    Switch debugMode = (Switch) findViewById(R.id.debug_mode);
+                    debugMode.setChecked(true);
+                }
             }
         });
     }

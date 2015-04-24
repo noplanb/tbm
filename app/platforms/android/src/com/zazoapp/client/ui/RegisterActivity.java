@@ -351,10 +351,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == DEBUG_SCREEN_CODE) {
-            firstNameTxt.setText("");
-            lastNameTxt.setText("");
             countryCodeTxt.setText("");
-            mobileNumberTxt.setText("");
             user = UserFactory.current_user();
             if (User.isRegistered(this)) {
                 getAWSCredentials();
