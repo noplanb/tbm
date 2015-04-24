@@ -35,8 +35,8 @@ public class Friend extends ActiveModel{
     private static final String MP4 = ".mp4";
     private static final String PNG = ".png";
 
-    public static interface VideoStatusChangedCallback {
-        public void onVideoStatusChanged(Friend friend);
+    public interface VideoStatusChangedCallback {
+        void onVideoStatusChanged(Friend friend);
     }
 
     /**
@@ -98,7 +98,6 @@ public class Friend extends ActiveModel{
         set(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE, VideoStatusEventType.INCOMING.toString());
         setUploadRetryCount(0);
     }
-    
 
     public String getLastActionTime() {
         return get(Friend.Attributes.TIME_OF_LAST_ACTION);
@@ -109,10 +108,7 @@ public class Friend extends ActiveModel{
     }
 
     public boolean hasApp() {
-        if (get(Attributes.HAS_APP).equals("true"))
-            return true;
-        else
-            return false;
+        return get(Attributes.HAS_APP).equals("true");
     }
 
     public void setHasApp(){
@@ -357,7 +353,7 @@ public class Friend extends ActiveModel{
     }
 
     private String buildPath(String id, String prefix, String extension) {
-        StringBuilder path = new StringBuilder(Config.homeDirPath(context));
+        StringBuilder path = new StringBuilder(Config.homeDirPath(getContext()));
         path.append(File.separator).append(prefix);
         path.append("_").append(id);
         path.append(extension);
@@ -425,7 +421,7 @@ public class Friend extends ActiveModel{
             return;
         }
 
-        Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
+        Video v = VideoFactory.getFactoryInstance().find(videoId);
         v.setIncomingVideoStatus(Video.IncomingVideoStatus.VIEWED);
     }
 
@@ -473,7 +469,7 @@ public class Friend extends ActiveModel{
 
         setAndNotifyOutgoingVideoStatus(OutgoingVideoStatus.QUEUED);
 
-        Intent i = new Intent(context, FileUploadService.class);
+        Intent i = new Intent(getContext(), FileUploadService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(getOutgoingVideoId()));
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, getOutgoingVideoId());
@@ -482,7 +478,7 @@ public class Friend extends ActiveModel{
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
-        context.startService(i);
+        getContext().startService(i);
     }
 
     public void downloadVideo(String videoId){
@@ -490,7 +486,7 @@ public class Friend extends ActiveModel{
 
         setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.QUEUED);
 
-        Intent i = new Intent(context, FileDownloadService.class);
+        Intent i = new Intent(getContext(), FileDownloadService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
@@ -499,11 +495,11 @@ public class Friend extends ActiveModel{
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
-        context.startService(i);
+        getContext().startService(i);
     }
 
     public void deleteRemoteVideo(String videoId){
-        Intent i = new Intent(context, FileDeleteService.class);
+        Intent i = new Intent(getContext(), FileDeleteService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
@@ -512,7 +508,7 @@ public class Friend extends ActiveModel{
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
-        context.startService(i);
+        getContext().startService(i);
     }
 
 
@@ -563,7 +559,7 @@ public class Friend extends ActiveModel{
 
     // Incoming video status
     public void setAndNotifyIncomingVideoStatus(String videoId, int status){
-        Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
+        Video v = VideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
             Dispatch.dispatch(TAG + " setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
             return;
@@ -595,7 +591,7 @@ public class Friend extends ActiveModel{
     //	}
 
     public void setAndNotifyDownloadRetryCount(String videoId, int retryCount){
-        Video v = (Video) VideoFactory.getFactoryInstance().find(videoId);
+        Video v = VideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
             Dispatch.dispatch(TAG + " setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
             return;
@@ -743,7 +739,7 @@ public class Friend extends ActiveModel{
     }
 
     public String getDisplayName(){
-        if (DebugConfig.getInstance(context).isDebugEnabled())
+        if (DebugConfig.getInstance(getContext()).isDebugEnabled())
             return getStatusString();
         else
             return getUniqueName();

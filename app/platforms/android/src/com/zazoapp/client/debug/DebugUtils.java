@@ -10,6 +10,7 @@ import android.text.InputType;
 import android.widget.EditText;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.utilities.Convenience;
+import com.zazoapp.client.utilities.DialogShower;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +41,7 @@ public final class DebugUtils {
 
     public static void makeBackup(Context context) {
         copy(Config.homeDirPath(context), backupFolder());
+        DialogShower.showToast(context, "Saved");
         // TODO add storing settings
     }
 

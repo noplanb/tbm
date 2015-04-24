@@ -2,14 +2,10 @@ package com.zazoapp.client.ui;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,7 +21,6 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.ContactsManager;
-import com.zazoapp.client.DispatcherService;
 import com.zazoapp.client.FriendGetter;
 import com.zazoapp.client.R;
 import com.zazoapp.client.debug.DebugSettingsActivity;
@@ -43,8 +38,7 @@ import com.zazoapp.client.utilities.DialogShower;
 public class RegisterActivity extends Activity implements EnterCodeDialogFragment.Callbacks{
     private static final int DEBUG_SCREEN_CODE = 293;
 	private static final String TAG = RegisterActivity.class.getSimpleName();
-	private UserFactory userFactory;
-	private User user;
+    private User user;
 
 	private String firstName;
 	private String lastName;
@@ -62,16 +56,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 
     private DialogFragment pd;
 
-	private ServiceConnection conn = new ServiceConnection() {
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-		}
-
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			onLoadComplete();
-		}
-	};
 	private DialogFragment enterCodeDialog;
 
 	//----------
@@ -87,6 +71,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 
         setAdditionalViewHeight();
         setUpView();
+        initUser();
 	}
 
     private void setAdditionalViewHeight() {
@@ -96,32 +81,18 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         additionalView.setLayoutParams(lp);
     }
 
-    @Override
-	protected void onStart() {
-		super.onStart();
-		pd = ProgressDialogFragment.getInstance("Data", "retrieving data...");
-        pd.show(getFragmentManager(), null);
-		bindService(new Intent(this, DispatcherService.class), conn, Service.BIND_IMPORTANT);
-	}
-
 	@Override
 	protected void onStop() {
 		super.onStop();
 		if(pd != null)
 			pd.dismiss();
-		unbindService(conn);
-	}
-
-	private void onLoadComplete(){
-		init();
-		pd.dismiss();
 	}
 
 	//-----
 	// Init
 	//-----
-	private void init(){
-		userFactory = UserFactory.getFactoryInstance();
+	private void initUser() {
+        UserFactory userFactory = UserFactory.getFactoryInstance();
 		userFactory.destroyAll(this);
 		user = userFactory.makeInstance(this);
 	}
@@ -303,7 +274,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		new SendCode(uri, userParams(), mkey, auth);
 	}
 
-
 	private class SendCode extends HttpRequest{
 		public SendCode(String uri, LinkedTreeMap<String, String> params, String mkey, String auth) {
 			super(uri, params, mkey, auth, new HttpRequest.Callbacks() {
@@ -381,10 +351,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == DEBUG_SCREEN_CODE) {
-            firstNameTxt.setText("");
-            lastNameTxt.setText("");
             countryCodeTxt.setText("");
-            mobileNumberTxt.setText("");
+            user = UserFactory.current_user();
             if (User.isRegistered(this)) {
                 getAWSCredentials();
             }

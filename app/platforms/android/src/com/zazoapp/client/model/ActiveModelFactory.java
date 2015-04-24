@@ -21,7 +21,7 @@ import java.util.Iterator;
 public abstract class ActiveModelFactory<T extends ActiveModel> {
     private static final String TAG = ActiveModelFactory.class.getSimpleName();
 
-    public ArrayList<T> instances = new ArrayList<>();
+    protected ArrayList<T> instances = new ArrayList<>();
 
     public abstract Class<T> getModelClass();
 

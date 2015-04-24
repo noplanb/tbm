@@ -1,6 +1,7 @@
 package com.zazoapp.client.debug;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
@@ -16,11 +17,13 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import com.google.i18n.phonenumbers.Phonenumber;
+import com.zazoapp.client.GridManager;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.utilities.DialogShower;
 
 /**
  * Created by skamenkovych@codeminders.com on 2/20/2015.
@@ -152,6 +155,12 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 serverUri.setEnabled(isChecked);
                 serverHostLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
                 serverUriLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+
+                // Testers request
+                if (isChecked) {
+                    Switch debugMode = (Switch) findViewById(R.id.debug_mode);
+                    debugMode.setChecked(true);
+                }
             }
         });
     }
@@ -182,10 +191,17 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
             @Override
             public void onClick(View v) {
                 if (restore) {
-                    ActiveModelsHandler models = ActiveModelsHandler.getInstance(DebugSettingsActivity.this);
+                    Context context = DebugSettingsActivity.this;
+                    ActiveModelsHandler models = ActiveModelsHandler.getInstance(context);
                     models.destroyAll();
-                    DebugUtils.restoreBackup(DebugSettingsActivity.this);
+                    DebugUtils.restoreBackup(context);
                     models.ensureAll();
+                    GridManager.getInstance().initGrid(context);
+                    if (User.isRegistered(context)) {
+                        DialogShower.showToast(context, "Loaded");
+                    } else {
+                        DialogShower.showToast(context, "Nothing to restore");
+                    }
                 } else {
                     DebugUtils.requestCode(DebugSettingsActivity.this, new DebugUtils.InputDialogCallback() {
                         @Override

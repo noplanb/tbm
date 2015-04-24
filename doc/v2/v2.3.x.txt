@@ -1,0 +1,80 @@
+Previous v2.2.2 (52)
+Current v2.3.1 (55)
+
+BACKGROUND CHANGES:
+- Added response string for checking JSONSytaxException unless user is registered
+- Moved toast to strings.xml
+- Added backup functionality to DebugScreen
+- Spaces correction for custom server params
+- Moved to RollbarTracker
+- Refactored manager access from different modules
+- Changed Rollbar environment to "production". Added host information to person data
+- Removed unnecessary binding to service in activities as all data is loaded on application created
+
+---------
+FIX
+---------
+Fixed layout for devices where height is constrained
+PROBLEM:
+On devices where height is constrained friend boxes have wrong layout sizes.
+Bug in element size calculation.
+
+SOLUTION:
+Added missed division by 3 for such cases
+
+Testcases:
+C12
+
+---------
+NEW
+---------
+Compatibility of audio module in Zazo with headsets and other apps (Call, radio, music player) on Android devices.
+
+SOLUTION:
+Added AudioManager to handle described situations
+
+Testcases:
+C76, C77, C78, C79, C2455
+
+---------
+NEW
+---------
+Restarting video when audio mode is changed with proximity sensor
+Disabled touches when earpiece is working
+
+Testcases:
+C81
+
+---------
+FIX #358
+---------
+Contact drawer it would be better to close automatically when Zazo goes to background.
+PROBLEM:
+Video starts to play automatically but is not visible because the drawer is open.
+
+SOLUTION:
+Hide drawer Zazo activity goes on pause
+
+Testcases:
+C111
+
+---------
+FIX #253, 244, 117, 380
+---------
+First few seconds of old video msg show to the user(old video thumbnail)
+PROBLEM:
+First few seconds of old video msg show to the user (old video thumbnail)
+
+SOLUTION:
+Switching videoView off/on to clear 
+
+Testcases:
+C9, C73, C74
+
+---------
+FIX #409
+---------
+Proximity sensor reacts during record and during inactivity state
+
+SOLUTION:
+Switching audio with proximity only if video is currently playing

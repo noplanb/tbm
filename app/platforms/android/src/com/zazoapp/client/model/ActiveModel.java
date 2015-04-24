@@ -13,7 +13,7 @@ public abstract class ActiveModel {
 
 	public LinkedTreeMap<String, String> attributes = new LinkedTreeMap<String, String>();
 
-	protected Context context;
+    private Context context;
 
     private Set<ModelChangeCallback> callbacks = new HashSet<>();
 
@@ -72,6 +72,10 @@ public abstract class ActiveModel {
             builder.append(s).append(", ");
         }
         return builder.toString();
+    }
+
+    protected Context getContext() {
+        return context;
     }
 
     public interface ModelChangeCallback {

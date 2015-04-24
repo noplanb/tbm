@@ -21,6 +21,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.ContactsManager;
 import com.zazoapp.client.GridManager;
 import com.zazoapp.client.R;
+import com.zazoapp.client.ZazoManagerProvider;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -36,6 +37,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private static final String TAG = BenchController.class.getSimpleName();
 
 	private Activity activity;
+    private ZazoManagerProvider managerProvider;
 	private ListView listView;
     private DrawerLayout drawerLayout;
     private BenchAdapter adapter;
@@ -48,8 +50,9 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	// ----------------------
 	// Constructor and setup
 	// ----------------------
-	public BenchController(Activity a) {
+	public BenchController(Activity a, ZazoManagerProvider mp) {
 		activity = a;
+        managerProvider = mp;
         drawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
         drawerLayout.setDrawerListener(this);
         adapter = new BenchAdapter(activity, null);
@@ -87,10 +90,10 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
         // if it is an sms contact with fixed number: invite directly, otherwise invite as a simple contact
         if (bo.hasFixedContact()) {
-            InviteManager.getInstance().invite(bo);
+            managerProvider.getInviteHelper().invite(bo);
         } else {
             Contact contact = contactsManager.contactWithId(bo.contactId, bo.displayName);
-            InviteManager.getInstance().invite(contact);
+            managerProvider.getInviteHelper().invite(contact);
         }
     }
 
@@ -102,7 +105,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         Log.i(TAG, contact.toString());
 
         hideBench();
-        InviteManager.getInstance().invite(contact);
+        managerProvider.getInviteHelper().invite(contact);
     }
 
     @Override

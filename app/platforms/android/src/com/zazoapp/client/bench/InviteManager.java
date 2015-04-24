@@ -25,8 +25,7 @@ import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.utilities.Logger;
 
-public class InviteManager{
-	private static InviteManager inviteManager;
+public class InviteManager implements InviteHelper {
 
     private static class IntentActions{
         public static final String SMS_RESULT = "smsResult";
@@ -48,26 +47,19 @@ public class InviteManager{
     private Friend friend;
     private InviteDialogListener listener;
 
-    private InviteManager() {
-    }
-
-    public static InviteManager getInstance() {
-        if (inviteManager == null)
-            inviteManager = new InviteManager();
-        return inviteManager;
-    }
-
-    public void init(Context context, InviteDialogListener listener) {
+    public InviteManager(Context context, InviteDialogListener listener) {
         this.context = context;
         this.listener = listener;
     }
 
+    @Override
     public void invite(BenchObject bo) {
         Logger.d(TAG, "invite: " + bo);
         benchObject = bo;
         checkHasApp();
     }
 
+    @Override
     public void invite(Contact contact, int phoneIndex) {
         Logger.d(TAG, "invite: " + contact + " (" + phoneIndex + ")");
         LinkedTreeMap<String, String> mobileNumber = contact.phoneObjects.get(phoneIndex);
@@ -81,12 +73,14 @@ public class InviteManager{
         checkHasApp();
     }
 
+    @Override
     public void inviteNewFriend() {
         if (benchObject != null) {
             getFriendFromServer();
         }
     }
 
+    @Override
     public void invite(Contact contact) {
         int phonesNumber = contact.phoneObjects.size();
         if (phonesNumber == 0) {
@@ -99,6 +93,7 @@ public class InviteManager{
         }
     }
 
+    @Override
     public void nudge(Friend f) {
         friend = f;
         preNudgeDialog();
@@ -148,7 +143,7 @@ public class InviteManager{
 
     }
     @SuppressWarnings("unchecked")
-	public void gotHasApp(String response) {
+	private void gotHasApp(String response) {
 		LinkedTreeMap <String, String> params = new LinkedTreeMap <String, String>();
 		Gson g = new Gson();
 		params = g.fromJson(response, params.getClass());
@@ -215,7 +210,7 @@ public class InviteManager{
             if (friend.hasApp()) {
                 showConnectedDialog();
             } else {
-                showSms();
+                showSmsDialog();
             }
         } else { // if friend is already exist TODO legacy code
             friend = FriendFactory.getFactoryInstance().getExistingFriend(params);
@@ -226,6 +221,7 @@ public class InviteManager{
     //-----------------
     // Connected Dialog
     //-----------------
+    @Override
     public void showConnectedDialog() {
         String name = (friend != null) ? friend.getFirstName() : benchObject.firstName;
         String msg = context.getString(R.string.dialog_connected_message, name, Config.appName, name);
@@ -266,6 +262,7 @@ public class InviteManager{
         listener.onShowActionInfoDialog(title, msg, action, true, false, MainActivity.SMS_DIALOG);
     }
 
+    @Override
     public void failureNoSimDialog() {
         String friendName = (friend != null) ? friend.getFullName() : benchObject.displayName;
         String title = context.getString(R.string.dialog_send_sms_failure_title);
@@ -274,13 +271,15 @@ public class InviteManager{
         listener.onShowActionInfoDialog(title, message, action, false, false, MainActivity.NO_SIM_DIALOG);
     }
 
-    public void showSms() {
+    @Override
+    public void showSmsDialog() {
         String title = context.getString(R.string.dialog_invite_sms_title);
         String posText = context.getString(R.string.dialog_invite_sms_action);
         String negText = context.getString(R.string.dialog_action_cancel);
         listener.onShowDoubleActionDialog(title, getDefaultInviteMessage(), posText, negText, MainActivity.SENDLINK_DIALOG, true);
     }
 
+    @Override
     public void sendInvite(String message) {
         if (canSendSms()) {
             sendSms(message);
@@ -290,7 +289,7 @@ public class InviteManager{
         }
     }
 
-    public String getDefaultInviteMessage() {
+    private String getDefaultInviteMessage() {
         String mkey = UserFactory.current_user().get(User.Attributes.MKEY);
         return context.getString(R.string.dialog_invite_sms_message, Config.appName, Config.landingPageUrl, mkey);
     }
@@ -314,6 +313,7 @@ public class InviteManager{
         }
 	}
 
+    @Override
     public void moveFriendToGrid() {
         GridManager.getInstance().moveFriendToGrid(friend);
     }
@@ -327,9 +327,9 @@ public class InviteManager{
 		return PendingIntent.getActivity(context, 0, i, 0);
 	}
 
-    public boolean checkIsFailureAndShowDialog(LinkedTreeMap<String, String>params){
+    private boolean checkIsFailureAndShowDialog(LinkedTreeMap<String, String> params) {
         String status = params.get(HttpRequest.ParamKeys.RESPONSE_STATUS);
-        if (HttpRequest.isFailure(status)){
+        if (HttpRequest.isFailure(status)) {
             listener.onShowInfoDialog(params.get(HttpRequest.ParamKeys.ERROR_TITLE), params.get(HttpRequest.ParamKeys.ERROR_MSG));
             return true;
         } else {

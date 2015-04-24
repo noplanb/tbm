@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import com.zazoapp.client.R;
+import com.zazoapp.client.ZazoManagerProvider;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -21,63 +22,45 @@ import com.zazoapp.client.utilities.DialogShower;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
+public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Player {
 
 	private static final String TAG = VideoPlayer.class.getSimpleName();
-    private AudioManager audioManager;
 
-    public interface StatusCallbacks{
-		void onVideoPlaying(String friendId, String videoId);
-		void onVideoStopPlaying(String friendId);
-        void onVideoPlaybackError(String friendId, String videoId);
-	}
-
-	private static VideoPlayer videoPlayer;
-
-	private Activity activity;
+    private Activity activity;
 	private String videoId;
 	private String friendId;
 	private Friend friend;
 	private VideoView videoView;
 	private ViewGroup videoBody;
 	private boolean videosAreDownloading;
+    private ZazoManagerProvider managerProvider;
+    private Timer timer = new Timer();
+    private TimerTask onStartTask;
 
 	private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
 
-    private VideoPlayer() {
-    }
-
-    /**
-     * You must call init method before using VideoPlayerInstance
-     * @return instance of VideoPlayer
-     * @see com.zazoapp.client.multimedia.VideoPlayer#init(android.app.Activity, android.view.ViewGroup, com.zazoapp.client.ui.view.VideoView)
-     */
-    public static VideoPlayer getInstance() {
-        if (videoPlayer == null)
-            videoPlayer = new VideoPlayer();
-        return videoPlayer;
-    }
-
-    /**
-     * Init VideoPlayer instance
-     * @param activity reference activity
-     * @param videoBody parent layout of VideoView
-     * @param videoView VideoView
-     */
-    public void init(Activity activity, ViewGroup videoBody, final VideoView videoView) {
+    public VideoPlayer(Activity activity, ZazoManagerProvider managerProvider) {
         this.activity = activity;
+        this.managerProvider = managerProvider;
+    }
+
+    @Override
+    public void init(ViewGroup videoBody, final VideoView videoView) {
         this.videoBody = videoBody;
         this.videoView = videoView;
         this.videoView.setOnCompletionListener(this);
         this.videoView.setOnPreparedListener(this);
-
     }
 
+    @Override
 	public void registerStatusCallbacks(StatusCallbacks statusCallback){
 		this.statusCallbacks.add(statusCallback);
 	}
 
+    @Override
 	public void unregisterStatusCallbacks(StatusCallbacks statusCallback){
 		this.statusCallbacks.remove(statusCallback);
 	}
@@ -103,9 +86,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
         }
     }
 
-    //---------------
-    // Public actions
-    //---------------
+    @Override
     public void togglePlayOverView(View view, String friendId) {
         boolean needToPlay = !(isPlaying() && friendId.equals(this.friendId));
 
@@ -121,18 +102,27 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
         }
     }
 
+    @Override
     public void stop(){
         Log.i(TAG, "stop");
+        videoBody.setVisibility(View.INVISIBLE);
         videoView.stopPlayback();
         videoView.setVideoURI(null);
         videoView.suspend();
-        videoBody.setVisibility(View.GONE);
+        managerProvider.getAudioController().setSpeakerPhoneOn(false);
+        cancelWaitingForStart();
         notifyStopPlaying();
     }
 
+    @Override
 	public void release(){
 	    stop();
 	}
+
+    @Override
+    public void setVolume(float volume) {
+        videoView.setVolume(volume);
+    }
 
     //----------------------
 	// Private state machine
@@ -156,13 +146,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 		    }
 		    return;
 		}
-
 		play();
 	}
 
     private void play(){
         Log.i(TAG, "play");
-        if (!audioManager.gainFocus()) {
+        if (!managerProvider.getAudioController().gainFocus()) {
             DialogShower.showToast(activity, R.string.toast_could_not_get_audio_focus);
             return;
         }
@@ -170,20 +159,21 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
         friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
 
         if (videoIsPlayable()) {
-            videoBody.setVisibility(View.VISIBLE);
+            managerProvider.getAudioController().setSpeakerPhoneOn(true);
             final String path = friend.videoFromPath(videoId);
             videoView.setOnPreparedListener(new OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
                     videoView.start();
-                    notifyStartPlaying();
+                    waitAndNotifyWhenStart();
                 }
             });
             videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                 @Override
                 public boolean onError(MediaPlayer mp, int what, int extra) {
                     final String brokenVideoId = videoId;
+                    cancelWaitingForStart();
                     mp.reset();
                     onCompletion(mp);
                     friend.setAndNotifyIncomingVideoStatus(brokenVideoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
@@ -213,8 +203,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
         else
             stop();
     }
-    
-
 
     //---------------
 	// Helper methods
@@ -224,7 +212,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 	    videoBody.setLayoutParams(params);
 	    videoBody.setX(view.getX());
 	    videoBody.setY(view.getY());
-	}
+    }
 
     private void determineIfDownloading() {
         videosAreDownloading = friend.hasDownloadingVideo();
@@ -248,8 +236,37 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
 	    this.videoId = videoId;
 	}
 
-    private boolean isPlaying(){
+    public boolean isPlaying(){
         return videoView.isPlaying();
+    }
+
+    @Override
+    public void rewind(int msec) {
+        if (videoView.isPlaying()) {
+            int current = videoView.getCurrentPosition();
+            int length = videoView.getDuration();
+            if (length > 0) {
+                int next = current + msec;
+                if (next < 0) {
+                    next = 0;
+                } else if (next > length) {
+                    next = length - 1;
+                }
+                videoView.seekTo(next);
+            }
+        }
+    }
+
+    @Override
+    public void restartAfter(int delay) {
+        videoView.pause();
+        videoView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                videoView.seekTo(0);
+                videoView.start();
+            }
+        }, delay);
     }
 
     private boolean videoIsPlayable(){
@@ -257,12 +274,36 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener{
         return f.exists() && f.length() > 100;
     }
 
-    public void setVolume(float volume) {
-        videoView.setVolume(volume);
+    private void waitAndNotifyWhenStart() {
+        cancelWaitingForStart();
+        timer.purge();
+        onStartTask = new TimerTask() {
+            @Override
+            public void run() {
+                if (videoView.getCurrentPosition() > 0) {
+                    videoView.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // checks if it is playing to eliminate the case of released player
+                            if (videoView.isPlaying()) {
+                                videoView.setVisibility(View.VISIBLE);
+                                videoBody.setVisibility(View.VISIBLE);
+                                notifyStartPlaying();
+                            }
+                        }
+                    }, 100);
+                    cancel();
+                }
+            }
+        };
+        timer.schedule(onStartTask, 30, 30);
     }
 
-    public void setAudioManager(AudioManager audioManager) {
-        this.audioManager = audioManager;
+    private void cancelWaitingForStart() {
+        if (onStartTask != null) {
+            onStartTask.cancel();
+            onStartTask = null;
+        }
     }
 
 }
