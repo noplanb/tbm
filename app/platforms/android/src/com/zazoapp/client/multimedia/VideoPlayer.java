@@ -211,10 +211,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 	    videoBody.setLayoutParams(params);
 	    videoBody.setX(view.getX());
 	    videoBody.setY(view.getY());
-
-        // fix for Case 253. Switching off/on clear videoView
-        videoView.setVisibility(View.INVISIBLE);
-        videoView.setVisibility(View.VISIBLE);
     }
 
     private void determineIfDownloading() {
@@ -261,7 +257,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     @Override
-    public void restart() {
+    public void restartAfter(int delay) {
         videoView.pause();
         videoView.postDelayed(new Runnable() {
             @Override
@@ -269,7 +265,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 videoView.seekTo(0);
                 videoView.start();
             }
-        }, 1000);
+        }, delay);
     }
 
     private boolean videoIsPlayable(){
