@@ -5,14 +5,14 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.zazoapp.client.Config;
 import com.zazoapp.client.DispatcherService;
-import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.Video;
 import com.zazoapp.client.network.FileTransferService;
+import com.zazoapp.client.notification.NotificationHandler;
 
 /**
  * This IntentService handles push notifications. It is called by
@@ -44,18 +44,27 @@ public class GcmIntentService extends IntentService {
 				// Not used
 			} else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
 				// Not used
-			} else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
-				Log.i(TAG, "onHandleIntent: extras = " + extras.toString());
-				if (extras.getString(NotificationHandler.DataKeys.TYPE).equalsIgnoreCase(NotificationHandler.TypeEnum.VIDEO_RECEIVED)) {
-					handleVideoReceived(intent);
-				} else if (extras.getString(NotificationHandler.DataKeys.TYPE).equalsIgnoreCase(NotificationHandler.TypeEnum.VIDEO_STATUS_UPDATE)) {
-					handleVideoStatusUpdate(intent);
-				} else {
-					Dispatch.dispatch("onHandleIntent: ERROR: unknown intent type in notification payload.");
-				}
-			}
-		}
-		// Release the wake lock provided by the WakefulBroadcastReceiver.
+            } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
+                Log.i(TAG, "onHandleIntent: extras = " + extras.toString());
+                if (extras.containsKey(NotificationHandler.DataKeys.SERVER_HOST)) {
+                    // filter messages addressed to another server
+                    if (Config.getServerHost().equalsIgnoreCase(extras.getString(NotificationHandler.DataKeys.SERVER_HOST))) {
+                        if (extras.getString(NotificationHandler.DataKeys.TYPE).equalsIgnoreCase(NotificationHandler.TypeEnum.VIDEO_RECEIVED)) {
+                            handleVideoReceived(intent);
+                        } else if (extras.getString(NotificationHandler.DataKeys.TYPE).equalsIgnoreCase(NotificationHandler.TypeEnum.VIDEO_STATUS_UPDATE)) {
+                            handleVideoStatusUpdate(intent);
+                        } else {
+                            Dispatch.dispatch("onHandleIntent: ERROR: unknown intent type in notification payload.");
+                        }
+                    } else {
+                        Dispatch.dispatch("GCM: Message is addressed to another service.\n" + extras.toString());
+                    }
+                } else {
+                    Dispatch.dispatch("GCM: No host in message.\n" + extras.toString());
+                }
+            }
+        }
+        // Release the wake lock provided by the WakefulBroadcastReceiver.
 		GcmBroadcastReceiver.completeWakefulIntent(intent);
 	}
 

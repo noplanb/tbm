@@ -19,6 +19,7 @@ public class NotificationHandler {
 	    public static String TO_MKEY = "to_mkey";
 	    public static String STATUS = "status";
 	    public static String TYPE = "type";
+	    public static String SERVER_HOST = "host";
 	}
 	
 	public static class StatusEnum{
