@@ -337,9 +337,10 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (audioManager.isSpeakerPhoneOn()) {
+        //TODO eliminate blocking touches for 2.3.x release
+        //if (audioManager.isSpeakerPhoneOn()) {
             return super.dispatchTouchEvent(ev);
-        }
-        return true;
+        //}
+        //return true;
     }
 }
