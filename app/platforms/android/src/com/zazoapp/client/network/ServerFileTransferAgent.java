@@ -160,13 +160,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
     public static void deleteRemoteFile(String filename){
         LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
         params.put("filename", filename);
-		new DeleteRemote("videos/delete", params, "GET");
-    }
-
-    private static class DeleteRemote extends HttpRequest{
-        public DeleteRemote (String uri, LinkedTreeMap<String, String> params, String method){
-            super(uri, params, method);
-        }
+        new HttpRequest("videos/delete", params, "GET");
     }
 
 	protected void reportStatus(Intent intent, int status){
