@@ -106,7 +106,7 @@ public class IntentHandler {
 	// -------------------------
 	// Handle Download Intent
 	// -------------------------
-	private synchronized void handleDownloadIntent() {
+	private void handleDownloadIntent() {
 		Log.i(TAG, "handleDownloadIntent");
 
 		// if (VideoIdUtils.isOlderThanOldestIncomingVideo(friend, videoId)){

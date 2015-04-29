@@ -1,15 +1,20 @@
 Previous v2.2.2 (52)
-Current v2.3.1 (55)
+Current v2.3.4 (58)
 
 BACKGROUND CHANGES:
 - Added response string for checking JSONSytaxException unless user is registered
-- Moved toast to strings.xml
+- Moved toast messages to strings.xml
 - Added backup functionality to DebugScreen
 - Spaces correction for custom server params
 - Moved to RollbarTracker
 - Refactored manager access from different modules
 - Changed Rollbar environment to "production". Added host information to person data
 - Removed unnecessary binding to service in activities as all data is loaded on application created
+- Moved starting of DispatherService to Activity
+- Removed unnecessary timers from GestureListeners (they were created on each onResume)
+- Removed direct links to managers from GridViewFragment (if case of forcing GC and killing app it may cause exception and app freeze)
+- Filter GCM messages addressed to another service
+
 
 ---------
 FIX
@@ -37,7 +42,7 @@ Testcases:
 C76, C77, C78, C79, C2455
 
 ---------
-NEW
+NEW. Disabled in v2.3.x!
 ---------
 Restarting video when audio mode is changed with proximity sensor
 Disabled touches when earpiece is working
@@ -78,3 +83,14 @@ Proximity sensor reacts during record and during inactivity state
 
 SOLUTION:
 Switching audio with proximity only if video is currently playing
+
+---------
+FIX #255
+---------
+java.util.ConcurrentModificationException in active model factory methods
+
+PROBLEM:
+Iterator works on changeable list 
+
+SOLUTION:
+Made sync copy of model instances to eliminate ConcurrentModificationException

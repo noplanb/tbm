@@ -115,7 +115,8 @@ public class AudioManager implements SensorEventListener, AudioController {
                 audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
             }
             audioManager.setSpeakerphoneOn(isSpeakerPhoneOn);
-            managerProvider.getPlayer().restartAfter(1000);
+            //TODO eliminate restarting player on proximity change for 2.3.x release
+            //managerProvider.getPlayer().restartAfter(1000);
         } else {
             resetSpeakerPhoneMode();
         }

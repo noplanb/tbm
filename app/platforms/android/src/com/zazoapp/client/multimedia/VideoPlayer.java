@@ -280,20 +280,26 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         onStartTask = new TimerTask() {
             @Override
             public void run() {
-                if (videoView.getCurrentPosition() > 0) {
-                    videoView.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            // checks if it is playing to eliminate the case of released player
-                            if (videoView.isPlaying()) {
-                                videoView.setVisibility(View.VISIBLE);
-                                videoBody.setVisibility(View.VISIBLE);
-                                notifyStartPlaying();
-                            }
+                videoView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (onStartTask != null && videoView.getCurrentPosition() > 0) {
+                            videoView.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // checks if it is playing to eliminate the case of released player
+                                    if (videoView.isPlaying()) {
+                                        videoView.setVisibility(View.VISIBLE);
+                                        videoBody.setVisibility(View.VISIBLE);
+                                        notifyStartPlaying();
+                                    }
+                                }
+                            }, 100);
+                            cancel();
                         }
-                    }, 100);
-                    cancel();
-                }
+                    }
+                });
+
             }
         };
         timer.schedule(onStartTask, 30, 30);

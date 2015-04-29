@@ -68,7 +68,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
             Log.i(TAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
             return null;
         }
-        Friend f = getFactoryInstance().makeInstance(context);
+        Friend f = makeInstance(context);
         f.set(Friend.Attributes.FIRST_NAME, params.get(ServerParamKeys.FIRST_NAME));
         f.set(Friend.Attributes.LAST_NAME, params.get(ServerParamKeys.LAST_NAME));
         f.set(Friend.Attributes.ID, params.get(ServerParamKeys.ID).toString());

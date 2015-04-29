@@ -6,9 +6,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 /**
 * Created by skamenkovych@codeminders.com on 2/19/2015.
 */
@@ -21,7 +18,6 @@ public class ZazoGestureListener implements View.OnTouchListener {
     private float xStartPoint;
     private float yStartPoint;
     private GesturePhase phase;
-    private Timer timer = new Timer();
     private Context context;
 
     private enum GesturePhase {
@@ -46,18 +42,13 @@ public class ZazoGestureListener implements View.OnTouchListener {
                 bounce = v.getHeight() / 2.0f;
                 //Log.w(TAG, "@@@ [" + xStartPoint + ";" + yStartPoint + "]:[" + offset + ";" + bounce + "]");
                 phase = GesturePhase.LONG_PRESS_CATCHING;
-                timer.schedule(new TimerTask() {
+                v.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         if (phase == GesturePhase.LONG_PRESS_CATCHING) {
                             Log.w(TAG, "@@@ intercepted");
                             phase = GesturePhase.LONG_PRESSED;
-                            v.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    v.setAlpha(0.8f);
-                                }
-                            });
+                            v.setAlpha(0.8f);
                         }
                     }
                 }, 400);

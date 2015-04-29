@@ -9,8 +9,6 @@ import android.view.ViewGroup;
 import com.zazoapp.client.utilities.Convenience;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public abstract class ViewGroupGestureRecognizer {
 
@@ -48,7 +46,6 @@ public abstract class ViewGroupGestureRecognizer {
 	private Integer state = State.IDLE;
 	private View targetView;
 	private Double[] downPosition = new Double[2];
-	private Timer longPressTimer;
 	private Boolean enabled = false;
 	private Boolean intercept = false;
 	private Boolean cancelOnMultiTouch = false;
@@ -320,18 +317,14 @@ public abstract class ViewGroupGestureRecognizer {
 		}
     }
 
-	private void startLongpressTimer() {
-		if (longPressTimer != null)
-			longPressTimer.cancel();
-
-		longPressTimer = new Timer();
-		longPressTimer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				longPressTimerFired();
-			}
-		}, LONGPRESS_TIME);
-	}
+    private void startLongpressTimer() {
+        targetView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                longPressTimerFired();
+            }
+        }, LONGPRESS_TIME);
+    }
 
 	private void setDownPosition(MotionEvent event) {
 		downPosition[0] = (double) event.getRawX();

@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import com.zazoapp.client.DispatcherService;
 import com.zazoapp.client.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.TbmApplication;
@@ -91,6 +92,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         setupActionBar();
         setupFragment();
         new S3CredentialsGetter(this);
+        startService(new Intent(this, DispatcherService.class));
     }
 
     private void setupActionBar() {
@@ -337,9 +339,10 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (audioManager.isSpeakerPhoneOn()) {
+        //TODO eliminate blocking touches for 2.3.x release
+        //if (audioManager.isSpeakerPhoneOn()) {
             return super.dispatchTouchEvent(ev);
-        }
-        return true;
+        //}
+        //return true;
     }
 }
