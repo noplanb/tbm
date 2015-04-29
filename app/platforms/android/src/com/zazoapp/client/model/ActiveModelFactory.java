@@ -137,21 +137,19 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
 	}
 
     public ArrayList<T> all() {
-        ArrayList<T> r = new ArrayList<>();
-        Iterator<T> it = instances.iterator();
-        while (it.hasNext()) {
-            r.add(it.next());
+        ArrayList<T> all;
+        synchronized (this) {
+            all = new ArrayList<>(instances);
         }
-        return r;
+        return all;
     }
 
     public ArrayList<T> allWhere(String a, String v) {
+        ArrayList<T> all = all();
         ArrayList<T> result = new ArrayList<>();
-        Iterator<T> it = instances.iterator();
-        while (it.hasNext()) {
-            final T i = it.next();
-            if (i.get(a).equals(v)) {
-                result.add(i);
+        for (T t : all) {
+            if (t.get(a).equals(v)) {
+                result.add(t);
             }
         }
         return result;
@@ -165,26 +163,13 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
 	}
 
     public T findWhere(String a, String v) {
-        Iterator<T> it = instances.iterator();
-        while (it.hasNext()) {
-            T model = it.next();
-            if (model.get(a).equals(v)) {
-                return model;
+        ArrayList<T> all = all();
+        for (T t : all) {
+            if (t.get(a).equals(v)) {
+                return t;
             }
         }
         return null;
-    }
-
-    public ArrayList<T> findAllWhere(String a, String v) {
-        ArrayList<T> result = new ArrayList<>();
-        Iterator<T> it = instances.iterator();
-        while (it.hasNext()) {
-            T model = it.next();
-            if (model.get(a).equals(v)) {
-                result.add(model);
-            }
-        }
-        return result;
     }
 
     public T find(String id) {
