@@ -57,7 +57,7 @@ public class GcmIntentService extends IntentService {
                             Dispatch.dispatch("onHandleIntent: ERROR: unknown intent type in notification payload.");
                         }
                     } else {
-                        Dispatch.dispatch("GCM: Message is addressed to another service.\n" + extras.toString());
+                        Log.i(TAG, "GCM: Message is addressed to another server.\n" + extras.toString());
                     }
                 } else {
                     Dispatch.dispatch("GCM: No host in message.\n" + extras.toString());
