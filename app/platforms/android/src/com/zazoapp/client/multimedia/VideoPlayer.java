@@ -106,6 +106,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     public void stop(){
         Log.i(TAG, "stop");
         videoBody.setVisibility(View.INVISIBLE);
+        videoView.setVisibility(View.INVISIBLE);
+        videoView.setVisibility(View.VISIBLE);
         videoView.stopPlayback();
         videoView.setVideoURI(null);
         videoView.suspend();
