@@ -128,8 +128,10 @@ public class AudioManager implements SensorEventListener, AudioController {
     }
 
     private void resetSpeakerPhoneMode() {
-        audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
-        audioManager.setSpeakerphoneOn(true);
-        isSpeakerPhoneOn = true;
+        if (hasFocus) {
+            audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
+            audioManager.setSpeakerphoneOn(true);
+            isSpeakerPhoneOn = true;
+        }
     }
 }

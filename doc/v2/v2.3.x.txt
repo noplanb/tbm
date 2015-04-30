@@ -1,5 +1,5 @@
 Previous v2.2.2 (52)
-Current v2.3.4 (58)
+Current v2.3.5 (59)
 
 BACKGROUND CHANGES:
 - Added response string for checking JSONSytaxException unless user is registered
@@ -94,3 +94,26 @@ Iterator works on changeable list
 
 SOLUTION:
 Made sync copy of model instances to eliminate ConcurrentModificationException
+
+---------
+FIX #412
+---------
+On Nexus 6. Phone call sound is switched to the ear speaker, rather than to the BT headset if Zazo is running
+
+PROBLEM:
+audio source could be reset after loosing focus
+
+SOLUTION:
+Reset source only if we currently have audio focus
+
+---------
+FIX #410
+---------
+Rotated video in messages from GT-P5100
+
+PROBLEM:
+Camera orientation is 0 for this tab but should 270 degrees
+
+SOLUTION:
+Set 270 degrees for orientation if window has rotation 270 degrees
+ 

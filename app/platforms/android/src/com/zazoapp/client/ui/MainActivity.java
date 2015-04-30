@@ -130,9 +130,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     protected void onResume() {
         super.onResume();
-        if (!audioManager.gainFocus()) {
-            DialogShower.showToast(this, R.string.toast_could_not_get_audio_focus);
-        }
+        audioManager.gainFocus();
         sensorManager.registerListener(audioManager, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
