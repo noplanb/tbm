@@ -1,5 +1,5 @@
 Previous v2.2.2 (52)
-Current v2.3.5 (59)
+Current v2.3.6 (60)
 
 BACKGROUND CHANGES:
 - Added response string for checking JSONSytaxException unless user is registered
@@ -116,4 +116,15 @@ Camera orientation is 0 for this tab but should 270 degrees
 
 SOLUTION:
 Set 270 degrees for orientation if window has rotation 270 degrees
+
+---------
+FIX #419
+---------
+Zazo crashes on rapid multiple press on "sign in" button on login screen
+
+PROBLEM:
+Adding the same dialog several times
+
+SOLUTION:
+If dialog already exist it is dismissed
  
