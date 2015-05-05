@@ -15,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.WindowManager;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import com.zazoapp.client.DispatcherService;
 import com.zazoapp.client.PreferencesHelper;
@@ -143,6 +144,8 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     protected void onPause() {
         super.onPause();
         if (benchController.isBenchShowed()) {
+            //clear contacts_auto_complete_text_view because after resume, "old filtering" word appear
+            ((AutoCompleteTextView)findViewById(R.id.contacts_auto_complete_text_view)).setText("");
             benchController.hideBench();
         }
         releaseManagers();
