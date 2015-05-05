@@ -38,8 +38,8 @@ public class ZazoGestureListener implements View.OnTouchListener {
             case MotionEvent.ACTION_DOWN:
                 xStartPoint = event.getX();
                 yStartPoint = event.getY();
-                offset = 2.5f * v.getWidth();
-                bounce = v.getHeight() / 2.0f;
+                offset = 2.0f * v.getWidth();
+                bounce = v.getHeight() / 1.5f;
                 //Log.w(TAG, "@@@ [" + xStartPoint + ";" + yStartPoint + "]:[" + offset + ";" + bounce + "]");
                 phase = GesturePhase.LONG_PRESS_CATCHING;
                 v.postDelayed(new Runnable() {

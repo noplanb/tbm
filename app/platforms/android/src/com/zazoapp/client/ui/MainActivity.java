@@ -1,21 +1,17 @@
 package com.zazoapp.client.ui;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.WindowManager;
-import android.widget.ImageView;
+import android.view.View;
 import com.zazoapp.client.DispatcherService;
 import com.zazoapp.client.PreferencesHelper;
 import com.zazoapp.client.R;
@@ -81,9 +77,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         }
         setContentView(R.layout.main_activity);
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
         gcmHandler = new GcmHandler(this);
         versionHandler = new VersionHandler(this);
 
@@ -96,15 +89,13 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     }
 
     private void setupActionBar() {
-        ActionBar actionBar = getActionBar();
-        actionBar.setDisplayShowCustomEnabled(true);
-        actionBar.setDisplayUseLogoEnabled(false);
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
-        ImageView v = new ImageView(this);
-        v.setImageResource(R.drawable.zazo_type);
-        v.setOnTouchListener(new ZazoGestureListener(this));
-        actionBar.setCustomView(v);
+        findViewById(R.id.action_bar_icon).setOnTouchListener(new ZazoGestureListener(this));
+        findViewById(R.id.home_menu).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleBench();
+            }
+        });
     }
 
     @Override
@@ -162,25 +153,17 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.home_menu, menu);
-        return super.onCreateOptionsMenu(menu);
+        return false;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
-        switch (item.getItemId()) {
-            case R.id.action_bench:
-                if (benchController.isBenchShowed()) {
-                    benchController.hideBench();
-                } else {
-                    benchController.showBench();
-                }
-            default:
-                return super.onOptionsItemSelected(item);
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch(keyCode) {
+            case KeyEvent.KEYCODE_MENU:
+                toggleBench();
+                return true;
         }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
@@ -342,5 +325,15 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
             return super.dispatchTouchEvent(ev);
         //}
         //return true;
+    }
+
+    private void toggleBench() {
+        if (benchController != null) {
+            if (benchController.isBenchShowed()) {
+                benchController.hideBench();
+            } else {
+                benchController.showBench();
+            }
+        }
     }
 }
