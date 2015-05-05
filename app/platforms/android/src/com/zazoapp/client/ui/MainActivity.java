@@ -130,6 +130,9 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     protected void onResume() {
         super.onResume();
+        //Bug 138 fix. Create new Bench Controller because of new contacts in contact book are possible
+        benchController = new BenchController(this, this);
+        benchController.onDataLoaded();
         if (!audioManager.gainFocus()) {
             DialogShower.showToast(this, R.string.toast_could_not_get_audio_focus);
         }
@@ -306,7 +309,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     private void initManagers() {
         inviteManager = new InviteManager(this, this);
-        benchController = new BenchController(this, this);
         audioManager = new AudioManager(this, this);
         videoRecorder = new VideoRecorderManager(this, this);
         videoPlayer = new VideoPlayer(this, this);
@@ -315,7 +317,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         if (proximitySensor == null) {
             Log.i(TAG, "Proximity sensor not found");
         }
-        benchController.onDataLoaded();
     }
 
     private void releaseManagers() {
