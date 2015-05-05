@@ -103,7 +103,7 @@ public class AudioManager implements SensorEventListener, AudioController {
 
     @Override
     public void setSpeakerPhoneOn(boolean enable) {
-        Log.i(TAG, "setSpeakerPhoneOn" + isSpeakerPhoneOn + " " + enable + " " + isProximityClose);
+        Log.i(TAG, "setSpeakerPhoneOn " + isSpeakerPhoneOn + " " + enable + " " + isProximityClose);
         if (isSpeakerPhoneOn == (!enable || !isProximityClose)) {
             return;
         }
