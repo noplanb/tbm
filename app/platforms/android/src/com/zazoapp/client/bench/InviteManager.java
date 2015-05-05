@@ -223,7 +223,12 @@ public class InviteManager implements InviteHelper {
     //-----------------
     @Override
     public void showConnectedDialog() {
-        String name = (friend != null) ? friend.getFirstName() : benchObject.firstName;
+        if (friend == null) {
+            Log.e(TAG, "Friend is null on this step. This should never happen");
+            Dispatch.dispatch(new NullPointerException(), "Friend is null");
+            return;
+        }
+        String name = friend.getFirstName();
         String msg = context.getString(R.string.dialog_connected_message, name, Config.appName, name);
         String title = context.getString(R.string.dialog_connected_title);
         String action = context.getString(R.string.dialog_action_ok);
@@ -264,7 +269,12 @@ public class InviteManager implements InviteHelper {
 
     @Override
     public void failureNoSimDialog() {
-        String friendName = (friend != null) ? friend.getFullName() : benchObject.displayName;
+        if (friend == null) {
+            Log.e(TAG, "Friend is null on this step. This should never happen");
+            Dispatch.dispatch(new NullPointerException(), "Friend is null");
+            return;
+        }
+        String friendName = friend.getFullName();
         String title = context.getString(R.string.dialog_send_sms_failure_title);
         String message = context.getString(R.string.dialog_send_sms_failure_message, friendName, Config.appName);
         String action = context.getString(R.string.dialog_action_ok);
