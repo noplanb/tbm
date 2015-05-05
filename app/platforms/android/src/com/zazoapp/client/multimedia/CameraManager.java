@@ -121,7 +121,6 @@ public class CameraManager {
         } catch (Exception e) {
             Dispatch.dispatch("getFrontCamera: ERROR: camera not available.");
             notifyCameraInUse();
-            return camera;
         }
         if (camera == null){
             notifyCameraInUse();
