@@ -131,9 +131,9 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     protected void onResume() {
         super.onResume();
-        //Bug 138 fix. Create new Bench Controller because of new contacts in contact book are possible
-        benchController = new BenchController(this, this);
-        benchController.onDataLoaded();
+        //Bug 138 fix. reload phone contacts data because of new items in contact book are possible after resume
+        benchController.reloadRankedPhoneData();
+
         if (!audioManager.gainFocus()) {
             DialogShower.showToast(this, R.string.toast_could_not_get_audio_focus);
         }
@@ -144,8 +144,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     protected void onPause() {
         super.onPause();
         if (benchController.isBenchShowed()) {
-            //clear contacts_auto_complete_text_view because after resume, "old filtering" word appear
-            ((AutoCompleteTextView)findViewById(R.id.contacts_auto_complete_text_view)).setText("");
             benchController.hideBench();
         }
         releaseManagers();
@@ -312,6 +310,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     private void initManagers() {
         inviteManager = new InviteManager(this, this);
+        benchController = new BenchController(this, this);
         audioManager = new AudioManager(this, this);
         videoRecorder = new VideoRecorderManager(this, this);
         videoPlayer = new VideoPlayer(this, this);
@@ -320,6 +319,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         if (proximitySensor == null) {
             Log.i(TAG, "Proximity sensor not found");
         }
+        benchController.onDataLoaded();
     }
 
     private void releaseManagers() {
