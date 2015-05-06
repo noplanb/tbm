@@ -1,64 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/drawer_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
-
-    <!-- The main content view -->
-
-    <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        <include layout="@layout/splash_screen"/>
-    </FrameLayout>
-    <FrameLayout
-        android:id="@+id/content_frame"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-        
-<!--        <ProgressBar
-	        android:id="@+id/progressBar1"
-	        style="?android:attr/progressBarStyleLarge"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	         android:layout_gravity="center"
-	        />-->
-        
-        </FrameLayout>
-    <!-- The navigation drawer -->
-
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
     <RelativeLayout
-        android:id="@+id/bench_frame"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:background="@color/bg_bench"
-        android:padding="5dp"
-        android:layout_gravity="end" >
-
-        <com.zazoapp.client.ui.view.ClearableAutoCompleteTextView
-            android:id="@+id/contacts_auto_complete_text_view"
+            android:id="@+id/zazo_action_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:completionThreshold="1"
-            android:ems="10"
-            android:padding="10dp"
-            android:hint="@string/search_all_contacts_hint"
-            android:background="@drawable/search_border" 
-            android:textColor="@android:color/white"
-            android:inputType="textNoSuggestions"
-            android:textCursorDrawable="@null"/>
-
-        <ListView
-            android:id="@+id/bench_list"
+            android:layout_height="55dp"
+            style="@style/ZazoActionBar">
+        <ImageView
+                android:id="@+id/action_bar_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:padding="15dp"
+                android:src="@drawable/zazo_type"/>
+        <ImageButton
+                android:id="@+id/home_menu"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:padding="15dp"
+                android:src="@drawable/drawer"
+                android:contentDescription="@string/menu_bench"
+                android:background="?android:selectableItemBackground"/>
+    </RelativeLayout>
+    <android.support.v4.widget.DrawerLayout
+            android:id="@+id/drawer_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentBottom="true"
-            android:divider = "@android:color/black"
-            android:dividerHeight = "1dp"
-            android:layout_below="@id/contacts_auto_complete_text_view" >
+            android:layout_below="@id/zazo_action_bar">
 
-            <requestFocus />
-        </ListView>
-    </RelativeLayout>
-</android.support.v4.widget.DrawerLayout>
+        <!-- The main content view -->
+
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            <include layout="@layout/splash_screen"/>
+        </FrameLayout>
+        <FrameLayout
+                android:id="@+id/content_frame"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+            <!--        <ProgressBar
+                        android:id="@+id/progressBar1"
+                        style="?android:attr/progressBarStyleLarge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                         android:layout_gravity="center"
+                        />-->
+
+        </FrameLayout>
+        <!-- The navigation drawer -->
+
+        <RelativeLayout
+                android:id="@+id/bench_frame"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/bg_bench"
+                android:padding="5dp"
+                android:layout_gravity="end" >
+
+            <com.zazoapp.client.ui.view.ClearableAutoCompleteTextView
+                    android:id="@+id/contacts_auto_complete_text_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:completionThreshold="1"
+                    android:ems="10"
+                    android:padding="10dp"
+                    android:hint="@string/search_all_contacts_hint"
+                    android:background="@drawable/search_border"
+                    android:textColor="@android:color/white"
+                    android:inputType="textNoSuggestions"
+                    android:textCursorDrawable="@null"/>
+
+            <ListView
+                    android:id="@+id/bench_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentBottom="true"
+                    android:divider = "@android:color/black"
+                    android:dividerHeight = "1dp"
+                    android:layout_below="@id/contacts_auto_complete_text_view" >
+
+                <requestFocus />
+            </ListView>
+        </RelativeLayout>
+    </android.support.v4.widget.DrawerLayout>
+    <com.zazoapp.client.tutorial.TutorialLayout
+            android:id="@+id/tutorial_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+    </com.zazoapp.client.tutorial.TutorialLayout>
+</RelativeLayout>

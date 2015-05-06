@@ -8,7 +8,7 @@
 
 
     -->
-    <style name="AppBaseTheme" parent="android:Theme.Holo">
+    <style name="AppBaseTheme" parent="android:Theme.DeviceDefault.NoActionBar.Fullscreen">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
@@ -20,8 +20,6 @@
     <style name="AppTheme" parent="AppBaseTheme">
 
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-        <item name="android:actionBarStyle">@style/ZazoActionBar</item>
-        <item name="android:actionBarSize">55dp</item>
         <item name="android:dropDownListViewStyle">@style/DropDownListViewStyle</item>
         <item name="android:windowBackground">@color/splash_background</item>
         <item name="android:listViewStyle">@style/ListViewStyle</item>
