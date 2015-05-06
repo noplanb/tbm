@@ -120,8 +120,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @Override
     public void hideBench() {
         drawerLayout.closeDrawers();
-		//clear contacts_auto_complete_text_view because after resume, "old filtering" word appear
-		((AutoCompleteTextView) activity.findViewById(R.id.contacts_auto_complete_text_view)).setText("");
+        //clear contacts_auto_complete_text_view because after resume, "old filtering" word appear
+        ((AutoCompleteTextView) activity.findViewById(R.id.contacts_auto_complete_text_view)).setText("");
     }
 
     @Override

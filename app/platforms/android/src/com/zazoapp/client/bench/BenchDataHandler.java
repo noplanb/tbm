@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.Telephony;
 import android.util.Log;
@@ -79,7 +78,7 @@ public class BenchDataHandler {
 	//-------------------------------------------------
 	public void getRankedPhoneData(){
         if(!isRequestRunning)
-		    AsyncTaskManager.executeAsyncTask(new GetRankedPhoneDataAsync(), new Void[]{});
+            AsyncTaskManager.executeAsyncTask(new GetRankedPhoneDataAsync(), new Void[]{});
 	}
 
     private class GetRankedPhoneDataAsync extends AsyncTask<Void, Void, Void>{
