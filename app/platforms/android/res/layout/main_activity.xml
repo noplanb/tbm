@@ -88,10 +88,10 @@
             </ListView>
         </RelativeLayout>
     </android.support.v4.widget.DrawerLayout>
-    <RelativeLayout
+    <com.zazoapp.client.tutorial.TutorialLayout
             android:id="@+id/tutorial_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-    </RelativeLayout>
+    </com.zazoapp.client.tutorial.TutorialLayout>
 </RelativeLayout>
