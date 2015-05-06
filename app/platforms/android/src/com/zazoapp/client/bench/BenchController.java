@@ -65,12 +65,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         benchDataHandler.setListener(this);
 	}
 
-	public void onDataLoaded() {
+	public void loadContacts() {
         friendFactory = FriendFactory.getFactoryInstance();
-		benchDataHandler.getRankedPhoneData();
-	}
-
-	public void reloadRankedPhoneData(){
 		benchDataHandler.getRankedPhoneData();
 	}
 
