@@ -29,7 +29,7 @@ import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
-import com.zazoapp.client.tutorial.TutorialLayout;
+import com.zazoapp.client.tutorial.Tutorial;
 import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
 import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
@@ -54,7 +54,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     private GridViewFragment mainFragment;
     private DialogFragment pd;
     private ManagerHolder managerHolder;
-    private TutorialLayout tutorialLayout;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,19 +72,8 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         TbmApplication.getInstance().addTerminationCallback(this);
         setupActionBar();
         setupFragment();
-        setupTutorial();
         new S3CredentialsGetter(this);
         startService(new Intent(this, DispatcherService.class));
-    }
-
-    private void setupTutorial() {
-        tutorialLayout = (TutorialLayout) findViewById(R.id.tutorial_layout);
-        tutorialLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                tutorialLayout.dismiss();
-            }
-        });
     }
 
     private void setupActionBar() {
@@ -282,6 +270,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     public InviteHelper getInviteHelper() {
         return managerHolder.getInviteManager();
+    }
+
+    @Override
+    public Tutorial getTutorial() {
+        return managerHolder.getTutorial();
     }
 
     private void releaseManagers() {

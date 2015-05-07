@@ -11,6 +11,8 @@ import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Player;
 import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoPlayer;
+import com.zazoapp.client.tutorial.Tutorial;
+import com.zazoapp.client.tutorial.TutorialLayout;
 import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.helpers.VideoRecorderManager;
 
@@ -27,6 +29,7 @@ public class ManagerHolder {
     private Sensor proximitySensor;
     private Recorder videoRecorder;
     private Player videoPlayer;
+    private Tutorial tutorial;
 
     public void init(MainActivity activity) {
         inviteManager = new InviteManager(activity, activity);
@@ -39,12 +42,13 @@ public class ManagerHolder {
         if (proximitySensor == null) {
             Log.i(TAG, "Proximity sensor not found");
         }
-        benchController.onDataLoaded();
+        tutorial = new Tutorial((TutorialLayout) activity.findViewById(R.id.tutorial_layout), activity);
     }
 
     public void registerManagers() {
         audioManager.gainFocus();
         sensorManager.registerListener(audioManager, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
+        tutorial.registerCallbacks();
     }
 
     public void unregisterManagers() {
@@ -54,6 +58,7 @@ public class ManagerHolder {
         audioManager.abandonFocus();
         audioManager.reset();
         sensorManager.unregisterListener(audioManager);
+        tutorial.unregisterCallbacks();
     }
 
     public BenchController getBenchController() {
@@ -84,4 +89,7 @@ public class ManagerHolder {
         return videoPlayer;
     }
 
+    public Tutorial getTutorial() {
+        return tutorial;
+    }
 }
