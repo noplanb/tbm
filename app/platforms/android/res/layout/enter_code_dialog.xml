@@ -33,7 +33,8 @@
         android:background="@drawable/dlg_input_bg"
         android:textColor="@color/dialog_textcolor"
         android:padding="5dp"
-        android:inputType="number" >
+        android:inputType="number"
+        android:textCursorDrawable="@null">
 
         <requestFocus />
     </EditText>
