@@ -302,8 +302,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             holder.name.setText(item.displayName);
 
             return v;
-		}
-		
+        }
+
         private class ViewHolder{
             ImageView thumb;
             ImageView thumbBorder;
