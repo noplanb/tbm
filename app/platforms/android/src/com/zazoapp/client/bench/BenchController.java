@@ -298,16 +298,16 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 holder.thumb.setVisibility(View.GONE);
                 holder.thumbBorder.setVisibility(View.GONE);
             }
-			
+
             holder.name.setText(item.displayName);
 
             return v;
 		}
 		
-		private class ViewHolder{
-			ImageView thumb;
+        private class ViewHolder{
+            ImageView thumb;
             ImageView thumbBorder;
-			TextView name;
-		}
-	}
+            TextView name;
+        }
+    }
 }
