@@ -1,5 +1,6 @@
 package com.zazoapp.client.tutorial;
 
+import android.graphics.RectF;
 import android.util.Log;
 import android.view.View;
 import com.zazoapp.client.PreferencesHelper;
@@ -45,11 +46,9 @@ public class Tutorial {
         int unviewedMessages = VideoFactory.getFactoryInstance().allNotViewedCount();
         Log.i(TAG, "onLaunch: friends " + friendsCount + " unviewed " + unviewedMessages);
 
-        int left = view.getLeft();
-        int top = view.getTop();
-        int right = view.getRight();
-        int bottom = view.getBottom();
-        Log.i(TAG, "onLaunch: " + left + " " + right + " " + top + " " + bottom);
+        if (friendsCount == 0) {
+            showInviteHint1(view);
+        }
         //Points to: Orange plus in center right box #1.
         //
         //Msg: “Send a Zazo”
@@ -64,11 +63,9 @@ public class Tutorial {
     }
 
     public void onNewMessage(View view) {
-        int left = view.getLeft();
-        int top = view.getTop();
-        int right = view.getRight();
-        int bottom = view.getBottom();
-        Log.i(TAG, "onNewMessage: " + left + " " + right + " " + top + " " + bottom);
+        Log.i(TAG, "onNewMessage: " + getViewRect(view));
+        //tutorialLayout.dimExceptForRect(getViewRect(view));
+        //delayedDismiss();
         //PlayHint
         //Points to: Unviewed message in center right box #1.
         //
@@ -87,36 +84,55 @@ public class Tutorial {
     }
 
     public void onVideoViewed(View view, String friendId) {
-        int left = view.getLeft();
-        int top = view.getTop();
-        int right = view.getRight();
-        int bottom = view.getBottom();
-        Log.i(TAG, "onVideoViewed: " + left + " " + right + " " + top + " " + bottom);
+        Log.i(TAG, "onVideoViewed: " + getViewRect(view));
+        tutorialLayout.dimExceptForRect(getViewRect(view));
+        delayedDismiss();
         //RecordHint
     }
 
     public void onFriendModelChanged(View view, String friendId) {
         int friendsCount = FriendFactory.getFactoryInstance().count();
-        Log.i(TAG, "onFriendModelChanged: friends " + friendsCount);
+        Log.i(TAG, "onFriendModelChanged: friends " + friendsCount + " " + getViewRect(view));
+        tutorialLayout.dimExceptForRect(getViewRect(view));
+        delayedDismiss();
         //RecordHint
     }
 
     public void onVideoSentIndicatorShowed(View indicator) {
-        int left = indicator.getLeft();
-        int top = indicator.getTop();
-        int right = indicator.getRight();
-        int bottom = indicator.getBottom();
-        Log.i(TAG, "onVideoSentIndicatorShowed: " + left + " " + right + " " + top + " " + bottom);
+        Log.i(TAG, "onVideoSentIndicatorShowed: " + getViewRect(indicator));
+        tutorialLayout.dimExceptForRect(getViewRect(indicator));
+        delayedDismiss();
         // SentHint
         // InviteHint2
     }
 
     public void onVideoViewedIndicatorShowed(View indicator) {
-        int left = indicator.getLeft();
-        int top = indicator.getTop();
-        int right = indicator.getRight();
-        int bottom = indicator.getBottom();
-        Log.i(TAG, "onVideoViewedIndicatorShowed: " + left + " " + right + " " + top + " " + bottom);
+        Log.i(TAG, "onVideoViewedIndicatorShowed: " + getViewRect(indicator));
+        tutorialLayout.dimExceptForRect(getViewRect(indicator));
+        delayedDismiss();
         // ViewedHint
+    }
+
+    private RectF getViewRect(View view) {
+        int[] location = new int[2];
+        view.getLocationInWindow(location);
+        int left = location[0];
+        int top = location[1];
+        int right = left + view.getWidth();
+        int bottom = top + view.getHeight();
+        return new RectF(left, top, right, bottom);
+    }
+
+    private void delayedDismiss() {
+        tutorialLayout.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                tutorialLayout.dismiss();
+            }
+        }, 2000);
+    }
+
+    private void showInviteHint1(View view) {
+        tutorialLayout.dimExceptForRect(getViewRect(view));
     }
 }

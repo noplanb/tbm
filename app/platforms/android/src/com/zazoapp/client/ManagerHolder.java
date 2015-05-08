@@ -49,6 +49,7 @@ public class ManagerHolder {
         audioManager.gainFocus();
         sensorManager.registerListener(audioManager, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
         tutorial.registerCallbacks();
+        benchController.onDataLoaded();
     }
 
     public void unregisterManagers() {
