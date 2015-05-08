@@ -49,6 +49,12 @@ public abstract class ViewGroupGestureRecognizer {
 	private Boolean enabled = false;
 	private Boolean intercept = false;
 	private Boolean cancelOnMultiTouch = false;
+	private Runnable longPressTimer = new Runnable() {
+		@Override
+		public void run() {
+			longPressTimerFired();
+		}
+	};
 
 	// -------------------
 	// Constructor related
@@ -318,12 +324,8 @@ public abstract class ViewGroupGestureRecognizer {
     }
 
     private void startLongpressTimer() {
-        targetView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                longPressTimerFired();
-            }
-        }, LONGPRESS_TIME);
+		targetView.removeCallbacks(longPressTimer);
+        targetView.postDelayed(longPressTimer, LONGPRESS_TIME);
     }
 
 	private void setDownPosition(MotionEvent event) {
