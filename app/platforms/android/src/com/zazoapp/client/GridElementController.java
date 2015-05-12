@@ -172,6 +172,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                 && !showNewMessages && lastEventOutgoing;
         gridElementView.showNudge(!friend.hasApp());
         gridElementView.setVideoViewed(showVideoViewed);
+        if (showVideoViewed) {
+            managerProvider.getTutorial().onVideoViewedIndicatorShowed(gridElementView);
+        }
         if (!animating) {
             gridElementView.showUploadingMark(isUploading() && !showNewMessages);
             gridElementView.showDownloadingMark(isDownloading() && !showNewMessages);
@@ -277,7 +280,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                     case Friend.OutgoingVideoStatus.VIEWED:
                         gridElementView.showUploadingMark(false);
                         updateContent(gridElementView.isAnimating());
-                        managerProvider.getTutorial().onVideoViewedIndicatorShowed(gridElementView.findViewById(R.id.img_viewed));
                         break;
                     default:
                         updateContent(gridElementView.isAnimating());
