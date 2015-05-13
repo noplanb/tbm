@@ -64,7 +64,7 @@ public class TutorialLayout extends FrameLayout {
         dimmed = true;
         final TextView hint = (TextView) findViewById(R.id.tutorial_hint);
         hint.setText(hintText);
-        if (dimExcludedRect.intersect(0, 0, getRight(), getHeight() / 3)) {
+        if (dimExcludedRect.intersects(0, 0, getRight(), getHeight() / 3)) {
             // TOP part, place just below
             FrameLayout.LayoutParams p = (LayoutParams) hint.getLayoutParams();
             p.setMargins(0, (int) dimExcludedRect.bottom, 0, 0);
