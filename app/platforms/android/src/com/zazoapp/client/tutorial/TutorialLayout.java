@@ -24,7 +24,7 @@ import com.zazoapp.client.R;
 public class TutorialLayout extends FrameLayout {
     private static final String TAG = TutorialLayout.class.getSimpleName();
     private static final int MAX_DIM = 200;
-    private static final int DURATION = 1000;
+    private static final int DURATION = 300;
     private boolean dimmed;
     private int dimValue;
     private Paint dimPaint = new Paint(Paint.ANTI_ALIAS_FLAG);

@@ -11,7 +11,7 @@ import com.zazoapp.client.model.VideoFactory;
 /**
  * Created by skamenkovych@codeminders.com on 5/13/2015.
  */
-enum HintType {
+public enum HintType {
     INVITE_1(R.string.tutorial_hint_invite_1) {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
@@ -104,7 +104,7 @@ enum HintType {
         hintTextId = id;
     }
 
-    String getPrefName() {
+    public String getPrefName() {
         return prefName;
     }
 

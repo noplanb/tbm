@@ -18,11 +18,13 @@ import android.widget.Switch;
 import android.widget.TextView;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.zazoapp.client.GridManager;
+import com.zazoapp.client.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.tutorial.HintType;
 import com.zazoapp.client.utilities.DialogShower;
 
 /**
@@ -50,6 +52,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         setUpCameraOption();
         setUpCrashButton();
         setUpSendBrokenVideo();
+        setUpTutorialOption();
     }
 
     @Override
@@ -260,6 +263,20 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 config.setSendBrokenVideo(isChecked);
+            }
+        });
+    }
+
+    private void setUpTutorialOption() {
+        Button resetTutorial = (Button) findViewById(R.id.reset_tutorial);
+        resetTutorial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PreferencesHelper p = new PreferencesHelper(DebugSettingsActivity.this);
+                p.putBoolean(HintType.PLAY.getPrefName(), true);
+                p.putBoolean(HintType.RECORD.getPrefName(), true);
+                p.putBoolean(HintType.SENT.getPrefName(), true);
+                p.putBoolean(HintType.VIEWED.getPrefName(), true);
             }
         });
     }
