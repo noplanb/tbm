@@ -27,6 +27,7 @@ public interface Player {
     interface StatusCallbacks {
         void onVideoPlaying(String friendId, String videoId);
         void onVideoStopPlaying(String friendId);
+        void onCompletion(String friendId);
         void onVideoPlaybackError(String friendId, String videoId);
     }
 }

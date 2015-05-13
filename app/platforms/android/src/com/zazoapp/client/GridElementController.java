@@ -119,12 +119,13 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             Log.d(TAG, "onVideoStopPlaying " + friendId);
             isVideoPlaying = false;
             updateContentFromUi(false);
-            uiHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    managerProvider.getTutorial().onVideoViewed(gridElementView, friendId);
-                }
-            });
+        }
+    }
+
+    @Override
+    public void onCompletion(String friendId) {
+        if (isForMe(friendId)) {
+            managerProvider.getTutorial().onVideoViewed(gridElementView);
         }
     }
 
@@ -273,7 +274,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             @Override
                             public void run() {
                                 updateContent(false);
-                                managerProvider.getTutorial().onVideoSentIndicatorShowed(gridElementView.findViewById(R.id.img_uploading));
+                                managerProvider.getTutorial().onVideoSentIndicatorShowed(gridElementView);
                             }
                         });
                         break;
@@ -341,7 +342,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    managerProvider.getTutorial().onFriendModelChanged(gridElementView, gridElement.getFriendId());
+                    managerProvider.getTutorial().onFriendModelChanged(gridElementView);
                 }
             });
         }
