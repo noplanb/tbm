@@ -89,6 +89,10 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        if ("_FINISH".equals(intent.getAction())) {
+            finish();
+            return;
+        }
         setIntent(intent);
     }
 
