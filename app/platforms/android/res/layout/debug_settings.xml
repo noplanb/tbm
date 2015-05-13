@@ -76,6 +76,22 @@
                         android:layout_gravity="center|right"
                         android:textColor="@android:color/white"/>
             </TableRow>
+            <TableRow>
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="Clear user data (friends, videos)"
+                        android:textColor="@android:color/white"
+                        android:layout_span="2"/>
+                <Button
+                        android:id="@+id/clear_user_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Clear"
+                        android:layout_gravity="center|right"
+                        android:textColor="@android:color/white"/>
+            </TableRow>
         </TableLayout>
 
         <Switch
@@ -204,5 +220,24 @@
                 android:text="Send broken video"
                 android:textColor="@android:color/white"
                 android:layout_marginTop="5dp"/>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Reset tutorial hints"
+                    android:layout_weight="1"
+                    android:textColor="@android:color/white"
+                    android:layout_gravity="center_vertical"/>
+            <Button
+                    android:id="@+id/reset_tutorial"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Reset"
+                    android:textColor="@android:color/white"/>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

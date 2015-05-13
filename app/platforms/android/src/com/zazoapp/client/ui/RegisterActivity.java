@@ -411,6 +411,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         user.set(User.Attributes.REGISTERED, "true");
         ActiveModelsHandler.getInstance(this).saveAll();
 		Intent i = new Intent(this, MainActivity.class);
+        i.setAction(Intent.ACTION_MAIN);
 		startActivity(i);
 		finish();
 	}

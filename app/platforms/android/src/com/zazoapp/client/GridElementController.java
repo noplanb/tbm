@@ -114,11 +114,18 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     @Override
-    public void onVideoStopPlaying(String friendId) {
+    public void onVideoStopPlaying(final String friendId) {
         if (isForMe(friendId)) {
             Log.d(TAG, "onVideoStopPlaying " + friendId);
             isVideoPlaying = false;
             updateContentFromUi(false);
+        }
+    }
+
+    @Override
+    public void onCompletion(String friendId) {
+        if (isForMe(friendId)) {
+            managerProvider.getTutorial().onVideoViewed(gridElementView);
         }
     }
 
@@ -166,6 +173,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                 && !showNewMessages && lastEventOutgoing;
         gridElementView.showNudge(!friend.hasApp());
         gridElementView.setVideoViewed(showVideoViewed);
+        if (showVideoViewed) {
+            managerProvider.getTutorial().onVideoViewedIndicatorShowed(gridElementView);
+        }
         if (!animating) {
             gridElementView.showUploadingMark(isUploading() && !showNewMessages);
             gridElementView.showDownloadingMark(isDownloading() && !showNewMessages);
@@ -238,6 +248,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                                 @Override
                                 public void run() {
                                     updateContent(false);
+                                    managerProvider.getTutorial().onNewMessage(gridElementView);
                                 }
                             });
                         } else {
@@ -263,6 +274,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             @Override
                             public void run() {
                                 updateContent(false);
+                                managerProvider.getTutorial().onVideoSentIndicatorShowed(gridElementView);
                             }
                         });
                         break;
@@ -327,6 +339,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (changed) {
             updateContentFromUi(false);
             managerProvider.getBenchViewManager().updateBench();
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    managerProvider.getTutorial().onFriendModelChanged(gridElementView);
+                }
+            });
         }
         highLightElementForFriend();
     }

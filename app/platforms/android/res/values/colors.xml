@@ -49,6 +49,7 @@
     <color name="register_input_border">#c2e179</color>
     <color name="register_input_bg">#a9cb58</color>
     <color name="register_btn_bg">#2f2e28</color>
+    <color name="register_btn_bg_ripple">#ff7d7b71</color>
 
     <color name="spinner_ring_start">#00F48A31</color>
     <color name="spinner_ring_middle">#DDF48A31</color>

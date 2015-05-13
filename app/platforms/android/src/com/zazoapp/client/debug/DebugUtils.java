@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.AssetManager;
-import android.os.Build;
 import android.os.Environment;
 import android.text.InputType;
 import android.widget.EditText;
@@ -120,12 +119,7 @@ public final class DebugUtils {
     }
 
     public static void requestCode(Context context, final InputDialogCallback callback) {
-        AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            builder = new AlertDialog.Builder(context);
-        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Enter code");
         // Set up the input
         final EditText input = new EditText(context);
@@ -145,6 +139,29 @@ public final class DebugUtils {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 callback.onReceive("");
+                dialog.dismiss();
+            }
+        });
+        builder.show();
+    }
+
+    public static void requestConfirm(Context context, String text, final InputDialogCallback callback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Confirmation");
+        builder.setMessage(text);
+        builder.setCancelable(false);
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                callback.onReceive("OK");
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                callback.onReceive(null);
                 dialog.dismiss();
             }
         });
