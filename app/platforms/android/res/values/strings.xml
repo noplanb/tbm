@@ -39,7 +39,7 @@
     <string name="dialog_server_error_message">Can\'t reach %1$s.\n\nCheck your connection and try again.</string>
     <string name="dialog_register_bad_code_title">Bad Code</string>
     <string name="dialog_register_bad_code_message">The code you entered is wrong. Please try again.</string>
-    <string name="dialog_send_sms_failure_title">Unable to send SMS</string>
+    <string name="dialog_send_sms_failure_title">Didn\'t Send SMS</string>
     <string name="dialog_send_sms_failure_message">It looks like you can\'t or didn\'t send a link by SMS. Perhaps you can just call or email %1$s and tell them about %2$s.</string>
     <string name="dialog_select_phone_number">Select number to invite %1$s</string>
     <string name="dialog_invite_sms_title">Send Link</string>
@@ -79,4 +79,11 @@
     <string name="register_sign_in">Sign In</string>
     <string name="video_is_not_playable">Video is not playable</string>
     <string name="search_all_contacts_hint">all contacts</string>
+
+    <string name="tutorial_hint_invite_1">Send a Zazo</string>
+    <string name="tutorial_hint_invite_2">Zazo someone else!</string>
+    <string name="tutorial_hint_play">Tap to play</string>
+    <string name="tutorial_hint_record">Press and hold to record</string>
+    <string name="tutorial_hint_sent">Zazo sent! Well done!</string>
+    <string name="tutorial_hint_viewed">Your Zazo was Viewed!</string>
 </resources>

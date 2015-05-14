@@ -49,12 +49,7 @@ public abstract class ViewGroupGestureRecognizer {
 	private Boolean enabled = false;
 	private Boolean intercept = false;
 	private Boolean cancelOnMultiTouch = false;
-	private Runnable longPressTimer = new Runnable() {
-		@Override
-		public void run() {
-			longPressTimerFired();
-		}
-	};
+    private CancelableTask longPressTask;
 
 	// -------------------
 	// Constructor related
@@ -96,6 +91,9 @@ public abstract class ViewGroupGestureRecognizer {
         if (ev.getAction() == MotionEvent.ACTION_DOWN)
             intercept = false;
         handleTouchEvent(ev);
+        if (state == State.IDLE && longPressTask != null) {
+            longPressTask.cancel();
+        }
     }
     
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -324,8 +322,16 @@ public abstract class ViewGroupGestureRecognizer {
     }
 
     private void startLongpressTimer() {
-		targetView.removeCallbacks(longPressTimer);
-        targetView.postDelayed(longPressTimer, LONGPRESS_TIME);
+        if (longPressTask != null) {
+            longPressTask.cancel();
+        }
+        longPressTask = new CancelableTask() {
+            @Override
+            protected void doTask() {
+                longPressTimerFired();
+            }
+        };
+        targetView.postDelayed(longPressTask, LONGPRESS_TIME);
     }
 
 	private void setDownPosition(MotionEvent event) {

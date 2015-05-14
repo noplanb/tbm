@@ -112,6 +112,7 @@
             android:background="@drawable/register_btn_bg"
             android:layout_marginTop="50dp"
             android:text="@string/register_sign_in"
+            android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="22dp" />
 

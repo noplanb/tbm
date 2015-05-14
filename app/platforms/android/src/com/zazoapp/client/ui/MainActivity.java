@@ -1,53 +1,44 @@
 package com.zazoapp.client.ui;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.WindowManager;
-import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
+import android.view.View;
+import android.widget.AutoCompleteTextView;
 import com.zazoapp.client.DispatcherService;
+import com.zazoapp.client.ManagerHolder;
 import com.zazoapp.client.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.TbmApplication;
 import com.zazoapp.client.VersionHandler;
 import com.zazoapp.client.ZazoManagerProvider;
-import com.zazoapp.client.bench.BenchController;
 import com.zazoapp.client.bench.BenchViewManager;
 import com.zazoapp.client.bench.InviteHelper;
-import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.bench.InviteManager.InviteDialogListener;
 import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.multimedia.AudioController;
-import com.zazoapp.client.multimedia.AudioManager;
-import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Player;
 import com.zazoapp.client.multimedia.Recorder;
-import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
+import com.zazoapp.client.tutorial.Tutorial;
 import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
 import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
-import com.zazoapp.client.ui.helpers.VideoRecorderManager;
 import com.zazoapp.client.utilities.DialogShower;
 
 public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback, UnexpectedTerminationHelper.TerminationCallback,
@@ -62,16 +53,10 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     public static final int NO_SIM_DIALOG = 4;
 
     private GcmHandler gcmHandler;
-    private BenchController benchController;
     private VersionHandler versionHandler;
     private GridViewFragment mainFragment;
-    private InviteManager inviteManager;
     private DialogFragment pd;
-    private AudioManager audioManager;
-    private SensorManager sensorManager;
-    private Sensor proximitySensor;
-    private Recorder videoRecorder;
-    private Player videoPlayer;
+    private ManagerHolder managerHolder;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,13 +67,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         }
         setContentView(R.layout.main_activity);
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
         gcmHandler = new GcmHandler(this);
         versionHandler = new VersionHandler(this);
 
-        initManagers();
+        managerHolder = new ManagerHolder();
+        managerHolder.init(this);
         TbmApplication.getInstance().addTerminationCallback(this);
         setupActionBar();
         setupFragment();
@@ -97,20 +80,22 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     }
 
     private void setupActionBar() {
-        ActionBar actionBar = getActionBar();
-        actionBar.setDisplayShowCustomEnabled(true);
-        actionBar.setDisplayUseLogoEnabled(false);
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setIcon(new ColorDrawable(getResources().getColor(android.R.color.transparent)));
-        ImageView v = new ImageView(this);
-        v.setImageResource(R.drawable.zazo_type);
-        v.setOnTouchListener(new ZazoGestureListener(this));
-        actionBar.setCustomView(v);
+        findViewById(R.id.action_bar_icon).setOnTouchListener(new ZazoGestureListener(this));
+        findViewById(R.id.home_menu).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleBench();
+            }
+        });
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        if ("_FINISH".equals(intent.getAction())) {
+            finish();
+            return;
+        }
         setIntent(intent);
     }
 
@@ -131,20 +116,14 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     protected void onResume() {
         super.onResume();
-        //Bug 138 fix. reload phone contacts data because of new items in contact book are possible after resume
-        benchController.loadContacts();
-
-        if (!audioManager.gainFocus()) {
-            DialogShower.showToast(this, R.string.toast_could_not_get_audio_focus);
-        }
-        sensorManager.registerListener(audioManager, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
+        managerHolder.registerManagers();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (benchController.isBenchShowed()) {
-            benchController.hideBench();
+        if (getBenchViewManager().isBenchShowed()) {
+            getBenchViewManager().hideBench();
         }
         releaseManagers();
     }
@@ -168,41 +147,33 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.home_menu, menu);
-        return super.onCreateOptionsMenu(menu);
+        return false;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
-        switch (item.getItemId()) {
-            case R.id.action_bench:
-                if (benchController.isBenchShowed()) {
-                    benchController.hideBench();
-                } else {
-                    benchController.showBench();
-                }
-            default:
-                return super.onOptionsItemSelected(item);
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch(keyCode) {
+            case KeyEvent.KEYCODE_MENU:
+                toggleBench();
+                return true;
         }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public void onActionClicked(int id, Bundle bundle) {
         switch (id) {
             case CONNECTED_DIALOG:
-                inviteManager.moveFriendToGrid();
+                getInviteHelper().moveFriendToGrid();
                 break;
             case NUDGE_DIALOG:
-                inviteManager.showSmsDialog();
+                getInviteHelper().showSmsDialog();
                 break;
             case SMS_DIALOG:
-                inviteManager.inviteNewFriend();
+                getInviteHelper().inviteNewFriend();
                 break;
             case NO_SIM_DIALOG:
-                inviteManager.showConnectedDialog();
+                getInviteHelper().showConnectedDialog();
                 break;
         }
     }
@@ -212,10 +183,10 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         if (id == SENDLINK_DIALOG) {
             switch (button) {
                 case BUTTON_POSITIVE:
-                    inviteManager.sendInvite(AbstractDialogFragment.getEditedMessage(params));
+                    getInviteHelper().sendInvite(AbstractDialogFragment.getEditedMessage(params));
                     break;
                 case BUTTON_NEGATIVE:
-                    inviteManager.failureNoSimDialog();
+                    getInviteHelper().failureNoSimDialog();
                     break;
             }
         }
@@ -223,7 +194,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public void phoneSelected(Contact contact, int phoneIndex) {
-        inviteManager.invite(contact, phoneIndex);
+        getInviteHelper().invite(contact, phoneIndex);
     }
 
     @Override
@@ -285,49 +256,36 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public BenchViewManager getBenchViewManager() {
-        return benchController;
+        return managerHolder.getBenchController();
     }
 
     @Override
     public AudioController getAudioController() {
-        return audioManager;
+        return managerHolder.getAudioManager();
     }
 
     @Override
     public Recorder getRecorder() {
-        return videoRecorder;
+        return managerHolder.getVideoRecorder();
     }
 
     @Override
     public Player getPlayer() {
-        return videoPlayer;
+        return managerHolder.getVideoPlayer();
     }
 
     @Override
     public InviteHelper getInviteHelper() {
-        return inviteManager;
+        return managerHolder.getInviteManager();
     }
 
-    private void initManagers() {
-        inviteManager = new InviteManager(this, this);
-        benchController = new BenchController(this, this);
-        audioManager = new AudioManager(this, this);
-        videoRecorder = new VideoRecorderManager(this, this);
-        videoPlayer = new VideoPlayer(this, this);
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        if (proximitySensor == null) {
-            Log.i(TAG, "Proximity sensor not found");
-        }
+    @Override
+    public Tutorial getTutorial() {
+        return managerHolder.getTutorial();
     }
 
     private void releaseManagers() {
-        videoRecorder.pause();
-        CameraManager.releaseCamera();
-        videoPlayer.release();
-        audioManager.abandonFocus();
-        audioManager.reset();
-        sensorManager.unregisterListener(audioManager);
+        managerHolder.unregisterManagers();
     }
 
     @Override
@@ -347,5 +305,15 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
             return super.dispatchTouchEvent(ev);
         //}
         //return true;
+    }
+
+    private void toggleBench() {
+        if (getBenchViewManager() != null) {
+            if (getBenchViewManager().isBenchShowed()) {
+                getBenchViewManager().hideBench();
+            } else {
+                getBenchViewManager().showBench();
+            }
+        }
     }
 }

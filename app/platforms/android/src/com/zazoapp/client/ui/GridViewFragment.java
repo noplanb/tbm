@@ -207,8 +207,15 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
         String action = currentIntent.getAction();
         Uri data = currentIntent.getData();
+
+        if (Intent.ACTION_MAIN.equals(action)) {
+            currentIntent.setAction(IntentHandler.IntentActions.NONE);
+            getManagerProvider().getTutorial().onLaunch(nineViewGroup.getSurroundingFrame(0));
+            return;
+        }
+
         if (action == null || data == null) {
-            Log.i(TAG, "handleIntentAction: no ation or data. Exiting.");
+            Log.i(TAG, "handleIntentAction: no action or data. Exiting.");
             return;
         }
 

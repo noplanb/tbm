@@ -86,6 +86,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         }
     }
 
+    private void notifyCompletion() {
+        for (StatusCallbacks callbacks : statusCallbacks) {
+            callbacks.onCompletion(friendId);
+        }
+    }
+
     @Override
     public void togglePlayOverView(View view, String friendId) {
         boolean needToPlay = !(isPlaying() && friendId.equals(this.friendId));
@@ -204,8 +210,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         if (videoId != null)
             play();
-        else
+        else {
             stop();
+            notifyCompletion();
+        }
     }
 
     //---------------

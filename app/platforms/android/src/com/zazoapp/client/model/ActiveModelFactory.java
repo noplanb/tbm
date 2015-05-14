@@ -16,7 +16,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 public abstract class ActiveModelFactory<T extends ActiveModel> {
     private static final String TAG = ActiveModelFactory.class.getSimpleName();
@@ -24,6 +26,9 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
     protected ArrayList<T> instances = new ArrayList<>();
 
     public abstract Class<T> getModelClass();
+
+    private Set<ModelChangeCallback> callbacks = new HashSet<>();
+    private boolean notifyCallbacks = true;
 
     //--------------------
     // Factory
@@ -39,6 +44,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
         }
         i.init(context);
         instances.add(i);
+        notifyCallbacks();
         return i;
     }
 
@@ -46,6 +52,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
 		instances.clear();
 		File f = new File(getSaveFilePath(context));
 		f.delete();
+        notifyCallbacks();
 	}
 
 	//--------------------
@@ -119,11 +126,14 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
 			Log.i(TAG, "class of attr: " + all.get(0).getClass().getSimpleName());
 		}
 
+        notifyCallbacks = false;
 		for (LinkedTreeMap<String, String> ats : all){
 			T i = makeInstance(context);
 			i.attributes.clear();
 			i.attributes.putAll(ats);
 		}
+        notifyCallbacks = true;
+        notifyCallbacks();
 		return true;
 	}
 
@@ -188,6 +198,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
             T model = it.next();
             if (model.getId().equals(id)) {
                 it.remove();
+                notifyCallbacks();
                 break;
             }
         }
@@ -197,4 +208,21 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
         return instances.size();
     }
 
+    public final void addCallback(ModelChangeCallback callback) {
+        callbacks.add(callback);
+    }
+
+    public final void removeCallback(ModelChangeCallback callback) {
+        callbacks.remove(callback);
+    }
+
+    protected void notifyCallbacks() {
+        for (ModelChangeCallback callback : callbacks) {
+            callback.onModelChanged(this);
+        }
+    }
+
+    public interface ModelChangeCallback {
+        void onModelChanged(ActiveModelFactory<?> factory);
+    }
 }

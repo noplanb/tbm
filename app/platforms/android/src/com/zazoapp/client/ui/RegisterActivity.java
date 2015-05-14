@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import com.google.gson.Gson;
@@ -64,8 +63,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		getActionBar().hide();
 		setContentView(R.layout.register);
 		setupListeners();
 
@@ -147,9 +144,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		mobileNumber = cleanNumber(mobileNumberTxt.getText().toString());
 		mobileNumberTxt.setText(mobileNumber);
         String newE164 = "+" + countryCode + mobileNumber;
-        if (!newE164.equals(e164)) {
-            enterCodeDialog = null; // is need to update dialog
-        }
         e164 = newE164;
 
 		if (!isValidName(firstName)){
@@ -231,8 +225,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
                     serverError();
                 }
             });
-            pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
-			pd.show(getFragmentManager(), null);
+            showProgressDialog();
 		}
 	}
 
@@ -261,10 +254,13 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	}
 
 	private void showVerificationDialog() {
-		if(enterCodeDialog == null)
-			enterCodeDialog = EnterCodeDialogFragment.getInstance(e164, this);
-		enterCodeDialog.show(getFragmentManager(), "enterCdDlg");
-	}
+        enterCodeDialog = (DialogFragment) getFragmentManager().findFragmentByTag("enterCdDlg");
+        if (enterCodeDialog != null) {
+            enterCodeDialog.dismissAllowingStateLoss();
+        }
+        enterCodeDialog = EnterCodeDialogFragment.getInstance(e164, this); // is need to update dialog
+        enterCodeDialog.show(getFragmentManager(), "enterCdDlg");
+    }
 
 	@Override
 	public void didEnterCode(String code) {
@@ -290,8 +286,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
                 }
 
             });
-            pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
-			pd.show(getFragmentManager(), null);
+            showProgressDialog();
 		}
 	}
 
@@ -337,8 +332,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
                     serverError();
                 }
             });
-            pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
-            pd.show(getFragmentManager(), null);
+            showProgressDialog();
         }
     }
 
@@ -417,6 +411,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         user.set(User.Attributes.REGISTERED, "true");
         ActiveModelsHandler.getInstance(this).saveAll();
 		Intent i = new Intent(this, MainActivity.class);
+        i.setAction(Intent.ACTION_MAIN);
 		startActivity(i);
 		finish();
 	}
@@ -503,5 +498,11 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		getApplicationContext().sendBroadcast(addIntent);
 	}
 
-
+    private void showProgressDialog() {
+        if (pd != null) {
+            pd.dismissAllowingStateLoss();
+        }
+        pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
+        pd.show(getFragmentManager(), null);
+    }
 }

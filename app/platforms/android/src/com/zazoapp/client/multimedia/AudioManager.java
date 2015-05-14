@@ -103,7 +103,7 @@ public class AudioManager implements SensorEventListener, AudioController {
 
     @Override
     public void setSpeakerPhoneOn(boolean enable) {
-        Log.i(TAG, "setSpeakerPhoneOn" + isSpeakerPhoneOn + " " + enable + " " + isProximityClose);
+        Log.i(TAG, "setSpeakerPhoneOn " + isSpeakerPhoneOn + " " + enable + " " + isProximityClose);
         if (isSpeakerPhoneOn == (!enable || !isProximityClose)) {
             return;
         }
@@ -128,8 +128,10 @@ public class AudioManager implements SensorEventListener, AudioController {
     }
 
     private void resetSpeakerPhoneMode() {
-        audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
-        audioManager.setSpeakerphoneOn(true);
-        isSpeakerPhoneOn = true;
+        if (hasFocus) {
+            audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
+            audioManager.setSpeakerphoneOn(true);
+            isSpeakerPhoneOn = true;
+        }
     }
 }

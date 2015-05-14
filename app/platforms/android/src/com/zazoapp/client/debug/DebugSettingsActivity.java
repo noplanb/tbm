@@ -2,6 +2,7 @@ package com.zazoapp.client.debug;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
@@ -18,11 +19,17 @@ import android.widget.Switch;
 import android.widget.TextView;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.zazoapp.client.GridManager;
+import com.zazoapp.client.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.model.VideoFactory;
+import com.zazoapp.client.tutorial.HintType;
+import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.utilities.DialogShower;
 
 /**
@@ -50,6 +57,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         setUpCameraOption();
         setUpCrashButton();
         setUpSendBrokenVideo();
+        setUpTutorialOption();
     }
 
     @Override
@@ -168,12 +176,15 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     private void setUpUserInfo() {
         StringBuilder info = new StringBuilder();
         User user = UserFactory.current_user();
+        Button clearData = (Button) findViewById(R.id.clear_user_data);
         if (user == null || user.getId().isEmpty()) {
             info.append("Not signed in");
+            clearData.setEnabled(false);
         } else {
             info.append(user.getFirstName()).append(", ").append(user.getLastName()).append("\n");
             Phonenumber.PhoneNumber phone = user.getPhoneNumberObj();
             info.append("(").append(phone.getCountryCode()).append(") ").append(phone.getNationalNumber());
+            clearData.setEnabled(true);
         }
         final TextView userInfo = (TextView) findViewById(R.id.user_info);
         userInfo.setText(info.toString());
@@ -212,6 +223,28 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                         }
                     });
                 }
+            }
+        });
+        clearData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DebugUtils.requestConfirm(DebugSettingsActivity.this, "All user data will be deleted and application will be closed. Continue?", new DebugUtils.InputDialogCallback() {
+                    @Override
+                    public void onReceive(String input) {
+                        if (input != null) {
+                            Context context = DebugSettingsActivity.this;
+                            FriendFactory.getFactoryInstance().destroyAll(context);
+                            VideoFactory.getFactoryInstance().destroyAll(context);
+                            GridElementFactory.getFactoryInstance().destroyAll(context);
+                            ActiveModelsHandler.getInstance(context).ensureAll();
+                            GridManager.getInstance().initGrid(context);
+                            Intent intent = new Intent(context, MainActivity.class);
+                            intent.setAction("_FINISH");
+                            startActivity(intent);
+                            finish();
+                        }
+                    }
+                });
             }
         });
     }
@@ -260,6 +293,20 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 config.setSendBrokenVideo(isChecked);
+            }
+        });
+    }
+
+    private void setUpTutorialOption() {
+        Button resetTutorial = (Button) findViewById(R.id.reset_tutorial);
+        resetTutorial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PreferencesHelper p = new PreferencesHelper(DebugSettingsActivity.this);
+                p.putBoolean(HintType.PLAY.getPrefName(), true);
+                p.putBoolean(HintType.RECORD.getPrefName(), true);
+                p.putBoolean(HintType.SENT.getPrefName(), true);
+                p.putBoolean(HintType.VIEWED.getPrefName(), true);
             }
         });
     }
