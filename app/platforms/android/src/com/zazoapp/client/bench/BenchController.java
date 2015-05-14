@@ -25,7 +25,6 @@ import com.zazoapp.client.ZazoManagerProvider;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -267,43 +266,48 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 			return position;
 		}
 
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			ViewHolder holder = null;
-			View v = null; 
-			if(convertView == null){
-				v = LayoutInflater.from(context).inflate(R.layout.bench_list_item, parent, false);
-				holder = new ViewHolder();
-				holder.name = (TextView) v.findViewById(R.id.name); 
-				holder.thumb = (ImageView) v.findViewById(R.id.thumb);
-				v.setTag(holder);
-			}else{
-				v = convertView;
-				holder = (ViewHolder) v.getTag();
-			}
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder = null;
+            View v = null;
+            if(convertView == null){
+                v = LayoutInflater.from(context).inflate(R.layout.bench_list_item, parent, false);
+                holder = new ViewHolder();
+                holder.name = (TextView) v.findViewById(R.id.name);
+                holder.thumb = (ImageView) v.findViewById(R.id.thumb);
+                holder.thumbBorder = (ImageView) v.findViewById(R.id.borderImage);
+                v.setTag(holder);
+            }else{
+                v = convertView;
+                holder = (ViewHolder) v.getTag();
+            }
 
-			BenchObject item = list.get(position);
+            BenchObject item = list.get(position);
 
-			Friend friend = (Friend) FriendFactory.getFactoryInstance().find(item.friendId);
-			if (friend!=null){
-                if(friend.thumbExists())
-             	    holder.thumb.setImageBitmap(friend.thumbBitmap());
-                else
+            Friend friend = (Friend) FriendFactory.getFactoryInstance().find(item.friendId);
+            if (friend!=null){
+                if(friend.thumbExists()) {
+                    holder.thumb.setImageBitmap(friend.thumbBitmap());
+                    holder.thumbBorder.setVisibility(View.VISIBLE);
+                }else {
                     holder.thumb.setImageResource(R.drawable.ic_no_pic_z);
+                    holder.thumbBorder.setVisibility(View.INVISIBLE);
+                }
                 holder.thumb.setVisibility(View.VISIBLE);
-			}else{
-				holder.thumb.setVisibility(View.GONE);
-			}
-			
-			holder.name.setText(item.displayName);
-			
-			return v;
-		}
-		
-		private class ViewHolder{
-			ImageView thumb;
-			TextView name;
-		}
-		
-	}
+            }else{
+                holder.thumb.setVisibility(View.GONE);
+                holder.thumbBorder.setVisibility(View.GONE);
+            }
+
+            holder.name.setText(item.displayName);
+
+            return v;
+        }
+
+        private class ViewHolder{
+            ImageView thumb;
+            ImageView thumbBorder;
+            TextView name;
+        }
+    }
 }

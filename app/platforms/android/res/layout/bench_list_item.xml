@@ -12,6 +12,17 @@
         android:scaleType="centerCrop"
         android:src="@drawable/ic_no_pic_z" />
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/borderImage"
+        android:layout_alignTop="@+id/thumb"
+        android:layout_alignLeft="@+id/thumb"
+        android:layout_alignBottom="@+id/thumb"
+        android:layout_alignRight="@+id/thumb"
+        android:src="@drawable/ic_no_pic_z_border_only"
+        android:visibility="invisible" />
+
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
