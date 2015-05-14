@@ -3,10 +3,12 @@ package com.zazoapp.client.tutorial;
 import android.content.Context;
 import android.graphics.RectF;
 import android.view.View;
+import android.view.ViewParent;
 import com.zazoapp.client.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.VideoFactory;
+import com.zazoapp.client.ui.view.NineViewGroup;
 
 /**
  * Created by skamenkovych@codeminders.com on 5/13/2015.
@@ -38,7 +40,18 @@ public enum HintType {
 
         @Override
         void show(TutorialLayout layout, View view) {
-            layout.dimExceptForRect(getViewRect(view));
+            NineViewGroup nineViewGroup = null;
+            ViewParent parentView = view.getParent();
+            while (nineViewGroup == null && parentView != null) {
+                if (parentView instanceof NineViewGroup) {
+                    nineViewGroup = (NineViewGroup) parentView;
+                } else {
+                    parentView = parentView.getParent();
+                }
+            }
+            if (nineViewGroup != null) {
+                layout.dimExceptForRect(getViewRect(nineViewGroup.getSurroundingFrame(1)));
+            }
         }
     },
     PLAY(R.string.tutorial_hint_play) {

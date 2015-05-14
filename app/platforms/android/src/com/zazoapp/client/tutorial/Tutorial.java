@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import com.zazoapp.client.PreferencesHelper;
-import com.zazoapp.client.R;
 import com.zazoapp.client.TbmApplication;
 import com.zazoapp.client.ZazoManagerProvider;
 import com.zazoapp.client.model.FriendFactory;
@@ -90,8 +89,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
             showHint(HintType.SENT, view);
             markHintAsShowed(HintType.SENT);
         } else if (shouldShow(HintType.INVITE_2)) {
-            View menu = ((View) tutorialLayout.getParent()).findViewById(R.id.home_menu);
-            showHint(HintType.INVITE_2, menu);
+            showHint(HintType.INVITE_2, view);
         }
     }
 
