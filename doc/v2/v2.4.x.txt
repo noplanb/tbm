@@ -1,0 +1,101 @@
+Previous v2.3.4 (58)
+Current v2.4.1 (62)
+
+BACKGROUND CHANGES:
+- Fixed non-working code of setting camera preview framerate
+- Improved long press touch handling mechanism
+- Added reset tutorial hints option to DebugScreen
+- Added debug option to clear friends and videos
+
+
+---------
+FIX #410
+---------
+Rotated video in messages from GT-P5100
+
+PROBLEM:
+Camera orientation is 0 for this tab but should 270 degrees
+
+SOLUTION:
+Set 270 degrees for orientation if window has rotation 270 degrees
+
+---------
+FIX #419
+---------
+Zazo crashes on rapid multiple press on "sign in" button on login screen
+
+PROBLEM:
+Adding the same dialog several times
+
+SOLUTION:
+If dialog already exist it is dismissed
+
+---------
+FIX #138
+---------
+Can't add new contact that was recently created/imported on the phone
+
+PROBLEM:
+Contacts were loaded once on application start
+
+SOLUTION:
+Reload contacts each time when activity becomes visible to user
+
+---------
+FIX
+---------
+Bench contacts filtering is shown "old filter word" after resume
+
+---------
+FIX #396
+---------
+No cursor appears in verification code text field when in focus
+
+PROBLEM:
+Wrong styles were used
+
+SOLUTION:
+Use corrected styles
+
+---------
+FIX #351
+---------
+Fast tapping with two fingers on friend's box leads to the recording without holding your finger
+
+PROBLEM:
+Firing long press wasn't cancelled
+
+SOLUTION:
+Cancel long press firing on any new tap
+
+---------
+NEW #121
+---------
+Put white border around thumb in bench same as for no-thumb-z-icon
+
+SOLUTION:
+Added border around thumb in bench
+
+---------
+FIX #412
+---------
+On Nexus 6. Phone call sound is switched to the ear speaker, rather than to the BT headset if Zazo is running
+
+PROBLEM:
+audio source could be reset after loosing focus
+
+SOLUTION:
+Reset source only if we currently have audio focus
+
+---------
+FIX
+---------
+NullPointerException from https://rollbar.com/zazo/zazo-android/items/419/occurrences/5154022533/
+
+SOLUTION
+Ignore calling dialog in case of friend is null
+
+---------
+NEW #422
+---------
+New User Tutorial Hints
