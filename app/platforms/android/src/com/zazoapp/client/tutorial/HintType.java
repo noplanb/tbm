@@ -87,7 +87,7 @@ public enum HintType {
         @Override
         void show(TutorialLayout layout, View view) {
             View indicator = view.findViewById(R.id.img_viewed); // we use viewed due to animation of uploading indicator at this moment
-            layout.dimExceptForRect(getViewRect(indicator));
+            layout.dimExceptForRect(getViewRect(view)); // select all friend box by request https://zazo.fogbugz.com/f/cases/431/
             delayedDismiss(layout, HintType.SENT);
         }
     },
@@ -100,7 +100,7 @@ public enum HintType {
         @Override
         void show(TutorialLayout layout, View view) {
             View indicator = view.findViewById(R.id.img_viewed);
-            layout.dimExceptForRect(getViewRect(indicator));
+            layout.dimExceptForRect(getViewRect(view)); // select all view by request https://zazo.fogbugz.com/f/cases/431/
         }
     };
 
