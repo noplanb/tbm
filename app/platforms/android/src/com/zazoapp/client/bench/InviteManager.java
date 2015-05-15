@@ -19,7 +19,6 @@ import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.MainActivity;
@@ -300,8 +299,8 @@ public class InviteManager implements InviteHelper {
     }
 
     private String getDefaultInviteMessage() {
-        String mkey = UserFactory.current_user().get(User.Attributes.MKEY);
-        return context.getString(R.string.dialog_invite_sms_message, Config.appName, Config.landingPageUrl, mkey);
+        String id = UserFactory.current_user().getId();
+        return context.getString(R.string.dialog_invite_sms_message, Config.appName, Config.landingPageUrl, id);
     }
 
 	private void sendSms(String body){
