@@ -4,12 +4,14 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Region;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -17,13 +19,16 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.utilities.Convenience;
+
+import java.util.Locale;
 
 /**
  * Created by skamenkovych@codeminders.com on 5/6/2015.
  */
 public class TutorialLayout extends FrameLayout {
     private static final String TAG = TutorialLayout.class.getSimpleName();
-    private static final int MAX_DIM = 200;
+    private static final int MAX_DIM = (int) (0.8f * 255);
     private static final int DURATION = 300;
     private boolean dimmed;
     private int dimValue;
@@ -63,22 +68,10 @@ public class TutorialLayout extends FrameLayout {
     public void dim() {
         dimmed = true;
         final TextView hint = (TextView) findViewById(R.id.tutorial_hint);
-        hint.setText(hintText);
-        if (dimExcludedRect.intersects(0, 0, getRight(), getHeight() / 3)) {
-            // TOP part, place just below
-            FrameLayout.LayoutParams p = (LayoutParams) hint.getLayoutParams();
-            p.setMargins(0, (int) dimExcludedRect.bottom, 0, 0);
-            hint.setLayoutParams(p);
-            hint.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL);
-        } else {
-            FrameLayout.LayoutParams p = (LayoutParams) hint.getLayoutParams();
-            p.setMargins(0, 0, 0, (int) (getHeight() - dimExcludedRect.top));
-            hint.setLayoutParams(p);
-            hint.setGravity(Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
-        }
+        setUpHintText(hint);
         setVisibility(VISIBLE);
         dimAnimator = ValueAnimator.ofInt(0, MAX_DIM);
-        dimPaint.setARGB(0, 20, 20, 20);
+        dimPaint.setColor(getContext().getResources().getColor(R.color.light_grey_new));
         dimPaint.setStyle(Paint.Style.FILL);
         dimAnimator.setDuration(DURATION);
         dimAnimator.setInterpolator(new DecelerateInterpolator());
@@ -111,6 +104,33 @@ public class TutorialLayout extends FrameLayout {
             }
         });
         dimAnimator.start();
+    }
+
+    private void setUpHintText(TextView hint) {
+        hint.setText(hintText);
+        boolean isLanguageSupported = Convenience.isLanguageSupported(getContext());
+        AssetManager am = getContext().getAssets();
+        Typeface tf = null;
+        if (isLanguageSupported) {
+            try {
+                tf = Typeface.createFromAsset(am, "fonts/tutorial-" + Locale.getDefault().getLanguage() + ".ttf");
+            } catch (RuntimeException e) {}
+        } else {
+            tf = Typeface.createFromAsset(am, "fonts/tutorial-en.ttf");
+        }
+        hint.setTypeface(tf);
+        if (dimExcludedRect.intersects(0, 0, getRight(), getHeight() / 3)) {
+            // TOP part, place just below
+            LayoutParams p = (LayoutParams) hint.getLayoutParams();
+            p.setMargins(0, (int) dimExcludedRect.bottom, 0, 0);
+            hint.setLayoutParams(p);
+            hint.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        } else {
+            LayoutParams p = (LayoutParams) hint.getLayoutParams();
+            p.setMargins(0, 0, 0, (int) (getHeight() - dimExcludedRect.top));
+            hint.setLayoutParams(p);
+            hint.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        }
     }
 
     public void dimExceptForRect(RectF rect) {

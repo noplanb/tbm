@@ -18,6 +18,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.WindowManager;
+import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import org.apache.commons.io.FileUtils;
 
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Locale;
 
 public class Convenience {
     public static final String TAG = Convenience.class.getSimpleName();
@@ -259,5 +261,16 @@ public class Convenience {
         }
 
         return f;
+    }
+
+    public static boolean isLanguageSupported(Context c) {
+        String language = Locale.getDefault().getLanguage();
+        String[] localizations = c.getResources().getStringArray(R.array.localizations);
+        for (String localization : localizations) {
+            if (localization.equals(language)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
