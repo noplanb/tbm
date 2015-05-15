@@ -28,14 +28,13 @@ public enum HintType {
     INVITE_2(R.string.tutorial_hint_invite_2) {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            boolean oneFriend = FriendFactory.getFactoryInstance().count() == 1;
             boolean allViewed = VideoFactory.getFactoryInstance().allNotViewedCount() == 0;
             boolean playHintShowed = !prefs.getBoolean(HintType.PLAY.getPrefName(), true);
             boolean recordHintShowed = !prefs.getBoolean(HintType.RECORD.getPrefName(), true);
             boolean sentHintShowed = !prefs.getBoolean(HintType.SENT.getPrefName(), true);
             boolean viewedHintShowed = !prefs.getBoolean(HintType.VIEWED.getPrefName(), true);
 
-            return oneFriend && allViewed && playHintShowed && recordHintShowed && sentHintShowed && viewedHintShowed;
+            return hasOneFriend() && allViewed && playHintShowed && recordHintShowed && sentHintShowed && viewedHintShowed;
         }
 
         @Override
@@ -57,9 +56,8 @@ public enum HintType {
     PLAY(R.string.tutorial_hint_play) {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            int friendsCount = FriendFactory.getFactoryInstance().count();
             int unviewedCount = VideoFactory.getFactoryInstance().allNotViewedCount();
-            return friendsCount > 0 && unviewedCount > 0 && prefs.getBoolean(getPrefName(), true);
+            return hasOneFriend() && unviewedCount > 0 && prefs.getBoolean(getPrefName(), true);
         }
 
         @Override
@@ -71,8 +69,7 @@ public enum HintType {
     RECORD(R.string.tutorial_hint_record) {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            int friendsCount = FriendFactory.getFactoryInstance().count();
-            return friendsCount > 0 && current != HintType.PLAY && prefs.getBoolean(getPrefName(), true);
+            return hasOneFriend() && current != HintType.PLAY && prefs.getBoolean(getPrefName(), true);
         }
 
         @Override
@@ -84,8 +81,7 @@ public enum HintType {
     SENT(R.string.tutorial_hint_sent) {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            int friendsCount = FriendFactory.getFactoryInstance().count();
-            return friendsCount > 0 && current == null && prefs.getBoolean(getPrefName(), true);
+            return hasOneFriend() && current == null && prefs.getBoolean(getPrefName(), true);
         }
 
         @Override
@@ -98,8 +94,7 @@ public enum HintType {
     VIEWED(R.string.tutorial_hint_viewed) {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            int friendsCount = FriendFactory.getFactoryInstance().count();
-            return friendsCount > 0 && current == null && prefs.getBoolean(getPrefName(), true);
+            return hasOneFriend() && current == null && prefs.getBoolean(getPrefName(), true);
         }
 
         @Override
@@ -176,5 +171,9 @@ public enum HintType {
                 layout.dismiss();
             }
         }, 3500);
+    }
+
+    private static boolean hasOneFriend() {
+        return FriendFactory.getFactoryInstance().count() == 1;
     }
 }
