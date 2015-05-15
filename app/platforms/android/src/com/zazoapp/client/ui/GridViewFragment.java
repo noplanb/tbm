@@ -162,10 +162,10 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     private void checkAndShowHint() {
         if (FriendFactory.getFactoryInstance().count() > 0) {                   // has at least one friend
             if (VideoFactory.getFactoryInstance().allNotViewedCount() > 0) {    // has at least one unviewed video
-                DialogShower.showInfoDialog(getActivity(), getString(R.string.dialog_hint_title),
+                DialogShower.showHintDialog(getActivity(), getString(R.string.dialog_hint_title),
                         getString(R.string.dialog_play_hint_message));
             } else {
-                DialogShower.showInfoDialog(getActivity(), getString(R.string.dialog_hint_title),
+                DialogShower.showHintDialog(getActivity(), getString(R.string.dialog_hint_title),
                         getString(R.string.dialog_record_hint_message));
             }
         }

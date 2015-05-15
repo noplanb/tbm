@@ -84,7 +84,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onRecordClicked() {
-        DialogShower.showInfoDialog(activity, activity.getString(R.string.dialog_record_title), activity.getString(R.string.dialog_record_message));
+        DialogShower.showHintDialog(activity, activity.getString(R.string.dialog_record_title), activity.getString(R.string.dialog_record_message));
     }
 
     @Override

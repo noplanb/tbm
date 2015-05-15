@@ -84,9 +84,16 @@ public class DialogShower {
         info.show(activity.getFragmentManager(), null);
     }
 
+    public static void showHintDialog(Activity activity, String title, String message) {
+        if (activity.getFragmentManager().findFragmentByTag("hint") == null) {
+            DialogFragment info = InfoDialogFragment.getInstance(title, message);
+            info.show(activity.getFragmentManager(), "hint");
+        }
+    }
+
     public static void showVersionHandlerDialog(Activity activity, String message, boolean negativeButton) {
         DialogFragment d = VersionDialogFragment.getInstance(message, negativeButton);
-        d.show(activity.getFragmentManager(),null);
+        d.show(activity.getFragmentManager(), null);
     }
 
     public static void showSelectPhoneNumberDialog(Activity activity, Contact contact, SelectPhoneNumberDialog.Callbacks callbacks) {
