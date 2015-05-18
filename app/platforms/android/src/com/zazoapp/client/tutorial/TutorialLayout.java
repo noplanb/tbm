@@ -6,7 +6,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -16,7 +15,9 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.utilities.Convenience;
@@ -43,6 +44,8 @@ public class TutorialLayout extends FrameLayout {
     private String hintText;
     private OnTutorialEventListener onTutorialEventListener;
 
+    private ImageView arrowView;
+
     public TutorialLayout(Context context) {
         super(context);
         // we set it to software because of clipPath that doesn't work on hardware accelerated canvas before API 18
@@ -67,8 +70,11 @@ public class TutorialLayout extends FrameLayout {
 
     public void dim() {
         dimmed = true;
+        arrowView = (ImageView) findViewById(R.id.tutorial_arrow);
         final TextView hint = (TextView) findViewById(R.id.tutorial_hint);
         setUpHintText(hint);
+        final Button button = (Button) findViewById(R.id.tutorial_btn);
+        button.setTypeface(hint.getTypeface());
         setVisibility(VISIBLE);
         dimAnimator = ValueAnimator.ofInt(0, MAX_DIM);
         dimPaint.setColor(getContext().getResources().getColor(R.color.light_grey_new));
@@ -79,8 +85,8 @@ public class TutorialLayout extends FrameLayout {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 dimValue = (int) animation.getAnimatedValue();
-                hint.setTextColor(Color.argb(dimValue, 255, 255, 255));
-                postInvalidate();
+                setAlpha(dimValue / (float) MAX_DIM);
+                invalidate();
             }
         });
         dimAnimator.addListener(new Animator.AnimatorListener() {
@@ -108,6 +114,35 @@ public class TutorialLayout extends FrameLayout {
 
     private void setUpHintText(TextView hint) {
         hint.setText(hintText);
+        Typeface tf = getTypeface();
+        hint.setTypeface(tf);
+        LayoutParams arrowParams = (LayoutParams) arrowView.getLayoutParams();
+        if (dimExcludedRect.intersects(0, 0, getRight(), getHeight() / 3)) {
+            // TOP part, place just below
+            LayoutParams p = (LayoutParams) hint.getLayoutParams();
+            p.setMargins(0, (int) dimExcludedRect.bottom, 0, 0);
+            hint.setLayoutParams(p);
+            hint.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+            arrowView.setImageResource(R.drawable.arrow_yellow_top_right);
+            int arrowRightMargin = (int) (getWidth() - dimExcludedRect.left);
+            int arrowBottomMargin = getHeight() - (int) dimExcludedRect.bottom - hint.getPaddingTop();
+            arrowParams.setMargins(0, 0, arrowRightMargin, arrowBottomMargin);
+            arrowParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+        } else {
+            LayoutParams p = (LayoutParams) hint.getLayoutParams();
+            p.setMargins(0, 0, 0, (int) (getHeight() - dimExcludedRect.top));
+            hint.setLayoutParams(p);
+            hint.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+            arrowView.setImageResource(R.drawable.arrow_yellow_bottom_right);
+            int arrowRightMargin = (int) (getWidth() - dimExcludedRect.left);
+            int arrowTopMargin = (int) dimExcludedRect.top - hint.getPaddingBottom();
+            arrowParams.setMargins(0, arrowTopMargin, arrowRightMargin, 0);
+            arrowParams.gravity = Gravity.TOP | Gravity.RIGHT;
+        }
+        arrowView.setLayoutParams(arrowParams);
+    }
+
+    private Typeface getTypeface() {
         boolean isLanguageSupported = Convenience.isLanguageSupported(getContext());
         AssetManager am = getContext().getAssets();
         Typeface tf = null;
@@ -118,19 +153,7 @@ public class TutorialLayout extends FrameLayout {
         } else {
             tf = Typeface.createFromAsset(am, "fonts/tutorial-en.ttf");
         }
-        hint.setTypeface(tf);
-        if (dimExcludedRect.intersects(0, 0, getRight(), getHeight() / 3)) {
-            // TOP part, place just below
-            LayoutParams p = (LayoutParams) hint.getLayoutParams();
-            p.setMargins(0, (int) dimExcludedRect.bottom, 0, 0);
-            hint.setLayoutParams(p);
-            hint.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-        } else {
-            LayoutParams p = (LayoutParams) hint.getLayoutParams();
-            p.setMargins(0, 0, 0, (int) (getHeight() - dimExcludedRect.top));
-            hint.setLayoutParams(p);
-            hint.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        }
+        return tf;
     }
 
     public void dimExceptForRect(RectF rect) {

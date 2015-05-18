@@ -100,10 +100,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:textColor="@color/color_name"
-                android:textSize="28sp"
+                android:textSize="@dimen/tutorial_text_size"
                 android:padding="20dp"
                 android:text="hint"
                 android:textStyle="bold"
                 />
+        <Button
+                android:id="@+id/tutorial_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_tutorial_btn"
+                android:layout_gravity="center_horizontal|bottom"
+                android:textSize="@dimen/tutorial_text_size"
+                android:text="@string/tutorial_got_it"
+                android:textAllCaps="false"
+                android:minWidth="140dp"
+                android:minHeight="70dp"
+                android:clickable="false"
+                android:layout_marginBottom="60dp"/>
+        <ImageView
+                android:id="@+id/tutorial_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
     </com.zazoapp.client.tutorial.TutorialLayout>
 </RelativeLayout>

@@ -2,4 +2,5 @@
 <resources>
     <dimen name="video_status_indicator_maximum_width">40dp</dimen>
     <dimen name="record_frame_thickness">2.5dp</dimen>
+    <dimen name="tutorial_text_size">32sp</dimen>
 </resources>
