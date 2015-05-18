@@ -1,5 +1,5 @@
 Previous v2.3.4 (58)
-Current v2.4.1 (62)
+Current v2.4.2 (63)
 
 BACKGROUND CHANGES:
 - Fixed non-working code of setting camera preview framerate
@@ -96,6 +96,50 @@ SOLUTION
 Ignore calling dialog in case of friend is null
 
 ---------
-NEW #422
+NEW #422 (Fix 431)
 ---------
 New User Tutorial Hints
+
+Testcases:
+C2466-C2478
+
+---------
+FIX #435
+---------
+Zazo crashes on tablets NullPointerException from https://rollbar.com/zazo/zazo-android/items/600/
+
+PROBLEM
+Merge error
+
+SOLUTION
+Fixed layout for tablets
+
+---------
+NEW #437 
+---------
+Link in sms should contain id of invitee rather than mkey of seller
+
+SOLUTION
+Changed landing page link
+
+Testcases:
+C2238
+
+---------
+FIX #428
+---------
+Multiple dialogs "hold to record" appear if user taps rapidly on friends box
+
+SOLUTION:
+Skip new hint dialog creation if any of them is already showed
+
+---------
+FIX #340
+---------
+Drawer does not close smoothly after picking a friend when drawer is full of friends.
+
+PROBLEM:
+Generating friend list for bench in main thread
+
+SOLUTION:
+Moved this operation to another thread
