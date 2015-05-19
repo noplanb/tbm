@@ -145,9 +145,31 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	// ---------
 	// Populate
 	// ---------
-	private void populate() {
-        adapter.setList(allOnBench());
-        listView.setAdapter(adapter);
+	private void populate(final ArrayList<LinkedTreeMap<String, String>> phoneData) {
+        AsyncTaskManager.executeAsyncTask(new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                smsBenchObjects = new ArrayList<>();
+                for (LinkedTreeMap<String, String> e : phoneData) {
+                    LinkedTreeMap<String, String> b = new LinkedTreeMap<String, String>();
+                    b.put(BenchObject.Keys.FIRST_NAME, e.get(BenchDataHandler.Keys.FIRST_NAME));
+                    b.put(BenchObject.Keys.LAST_NAME, e.get(BenchDataHandler.Keys.LAST_NAME));
+                    b.put(BenchObject.Keys.DISPLAY_NAME, e.get(BenchDataHandler.Keys.DISPLAY_NAME));
+                    b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(BenchDataHandler.Keys.MOBILE_NUMBER));
+                    b.put(BenchObject.Keys.CONTACT_ID, e.get(BenchDataHandler.Keys.CONTACT_ID));
+                    smsBenchObjects.add(new BenchObject(b));
+                }
+                adapter.setList(allOnBench());
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                listView.setAdapter(adapter);
+                listView.setVisibility(View.VISIBLE);
+            }
+        });
 	}
 
 	private ArrayList<BenchObject> allOnBench() {
@@ -179,18 +201,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	// -------------
 	@Override
 	public void receivePhoneData(ArrayList<LinkedTreeMap<String, String>> phoneData) {
-		smsBenchObjects = new ArrayList<BenchObject>();
-		for (LinkedTreeMap<String, String> e : phoneData) {
-			LinkedTreeMap<String, String> b = new LinkedTreeMap<String, String>();
-			b.put(BenchObject.Keys.FIRST_NAME, e.get(BenchDataHandler.Keys.FIRST_NAME));
-			b.put(BenchObject.Keys.LAST_NAME, e.get(BenchDataHandler.Keys.LAST_NAME));
-			b.put(BenchObject.Keys.DISPLAY_NAME, e.get(BenchDataHandler.Keys.DISPLAY_NAME));
-			b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(BenchDataHandler.Keys.MOBILE_NUMBER));
-            b.put(BenchObject.Keys.CONTACT_ID, e.get(BenchDataHandler.Keys.CONTACT_ID));
-			smsBenchObjects.add(new BenchObject(b));
-		}
-
-		populate();
+		populate(phoneData);
 		contactsManager.setupAutoComplete((AutoCompleteTextView) activity
 				.findViewById(R.id.contacts_auto_complete_text_view));
 	}
@@ -290,7 +301,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
             BenchObject item = list.get(position);
 
-            Friend friend = (Friend) FriendFactory.getFactoryInstance().find(item.friendId);
+            Friend friend = FriendFactory.getFactoryInstance().find(item.friendId);
             if (friend!=null){
                 if(friend.thumbExists()) {
                     holder.thumb.setImageBitmap(friend.thumbBitmap());

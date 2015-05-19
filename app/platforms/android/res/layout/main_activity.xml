@@ -75,6 +75,15 @@
                     android:inputType="textNoSuggestions"
                     android:textCursorDrawable="@null"/>
 
+            <ProgressBar
+                    android:id="@+id/progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:max="10000"
+                    android:indeterminateDrawable="@drawable/progress_spinner"
+                    android:indeterminateOnly="true"/>
+
             <ListView
                     android:id="@+id/bench_list"
                     android:layout_width="match_parent"
@@ -82,7 +91,9 @@
                     android:layout_alignParentBottom="true"
                     android:divider = "@android:color/black"
                     android:dividerHeight = "1dp"
-                    android:layout_below="@id/contacts_auto_complete_text_view" >
+                    android:visibility="invisible"
+                    android:layout_below="@id/contacts_auto_complete_text_view"
+                    android:background="@color/bg_bench">
 
                 <requestFocus />
             </ListView>

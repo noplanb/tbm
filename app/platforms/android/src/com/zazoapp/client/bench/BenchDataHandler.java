@@ -13,6 +13,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.ContactsManager;
+import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.UserFactory;
@@ -286,12 +287,14 @@ public class BenchDataHandler {
 			return;
 		}
 
-        for (LinkedTreeMap<String, String> e : rankedPhoneData) {
-            StringBuilder logBuilder = new StringBuilder();
-            logBuilder.append(e.get(Keys.FIRST_NAME)).append("-").append(e.get(Keys.LAST_NAME)).append(" ");
-            logBuilder.append(e.get(Keys.DISPLAY_NAME)).append(" ").append(e.get(Keys.MOBILE_NUMBER)).append(" ");
-            logBuilder.append(e.get(Keys.NUM_MESSAGES)).append(" ").append(e.get(Keys.CONTACT_ID));
-            Logger.d(TAG, logBuilder.toString());
+        if (DebugConfig.DEBUG_LOG) {
+            for (LinkedTreeMap<String, String> e : rankedPhoneData) {
+                StringBuilder logBuilder = new StringBuilder();
+                logBuilder.append(e.get(Keys.FIRST_NAME)).append("-").append(e.get(Keys.LAST_NAME)).append(" ");
+                logBuilder.append(e.get(Keys.DISPLAY_NAME)).append(" ").append(e.get(Keys.MOBILE_NUMBER)).append(" ");
+                logBuilder.append(e.get(Keys.NUM_MESSAGES)).append(" ").append(e.get(Keys.CONTACT_ID));
+                Logger.d(TAG, logBuilder.toString());
+            }
         }
     }
 
