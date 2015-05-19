@@ -8,10 +8,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
@@ -31,6 +34,7 @@ import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.ui.dialogs.EnterCodeDialogFragment;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
+import com.zazoapp.client.ui.view.CountryCodeAdapter;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -48,22 +52,22 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	private String auth;
 	private String mkey;
 
-	private EditText firstNameTxt;
-	private EditText lastNameTxt;
-	private EditText countryCodeTxt;
-	private EditText mobileNumberTxt;
+    @InjectView(R.id.first_name_txt) EditText firstNameTxt;
+    @InjectView(R.id.last_name_txt) EditText lastNameTxt;
+    @InjectView(R.id.country_code_txt) AutoCompleteTextView countryCodeTxt;
+    @InjectView(R.id.mobile_number_text) EditText mobileNumberTxt;
 
     private DialogFragment pd;
+    private DialogFragment enterCodeDialog;
 
-	private DialogFragment enterCodeDialog;
-
-	//----------
+    //----------
 	// LifeCycle
 	//----------
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.register);
+        ButterKnife.inject(this);
 		setupListeners();
 
         setAdditionalViewHeight();
@@ -94,20 +98,12 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		user = userFactory.makeInstance(this);
 	}
 
-	//----------
-	// SetupView 
-	//----------
-	private void setUpView(){
-		initTxtFields();
-		//prefillTextFields(); issue 250
-	}
-
-	private void initTxtFields() {
-		firstNameTxt = (EditText) findViewById(R.id.first_name_txt);
-		lastNameTxt = (EditText) findViewById(R.id.last_name_txt);
-		countryCodeTxt = (EditText) findViewById(R.id.country_code_txt);
-		mobileNumberTxt = (EditText) findViewById(R.id.mobile_number_text);		
-	}
+    //----------
+    // SetupView
+    //----------
+    private void setUpView() {
+        //prefillTextFields(); issue 250
+    }
 
 	private void prefillTextFields() {
 		Contact contact = new ContactsManager(this).userProfile(this);
@@ -134,32 +130,33 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	//----------------------------
 	// Handle register form submit
 	//----------------------------
-	private void registerUser() {	
-		firstName = cleanName(firstNameTxt.getText().toString());
-		firstNameTxt.setText(firstName);
-		lastName = cleanName(lastNameTxt.getText().toString());
-		lastNameTxt.setText(lastName);
-		countryCode = cleanNumber(countryCodeTxt.getText().toString());
-		countryCodeTxt.setText(countryCode);
-		mobileNumber = cleanNumber(mobileNumberTxt.getText().toString());
-		mobileNumberTxt.setText(mobileNumber);
+    @OnClick(R.id.enter_btn)
+    public void registerUser() {
+        firstName = cleanName(firstNameTxt.getText().toString());
+        firstNameTxt.setText(firstName);
+        lastName = cleanName(lastNameTxt.getText().toString());
+        lastNameTxt.setText(lastName);
+        countryCode = cleanNumber(countryCodeTxt.getText().toString());
+        countryCodeTxt.setText(countryCode);
+        mobileNumber = cleanNumber(mobileNumberTxt.getText().toString());
+        mobileNumberTxt.setText(mobileNumber);
         String newE164 = "+" + countryCode + mobileNumber;
         e164 = newE164;
 
-		if (!isValidName(firstName)){
-			firstNameError();
-			return;
-		}
-		if (!isValidName(lastName)){
-			lastNameError();
-			return;
-		}
-		if (!isValidPhone(e164)){
-			phoneError();
-			return;
-		}
-		register();
-	}
+        if (!isValidName(firstName)) {
+            firstNameError();
+            return;
+        }
+        if (!isValidName(lastName)) {
+            lastNameError();
+            return;
+        }
+        if (!isValidPhone(e164)) {
+            phoneError();
+            return;
+        }
+        register();
+    }
 
 
 	private boolean isValidPhone(String p) {
@@ -416,34 +413,25 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		finish();
 	}
 
-    
     //----------------
     // Click listeners
     //----------------
-	private void setupListeners(){
-		Button enterBtn = (Button) findViewById(R.id.enter_btn);
-		enterBtn.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				registerUser();
-			}
-		});
-		
-		Button debugBtn = (Button) findViewById(R.id.debug_btn);
-		debugBtn.setOnClickListener(new OnClickListener(){
-			@Override
-			public void onClick(View v) {	
-				debugGetUser();
-			}
-		});
-        debugBtn.setOnLongClickListener(new View.OnLongClickListener() {
+    private void setupListeners() {
+        countryCodeTxt.setAdapter(new CountryCodeAdapter(this));
+        countryCodeTxt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public boolean onLongClick(View v) {
-                debugPage();
-                return true;
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mobileNumberTxt.requestFocus();
             }
         });
-
+        countryCodeTxt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    countryCodeTxt.setDropDownWidth(mobileNumberTxt.getWidth());
+                }
+            }
+        });
         findViewById(R.id.app_logo).setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -453,9 +441,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
                 return true;
             }
         });
-	}
-
-
+    }
 
 	// -------------
 	// Error dialogs

@@ -11,23 +11,22 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.widget.EditText;
-
+import android.widget.AutoCompleteTextView;
 import com.zazoapp.client.utilities.Convenience;
 
-public class SignEditText extends EditText {
+public class CountryCodeEditText extends AutoCompleteTextView {
 
 	private boolean isPlusDrawn;
 
-	public SignEditText(Context context) {
+	public CountryCodeEditText(Context context) {
 		super(context);
 	}
 
-	public SignEditText(Context context, AttributeSet attrs, int defStyle) {
+	public CountryCodeEditText(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 	}
 
-	public SignEditText(Context context, AttributeSet attrs) {
+	public CountryCodeEditText(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 	
@@ -69,4 +68,5 @@ public class SignEditText extends EditText {
 			this.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 			setCompoundDrawablePadding((int) Convenience.pxToDp(getContext(), width));
 	}
+
 }
