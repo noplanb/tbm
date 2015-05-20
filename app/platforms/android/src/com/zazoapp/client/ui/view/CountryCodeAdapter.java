@@ -73,10 +73,12 @@ public class CountryCodeAdapter extends BaseAdapter implements Filterable {
             convertView = View.inflate(context, R.layout.country_list_item, null);
             holder.flag = ButterKnife.findById(convertView, R.id.icon);
             holder.name = ButterKnife.findById(convertView, R.id.text);
+            holder.code = ButterKnife.findById(convertView, R.id.code);
             convertView.setTag(holder);
         }
         holder.flag.setImageResource(countryFlags[getItem(position)]);
         holder.name.setText(countries[getItem(position)]);
+        holder.code.setText("+" + phoneCodes[getItem(position)]);
         return convertView;
     }
 
@@ -91,6 +93,7 @@ public class CountryCodeAdapter extends BaseAdapter implements Filterable {
     private static class Holder {
         ImageView flag;
         TextView name;
+        TextView code;
     }
 
     private class SearchFilter extends Filter {

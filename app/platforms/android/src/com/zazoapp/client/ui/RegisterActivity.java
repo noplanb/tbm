@@ -6,7 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -424,11 +427,40 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
                 mobileNumberTxt.requestFocus();
             }
         });
+        countryCodeTxt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s != null && s.length() >= 4) {
+                    mobileNumberTxt.requestFocus();
+                }
+            }
+        });
+        mobileNumberTxt.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_DEL) {
+                    if (mobileNumberTxt.length() == 0) {
+                        countryCodeTxt.requestFocus();
+                    }
+                }
+                return false;
+            }
+        });
         countryCodeTxt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    countryCodeTxt.setDropDownWidth(mobileNumberTxt.getWidth());
+                    int maxWidth = Convenience.dpToPx(RegisterActivity.this, 350);
+                    int width = lastNameTxt.getWidth();
+                    countryCodeTxt.setDropDownWidth(Math.min(width, maxWidth));
                 }
             }
         });
@@ -446,7 +478,6 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	// -------------
 	// Error dialogs
 	//--------------
-
 	private void phoneError() {
 		showErrorDialog(getString(R.string.dialog_register_phone_error_title), getString(R.string.dialog_register_phone_error_message));
 	}

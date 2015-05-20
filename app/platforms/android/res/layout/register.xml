@@ -24,14 +24,9 @@
             android:id="@+id/first_name_txt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/registration_input_bg"
             android:hint="@string/register_first_name"
             android:inputType="textCapWords|textPersonName"
-            android:padding="10dp"
-            android:textColor="@android:color/black"
-            android:textColorHint="@android:color/white"
-            android:textSize="22dp" >
-
+            style="@style/RegistrationFieldStyle" >
             <requestFocus />
         </EditText>
 
@@ -40,13 +35,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:background="@drawable/registration_input_bg"
             android:hint="@string/register_last_name"
             android:inputType="textCapWords|textPersonName"
-            android:padding="10dp"
-            android:textColor="@android:color/black"
-            android:textColorHint="@android:color/white"
-            android:textSize="22dp" />
+            style="@style/RegistrationFieldStyle"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -63,15 +54,11 @@
                     android:id="@+id/country_code_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/registration_input_bg"
-                    android:ems="3"
+                    android:minEms="3"
                     android:inputType="phone"
                     android:imeOptions="actionNext"
                     android:completionThreshold="1"
-                    android:padding="10dp"
-                    android:textColor="@android:color/black"
-                    android:textColorHint="@android:color/white"
-                    android:textSize="22dp" />
+                    style="@style/RegistrationFieldStyle" />
 
                 <TextView
                     android:id="@+id/cc_label"
@@ -97,14 +84,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:background="@drawable/registration_input_bg"
                 android:hint="@string/register_mobile_number"
                 android:inputType="phone"
-                android:padding="10dp"
                 android:imeOptions="actionDone"
-                android:textColor="@android:color/black"
-                android:textColorHint="@android:color/white"
-                android:textSize="22dp" />
+                style="@style/RegistrationFieldStyle" />
         </LinearLayout>
 
         <Button
@@ -113,7 +96,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/register_btn_bg"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="25dp"
             android:text="@string/register_sign_in"
             android:textAllCaps="false"
             android:textColor="@android:color/white"

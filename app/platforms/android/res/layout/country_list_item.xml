@@ -1,25 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:padding="10dp"
-              android:background="@color/dialog_body_bg">
-        <ImageView
-                android:id="@+id/icon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="center_vertical"/>
-
-        <TextView
-                android:id="@+id/text"
-                android:layout_width="wrap_content"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:singleLine="true"
-                android:textAppearance="?android:attr/textAppearanceMediumInverse"
-                android:textColor="@color/dialog_textcolor"
-                android:paddingLeft="10dp"
-                android:paddingBottom="2dp"
-                />
-</LinearLayout>
+                android:padding="10dp"
+                android:background="@color/dialog_body_bg">
+    <ImageView
+            android:id="@+id/icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"/>
+
+    <TextView
+            android:id="@+id/text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:singleLine="true"
+            android:textAppearance="?android:attr/textAppearanceMediumInverse"
+            android:textColor="@color/dialog_textcolor"
+            android:layout_toRightOf="@id/icon"
+            android:layout_toLeftOf="@+id/code"
+            android:minEms="15"
+            android:paddingLeft="10dp"
+            android:paddingBottom="2dp"
+            />
+
+    <TextView
+            android:id="@+id/code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:minEms="3"
+            android:gravity="right"
+            android:paddingLeft="10dp"
+            android:textAppearance="?android:attr/textAppearanceMediumInverse"
+            android:textColor="@color/dialog_textcolor"
+            android:layout_alignParentRight="true"/>
+</RelativeLayout>
