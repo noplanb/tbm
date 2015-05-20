@@ -193,15 +193,16 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		return r.replaceAll("\\d", "");
 	}
 
-	private void register(){
-		Uri.Builder ub = new Uri.Builder();
-		ub.appendPath("reg")
-		.appendPath("reg");
-		new Register(ub.build().toString(), userParams());
-	}
+    private void register() {
+        Uri.Builder ub = new Uri.Builder();
+        ub.appendPath("reg").appendPath("reg");
+        LinkedTreeMap<String, String> r = userParams();
+        r.put(UserFactory.ServerParamKeys.VERIFICATION_VIA, UserFactory.VerificationCodeVia.SMS);
+        new Register(ub.build().toString(), r);
+    }
 
-	private LinkedTreeMap<String, String> userParams(){
-		LinkedTreeMap<String, String> r = new LinkedTreeMap<String, String>();
+	private LinkedTreeMap<String, String> userParams() {
+		LinkedTreeMap<String, String> r = new LinkedTreeMap<>();
 		r.put(UserFactory.ServerParamKeys.DEVICE_PLATFORM, "android");
 		r.put(UserFactory.ServerParamKeys.FIRST_NAME, firstName);
 		r.put(UserFactory.ServerParamKeys.LAST_NAME, lastName);
@@ -229,7 +230,25 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		}
 	}
 
-	//-------------------------
+    class RequestCall extends HttpRequest {
+
+        public RequestCall(String uri, LinkedTreeMap<String, String> params) {
+            super(uri, params, new Callbacks() {
+                @Override
+                public void success(String response) {
+                    if (enterCodeDialog != null) {
+                        ((EnterCodeDialogFragment) enterCodeDialog).setCalling();
+                    }
+                }
+                @Override
+                public void error(String errorString) {
+                    serverError();
+                }
+            });
+        }
+    }
+
+    //-------------------------
 	// Handle verification code 
 	//-------------------------
 	public void didRegister(String r) {
@@ -270,7 +289,16 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 		new SendCode(uri, userParams(), mkey, auth);
 	}
 
-	private class SendCode extends HttpRequest{
+    @Override
+    public void requestCall() {
+        Uri.Builder ub = new Uri.Builder();
+        ub.appendPath("reg").appendPath("reg");
+        LinkedTreeMap<String, String> r = userParams();
+        r.put(UserFactory.ServerParamKeys.VERIFICATION_VIA, UserFactory.VerificationCodeVia.CALL);
+        new RequestCall(ub.build().toString(), r);
+    }
+
+    private class SendCode extends HttpRequest{
 		public SendCode(String uri, LinkedTreeMap<String, String> params, String mkey, String auth) {
 			super(uri, params, mkey, auth, new HttpRequest.Callbacks() {
                 @Override
