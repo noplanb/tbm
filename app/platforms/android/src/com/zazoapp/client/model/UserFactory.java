@@ -12,7 +12,13 @@ public class UserFactory extends ActiveModelFactory<User> {
         public static final String MKEY = "mkey";
         public static final String AUTH = "auth";
         public static final String DEVICE_PLATFORM = "device_platform";
+        public static final String VERIFICATION_VIA = "via";
         public static final String VERIFICATION_CODE = "verification_code";
+    }
+
+    public static class VerificationCodeVia {
+        public static final String CALL = "call";
+        public static final String SMS = "sms";
     }
 
     private static UserFactory instance = null;

@@ -8,19 +8,21 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.TextView;
+import butterknife.ButterKnife;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.R;
 
-public class EnterCodeDialogFragment extends AbstractDialogFragment {
+public class EnterCodeDialogFragment extends AbstractDialogFragment implements OnClickListener {
 
 	private static final String PHONE_NUMBER = "phonenumber";
 
-	public interface Callbacks extends DialogListener {
-		void didEnterCode(String code);
-	}
+    public interface Callbacks extends DialogListener {
+        void didEnterCode(String code);
+        void requestCall();
+    }
 
     public static DialogFragment getInstance(String phoneNumber, Callbacks callbacks){
         AbstractDialogFragment fragment = new EnterCodeDialogFragment();
@@ -44,7 +46,6 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment {
 		String e164 = getArguments().getString(PHONE_NUMBER);
 
 		setTitle("Enter Code");
-
 		View v = LayoutInflater.from(getActivity()).inflate(R.layout.enter_code_dialog,
 				null, false);
 		TextView twMsg = (TextView) v.findViewById(R.id.tw_msg);
@@ -52,6 +53,9 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment {
 
 		twMsg.setText(getString(R.string.enter_code_dlg_msg,
 				phoneWithFormat(e164, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL)));
+
+        final TextView callButton = ButterKnife.findById(v, R.id.call_btn);
+        callButton.setOnClickListener(this);
 
 		setCustomView(v);
 
@@ -89,4 +93,23 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment {
 			return null;
 		}
 	}
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.call_btn:
+                if (getListener() instanceof Callbacks) {
+                    v.setEnabled(false);
+                    ((TextView) v).setText("");
+                    ((Callbacks) getListener()).requestCall();
+                }
+                break;
+        }
+    }
+
+    public void setCalling() {
+        final TextView callBtn = ButterKnife.findById(getView(), R.id.call_btn);
+        callBtn.setText(getString(R.string.enter_code_dlg_button_calling));
+    }
+
 }

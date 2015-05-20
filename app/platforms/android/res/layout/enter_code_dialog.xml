@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" 
-    android:padding="15dp">
+    android:padding="5dp">
 
     <TextView
         android:id="@+id/tw_msg"
@@ -38,5 +38,19 @@
 
         <requestFocus />
     </EditText>
+
+    <TextView
+            android:id="@+id/call_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/enter_code_dlg_button_call"
+            android:textColor="@color/dialog_action_text"
+            android:textAllCaps="false"
+            android:background="@drawable/enter_code_call_btn_bg"
+            android:textSize="18sp"
+            android:gravity="center_horizontal"
+            android:clickable="true"
+            />
 
 </LinearLayout>
