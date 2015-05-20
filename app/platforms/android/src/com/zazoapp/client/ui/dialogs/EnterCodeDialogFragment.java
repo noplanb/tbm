@@ -99,6 +99,8 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment implements O
         switch (v.getId()) {
             case R.id.call_btn:
                 if (getListener() instanceof Callbacks) {
+                    v.setEnabled(false);
+                    ((TextView) v).setText("");
                     ((Callbacks) getListener()).requestCall();
                 }
                 break;
@@ -107,15 +109,7 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment implements O
 
     public void setCalling() {
         final TextView callBtn = ButterKnife.findById(getView(), R.id.call_btn);
-        callBtn.setEnabled(false);
         callBtn.setText(getString(R.string.enter_code_dlg_button_calling));
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        final TextView callBtn = ButterKnife.findById(getView(), R.id.call_btn);
-        callBtn.setEnabled(true);
-        callBtn.setText(getString(R.string.enter_code_dlg_button_call));
-    }
 }
