@@ -1,5 +1,5 @@
 Previous v2.3.4 (58)
-Current v2.4.2 (63)
+Current v2.4.5 (65)
 
 BACKGROUND CHANGES:
 - Fixed non-working code of setting camera preview framerate
@@ -143,3 +143,57 @@ Generating friend list for bench in main thread
 
 SOLUTION:
 Moved this operation to another thread
+
+---------
+FIX
+---------
+"Next" button in imeOptions for CountryCode field
+
+Testcase:
+C2483
+
+---------
+FIX #442
+---------
+Long wait till able to make first recording after launch
+
+PROBLEM:
+On launch contacts list was loaded in main thread
+
+SOLUTION:
+Moved populate work to background thread
+Added progressBar while list is loading for the first time
+
+---------
+NEW
+---------
+Implemented autocomplete textview for countrycodes filter
+
+---------
+NEW #426
+---------
+Option to call for Verification code
+
+SOLUTION:
+Added button to EnterCodeDialogFragment to request call
+
+---------
+FIX #281
+---------
+Country code field accepts any number of digits
+
+SOLUTION:
+Set minEms=3 instead of ems=3 to expand field for case of 4 digits code
+When user reaches 4 digits user input comes to mobileNumber field
+When user tries to clear more characters from empty mobileNumber field input focus comes to countryCode field
+
+---------
+Fix
+---------
+Update dialogs
+
+SOLUTION
+Do not show update dialog if it is already showed
+Optional update dialog is now hidden on cancel or Later button till next session
+Mandatory update dialog: app is now finished on cancel dialog
+Moved hardcoded strings to xml for later translation
