@@ -39,31 +39,46 @@ public class TbmApplication extends Application {
         Dispatch.registerTracker(this, new RollbarTracker());
         Dispatch.dispatchStored();
 
+        initPrefs();
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
-			@Override
-			public void onActivityStopped(Activity activity) {
-				setForeground(false);
-			}
-			
-			@Override
-			public void onActivityStarted(Activity activity) {
-				setForeground(true);				
-			}
-			@Override
-			public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
-			@Override
-			public void onActivityResumed(Activity activity) {}
-			@Override
-			public void onActivityPaused(Activity activity) {
+            @Override
+            public void onActivityStopped(Activity activity) {
+                setForeground(false);
+            }
+
+            @Override
+            public void onActivityStarted(Activity activity) {
+                setForeground(true);
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+            }
+
+            @Override
+            public void onActivityResumed(Activity activity) {
+            }
+
+            @Override
+            public void onActivityPaused(Activity activity) {
                 // TODO temporary until we fix storing model on its update
                 activeModelsHandler.saveAll();
             }
-			@Override
-			public void onActivityDestroyed(Activity activity) {}
-			@Override
-			public void onActivityCreated(Activity activity, Bundle savedInstanceState) {}
-		});
+
+            @Override
+            public void onActivityDestroyed(Activity activity) {
+            }
+
+            @Override
+            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+            }
+        });
 	}
+
+    private void initPrefs() {
+        PreferencesHelper prefs = new PreferencesHelper(this);
+        prefs.putBoolean(VersionHandler.UPDATE_SESSION, true);
+    }
 
     private void setForeground(boolean isForeground){
 		if(isForeground)

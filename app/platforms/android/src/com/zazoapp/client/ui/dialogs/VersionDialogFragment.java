@@ -9,6 +9,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import com.zazoapp.client.PreferencesHelper;
+import com.zazoapp.client.R;
+import com.zazoapp.client.VersionHandler;
 
 public class VersionDialogFragment extends DialogFragment {
 
@@ -35,18 +38,19 @@ public class VersionDialogFragment extends DialogFragment {
         boolean negativeButton = getArguments().getBoolean(IS_NEGATIVE_BUTTON, false);
         String message = getArguments().getString(MESSAGE);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Update Available")
+        builder.setTitle(getString(R.string.dialog_update_title))
                 .setMessage(message)
-                .setPositiveButton("Update", new DialogInterface.OnClickListener() {
+                .setPositiveButton(getString(R.string.dialog_action_update), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         goToPlayStore();
                     }
                 });
 
         if (negativeButton){
-            builder.setNegativeButton("Later", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton(getString(R.string.dialog_action_later), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     dismissAllowingStateLoss();
+                    new PreferencesHelper(getActivity()).putBoolean(VersionHandler.UPDATE_SESSION, false);
                 }
             });
         }
@@ -55,6 +59,17 @@ public class VersionDialogFragment extends DialogFragment {
         alertDialog.show();
 
         return alertDialog;
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        boolean hasNegativeButton = getArguments().getBoolean(IS_NEGATIVE_BUTTON, false);
+        if (hasNegativeButton) {
+            new PreferencesHelper(getActivity()).putBoolean(VersionHandler.UPDATE_SESSION, false);
+        } else {
+            getActivity().finish();
+        }
     }
 
     private void goToPlayStore(){

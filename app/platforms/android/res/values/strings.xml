@@ -14,6 +14,8 @@
     <string name="dialog_action_try_again">Try Again</string>
     <string name="dialog_action_cancel">Cancel</string>
     <string name="dialog_action_ok">OK</string>
+    <string name="dialog_action_update">Update</string>
+    <string name="dialog_action_later">Later</string>
     <string name="dialog_checking_title">Checking</string>
     <string name="dialog_bad_connection_title">Bad Connection</string>
     <string name="dialog_bad_connection_message">Trouble downloading. Check your connection</string>
@@ -58,6 +60,9 @@
     <string name="dialog_nudge_friend_message">%1$s still hasn\'t installed %2$s.\n\nDo you want to send them a link again?</string>
     <string name="dialog_invite_friend_title">Invite %1$s</string>
     <string name="dialog_invite_friend_message">%1$s  has not installed %2$s.\n\nDo you want to send them a link?</string>
+    <string name="dialog_update_title">Update Available</string>
+    <string name="dialog_update_obsolete_message">Your %1$s app is obsolete. It must be updated for use.</string>
+    <string name="dialog_update_out_of_date_message">Your %1$s app is out of date. Please update.</string>
 
     <string name="toast_downloading">Downloading...</string>
     <string name="toast_not_sent">Not sent</string>

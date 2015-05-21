@@ -92,8 +92,10 @@ public class DialogShower {
     }
 
     public static void showVersionHandlerDialog(Activity activity, String message, boolean negativeButton) {
-        DialogFragment d = VersionDialogFragment.getInstance(message, negativeButton);
-        d.show(activity.getFragmentManager(), null);
+        if (activity.getFragmentManager().findFragmentByTag("compatibility") == null) {
+            DialogFragment d = VersionDialogFragment.getInstance(message, negativeButton);
+            d.show(activity.getFragmentManager(), "compatibility");
+        }
     }
 
     public static void showSelectPhoneNumberDialog(Activity activity, Contact contact, SelectPhoneNumberDialog.Callbacks callbacks) {
