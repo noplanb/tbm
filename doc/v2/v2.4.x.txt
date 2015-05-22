@@ -1,5 +1,5 @@
 Previous v2.3.4 (58)
-Current v2.4.5 (65)
+Current v2.4.6 (66)
 
 BACKGROUND CHANGES:
 - Fixed non-working code of setting camera preview framerate
@@ -197,3 +197,26 @@ Do not show update dialog if it is already showed
 Optional update dialog is now hidden on cancel or Later button till next session
 Mandatory update dialog: app is now finished on cancel dialog
 Moved hardcoded strings to xml for later translation
+
+---------
+Fix #444
+---------
+Zazo does not show play hint for the second time
+PROBLEM:
+Caused by long view layout process
+SOLUTION:
+Add some delay to show this hint. If view is still not loaded after some time then just skip it
+
+---------
+Fix #443
+---------
+Do not show hint when video is played automatically from notification or lockScreen
+
+---------
+Fix #445
+---------
+PROBLEM:
+ImageView has ability to be drawn outside the box view
+SOLUTION:
+Added surrounding layout to clip ImageView outside the box view
+
