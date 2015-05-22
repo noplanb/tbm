@@ -20,6 +20,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     private ZazoManagerProvider managers;
     private PreferencesHelper preferences;
     private HintType current;
+    private Runnable onNewMessageAction;
 
     public Tutorial(TutorialLayout layout, ZazoManagerProvider managerProvider) {
         tutorialLayout = layout;
@@ -38,10 +39,11 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         //FriendFactory.getFactoryInstance().removeOnVideoStatusChangedObserver(this);
         //FriendFactory.getFactoryInstance().removeCallback(this);
         current = null;
+        tutorialLayout.removeCallbacks(onNewMessageAction);
         tutorialLayout.clear();
     }
 
-    public void onLaunch(View view) {
+    public void onLaunch(final View view) {
         int friendsCount = FriendFactory.getFactoryInstance().count();
         int unviewedMessages = VideoFactory.getFactoryInstance().allNotViewedCount();
         Log.i(TAG, "onLaunch: friends " + friendsCount + " unviewed " + unviewedMessages);
@@ -51,8 +53,19 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         }
         if (!shouldShow(HintType.PLAY) && shouldShow(HintType.RECORD)) {
             showHint(HintType.RECORD, view);
+        } else if (shouldShow(HintType.PLAY)) {
+            // FIX for https://zazo.fogbugz.com/f/cases/443/ caused by long view layout
+            // Do not show this hint at all if it is still not loaded after some time
+            onNewMessageAction = new Runnable() {
+                @Override
+                public void run() {
+                    if (shouldShow(HintType.PLAY) && view.getWidth() != 0) {
+                        showHint(HintType.PLAY, view);
+                    }
+                }
+            };
+            tutorialLayout.postDelayed(onNewMessageAction, 2000);
         }
-
     }
 
     public void onNewMessage(View view) {

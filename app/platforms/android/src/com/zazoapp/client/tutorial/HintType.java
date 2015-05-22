@@ -57,7 +57,7 @@ public enum HintType {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
             int unviewedCount = VideoFactory.getFactoryInstance().allNotViewedCount();
-            return hasOneFriend() && unviewedCount > 0 && prefs.getBoolean(getPrefName(), true);
+            return hasOneFriend() && unviewedCount > 0 && prefs.getBoolean(getPrefName(), true) && current == null;
         }
 
         @Override
