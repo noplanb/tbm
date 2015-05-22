@@ -46,12 +46,19 @@
                 android:textStyle="bold"/>
     </LinearLayout>
 
-    <ImageView
-            android:id="@+id/img_thumb"
+    <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:visibility="invisible"/>
+            android:clipToPadding="true"
+            android:clipChildren="true">
+        <ImageView
+                android:id="@+id/img_thumb"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="invisible"/>
+    </RelativeLayout>
+
 
     <TextView
             android:id="@+id/tw_name"
