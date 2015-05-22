@@ -77,12 +77,15 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
 
     public void onVideoViewed(View view) {
         Log.i(TAG, "onVideoViewed");
-        markHintAsShowed(HintType.PLAY);
         if (shouldShow(HintType.RECORD)) {
             if (!managers.getRecorder().isRecording() && !managers.getPlayer().isPlaying()) {
                 showHint(HintType.RECORD, view);
             }
         }
+    }
+
+    public void onVideoStartPlayingByUser() {
+        markHintAsShowed(HintType.PLAY);
     }
 
     public void onFriendModelChanged(View view) {

@@ -99,6 +99,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         Friend friend = gridElement.getFriend();
         if (friend.hasIncomingPlayableVideos()) {
             managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId());
+            managerProvider.getTutorial().onVideoStartPlayingByUser();
         } else {
             DialogShower.showToast(activity, R.string.video_is_not_playable);
         }
