@@ -45,11 +45,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="@string/enter_code_dlg_button_call"
-            android:textColor="@color/dialog_action_text"
+            android:textColor="@color/dialog_link_color"
             android:textAllCaps="false"
-            android:background="@drawable/enter_code_call_btn_bg"
-            android:textSize="18sp"
             android:gravity="center_horizontal"
+            android:padding="7dp"
             android:clickable="true"
             />
 

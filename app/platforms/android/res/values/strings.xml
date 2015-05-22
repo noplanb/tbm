@@ -6,7 +6,7 @@
     <string name="record">RECORD</string>
     <string name="enter_code_dlg_msg">We sent a code via text message\nto %1$s.</string>
     <string name="enter_code_dlg_helper">Enter Code</string>
-    <string name="enter_code_dlg_button_call">Call Me Instead</string>
+    <string name="enter_code_dlg_button_call"><u>Call Me Instead</u></string>
     <string name="enter_code_dlg_button_calling">Calling you...</string>
 
     <!-- Dialogs -->
