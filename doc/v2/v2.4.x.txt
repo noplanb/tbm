@@ -1,5 +1,5 @@
 Previous v2.3.4 (58)
-Current v2.4.6 (66)
+Current v2.4.7 (67)
 
 BACKGROUND CHANGES:
 - Fixed non-working code of setting camera preview framerate
@@ -219,4 +219,9 @@ PROBLEM:
 ImageView has ability to be drawn outside the box view
 SOLUTION:
 Added surrounding layout to clip ImageView outside the box view
+
+---------
+Fix #449
+---------
+Call me instead button change to link
 
