@@ -1,5 +1,5 @@
 Previous v2.3.4 (58)
-Current v2.4.9 (69)
+Current v2.4.10 (70)
 
 BACKGROUND CHANGES:
 - Fixed non-working code of setting camera preview framerate
@@ -226,7 +226,8 @@ Fix #449
 Call me instead button change to link
 
 ---------
-Fix #454---------
+Fix #454
+---------
 Zazo someone else hint should appear after send just once per session.
 
 SOLUTION:
@@ -241,3 +242,15 @@ SOLUTION:
 If Viewed hint is showed when new message arrives hint is dismissed and Play hint is showed
 Viewed hint is dismissed automatically after 3.5s
 Arrow is pointed to VIEWED and SENT indicators in corresponding hints
+
+Testcases: C2475, C2476, C2477, C2486
+
+---------
+Fix #433
+---------
+Record hint flashes before play hint in case message is downloading
+
+SOLUTION:
+If any hint is showed and new message arrives show Play hint after previous hint is dismissed
+
+Testcase: C2487
