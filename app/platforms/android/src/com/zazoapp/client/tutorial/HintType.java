@@ -33,8 +33,8 @@ public enum HintType {
             boolean recordHintShowed = !prefs.getBoolean(HintType.RECORD.getPrefName(), true);
             boolean sentHintShowed = !prefs.getBoolean(HintType.SENT.getPrefName(), true);
             boolean viewedHintShowed = !prefs.getBoolean(HintType.VIEWED.getPrefName(), true);
-
-            return hasOneFriend() && allViewed && playHintShowed && recordHintShowed && sentHintShowed && viewedHintShowed;
+            boolean firstInSession = prefs.getBoolean(getPrefName(), true);
+            return hasOneFriend() && firstInSession && allViewed && playHintShowed && recordHintShowed && sentHintShowed && viewedHintShowed;
         }
 
         @Override

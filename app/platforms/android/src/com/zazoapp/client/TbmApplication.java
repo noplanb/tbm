@@ -9,6 +9,7 @@ import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.dispatch.RollbarTracker;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.tutorial.HintType;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
 public class TbmApplication extends Application {
@@ -78,6 +79,7 @@ public class TbmApplication extends Application {
     private void initPrefs() {
         PreferencesHelper prefs = new PreferencesHelper(this);
         prefs.putBoolean(VersionHandler.UPDATE_SESSION, true);
+        prefs.putBoolean(HintType.INVITE_2.getPrefName(), true);
     }
 
     private void setForeground(boolean isForeground){

@@ -106,6 +106,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
             markHintAsShowed(HintType.SENT);
         } else if (shouldShow(HintType.INVITE_2)) {
             showHint(HintType.INVITE_2, view);
+            markHintAsShowed(HintType.INVITE_2);
         }
     }
 
