@@ -37,6 +37,7 @@ public class TutorialLayout extends FrameLayout {
     private ValueAnimator dimAnimator;
 
     private RectF dimExcludedRect = new RectF();
+    private RectF arrowAnchorRect;
     private int dimExcludedCircleX;
     private int dimExcludedCircleY;
     private int dimExcludedCircleRadius;
@@ -117,6 +118,9 @@ public class TutorialLayout extends FrameLayout {
         Typeface tf = getTypeface();
         hint.setTypeface(tf);
         LayoutParams arrowParams = (LayoutParams) arrowView.getLayoutParams();
+        if (arrowAnchorRect == null) {
+            arrowAnchorRect = dimExcludedRect;
+        }
         if (dimExcludedRect.intersects(0, 0, getRight(), getHeight() / 3)) {
             // TOP part, place just below
             LayoutParams p = (LayoutParams) hint.getLayoutParams();
@@ -124,8 +128,8 @@ public class TutorialLayout extends FrameLayout {
             hint.setLayoutParams(p);
             hint.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
             arrowView.setImageResource(R.drawable.arrow_yellow_top_right);
-            int arrowRightMargin = (int) (getWidth() - dimExcludedRect.left);
-            int arrowBottomMargin = getHeight() - (int) dimExcludedRect.bottom - hint.getPaddingTop();
+            int arrowRightMargin = (int) (getWidth() - arrowAnchorRect.left);
+            int arrowBottomMargin = getHeight() - (int) arrowAnchorRect.bottom - hint.getPaddingTop();
             arrowParams.setMargins(0, 0, arrowRightMargin, arrowBottomMargin);
             arrowParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
         } else {
@@ -134,8 +138,8 @@ public class TutorialLayout extends FrameLayout {
             hint.setLayoutParams(p);
             hint.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
             arrowView.setImageResource(R.drawable.arrow_yellow_bottom_right);
-            int arrowRightMargin = (int) (getWidth() - dimExcludedRect.left);
-            int arrowTopMargin = (int) dimExcludedRect.top - hint.getPaddingBottom();
+            int arrowRightMargin = (int) (getWidth() - arrowAnchorRect.left);
+            int arrowTopMargin = (int) arrowAnchorRect.top - hint.getPaddingBottom();
             arrowParams.setMargins(0, arrowTopMargin, arrowRightMargin, 0);
             arrowParams.gravity = Gravity.TOP | Gravity.RIGHT;
         }
@@ -256,6 +260,10 @@ public class TutorialLayout extends FrameLayout {
         dimExcludedCircleRadius = data[2];
     }
 
+    public void setArrowAnchorRect(RectF rect) {
+        arrowAnchorRect = rect;
+    }
+
     private void reset() {
         setVisibility(INVISIBLE);
         dimmed = false;
@@ -264,6 +272,7 @@ public class TutorialLayout extends FrameLayout {
         dimExcludedCircleY = 0;
         dimExcludedCircleRadius = 0;
         dimExcludedRect.set(0, 0, 0, 0);
+        arrowAnchorRect = null;
     }
 
     public interface OnTutorialEventListener {

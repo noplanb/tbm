@@ -21,7 +21,7 @@ public enum HintType {
         }
 
         @Override
-        void show(TutorialLayout layout, View view) {
+        void show(TutorialLayout layout, View view, Tutorial tutorial) {
             layout.dimExceptForRect(getViewRect(view));
         }
     },
@@ -38,7 +38,7 @@ public enum HintType {
         }
 
         @Override
-        void show(TutorialLayout layout, View view) {
+        void show(TutorialLayout layout, View view, Tutorial tutorial) {
             NineViewGroup nineViewGroup = null;
             ViewParent parentView = view.getParent();
             while (nineViewGroup == null && parentView != null) {
@@ -61,7 +61,7 @@ public enum HintType {
         }
 
         @Override
-        void show(TutorialLayout layout, View view) {
+        void show(TutorialLayout layout, View view, Tutorial tutorial) {
             setExcludedBox(layout, view);
             layout.dim();
         }
@@ -73,7 +73,7 @@ public enum HintType {
         }
 
         @Override
-        void show(TutorialLayout layout, View view) {
+        void show(TutorialLayout layout, View view, Tutorial tutorial) {
             setExcludedBox(layout, view);
             layout.dim();
         }
@@ -85,10 +85,13 @@ public enum HintType {
         }
 
         @Override
-        void show(TutorialLayout layout, View view) {
+        void show(TutorialLayout layout, View view, Tutorial tutorial) {
             View indicator = view.findViewById(R.id.img_viewed); // we use viewed due to animation of uploading indicator at this moment
-            layout.dimExceptForRect(getViewRect(view)); // select all friend box by request https://zazo.fogbugz.com/f/cases/431/
-            delayedDismiss(layout, HintType.SENT);
+            layout.clear();
+            layout.setArrowAnchorRect(getViewRect(indicator));
+            layout.setExcludedRect(getViewRect(view));
+            layout.dim();
+            delayedDismiss(layout, this, tutorial);
         }
     },
     VIEWED(R.string.tutorial_hint_viewed) {
@@ -98,9 +101,13 @@ public enum HintType {
         }
 
         @Override
-        void show(TutorialLayout layout, View view) {
+        void show(TutorialLayout layout, View view, Tutorial tutorial) {
             View indicator = view.findViewById(R.id.img_viewed);
-            layout.dimExceptForRect(getViewRect(view)); // select all view by request https://zazo.fogbugz.com/f/cases/431/
+            layout.clear();
+            layout.setArrowAnchorRect(getViewRect(indicator));
+            layout.setExcludedRect(getViewRect(view));
+            layout.dim();
+            delayedDismiss(layout, this, tutorial);
         }
     };
 
@@ -122,7 +129,7 @@ public enum HintType {
 
     abstract boolean shouldShow(HintType current, PreferencesHelper prefs);
 
-    abstract void show(TutorialLayout layout, View view);
+    abstract void show(TutorialLayout layout, View view, Tutorial tutorial);
 
     static RectF getViewRect(View view) {
         int[] location = new int[2];
@@ -164,11 +171,13 @@ public enum HintType {
         layout.setExcludedRect(getViewRect(view));
     }
 
-    private static void delayedDismiss(final TutorialLayout layout, final HintType hint) {
+    private static void delayedDismiss(final TutorialLayout layout, final HintType hint, final Tutorial tutorial) {
         layout.postDelayed(new Runnable() {
             @Override
             public void run() {
-                layout.dismiss();
+                if (tutorial.getCurrent() == hint) {
+                    layout.dismiss();
+                }
             }
         }, 3500);
     }

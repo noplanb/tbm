@@ -21,6 +21,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     private PreferencesHelper preferences;
     private HintType current;
     private Runnable onNewMessageAction;
+    private Runnable onNextHintAction;
 
     public Tutorial(TutorialLayout layout, ZazoManagerProvider managerProvider) {
         tutorialLayout = layout;
@@ -68,10 +69,18 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         }
     }
 
-    public void onNewMessage(View view) {
+    public void onNewMessage(final View view) {
         Log.i(TAG, "onNewMessage");
         if (shouldShow(HintType.PLAY)) {
             showHint(HintType.PLAY, view);
+        } else if (current == HintType.VIEWED) {
+            tutorialLayout.dismiss();
+            onNextHintAction = new Runnable() {
+                @Override
+                public void run() {
+                    onNewMessage(view);
+                }
+            };
         }
     }
 
@@ -129,7 +138,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         }
         current = hint;
         tutorialLayout.setHintText(current.getHint(tutorialLayout.getContext()));
-        hint.show(tutorialLayout, view);
+        hint.show(tutorialLayout, view, this);
     }
 
     private void markHintAsShowed(HintType hint) {
@@ -153,10 +162,18 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     @Override
     public void onDismiss() {
         current = null;
+        if (onNextHintAction != null) {
+            onNextHintAction.run();
+            onNextHintAction = null;
+        }
     }
 
     @Override
     public void onDimmed() {
 
+    }
+
+    public HintType getCurrent() {
+        return current;
     }
 }
