@@ -73,7 +73,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         Log.i(TAG, "onNewMessage");
         if (shouldShow(HintType.PLAY)) {
             showHint(HintType.PLAY, view);
-        } else if (current == HintType.VIEWED) {
+        } else if (current != null) {
             tutorialLayout.dismiss();
             onNextHintAction = new Runnable() {
                 @Override
@@ -101,15 +101,12 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         int friendsCount = FriendFactory.getFactoryInstance().count();
         Log.i(TAG, "onFriendModelChanged: friends " + friendsCount);
         if (shouldShow(HintType.RECORD)) {
-            if (!managers.getRecorder().isRecording() && !managers.getPlayer().isPlaying()) {
-                showHint(HintType.RECORD, view);
-            }
+            showHint(HintType.RECORD, view);
         }
     }
 
     public void onVideoSentIndicatorShowed(View view) {
         Log.i(TAG, "onVideoSentIndicatorShowed");
-        markHintAsShowed(HintType.RECORD);
         if (shouldShow(HintType.SENT)) {
             showHint(HintType.SENT, view);
             markHintAsShowed(HintType.SENT);
@@ -117,6 +114,10 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
             showHint(HintType.INVITE_2, view);
             markHintAsShowed(HintType.INVITE_2);
         }
+    }
+
+    public void onVideoRecorded() {
+        markHintAsShowed(HintType.RECORD);
     }
 
     public void onVideoViewedIndicatorShowed(View view) {
@@ -128,7 +129,8 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     }
 
     private boolean shouldShow(HintType hint) {
-        return hint.shouldShow(current, preferences);
+        boolean inProcess = managers.getRecorder().isRecording() || managers.getPlayer().isPlaying();
+        return !inProcess && hint.shouldShow(current, preferences);
     }
 
     private void showHint(HintType hint, View view) {
