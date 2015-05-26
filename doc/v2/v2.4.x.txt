@@ -1,5 +1,5 @@
 Previous v2.3.4 (58)
-Current v2.4.10 (70)
+Current v2.4.11 (71)
 
 BACKGROUND CHANGES:
 - Fixed non-working code of setting camera preview framerate
@@ -254,3 +254,10 @@ SOLUTION:
 If any hint is showed and new message arrives show Play hint after previous hint is dismissed
 
 Testcase: C2487
+
+---------
+Fix #455
+---------
+It is better to show "record" hint only once per session.
+SOLUTION:
+Mark Record hint as showed for session when it is showed
