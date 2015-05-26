@@ -33,7 +33,7 @@ public enum HintType {
             boolean recordHintShowed = !prefs.getBoolean(HintType.RECORD.getPrefName(), true);
             boolean sentHintShowed = !prefs.getBoolean(HintType.SENT.getPrefName(), true);
             boolean viewedHintShowed = !prefs.getBoolean(HintType.VIEWED.getPrefName(), true);
-            boolean firstInSession = prefs.getBoolean(getPrefName(), true);
+            boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
             return hasOneFriend() && firstInSession && allViewed && playHintShowed && recordHintShowed && sentHintShowed && viewedHintShowed;
         }
 
@@ -69,7 +69,9 @@ public enum HintType {
     RECORD(R.string.tutorial_hint_record) {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            return hasOneFriend() && current != HintType.PLAY && prefs.getBoolean(getPrefName(), true);
+            boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
+            int unviewedCount = VideoFactory.getFactoryInstance().allNotViewedCount();
+            return hasOneFriend() && unviewedCount == 0 && firstInSession && current != HintType.PLAY && prefs.getBoolean(getPrefName(), true);
         }
 
         @Override
@@ -111,6 +113,8 @@ public enum HintType {
         }
     };
 
+    private static final String SESSION = "_session";
+
     private String prefName;
     private int hintTextId;
 
@@ -121,6 +125,10 @@ public enum HintType {
 
     public String getPrefName() {
         return prefName;
+    }
+
+    public String getPrefSessionName() {
+        return prefName + SESSION;
     }
 
     String getHint(Context context) {

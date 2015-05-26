@@ -79,7 +79,8 @@ public class TbmApplication extends Application {
     private void initPrefs() {
         PreferencesHelper prefs = new PreferencesHelper(this);
         prefs.putBoolean(VersionHandler.UPDATE_SESSION, true);
-        prefs.putBoolean(HintType.INVITE_2.getPrefName(), true);
+        prefs.putBoolean(HintType.INVITE_2.getPrefSessionName(), true);
+        prefs.putBoolean(HintType.RECORD.getPrefSessionName(), true);
     }
 
     private void setForeground(boolean isForeground){

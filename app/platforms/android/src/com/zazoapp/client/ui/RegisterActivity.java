@@ -403,13 +403,15 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         
         @Override
         protected void success() {
-            pd.dismiss();
             getAWSCredentials();
         }
 
         @Override
         protected void failure() {
-            pd.dismiss();
+            if (pd != null) {
+                pd.dismiss();
+                pd = null;
+            }
             serverError();
         }
 	}
@@ -431,6 +433,10 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         }
         @Override
         public void failure() {
+            if (pd != null) {
+                pd.dismiss();
+                pd = null;
+            }
             serverError();            
         }
     }

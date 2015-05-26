@@ -54,6 +54,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         }
         if (!shouldShow(HintType.PLAY) && shouldShow(HintType.RECORD)) {
             showHint(HintType.RECORD, view);
+            markHintAsShowedForSession(HintType.RECORD);
         } else if (shouldShow(HintType.PLAY)) {
             // FIX for https://zazo.fogbugz.com/f/cases/443/ caused by long view layout
             // Do not show this hint at all if it is still not loaded after some time
@@ -89,6 +90,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         if (shouldShow(HintType.RECORD)) {
             if (!managers.getRecorder().isRecording() && !managers.getPlayer().isPlaying()) {
                 showHint(HintType.RECORD, view);
+                markHintAsShowedForSession(HintType.RECORD);
             }
         }
     }
@@ -102,6 +104,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         Log.i(TAG, "onFriendModelChanged: friends " + friendsCount);
         if (shouldShow(HintType.RECORD)) {
             showHint(HintType.RECORD, view);
+            markHintAsShowedForSession(HintType.RECORD);
         }
     }
 
@@ -112,7 +115,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
             markHintAsShowed(HintType.SENT);
         } else if (shouldShow(HintType.INVITE_2)) {
             showHint(HintType.INVITE_2, view);
-            markHintAsShowed(HintType.INVITE_2);
+            markHintAsShowedForSession(HintType.INVITE_2);
         }
     }
 
@@ -146,6 +149,12 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     private void markHintAsShowed(HintType hint) {
         if (preferences.getBoolean(hint.getPrefName(), true)) {
             preferences.putBoolean(hint.getPrefName(), false);
+        }
+    }
+
+    private void markHintAsShowedForSession(HintType hint) {
+        if (preferences.getBoolean(hint.getPrefSessionName(), true)) {
+            preferences.putBoolean(hint.getPrefSessionName(), false);
         }
     }
 

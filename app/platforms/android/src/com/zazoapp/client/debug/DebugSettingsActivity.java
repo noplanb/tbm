@@ -305,8 +305,10 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 PreferencesHelper p = new PreferencesHelper(DebugSettingsActivity.this);
                 p.putBoolean(HintType.PLAY.getPrefName(), true);
                 p.putBoolean(HintType.RECORD.getPrefName(), true);
+                p.putBoolean(HintType.RECORD.getPrefSessionName(), true);
                 p.putBoolean(HintType.SENT.getPrefName(), true);
                 p.putBoolean(HintType.VIEWED.getPrefName(), true);
+                p.putBoolean(HintType.INVITE_2.getPrefSessionName(), true);
             }
         });
     }
