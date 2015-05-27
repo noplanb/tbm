@@ -217,8 +217,10 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
     }
 
     protected void notifyCallbacks() {
-        for (ModelChangeCallback callback : callbacks) {
-            callback.onModelChanged(this);
+        if (notifyCallbacks) {
+            for (ModelChangeCallback callback : callbacks) {
+                callback.onModelChanged(this);
+            }
         }
     }
 

@@ -140,7 +140,7 @@ public class IntentHandler {
 		}
 
 		if (status == Video.IncomingVideoStatus.DOWNLOADED) {
-			
+
 			// Always delete the remote video even if the one we got is corrupted. Otherwise it may never be deleted
 			deleteRemoteVideoAndKV();
 			

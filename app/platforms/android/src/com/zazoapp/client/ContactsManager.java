@@ -66,7 +66,7 @@ public class ContactsManager implements OnItemClickListener {
 	// AutocompleteContactsView
 	// -------------------------
 	public void setupAutoComplete(AutoCompleteTextView view) {
-		AsyncTaskManager.executeAsyncTask(new SetupAutoCompleteAsync(view), new Void[] {});
+		AsyncTaskManager.executeAsyncTask(false, new SetupAutoCompleteAsync(view), new Void[] {});
 	}
 
 	public class SetupAutoCompleteAsync extends AsyncTask<Void, Void, List<String>> {

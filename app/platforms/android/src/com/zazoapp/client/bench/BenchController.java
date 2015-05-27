@@ -122,7 +122,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
     @Override
     public void updateBench() {
-        AsyncTaskManager.executeAsyncTask(new AsyncTask<Void, Void, Void>() {
+        AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 adapter.setList(allOnBench());
@@ -146,7 +146,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	// Populate
 	// ---------
 	private void populate(final ArrayList<LinkedTreeMap<String, String>> phoneData) {
-        AsyncTaskManager.executeAsyncTask(new AsyncTask<Void, Void, Void>() {
+        AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 smsBenchObjects = new ArrayList<>();

@@ -129,7 +129,7 @@ public class GcmHandler {
 	 * shared preferences.
 	 */
 	private void registerInBackground() {
-		AsyncTaskManager.executeAsyncTask(new RIBAsync(), new Void[]{});
+		AsyncTaskManager.executeAsyncTask(false, new RIBAsync(), new Void[]{});
 	}
 
 
