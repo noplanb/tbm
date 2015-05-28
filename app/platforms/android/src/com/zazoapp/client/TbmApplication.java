@@ -41,6 +41,7 @@ public class TbmApplication extends Application {
         Dispatch.dispatchStored();
 
         initPrefs();
+        DispatcherService.onApplicationStart();
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityStopped(Activity activity) {

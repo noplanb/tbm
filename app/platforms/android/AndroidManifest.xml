@@ -22,6 +22,7 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_LOGS"/>
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <permission
         android:name="com.zazoapp.client.permission.C2D_MESSAGE"
@@ -99,6 +100,11 @@
             android:name=".network.FileDeleteService" />
             <!-- android:process=":FileTransferService" -->
 
+        <receiver android:name=".BootCompleteReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
         <!-- For tests -->
         <!--<activity android:name=".tests.TestActivity" android:screenOrientation="portrait" android:launchMode="singleTask"/>-->
         <!--<service android:name=".tests.FileDownloadServiceTest"/>-->

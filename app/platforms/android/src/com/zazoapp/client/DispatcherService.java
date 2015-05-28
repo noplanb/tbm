@@ -13,8 +13,16 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.model.Video;
+import com.zazoapp.client.model.VideoFactory;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Logger;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DispatcherService extends Service implements UnexpectedTerminationHelper.TerminationCallback {
     private static final String TAG = DispatcherService.class.getSimpleName();
@@ -23,6 +31,7 @@ public class DispatcherService extends Service implements UnexpectedTerminationH
     private volatile ServiceHandler mServiceHandler;
 
     private ShutdownReceiver receiver;
+    private Set<String> downloadingIds = new HashSet<>();
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -31,7 +40,7 @@ public class DispatcherService extends Service implements UnexpectedTerminationH
 
         @Override
         public void handleMessage(Message msg) {
-            onHandleIntent((Intent)msg.obj, (int)msg.arg1);
+            onHandleIntent((Intent)msg.obj, msg.arg1);
         }
     }
 
@@ -48,15 +57,16 @@ public class DispatcherService extends Service implements UnexpectedTerminationH
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
 
-		receiver = new ShutdownReceiver();
-		IntentFilter filter = new IntentFilter("android.intent.action.ACTION_SHUTDOWN");
-		registerReceiver(receiver, filter);
-	}
+        receiver = new ShutdownReceiver();
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SHUTDOWN);
+        registerReceiver(receiver, filter);
+        restoreTransferring();
+    }
 
-	@Override
+    @Override
 	public void onStart(Intent intent, int startId) {
 		Log.i(TAG, "onStart");
-		
+
 	    Message msg = mServiceHandler.obtainMessage();
 	    msg.arg1 = startId;
 	    msg.obj = intent;
@@ -119,4 +129,35 @@ public class DispatcherService extends Service implements UnexpectedTerminationH
         unregisterReceiver(receiver);
     }
 
+    private void restoreTransferring() {
+        ArrayList<Video> videos = VideoFactory.getFactoryInstance().all();
+        FriendFactory friendFactory = FriendFactory.getFactoryInstance();
+        for (Video video : videos) {
+            switch (video.getIncomingVideoStatus()) {
+                case Video.IncomingVideoStatus.NEW:
+                    Friend friend = friendFactory.find(video.get(Video.Attributes.FRIEND_ID));
+                    if (friend != null) {
+                        friend.downloadVideo(video.getId());
+                    }
+                    break;
+                case Video.IncomingVideoStatus.QUEUED:
+                case Video.IncomingVideoStatus.DOWNLOADING:
+                    downloadingIds.add(video.getId());
+                    break;
+            }
+        }
+    }
+
+    public static void onApplicationStart() {
+        ArrayList<Video> videos = VideoFactory.getFactoryInstance().all();
+        for (Video video : videos) {
+            switch (video.getIncomingVideoStatus()) {
+                case Video.IncomingVideoStatus.QUEUED:
+                case Video.IncomingVideoStatus.DOWNLOADING:
+                    video.setIncomingVideoStatus(Video.IncomingVideoStatus.NEW);
+                    video.setDownloadRetryCount(0);
+                    break;
+            }
+        }
+    }
 }
