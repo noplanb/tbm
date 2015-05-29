@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;

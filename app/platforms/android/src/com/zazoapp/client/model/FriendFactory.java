@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
-import com.zazoapp.client.GridManager;
 import com.zazoapp.client.model.Friend.VideoStatusChangedCallback;
 
 import java.util.HashSet;

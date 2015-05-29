@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import com.zazoapp.client.R;
-import com.zazoapp.client.ZazoManagerProvider;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;

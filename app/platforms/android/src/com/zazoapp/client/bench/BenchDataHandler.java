@@ -12,7 +12,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-import com.zazoapp.client.ContactsManager;
+import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;

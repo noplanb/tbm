@@ -1,7 +1,7 @@
 package com.zazoapp.client.network.aws;
 
 import android.content.Context;
-import com.zazoapp.client.PreferencesHelper;
+import com.zazoapp.client.core.PreferencesHelper;
 
 /**
  * Created by User on 1/12/2015.

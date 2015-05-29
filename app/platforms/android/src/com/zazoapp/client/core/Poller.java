@@ -1,8 +1,7 @@
-package com.zazoapp.client;
+package com.zazoapp.client.core;
 
 import android.content.Context;
 import android.util.Log;
-import com.zazoapp.client.RemoteStorageHandler.StatusEnum;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 
@@ -70,9 +69,9 @@ public class Poller {
                     return;
                 }
 
-                if(status.equals(StatusEnum.DOWNLOADED))
+                if(status.equals(RemoteStorageHandler.StatusEnum.DOWNLOADED))
                     getFriend().setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.DOWNLOADED);
-                else if(status.equals(StatusEnum.VIEWED))
+                else if(status.equals(RemoteStorageHandler.StatusEnum.VIEWED))
                     getFriend().setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.VIEWED);
             }
         }

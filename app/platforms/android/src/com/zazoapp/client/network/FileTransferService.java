@@ -3,7 +3,7 @@ package com.zazoapp.client.network;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
-import com.zazoapp.client.DispatcherService;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.network.aws.S3FileTransferAgent;
 
@@ -78,7 +78,7 @@ public abstract class FileTransferService extends IntentService {
 
     public void reportStatus(Intent intent, int status) {
         Log.i(TAG, "reportStatus");
-        intent.setClass(getApplicationContext(), DispatcherService.class);
+        intent.setClass(getApplicationContext(), IntentHandlerService.class);
         intent.putExtra(IntentFields.STATUS_KEY, status);
         getApplicationContext().startService(intent);
     }

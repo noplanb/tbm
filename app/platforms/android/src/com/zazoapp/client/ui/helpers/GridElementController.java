@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.ui.helpers;
 
 import android.app.Activity;
 import android.os.Handler;
@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import com.zazoapp.client.R;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.model.ActiveModel;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;

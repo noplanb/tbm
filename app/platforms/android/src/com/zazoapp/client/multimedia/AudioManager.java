@@ -6,7 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.Build;
 import android.util.Log;
-import com.zazoapp.client.ZazoManagerProvider;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.dispatch.Dispatch;
 
 /**

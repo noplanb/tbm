@@ -25,7 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.zazoapp.client.R;
-import com.zazoapp.client.ViewGroupGestureRecognizer;
+import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
 import com.zazoapp.client.utilities.Convenience;
 
 import java.util.ArrayList;

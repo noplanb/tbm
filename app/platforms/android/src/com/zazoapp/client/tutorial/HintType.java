@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.RectF;
 import android.view.View;
 import android.view.ViewParent;
-import com.zazoapp.client.PreferencesHelper;
+import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.VideoFactory;

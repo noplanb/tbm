@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.core;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DispatcherService extends Service implements UnexpectedTerminationHelper.TerminationCallback {
-    private static final String TAG = DispatcherService.class.getSimpleName();
+public class IntentHandlerService extends Service implements UnexpectedTerminationHelper.TerminationCallback {
+    private static final String TAG = IntentHandlerService.class.getSimpleName();
 
     private volatile Looper mServiceLooper;
     private volatile ServiceHandler mServiceHandler;
@@ -96,7 +96,7 @@ public class DispatcherService extends Service implements UnexpectedTerminationH
     }
 
     protected void onHandleIntent(final Intent intent, int startId) {
-        new IntentHandler(DispatcherService.this, intent).handle();
+        new IntentHandler(IntentHandlerService.this, intent).handle();
     }
 
     @Override

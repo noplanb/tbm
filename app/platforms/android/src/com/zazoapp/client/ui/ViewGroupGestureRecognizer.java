@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.ui;
 
 import android.app.Activity;
 import android.graphics.Rect;
@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import com.zazoapp.client.R;
 import com.zazoapp.client.utilities.Convenience;
 
 import java.util.ArrayList;

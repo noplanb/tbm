@@ -2,7 +2,7 @@ package com.zazoapp.client.model;
 
 import android.content.Context;
 import android.util.Log;
-import com.zazoapp.client.PreferencesHelper;
+import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
 public class ActiveModelsHandler implements UnexpectedTerminationHelper.TerminationCallback {

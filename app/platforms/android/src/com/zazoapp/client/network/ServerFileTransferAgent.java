@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
-import com.zazoapp.client.DispatcherService;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.Video;
@@ -165,7 +165,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 
 	protected void reportStatus(Intent intent, int status){
 		Log.i(TAG, "reportStatus");
-		intent.setClass(context, DispatcherService.class);
+		intent.setClass(context, IntentHandlerService.class);
 		intent.putExtra(IntentFields.STATUS_KEY, status);
 		context.startService(intent);
 	}

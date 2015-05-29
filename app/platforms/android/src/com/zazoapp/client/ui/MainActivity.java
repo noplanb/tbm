@@ -9,13 +9,11 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
-import com.zazoapp.client.DispatcherService;
-import com.zazoapp.client.ManagerHolder;
-import com.zazoapp.client.PreferencesHelper;
+import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.R;
-import com.zazoapp.client.TbmApplication;
-import com.zazoapp.client.VersionHandler;
-import com.zazoapp.client.ZazoManagerProvider;
+import com.zazoapp.client.core.TbmApplication;
+import com.zazoapp.client.core.VersionHandler;
 import com.zazoapp.client.bench.BenchViewManager;
 import com.zazoapp.client.bench.InviteHelper;
 import com.zazoapp.client.bench.InviteManager.InviteDialogListener;
@@ -73,7 +71,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         setupActionBar();
         setupFragment();
         new S3CredentialsGetter(this);
-        startService(new Intent(this, DispatcherService.class));
+        startService(new Intent(this, IntentHandlerService.class));
     }
 
     private void setupActionBar() {

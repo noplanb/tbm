@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.core;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,6 +10,6 @@ import android.content.Intent;
 public class BootCompleteReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        context.startService(new Intent(context, DispatcherService.class));
+        context.startService(new Intent(context, IntentHandlerService.class));
     }
 }

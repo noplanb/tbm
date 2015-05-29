@@ -6,7 +6,7 @@ import android.os.Build;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import com.zazoapp.client.TbmApplication;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.network.HttpRequest;
 import org.json.JSONException;
 import org.json.JSONObject;

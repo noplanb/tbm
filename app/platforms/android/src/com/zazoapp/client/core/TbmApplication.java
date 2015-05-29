@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.core;
 
 import android.app.Activity;
 import android.app.Application;
@@ -9,6 +9,7 @@ import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.dispatch.RollbarTracker;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.tutorial.HintType;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
@@ -41,7 +42,7 @@ public class TbmApplication extends Application {
         Dispatch.dispatchStored();
 
         initPrefs();
-        DispatcherService.onApplicationStart();
+        IntentHandlerService.onApplicationStart();
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityStopped(Activity activity) {

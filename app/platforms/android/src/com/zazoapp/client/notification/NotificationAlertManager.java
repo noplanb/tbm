@@ -17,7 +17,7 @@ import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import com.zazoapp.client.Config;
-import com.zazoapp.client.IntentHandler;
+import com.zazoapp.client.core.IntentHandler;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.ui.LockScreenAlertActivity;

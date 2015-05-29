@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.core;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,7 +28,7 @@ public class IntentHandler {
 
     private final static String TAG = IntentHandler.class.getSimpleName();
 
-    private DispatcherService service;
+    private IntentHandlerService service;
     private Intent intent;
     private Friend friend;
     private String transferType;
@@ -36,7 +36,7 @@ public class IntentHandler {
     private int status;
     private int retryCount;
 
-    public IntentHandler(DispatcherService service, Intent i) {
+    public IntentHandler(IntentHandlerService service, Intent i) {
         // Convenience.printBundle(i.getExtras());
         this.service = service;
         intent = i;

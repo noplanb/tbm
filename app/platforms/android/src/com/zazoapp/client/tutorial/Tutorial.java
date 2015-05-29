@@ -4,9 +4,9 @@ import android.graphics.RectF;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import com.zazoapp.client.PreferencesHelper;
-import com.zazoapp.client.TbmApplication;
-import com.zazoapp.client.ZazoManagerProvider;
+import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.core.TbmApplication;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.VideoFactory;
 
