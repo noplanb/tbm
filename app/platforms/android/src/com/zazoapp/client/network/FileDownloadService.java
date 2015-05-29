@@ -13,12 +13,12 @@ public class FileDownloadService extends FileTransferService {
     @Override
     protected boolean doTransfer(Intent intent) throws InterruptedException {
         intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_DOWNLOAD);
-        reportStatus(intent, IncomingVideo.IncomingVideoStatus.DOWNLOADING);
+        reportStatus(intent, IncomingVideo.Status.DOWNLOADING);
         return fileTransferAgent.download();
     }
 
     @Override
     protected void maxRetriesReached(Intent intent) throws InterruptedException {
-        reportStatus(intent, IncomingVideo.IncomingVideoStatus.FAILED_PERMANENTLY);
+        reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
     }
 }

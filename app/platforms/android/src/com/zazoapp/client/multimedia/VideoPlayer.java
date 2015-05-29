@@ -165,7 +165,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             return;
         }
         // Always set it to viewed whether it is playable or not so it eventually gets deleted.
-        friend.setAndNotifyIncomingVideoStatus(videoId, IncomingVideo.IncomingVideoStatus.VIEWED);
+        friend.setAndNotifyIncomingVideoStatus(videoId, IncomingVideo.Status.VIEWED);
 
         if (videoIsPlayable()) {
             managerProvider.getAudioController().setSpeakerPhoneOn(true);
@@ -185,7 +185,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     cancelWaitingForStart();
                     mp.reset();
                     onCompletion(mp);
-                    friend.setAndNotifyIncomingVideoStatus(brokenVideoId, IncomingVideo.IncomingVideoStatus.FAILED_PERMANENTLY);
+                    friend.setAndNotifyIncomingVideoStatus(brokenVideoId, IncomingVideo.Status.FAILED_PERMANENTLY);
                     notifyPlaybackError();
                     Dispatch.dispatch(String.format("Error while playing video %s %d %d", brokenVideoId, what, extra));
                     return true;

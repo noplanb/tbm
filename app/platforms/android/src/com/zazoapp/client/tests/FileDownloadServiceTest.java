@@ -16,12 +16,12 @@ public class FileDownloadServiceTest extends FileDownloadService {
         if (listener == null)
             return;
         switch (status) {
-            case IncomingVideo.IncomingVideoStatus.FAILED_PERMANENTLY:
+            case IncomingVideo.Status.FAILED_PERMANENTLY:
                 if (listener.onFailed()) {
                     startService(intent);
                 }
                 break;
-            case IncomingVideo.IncomingVideoStatus.DOWNLOADED:
+            case IncomingVideo.Status.DOWNLOADED:
                 if (listener.onDownloaded()) {
                     startService(intent);
                 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.model.OutgoingVideo;
 
 import java.util.ArrayList;
 // Polls for new videos and schedules downloads.
@@ -28,7 +29,7 @@ public class Poller {
         public void poll(Friend friend){
             new GetRemoteVideoIds(friend);
 
-            if(friend.getOutgoingVideoStatus()!=Friend.OutgoingVideoStatus.VIEWED)
+            if(friend.getOutgoingVideoStatus()!= OutgoingVideo.Status.VIEWED)
                 new GetVideoStatus(friend);
         }
 
@@ -70,9 +71,9 @@ public class Poller {
                 }
 
                 if(status.equals(RemoteStorageHandler.StatusEnum.DOWNLOADED))
-                    getFriend().setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.DOWNLOADED);
+                    getFriend().setAndNotifyOutgoingVideoStatus(OutgoingVideo.Status.DOWNLOADED);
                 else if(status.equals(RemoteStorageHandler.StatusEnum.VIEWED))
-                    getFriend().setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.VIEWED);
+                    getFriend().setAndNotifyOutgoingVideoStatus(OutgoingVideo.Status.VIEWED);
             }
         }
 

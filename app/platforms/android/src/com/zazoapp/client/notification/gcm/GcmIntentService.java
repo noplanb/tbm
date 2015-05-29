@@ -9,8 +9,8 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.notification.NotificationHandler;
 
@@ -79,9 +79,9 @@ public class GcmIntentService extends IntentService {
 		// Normalize from notification naming convention to internal.
 		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
 		if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.DOWNLOADED)) {
-			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.OutgoingVideoStatus.DOWNLOADED);
+			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingVideo.Status.DOWNLOADED);
 		} else if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.VIEWED)) {
-			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Friend.OutgoingVideoStatus.VIEWED);
+			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingVideo.Status.VIEWED);
 		} else {
 			Dispatch.dispatch("handleVideoStatusUpdate: ERROR got unknow sent video status");
 		}
@@ -95,7 +95,7 @@ public class GcmIntentService extends IntentService {
 		Log.i(TAG, "handleVideoReceived:");
 		// Normalize from notification naming convention to internal.
 		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
-		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingVideo.IncomingVideoStatus.NEW);
+		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingVideo.Status.NEW);
 		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID)); 
 		startDataHolderService(intent);
 	}

@@ -20,6 +20,6 @@ public class FileDeleteService extends FileTransferService {
 
     @Override
     protected void maxRetriesReached(Intent intent) throws InterruptedException {
-        reportStatus(intent, IncomingVideo.IncomingVideoStatus.FAILED_PERMANENTLY);
+        reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
     }
 }

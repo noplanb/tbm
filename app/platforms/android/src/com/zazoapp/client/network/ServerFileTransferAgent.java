@@ -8,8 +8,8 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.network.FileTransferService.IntentFields;
 import org.apache.commons.io.FileUtils;
 
@@ -110,7 +110,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		} catch (IOException e) {
 			Dispatch.dispatch("IOException..." + e.toString());
 			if (e.getClass().equals(FileNotFoundException.class)){
-				reportStatus(intent, Friend.OutgoingVideoStatus.FAILED_PERMANENTLY);
+				reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
 				return false;
 			} else {
 				return false;
@@ -118,7 +118,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		} finally {
 			con.disconnect();
 		}
-		reportStatus(intent, Friend.OutgoingVideoStatus.UPLOADED);
+		reportStatus(intent, OutgoingVideo.Status.UPLOADED);
 		return true;
 	}
 
@@ -136,7 +136,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		} catch (IOException e) {
 			Dispatch.dispatch("download: IOException: e.tostring " + e.toString());
 			if (e.getClass().equals(FileNotFoundException.class)){
-				reportStatus(intent, IncomingVideo.IncomingVideoStatus.FAILED_PERMANENTLY);
+				reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
 				return false;
 			} else {
 				return false;
@@ -144,7 +144,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		}
         if (f.renameTo(FileUtils.getFile(filePath))) {
             Log.i(TAG, "download SUCCESS" + params.toString());
-            reportStatus(intent, IncomingVideo.IncomingVideoStatus.DOWNLOADED);
+            reportStatus(intent, IncomingVideo.Status.DOWNLOADED);
             return true;
         }
         Dispatch.dispatch("download: error renaming");

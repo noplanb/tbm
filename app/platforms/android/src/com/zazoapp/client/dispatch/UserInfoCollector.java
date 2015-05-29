@@ -5,7 +5,7 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideo;
-import com.zazoapp.client.model.VideoFactory;
+import com.zazoapp.client.model.IncomingVideoFactory;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -21,7 +21,7 @@ public class UserInfoCollector {
     public static String collect(Context context) {
         StringBuilder info = new StringBuilder();
         ArrayList<Friend> friends = FriendFactory.getFactoryInstance().all();
-        ArrayList<IncomingVideo> incomingVideos = VideoFactory.getFactoryInstance().all();
+        ArrayList<IncomingVideo> incomingVideos = IncomingVideoFactory.getFactoryInstance().all();
         if (friends.size() > 0) {
             addRow(info, "Friends");
             addRow(info, "Name", "ID", "Has app", "IV !v count", "OV ID", "OV status", "Last event", "Has thumb", "Downloading");
@@ -52,7 +52,7 @@ public class UserInfoCollector {
             for (IncomingVideo video : incomingVideos) {
                 List<String> list = new ArrayList<>();
                 list.add(video.getId());
-                list.add(String.valueOf(video.getIncomingVideoStatus()));
+                list.add(String.valueOf(video.getVideoStatus()));
                 File file = friend.videoFromFile(video.getId());
                 list.add(String.valueOf(file.exists()));
                 list.add(file.exists() ? String.valueOf(file.length()) : "");

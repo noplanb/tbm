@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.model.ActiveModel;
 import com.zazoapp.client.model.Friend;
@@ -172,7 +173,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         boolean lastEventOutgoing = friend.getLastEventType() == Friend.VideoStatusEventType.OUTGOING;
 
         boolean showNewMessages = unreadMsgCount > 0 && !animating && !isVideoPlaying;
-        boolean showVideoViewed = friend.getOutgoingVideoStatus() == Friend.OutgoingVideoStatus.VIEWED
+        boolean showVideoViewed = friend.getOutgoingVideoStatus() == OutgoingVideo.Status.VIEWED
                 && !showNewMessages && lastEventOutgoing;
         gridElementView.showNudge(!friend.hasApp());
         gridElementView.setVideoViewed(showVideoViewed);
@@ -232,12 +233,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             @Override
             public void run() {
                 switch (status) {
-                    case IncomingVideo.IncomingVideoStatus.NEW:
-                    case IncomingVideo.IncomingVideoStatus.QUEUED:
-                    case IncomingVideo.IncomingVideoStatus.DOWNLOADING:
+                    case IncomingVideo.Status.NEW:
+                    case IncomingVideo.Status.QUEUED:
+                    case IncomingVideo.Status.DOWNLOADING:
                         updateContent(false);
                         break;
-                    case IncomingVideo.IncomingVideoStatus.DOWNLOADED:
+                    case IncomingVideo.Status.DOWNLOADED:
                         if (gridElementView.isReadyToAnimate()) {
                             // sound only if activity is really visible to user
                             if (!(NotificationAlertManager.screenIsLocked(activity) ||
@@ -271,7 +272,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             @Override
             public void run() {
                 switch (status) {
-                    case Friend.OutgoingVideoStatus.QUEUED:
+                    case OutgoingVideoStatus.QUEUED:
                         updateContent(true);
                         managerProvider.getTutorial().onVideoRecorded();
                         gridElementView.animateUploading(new Runnable() {
@@ -286,7 +287,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             }
                         });
                         break;
-                    case Friend.OutgoingVideoStatus.VIEWED:
+                    case OutgoingVideoStatus.VIEWED:
                         gridElementView.showUploadingMark(false);
                         updateContent(gridElementView.isAnimating());
                         break;
@@ -304,9 +305,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (result) {
             int lastEventType = friend.getLastEventType();
             int outgoingStatus = friend.getOutgoingVideoStatus();
-            result = (outgoingStatus != Friend.OutgoingVideoStatus.NONE &&
-                    outgoingStatus != Friend.OutgoingVideoStatus.VIEWED &&
-                    outgoingStatus != Friend.OutgoingVideoStatus.FAILED_PERMANENTLY &&
+            result = (outgoingStatus != OutgoingVideo.Status.NONE &&
+                    outgoingStatus != OutgoingVideo.Status.VIEWED &&
+                    outgoingStatus != OutgoingVideo.Status.FAILED_PERMANENTLY &&
                     lastEventType == Friend.VideoStatusEventType.OUTGOING);
         }
         return result;
@@ -319,9 +320,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             int lastEventType = friend.getLastEventType();
             int incomingStatus = friend.getIncomingVideoStatus();
             result = lastEventType == Friend.VideoStatusEventType.INCOMING &&
-                    (incomingStatus == IncomingVideo.IncomingVideoStatus.DOWNLOADING ||
-                            incomingStatus == IncomingVideo.IncomingVideoStatus.NEW ||
-                            incomingStatus == IncomingVideo.IncomingVideoStatus.QUEUED);
+                    (incomingStatus == IncomingVideo.Status.DOWNLOADING ||
+                            incomingStatus == IncomingVideo.Status.NEW ||
+                            incomingStatus == IncomingVideo.Status.QUEUED);
         }
         return result;
     }

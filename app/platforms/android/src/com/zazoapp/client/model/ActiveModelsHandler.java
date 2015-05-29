@@ -13,7 +13,8 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
 
     private UserFactory userFactory;
     private FriendFactory friendFactory;
-    private VideoFactory videoFactory;
+    private IncomingVideoFactory incomingVideoFactory;
+    private OutgoingVideoFactory outgoingVideoFactory; // TODO
     private GridElementFactory gridElementFactory;
 
     private Context context;
@@ -44,11 +45,11 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     public void ensureAll() {
         userFactory = UserFactory.getFactoryInstance();
         friendFactory = FriendFactory.getFactoryInstance();
-        videoFactory = VideoFactory.getFactoryInstance();
+        incomingVideoFactory = IncomingVideoFactory.getFactoryInstance();
         gridElementFactory = GridElementFactory.getFactoryInstance();
         ensureUser();
         ensure(friendFactory);
-        ensure(videoFactory);
+        ensure(incomingVideoFactory);
         ensure(gridElementFactory);
         new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
         Log.d(TAG, "ensureAll end");
@@ -57,7 +58,7 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     public void saveAll() {
         save(userFactory);
         save(friendFactory);
-        save(videoFactory);
+        save(incomingVideoFactory);
         save(gridElementFactory);
         new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
         Log.i(TAG, "saveAll end");
@@ -66,15 +67,15 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     public void retrieveAll() {
         retrieve(UserFactory.getFactoryInstance());
         retrieve(FriendFactory.getFactoryInstance());
-        retrieve(VideoFactory.getFactoryInstance());
-        Log.i(TAG, "retrieveAll: retrieved " + VideoFactory.getFactoryInstance().count() + "videos");
+        retrieve(IncomingVideoFactory.getFactoryInstance());
+        Log.i(TAG, "retrieveAll: retrieved " + IncomingVideoFactory.getFactoryInstance().count() + "videos");
         retrieve(GridElementFactory.getFactoryInstance());
     }
 
     public void destroyAll() {
         userFactory.destroyAll(context);
         friendFactory.destroyAll(context);
-        videoFactory.destroyAll(context);
+        incomingVideoFactory.destroyAll(context);
         gridElementFactory.destroyAll(context);
     }
 
