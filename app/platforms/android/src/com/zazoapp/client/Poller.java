@@ -1,13 +1,10 @@
 package com.zazoapp.client;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 import com.zazoapp.client.RemoteStorageHandler.StatusEnum;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.Video;
-import com.zazoapp.client.network.FileTransferService;
 
 import java.util.ArrayList;
 // Polls for new videos and schedules downloads.
@@ -53,15 +50,7 @@ public class Poller {
 
         public void handleVideoIds(Friend friend, ArrayList<String> videoIds) {
             for (String videoId : videoIds){
-                Intent intent = new Intent();
-
-                intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
-                intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Video.IncomingVideoStatus.NEW);
-                intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
-                intent.putExtra("friendId", friend.getId());
-                intent.setClass(context, DispatcherService.class);
-
-                context.startService(intent);
+                friend.requestDownload(videoId);
             }
         }
 

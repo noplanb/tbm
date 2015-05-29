@@ -15,7 +15,6 @@ import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.Video;
-import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.ui.view.VideoView;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -146,7 +145,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 		if (videoId == null){
 		    if (videosAreDownloading){
 		        if (friend.hasRetryingDownload()){
-		            FileDownloadService.restartTransfersPendingRetry(activity);
+		            // TODO Transfer FileDownloadService.restartTransfersPendingRetry(activity);
 		            DialogShower.showBadConnection(activity);
 		        } else {
 		            DialogShower.showToast(activity, R.string.toast_downloading);

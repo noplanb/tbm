@@ -23,8 +23,6 @@ import com.zazoapp.client.model.VideoFactory;
 import com.zazoapp.client.multimedia.CameraException;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.CameraManager.CameraExceptionHandler;
-import com.zazoapp.client.network.FileDownloadService;
-import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.NineViewGroup.LayoutCompleteListener;
@@ -79,7 +77,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     @Override
     public void onStart() {
         super.onStart();
-        restartFileTransfersPendingRetry();
         new SyncManager(getActivity()).getAndPollAllFriends();
     }
 
@@ -299,12 +296,4 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return true;
         }
     }
-    
-    //------------
-    // FileTransfer
-    //-------------
-	private void restartFileTransfersPendingRetry() {
-		FileDownloadService.restartTransfersPendingRetry(getActivity());
-		FileUploadService.restartTransfersPendingRetry(getActivity());
-	}
 }
