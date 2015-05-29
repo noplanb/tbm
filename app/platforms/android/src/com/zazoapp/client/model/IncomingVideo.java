@@ -7,7 +7,7 @@ import com.zazoapp.client.multimedia.VideoIdUtils;
 import java.util.Comparator;
 
 
-public class Video extends ActiveModel {
+public class IncomingVideo extends ActiveModel {
 
     /**
      * Normal state machine: QUEUED -> NEW <-> DOWNLOADING -> DOWNLOADED -(onViewed)-> VIEWED
@@ -47,9 +47,9 @@ public class Video extends ActiveModel {
 		setDownloadRetryCount(0);
 	}
 	
-	public static class VideoTimestampComparator implements Comparator<Video> {
+	public static class VideoTimestampComparator implements Comparator<IncomingVideo> {
 	    @Override
-	    public int compare(Video o1, Video o2) {
+	    public int compare(IncomingVideo o1, IncomingVideo o2) {
 	        return VideoIdUtils.timeStampFromVideoId(o1.getId()).compareTo(VideoIdUtils.timeStampFromVideoId(o2.getId()));
 	    }
 	}

@@ -17,7 +17,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.Video;
+import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileTransferService.IntentFields;
 import com.zazoapp.client.network.IFileTransferAgent;
@@ -112,7 +112,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			handleClientException(e);
 			return notRetryableClientException(e);
 		} 
-		fileTransferService.reportStatus(intent, Video.IncomingVideoStatus.DOWNLOADED);
+		fileTransferService.reportStatus(intent, IncomingVideo.IncomingVideoStatus.DOWNLOADED);
 		return true;
 	}
 	
@@ -159,7 +159,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	private void reportClientException(AmazonClientException e) {
 		if (notRetryableClientException(e)){
 			if (isDownload()){
-	            fileTransferService.reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
+	            fileTransferService.reportStatus(intent, IncomingVideo.IncomingVideoStatus.FAILED_PERMANENTLY);
 			} else if (isUpload()) {
 	            fileTransferService.reportStatus(intent, Friend.OutgoingVideoStatus.FAILED_PERMANENTLY);
 			}
@@ -184,7 +184,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	private void reportServiceException(AmazonServiceException e){
 		if (notRetryableServiceException(e)){
 			if (isDownload()){
-	            fileTransferService.reportStatus(intent, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
+	            fileTransferService.reportStatus(intent, IncomingVideo.IncomingVideoStatus.FAILED_PERMANENTLY);
 			} else if (isUpload()) {
 	            fileTransferService.reportStatus(intent, Friend.OutgoingVideoStatus.FAILED_PERMANENTLY);
 			}

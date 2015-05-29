@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * Created by skamenkovych@codeminders.com on 5/29/2015.
  */
-public class TranferTasksHolder {
+public class TransferTasksHolder {
     private Set<String> downloadingIds = new HashSet<>();
     private Set<String> uploadingIds = new HashSet<>();
 

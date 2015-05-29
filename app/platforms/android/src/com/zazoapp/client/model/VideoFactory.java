@@ -2,7 +2,7 @@ package com.zazoapp.client.model;
 
 import java.util.ArrayList;
 
-public class VideoFactory extends ActiveModelFactory<Video> {
+public class VideoFactory extends ActiveModelFactory<IncomingVideo> {
     private static VideoFactory instance = null;
 
     public static VideoFactory getFactoryInstance() {
@@ -11,16 +11,16 @@ public class VideoFactory extends ActiveModelFactory<Video> {
         return instance;
     }
 
-    public ArrayList<Video> allWithFriendId(String FriendId) {
-        return allWhere(Video.Attributes.FRIEND_ID, FriendId);
+    public ArrayList<IncomingVideo> allWithFriendId(String FriendId) {
+        return allWhere(IncomingVideo.Attributes.FRIEND_ID, FriendId);
     }
 
     public int allNotViewedCount() {
-        return allWhere(Video.Attributes.STATUS, String.valueOf(Video.IncomingVideoStatus.DOWNLOADED)).size();
+        return allWhere(IncomingVideo.Attributes.STATUS, String.valueOf(IncomingVideo.IncomingVideoStatus.DOWNLOADED)).size();
     }
 
     @Override
-    public Class<Video> getModelClass() {
-        return Video.class;
+    public Class<IncomingVideo> getModelClass() {
+        return IncomingVideo.class;
     }
 }

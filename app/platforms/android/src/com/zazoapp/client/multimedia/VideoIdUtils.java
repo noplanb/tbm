@@ -3,8 +3,7 @@ package com.zazoapp.client.multimedia;
 import android.util.Log;
 
 import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.Video;
-
+import com.zazoapp.client.model.IncomingVideo;
 
 public class VideoIdUtils {
 	private static final String TAG = VideoIdUtils.class.getSimpleName();
@@ -14,12 +13,12 @@ public class VideoIdUtils {
 	}
 	
 	public static Boolean isNewerThanOldestIncomingVideo(Friend friend, String videoId){
-		Video oldest = friend.oldestIncomingVideo();
+		IncomingVideo oldest = friend.oldestIncomingVideo();
 		return (oldest != null && timeStampFromVideoId(videoId) > timeStampFromVideoId(oldest.getId()));
 	}
 	
 	public static Boolean isOlderThanOldestIncomingVideo(Friend friend, String videoId){
-		Video oldest = friend.oldestIncomingVideo();
+		IncomingVideo oldest = friend.oldestIncomingVideo();
 		return (oldest != null && timeStampFromVideoId(videoId) < timeStampFromVideoId(oldest.getId()));		
 	}
 	

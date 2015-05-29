@@ -10,7 +10,7 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.Video;
+import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.notification.NotificationHandler;
 
@@ -95,7 +95,7 @@ public class GcmIntentService extends IntentService {
 		Log.i(TAG, "handleVideoReceived:");
 		// Normalize from notification naming convention to internal.
 		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
-		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Video.IncomingVideoStatus.NEW);
+		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingVideo.IncomingVideoStatus.NEW);
 		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID)); 
 		startDataHolderService(intent);
 	}

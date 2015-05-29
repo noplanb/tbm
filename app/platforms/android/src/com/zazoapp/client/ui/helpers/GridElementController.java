@@ -8,12 +8,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import com.zazoapp.client.R;
+import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.model.ActiveModel;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
-import com.zazoapp.client.model.Video;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.ui.view.GridElementView;
@@ -232,12 +232,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             @Override
             public void run() {
                 switch (status) {
-                    case Video.IncomingVideoStatus.NEW:
-                    case Video.IncomingVideoStatus.QUEUED:
-                    case Video.IncomingVideoStatus.DOWNLOADING:
+                    case IncomingVideo.IncomingVideoStatus.NEW:
+                    case IncomingVideo.IncomingVideoStatus.QUEUED:
+                    case IncomingVideo.IncomingVideoStatus.DOWNLOADING:
                         updateContent(false);
                         break;
-                    case Video.IncomingVideoStatus.DOWNLOADED:
+                    case IncomingVideo.IncomingVideoStatus.DOWNLOADED:
                         if (gridElementView.isReadyToAnimate()) {
                             // sound only if activity is really visible to user
                             if (!(NotificationAlertManager.screenIsLocked(activity) ||
@@ -319,9 +319,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             int lastEventType = friend.getLastEventType();
             int incomingStatus = friend.getIncomingVideoStatus();
             result = lastEventType == Friend.VideoStatusEventType.INCOMING &&
-                    (incomingStatus == Video.IncomingVideoStatus.DOWNLOADING ||
-                            incomingStatus == Video.IncomingVideoStatus.NEW ||
-                            incomingStatus == Video.IncomingVideoStatus.QUEUED);
+                    (incomingStatus == IncomingVideo.IncomingVideoStatus.DOWNLOADING ||
+                            incomingStatus == IncomingVideo.IncomingVideoStatus.NEW ||
+                            incomingStatus == IncomingVideo.IncomingVideoStatus.QUEUED);
         }
         return result;
     }

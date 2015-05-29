@@ -18,7 +18,7 @@ import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
-import com.zazoapp.client.model.Video;
+import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.VideoFactory;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.notification.NotificationAlertManager;
@@ -36,7 +36,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
     private volatile ServiceHandler mServiceHandler;
 
     private ShutdownReceiver receiver;
-    private TranferTasksHolder tranferTasksHolder;
+    private TransferTasksHolder transferTasks;
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -64,7 +64,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         receiver = new ShutdownReceiver();
         IntentFilter filter = new IntentFilter(Intent.ACTION_SHUTDOWN);
         registerReceiver(receiver, filter);
-        tranferTasksHolder = new TranferTasksHolder();
+        transferTasks = new TransferTasksHolder();
         restoreTransferring();
     }
 
@@ -132,12 +132,12 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
     }
 
     private void restoreTransferring() {
-        ArrayList<Video> videos = VideoFactory.getFactoryInstance().all();
+        ArrayList<IncomingVideo> incomingVideos = VideoFactory.getFactoryInstance().all();
         FriendFactory friendFactory = FriendFactory.getFactoryInstance();
-        for (Video video : videos) {
+        for (IncomingVideo video : incomingVideos) {
             switch (video.getIncomingVideoStatus()) {
-                case Video.IncomingVideoStatus.NEW:
-                    Friend friend = friendFactory.find(video.get(Video.Attributes.FRIEND_ID));
+                case IncomingVideo.IncomingVideoStatus.NEW:
+                    Friend friend = friendFactory.find(video.get(IncomingVideo.Attributes.FRIEND_ID));
                     if (friend != null) {
                         friend.requestDownload(video.getId());
                     }
@@ -147,12 +147,12 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
     }
 
     public static void onApplicationStart() {
-        ArrayList<Video> videos = VideoFactory.getFactoryInstance().all();
-        for (Video video : videos) {
+        ArrayList<IncomingVideo> incomingVideos = VideoFactory.getFactoryInstance().all();
+        for (IncomingVideo video : incomingVideos) {
             switch (video.getIncomingVideoStatus()) {
-                case Video.IncomingVideoStatus.QUEUED:
-                case Video.IncomingVideoStatus.DOWNLOADING:
-                    video.setIncomingVideoStatus(Video.IncomingVideoStatus.NEW);
+                case IncomingVideo.IncomingVideoStatus.QUEUED:
+                case IncomingVideo.IncomingVideoStatus.DOWNLOADING:
+                    video.setIncomingVideoStatus(IncomingVideo.IncomingVideoStatus.NEW);
                     video.setDownloadRetryCount(0);
                     break;
             }
@@ -257,9 +257,9 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             friend.setHasApp();
 
             // Create and download the video if this was a videoReceived intent.
-            if (status == Video.IncomingVideoStatus.NEW) {
+            if (status == IncomingVideo.IncomingVideoStatus.NEW) {
 
-                if (!tranferTasksHolder.addDownloadId(videoId)) {
+                if (!transferTasks.addDownloadId(videoId)) {
                     Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");
                     return;
                 }
@@ -268,7 +268,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 friend.downloadVideo(videoId);
             }
 
-            if (status == Video.IncomingVideoStatus.DOWNLOADED) {
+            if (status == IncomingVideo.IncomingVideoStatus.DOWNLOADED) {
 
                 // Always delete the remote video even if the one we got is corrupted. Otherwise it may never be deleted
                 deleteRemoteVideoAndKV();
@@ -289,16 +289,16 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 if (!TbmApplication.getInstance().isForeground() || Convenience.screenIsLockedOrOff(getApplicationContext())) {
                     NotificationAlertManager.alert(getApplicationContext(), friend, videoId);
                 }
-                tranferTasksHolder.removeDownloadId(videoId);
+                transferTasks.removeDownloadId(videoId);
             }
 
-            if (status == Video.IncomingVideoStatus.FAILED_PERMANENTLY) {
+            if (status == IncomingVideo.IncomingVideoStatus.FAILED_PERMANENTLY) {
                 Log.i(TAG, "deleteRemoteVideoAndKV for a video that failed permanently");
                 deleteRemoteVideoAndKV();
-                tranferTasksHolder.removeDownloadId(videoId);
+                transferTasks.removeDownloadId(videoId);
             }
 
-            if (status == Video.IncomingVideoStatus.DOWNLOADING) {
+            if (status == IncomingVideo.IncomingVideoStatus.DOWNLOADING) {
                 // No need to do anything special in this case.
             }
 
