@@ -11,7 +11,6 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.core.IntentHandlerService;
-import com.zazoapp.client.core.IntentHandler;
 import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
@@ -518,7 +517,7 @@ public class Friend extends ActiveModel{
         intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
         intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Video.IncomingVideoStatus.NEW);
         intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
-        intent.putExtra(IntentHandler.IntentParamKeys.FRIEND_ID, getId());
+        intent.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, getId());
 
         getContext().startService(intent);
     }

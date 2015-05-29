@@ -9,9 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.ui.helpers.GridElementController;
 import com.zazoapp.client.model.GridManager;
-import com.zazoapp.client.core.IntentHandler;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.SyncManager;
 import com.zazoapp.client.model.Friend;
@@ -205,7 +205,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         Uri data = currentIntent.getData();
 
         if (Intent.ACTION_MAIN.equals(action)) {
-            currentIntent.setAction(IntentHandler.IntentActions.NONE);
+            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             getManagerProvider().getTutorial().onLaunch(nineViewGroup.getSurroundingFrame(0));
             return;
         }
@@ -215,22 +215,22 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return;
         }
 
-        String friendId = currentIntent.getData().getQueryParameter(IntentHandler.IntentParamKeys.FRIEND_ID);
+        String friendId = currentIntent.getData().getQueryParameter(IntentHandlerService.IntentParamKeys.FRIEND_ID);
         if (action == null || friendId == null) {
             Log.i(TAG, "handleIntentAction: no friendId or action. Exiting." + currentIntent.toString());
             return;
         }
 
-        if (action.equals(IntentHandler.IntentActions.PLAY_VIDEO)) {
-            currentIntent.setAction(IntentHandler.IntentActions.NONE);
+        if (action.equals(IntentHandlerService.IntentActions.PLAY_VIDEO)) {
+            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             play(friendId);
         }
 
         // Not used as I decided pending intent coming back from sending sms is
         // to disruptive. Just assume
         // sms's sent go through.
-        if (action.equals(IntentHandler.IntentActions.SMS_RESULT)) {
-            currentIntent.setAction(IntentHandler.IntentActions.NONE);
+        if (action.equals(IntentHandlerService.IntentActions.SMS_RESULT)) {
+            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             Log.i(TAG, currentIntent.toString());
         }
     }

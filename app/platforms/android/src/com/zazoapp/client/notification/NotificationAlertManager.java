@@ -17,8 +17,8 @@ import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import com.zazoapp.client.Config;
-import com.zazoapp.client.core.IntentHandler;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.ui.LockScreenAlertActivity;
 import com.zazoapp.client.ui.MainActivity;
@@ -134,7 +134,7 @@ public class NotificationAlertManager {
 		Log.i(TAG, "postLockScreenAlert");
 		Intent ri = new Intent(context, LockScreenAlertActivity.class);
 		Intent i = makePlayVideoIntent(ri, context, friend);
-		i.putExtra(IntentHandler.IntentParamKeys.FRIEND_ID, friend.getId());
+		i.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId());
 		i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend));
 		i.putExtra(SMALL_ICON_KEY, R.drawable.ic_launcher);
 		i.putExtra(TITLE_KEY, title(friend));
@@ -147,8 +147,8 @@ public class NotificationAlertManager {
 	}
 	
 	public static Intent makePlayVideoIntent(Intent intent, Context context, Friend friend){
-		intent.setAction(IntentHandler.IntentActions.PLAY_VIDEO);
-		Uri uri = new Uri.Builder().appendPath(IntentHandler.IntentActions.PLAY_VIDEO).appendQueryParameter(IntentHandler.IntentParamKeys.FRIEND_ID, friend.getId()).build();
+		intent.setAction(IntentHandlerService.IntentActions.PLAY_VIDEO);
+		Uri uri = new Uri.Builder().appendPath(IntentHandlerService.IntentActions.PLAY_VIDEO).appendQueryParameter(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
 		intent.setData(uri);
 		return intent;
 	}
