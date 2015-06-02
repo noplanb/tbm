@@ -5,6 +5,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.dispatch.Dispatch;
 
 import java.io.BufferedReader;
@@ -22,6 +23,7 @@ import java.util.Set;
 
 public abstract class ActiveModelFactory<T extends ActiveModel> {
     private static final String TAG = ActiveModelFactory.class.getSimpleName();
+    private static final String ATTR_VERSION = "model_version";
 
     protected ArrayList<T> instances = new ArrayList<>();
 
@@ -29,6 +31,8 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
 
     private Set<ModelChangeCallback> callbacks = new HashSet<>();
     private boolean notifyCallbacks = true;
+
+    private LinkedTreeMap<String, String> modelData = new LinkedTreeMap<>();
 
     //--------------------
     // Factory
@@ -48,103 +52,110 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
         return i;
     }
 
-	public synchronized void destroyAll(Context context){
-		instances.clear();
-		File f = new File(getSaveFilePath(context));
-		f.delete();
+    public synchronized void destroyAll(Context context) {
+        instances.clear();
+        File f = new File(getSaveFilePath(context));
+        f.delete();
         notifyCallbacks();
-	}
+    }
 
-	//--------------------
-	// Save and retrieve
-	//--------------------
-	// See app_lifecycle.text for why these are synchronized.
-	public synchronized String save(Context context){
-		if (instances == null || instances.isEmpty())
-			return "";
+    //--------------------
+    // Save and retrieve
+    //--------------------
+    // See app_lifecycle.text for why these are synchronized.
+    public synchronized String save(Context context) {
+        if (instances == null || instances.isEmpty())
+            return "";
 
-		ArrayList <LinkedTreeMap<String, String>> all = new ArrayList<>();
-		for (T i : instances) {
-			all.add(i.attributes);
-		}
-		Gson g = new Gson();
-		String j = g.toJson(all);
-		try {
-			File f = new File(getSaveFilePath(context));
-			if (f.exists())
-				f.delete();
-			FileOutputStream fos = new FileOutputStream(f, true);
-			OutputStreamWriter osw = new OutputStreamWriter(fos);
-			osw.write(j);
-			osw.close();
-			fos.close();
-		} catch (FileNotFoundException e) {
-			Dispatch.dispatch("ERROR: This should never happen." + e.getMessage() + e.toString());
-			throw new RuntimeException();
-		} catch (IOException e) {
-            Dispatch.dispatch("ERROR: This shold never happen. " + e.getMessage() + e.toString());
-			throw new RuntimeException();
-		}
-		return j;
-	}
+        ArrayList<LinkedTreeMap<String, String>> all = new ArrayList<>();
 
-	public synchronized boolean retrieve(Context context){
-		instances.clear();
-		String json = null;
-		try {
-			File f = new File(getSaveFilePath(context));
-			FileInputStream fis = new FileInputStream(f);
-			InputStreamReader isr = new InputStreamReader(fis);
-			BufferedReader br = new BufferedReader(isr);
-			String s = "";
-			StringBuilder sb = new StringBuilder();
-			while ( (s = br.readLine()) != null){
-				sb.append(s);
-			}
-			json = sb.toString();
-			br.close();
-			isr.close();
-			fis.close();
-		}
-		catch (FileNotFoundException e) {
+        // save model version
+        LinkedTreeMap<String, String> version = new LinkedTreeMap<>();
+        version.put(ATTR_VERSION, TbmApplication.getVersionNumber());
+        all.add(version);
+
+        for (T i : instances) {
+            all.add(i.attributes);
+        }
+        Gson g = new Gson();
+        String j = g.toJson(all);
+        try {
+            File f = new File(getSaveFilePath(context));
+            if (f.exists())
+                f.delete();
+            FileOutputStream fos = new FileOutputStream(f, true);
+            OutputStreamWriter osw = new OutputStreamWriter(fos);
+            osw.write(j);
+            osw.close();
+            fos.close();
+        } catch (IOException e) {
+            Dispatch.dispatch("ERROR: This should never happen." + e.getMessage() + e.toString());
+            throw new RuntimeException();
+        }
+        modelData.put(ATTR_VERSION, TbmApplication.getVersionNumber());
+        return j;
+    }
+
+    public synchronized boolean retrieve(Context context) {
+        instances.clear();
+        String json = null;
+        try {
+            File f = new File(getSaveFilePath(context));
+            FileInputStream fis = new FileInputStream(f);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+            String s = "";
+            StringBuilder sb = new StringBuilder();
+            while ((s = br.readLine()) != null) {
+                sb.append(s);
+            }
+            json = sb.toString();
+            br.close();
+            isr.close();
+            fis.close();
+        } catch (FileNotFoundException e) {
             Log.i(TAG, e.getMessage() + e.toString());
-			return false;
-		} catch (IOException e) {
+            return false;
+        } catch (IOException e) {
             Dispatch.dispatch(e.getMessage() + e.toString());
-			return false;
-		}
-		Log.i(TAG, "retrieve(): retrieved from file.");
+            return false;
+        }
+        Log.i(TAG, "retrieve(): retrieved from file.");
 
-		ArrayList<LinkedTreeMap<String, String>> all = new ArrayList<LinkedTreeMap<String, String>>();
-		Gson g = new Gson();
-		all = g.fromJson(json, all.getClass());
+        ArrayList<LinkedTreeMap<String, String>> all = new ArrayList<>();
+        Gson g = new Gson();
+        all = g.fromJson(json, all.getClass());
 
-		if (all == null){
-			Log.i(TAG, "retrieve: got null for objects");
-			return false;
-		} else {
-			Log.i(TAG, "class of attr: " + all.get(0).getClass().getSimpleName());
-		}
+        if (all == null) {
+            Log.i(TAG, "retrieve: got null for objects");
+            return false;
+        } else {
+            Log.i(TAG, "class of attr: " + all.get(0).getClass().getSimpleName());
+        }
 
         notifyCallbacks = false;
-		for (LinkedTreeMap<String, String> ats : all){
-			T i = makeInstance(context);
-			i.attributes.clear();
-			i.attributes.putAll(ats);
-		}
+        for (LinkedTreeMap<String, String> ats : all) {
+            if (ats.containsKey(ATTR_VERSION)) {
+                modelData.put(ATTR_VERSION, ats.get(ATTR_VERSION));
+            } else {
+                T i = makeInstance(context);
+                i.attributes.clear();
+                i.attributes.putAll(ats);
+            }
+        }
         notifyCallbacks = true;
         notifyCallbacks();
-		return true;
-	}
+        return true;
+    }
 
-	public String getSaveFilePath(Context context){
-		return Config.homeDirPath(context) + "/" + this.getClass().getSimpleName() + "_saved_instances.json";
-	}
+    public String getSaveFilePath(Context context) {
+        return Config.homeDirPath(context) + "/" + this.getClass().getSimpleName() + "_saved_instances.json";
+    }
 
-	public void deleteSaveFile(Context context){
-		File f = new File(getSaveFilePath(context));
-		f.delete();
-	}
+    public void deleteSaveFile(Context context) {
+        File f = new File(getSaveFilePath(context));
+        f.delete();
+    }
 
     public ArrayList<T> all() {
         ArrayList<T> all;
@@ -165,12 +176,12 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
         return result;
     }
 
-	//--------------------
-	// Finders
-	//--------------------
-	public synchronized boolean hasInstances(){
-		return !instances.isEmpty();
-	}
+    //--------------------
+    // Finders
+    //--------------------
+    public synchronized boolean hasInstances() {
+        return !instances.isEmpty();
+    }
 
     public T findWhere(String a, String v) {
         ArrayList<T> all = all();
@@ -217,9 +228,16 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
     }
 
     protected void notifyCallbacks() {
-        for (ModelChangeCallback callback : callbacks) {
-            callback.onModelChanged(this);
+        if (notifyCallbacks) {
+            for (ModelChangeCallback callback : callbacks) {
+                callback.onModelChanged(this);
+            }
         }
+    }
+
+    public int getModelVersion() {
+        String version = modelData.get(ATTR_VERSION);
+        return (version == null) ? 1 : Integer.parseInt(version);
     }
 
     public interface ModelChangeCallback {

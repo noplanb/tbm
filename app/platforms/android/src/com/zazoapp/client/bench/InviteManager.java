@@ -10,9 +10,9 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
-import com.zazoapp.client.ContactsManager;
-import com.zazoapp.client.GridManager;
-import com.zazoapp.client.IntentHandler;
+import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.ui.helpers.ContactsManager;
+import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.R;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
@@ -331,7 +331,7 @@ public class InviteManager implements InviteHelper {
 	private PendingIntent makeSmsResultPendingIntent(){
 		Intent i = new Intent(context, MainActivity.class);
 		i.setAction(IntentActions.SMS_RESULT);
-		Uri uri = new Uri.Builder().appendPath(IntentHandler.IntentActions.SMS_RESULT).appendQueryParameter(IntentHandler.IntentParamKeys.FRIEND_ID, friend.getId()).build();
+		Uri uri = new Uri.Builder().appendPath(IntentHandlerService.IntentActions.SMS_RESULT).appendQueryParameter(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
 		i.setData(uri);
 		return PendingIntent.getActivity(context, 0, i, 0);
 	}

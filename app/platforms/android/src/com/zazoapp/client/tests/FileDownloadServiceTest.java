@@ -1,7 +1,7 @@
 package com.zazoapp.client.tests;
 
 import android.content.Intent;
-import com.zazoapp.client.model.Video;
+import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.network.FileDownloadService;
 
 /**
@@ -16,12 +16,12 @@ public class FileDownloadServiceTest extends FileDownloadService {
         if (listener == null)
             return;
         switch (status) {
-            case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
+            case IncomingVideo.Status.FAILED_PERMANENTLY:
                 if (listener.onFailed()) {
                     startService(intent);
                 }
                 break;
-            case Video.IncomingVideoStatus.DOWNLOADED:
+            case IncomingVideo.Status.DOWNLOADED:
                 if (listener.onDownloaded()) {
                     startService(intent);
                 }

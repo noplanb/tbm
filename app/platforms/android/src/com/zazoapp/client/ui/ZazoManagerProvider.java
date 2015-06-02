@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.ui;
 
 import com.zazoapp.client.bench.BenchViewManager;
 import com.zazoapp.client.bench.InviteHelper;

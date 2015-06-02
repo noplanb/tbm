@@ -25,8 +25,8 @@ public class DebugConfig {
     private static volatile DebugConfig instance;
 
     private static class DeploymentType{
-        public static int DEVELOPMENT = 1;
-        public static int PRODUCTION = 2;
+        public static final int DEVELOPMENT = 1;
+        public static final int PRODUCTION = 2;
     }
 
     public interface DebugConfigChangesCallback {

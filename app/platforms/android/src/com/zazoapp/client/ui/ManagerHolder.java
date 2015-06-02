@@ -1,9 +1,10 @@
-package com.zazoapp.client;
+package com.zazoapp.client.ui;
 
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.util.Log;
+import com.zazoapp.client.R;
 import com.zazoapp.client.bench.BenchController;
 import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.multimedia.AudioManager;
@@ -13,7 +14,6 @@ import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.tutorial.Tutorial;
 import com.zazoapp.client.tutorial.TutorialLayout;
-import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.helpers.VideoRecorderManager;
 
 /**

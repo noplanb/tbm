@@ -1,13 +1,10 @@
-package com.zazoapp.client;
+package com.zazoapp.client.core;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
-import com.zazoapp.client.RemoteStorageHandler.StatusEnum;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.Video;
-import com.zazoapp.client.network.FileTransferService;
+import com.zazoapp.client.model.OutgoingVideo;
 
 import java.util.ArrayList;
 // Polls for new videos and schedules downloads.
@@ -32,7 +29,7 @@ public class Poller {
         public void poll(Friend friend){
             new GetRemoteVideoIds(friend);
 
-            if(friend.getOutgoingVideoStatus()!=Friend.OutgoingVideoStatus.VIEWED)
+            if(friend.getOutgoingVideoStatus()!= OutgoingVideo.Status.VIEWED)
                 new GetVideoStatus(friend);
         }
 
@@ -53,15 +50,7 @@ public class Poller {
 
         public void handleVideoIds(Friend friend, ArrayList<String> videoIds) {
             for (String videoId : videoIds){
-                Intent intent = new Intent();
-
-                intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
-                intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, Video.IncomingVideoStatus.NEW);
-                intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
-                intent.putExtra("friendId", friend.getId());
-                intent.setClass(context, DispatcherService.class);
-
-                context.startService(intent);
+                friend.requestDownload(videoId);
             }
         }
 
@@ -81,10 +70,10 @@ public class Poller {
                     return;
                 }
 
-                if(status.equals(StatusEnum.DOWNLOADED))
-                    getFriend().setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.DOWNLOADED);
-                else if(status.equals(StatusEnum.VIEWED))
-                    getFriend().setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.VIEWED);
+                if(status.equals(RemoteStorageHandler.StatusEnum.DOWNLOADED))
+                    getFriend().setAndNotifyOutgoingVideoStatus(videoId, OutgoingVideo.Status.DOWNLOADED);
+                else if(status.equals(RemoteStorageHandler.StatusEnum.VIEWED))
+                    getFriend().setAndNotifyOutgoingVideoStatus(videoId, OutgoingVideo.Status.VIEWED);
             }
         }
 

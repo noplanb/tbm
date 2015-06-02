@@ -1,10 +1,6 @@
-package com.zazoapp.client;
+package com.zazoapp.client.model;
 
 import android.content.Context;
-import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.GridElement;
-import com.zazoapp.client.model.GridElementFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;

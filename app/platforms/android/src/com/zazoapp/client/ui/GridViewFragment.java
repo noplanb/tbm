@@ -9,22 +9,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import com.zazoapp.client.GridElementController;
-import com.zazoapp.client.GridManager;
-import com.zazoapp.client.IntentHandler;
+import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.ui.helpers.GridElementController;
+import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.R;
-import com.zazoapp.client.SyncManager;
-import com.zazoapp.client.ZazoManagerProvider;
+import com.zazoapp.client.core.SyncManager;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.GridElementFactory;
-import com.zazoapp.client.model.VideoFactory;
+import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.multimedia.CameraException;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.CameraManager.CameraExceptionHandler;
-import com.zazoapp.client.network.FileDownloadService;
-import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.NineViewGroup.LayoutCompleteListener;
@@ -79,7 +76,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     @Override
     public void onStart() {
         super.onStart();
-        restartFileTransfersPendingRetry();
         new SyncManager(getActivity()).getAndPollAllFriends();
     }
 
@@ -161,7 +157,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     // -------------------------------
     private void checkAndShowHint() {
         if (FriendFactory.getFactoryInstance().count() > 0) {                   // has at least one friend
-            if (VideoFactory.getFactoryInstance().allNotViewedCount() > 0) {    // has at least one unviewed video
+            if (IncomingVideoFactory.getFactoryInstance().allNotViewedCount() > 0) {    // has at least one unviewed video
                 DialogShower.showHintDialog(getActivity(), getString(R.string.dialog_hint_title),
                         getString(R.string.dialog_play_hint_message));
             } else {
@@ -209,7 +205,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         Uri data = currentIntent.getData();
 
         if (Intent.ACTION_MAIN.equals(action)) {
-            currentIntent.setAction(IntentHandler.IntentActions.NONE);
+            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             getManagerProvider().getTutorial().onLaunch(nineViewGroup.getSurroundingFrame(0));
             return;
         }
@@ -219,22 +215,22 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return;
         }
 
-        String friendId = currentIntent.getData().getQueryParameter(IntentHandler.IntentParamKeys.FRIEND_ID);
+        String friendId = currentIntent.getData().getQueryParameter(IntentHandlerService.IntentParamKeys.FRIEND_ID);
         if (action == null || friendId == null) {
             Log.i(TAG, "handleIntentAction: no friendId or action. Exiting." + currentIntent.toString());
             return;
         }
 
-        if (action.equals(IntentHandler.IntentActions.PLAY_VIDEO)) {
-            currentIntent.setAction(IntentHandler.IntentActions.NONE);
+        if (action.equals(IntentHandlerService.IntentActions.PLAY_VIDEO)) {
+            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             play(friendId);
         }
 
         // Not used as I decided pending intent coming back from sending sms is
         // to disruptive. Just assume
         // sms's sent go through.
-        if (action.equals(IntentHandler.IntentActions.SMS_RESULT)) {
-            currentIntent.setAction(IntentHandler.IntentActions.NONE);
+        if (action.equals(IntentHandlerService.IntentActions.SMS_RESULT)) {
+            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             Log.i(TAG, currentIntent.toString());
         }
     }
@@ -299,12 +295,4 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return true;
         }
     }
-    
-    //------------
-    // FileTransfer
-    //-------------
-	private void restartFileTransfersPendingRetry() {
-		FileDownloadService.restartTransfersPendingRetry(getActivity());
-		FileUploadService.restartTransfersPendingRetry(getActivity());
-	}
 }

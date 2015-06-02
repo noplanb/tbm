@@ -17,10 +17,10 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.google.gson.internal.LinkedTreeMap;
-import com.zazoapp.client.ContactsManager;
-import com.zazoapp.client.GridManager;
+import com.zazoapp.client.ui.helpers.ContactsManager;
+import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.R;
-import com.zazoapp.client.ZazoManagerProvider;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -122,7 +122,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
     @Override
     public void updateBench() {
-        AsyncTaskManager.executeAsyncTask(new AsyncTask<Void, Void, Void>() {
+        AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 adapter.setList(allOnBench());
@@ -146,7 +146,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	// Populate
 	// ---------
 	private void populate(final ArrayList<LinkedTreeMap<String, String>> phoneData) {
-        AsyncTaskManager.executeAsyncTask(new AsyncTask<Void, Void, Void>() {
+        AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 smsBenchObjects = new ArrayList<>();

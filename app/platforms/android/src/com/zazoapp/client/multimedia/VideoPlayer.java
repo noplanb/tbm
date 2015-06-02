@@ -10,12 +10,11 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import com.zazoapp.client.R;
-import com.zazoapp.client.ZazoManagerProvider;
+import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.Video;
-import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.ui.view.VideoView;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -146,7 +145,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 		if (videoId == null){
 		    if (videosAreDownloading){
 		        if (friend.hasRetryingDownload()){
-		            FileDownloadService.restartTransfersPendingRetry(activity);
+		            // TODO Transfer FileDownloadService.restartTransfersPendingRetry(activity);
 		            DialogShower.showBadConnection(activity);
 		        } else {
 		            DialogShower.showToast(activity, R.string.toast_downloading);
@@ -166,7 +165,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             return;
         }
         // Always set it to viewed whether it is playable or not so it eventually gets deleted.
-        friend.setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.VIEWED);
+        friend.setAndNotifyIncomingVideoStatus(videoId, IncomingVideo.Status.VIEWED);
 
         if (videoIsPlayable()) {
             managerProvider.getAudioController().setSpeakerPhoneOn(true);
@@ -186,7 +185,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     cancelWaitingForStart();
                     mp.reset();
                     onCompletion(mp);
-                    friend.setAndNotifyIncomingVideoStatus(brokenVideoId, Video.IncomingVideoStatus.FAILED_PERMANENTLY);
+                    friend.setAndNotifyIncomingVideoStatus(brokenVideoId, IncomingVideo.Status.FAILED_PERMANENTLY);
                     notifyPlaybackError();
                     Dispatch.dispatch(String.format("Error while playing video %s %d %d", brokenVideoId, what, extra));
                     return true;

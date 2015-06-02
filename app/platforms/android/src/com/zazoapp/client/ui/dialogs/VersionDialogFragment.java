@@ -9,9 +9,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import com.zazoapp.client.PreferencesHelper;
+import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.R;
-import com.zazoapp.client.VersionHandler;
+import com.zazoapp.client.core.VersionHandler;
 
 public class VersionDialogFragment extends DialogFragment {
 

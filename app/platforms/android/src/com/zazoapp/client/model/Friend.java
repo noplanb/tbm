@@ -10,7 +10,8 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.Config;
-import com.zazoapp.client.RemoteStorageHandler;
+import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.multimedia.ThumbnailRetriever;
@@ -39,21 +40,7 @@ public class Friend extends ActiveModel{
         void onVideoStatusChanged(Friend friend);
     }
 
-    /**
-     * Normal state machine (one message): NEW -> QUEUED -> UPLOADING -> UPLOADED -> DOWNLOADED -(onViewed)-> VIEWED
-     */
-    public static class OutgoingVideoStatus{
-		public static final int NONE = 0;
-		public static final int NEW = 1;
-		public static final int QUEUED = 2;
-		public static final int UPLOADING = 3;
-		public static final int UPLOADED = 4;
-		public static final int DOWNLOADED = 5;
-		public static final int VIEWED = 6;
-		public static final int FAILED_PERMANENTLY = 7;
-	}
-
-	public static class Attributes{
+    public static class Attributes{
 		public static final String ID  = "id";
         public static final String MKEY  = "mkey";
         public static final String CKEY  = "ckey";
@@ -94,9 +81,8 @@ public class Friend extends ActiveModel{
     @Override
     public void init(Context context) {
         super.init(context);
-        setOutgoingVideoStatus(OutgoingVideoStatus.NONE);
+        setOutgoingVideoStatus(OutgoingVideo.Status.NONE);
         set(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE, VideoStatusEventType.INCOMING.toString());
-        setUploadRetryCount(0);
     }
 
     public String getLastActionTime() {
@@ -122,12 +108,16 @@ public class Friend extends ActiveModel{
     //------------------------------
     // Attribute Getters and Setters
     //------------------------------
-    public String getOutgoingVideoId(){
-        return  get(Friend.Attributes.OUTGOING_VIDEO_ID);
+    public String getOutgoingVideoId() {
+        return get(Friend.Attributes.OUTGOING_VIDEO_ID);
     }
-    
-    public void setOutGoingVideoId(String videoId){
+
+    public void setNewOutgoingVideoId(String videoId) {
         set(Attributes.OUTGOING_VIDEO_ID, videoId);
+        OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().makeInstance(getContext());
+        video.set(OutgoingVideo.Attributes.ID, videoId);
+        video.set(OutgoingVideo.Attributes.FRIEND_ID, getId());
+        OutgoingVideoFactory.getFactoryInstance().deleteAllSent(getId());
     }
 
     //------------
@@ -156,8 +146,8 @@ public class Friend extends ActiveModel{
     public void createIncomingVideo(Context context, String videoId){
         if (hasIncomingVideoId(videoId))
             return;
-        VideoFactory vf = VideoFactory.getFactoryInstance();
-        Video v = vf.makeInstance(context);
+        IncomingVideoFactory vf = IncomingVideoFactory.getFactoryInstance();
+        IncomingVideo v = vf.makeInstance(context);
         v.set(Video.Attributes.FRIEND_ID, getId());
         v.set(Video.Attributes.ID, videoId);
     }
@@ -166,20 +156,20 @@ public class Friend extends ActiveModel{
         // Delete videoFile
         videoFromFile(videoId).delete();
         // Delete video object
-        VideoFactory vf = VideoFactory.getFactoryInstance();
+        IncomingVideoFactory vf = IncomingVideoFactory.getFactoryInstance();
         vf.delete(videoId);
     }
 
     public void deleteAllViewedVideos(){
-        for (Video v : getIncomingVideos()){
-            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.VIEWED ||
-                    v.getIncomingVideoStatus() == Video.IncomingVideoStatus.FAILED_PERMANENTLY)
+        for (IncomingVideo v : getIncomingVideos()){
+            if (v.getVideoStatus() == IncomingVideo.Status.VIEWED ||
+                    v.getVideoStatus() == IncomingVideo.Status.FAILED_PERMANENTLY)
                 deleteVideo(v.getId());
         }
     }
 
     public void deleteAllVideos(){
-        for (Video v : getIncomingVideos()){
+        for (IncomingVideo v : getIncomingVideos()){
             deleteVideo(v.getId());
         }
     }
@@ -191,32 +181,32 @@ public class Friend extends ActiveModel{
     //--------------------------
     // All incoming (Any status)
     //--------------------------
-    public ArrayList<Video> getIncomingVideos(){
-        return VideoFactory.getFactoryInstance().allWithFriendId(getId());
+    public ArrayList<IncomingVideo> getIncomingVideos(){
+        return IncomingVideoFactory.getFactoryInstance().allWithFriendId(getId());
     }
     
-    public ArrayList<Video> getSortedIncomingVideos(){
+    public ArrayList<IncomingVideo> getSortedIncomingVideos(){
         return sortVideosByTimeStamp(getIncomingVideos());
     }
     
-    public Video oldestIncomingVideo(){
-        ArrayList<Video> vids = getSortedIncomingVideos();
+    public IncomingVideo oldestIncomingVideo(){
+        ArrayList<IncomingVideo> vids = getSortedIncomingVideos();
         if (vids.isEmpty()){
             return null;
         }
         return getSortedIncomingVideos().get(0);
     }
 
-    public Video newestIncomingVideo(){
-        ArrayList <Video> vids = getSortedIncomingVideos();
-        Video v = null;
+    public IncomingVideo newestIncomingVideo(){
+        ArrayList <IncomingVideo> vids = getSortedIncomingVideos();
+        IncomingVideo v = null;
         if (!vids.isEmpty())
             v = vids.get(vids.size() -1);
         return v;
     }
 
     public boolean hasIncomingVideoId(String videoId){
-        for (Video v : getIncomingVideos()){
+        for (IncomingVideo v : getIncomingVideos()){
             if (v.getId().equals(videoId))
                 return true;
         }
@@ -227,18 +217,18 @@ public class Friend extends ActiveModel{
     //----------------------
     // Unviewed (DOWNLOADED)
     //----------------------    
-    public ArrayList<Video> getIncomingNotViewedVideos(){
-        ArrayList<Video> videos = getIncomingVideos();
-        Iterator<Video> i = videos.iterator();
+    public ArrayList<IncomingVideo> getIncomingNotViewedVideos(){
+        ArrayList<IncomingVideo> incomingVideos = getIncomingVideos();
+        Iterator<IncomingVideo> i = incomingVideos.iterator();
         while (i.hasNext()){
-            Video v = i.next();
-            if(v.getIncomingVideoStatus() != Video.IncomingVideoStatus.DOWNLOADED)
+            IncomingVideo v = i.next();
+            if(v.getVideoStatus() != IncomingVideo.Status.DOWNLOADED)
                 i.remove();
         }
-        return videos;
+        return incomingVideos;
     }
     
-    public ArrayList<Video> getSortedIncomingNotViewedVideos(){
+    public ArrayList<IncomingVideo> getSortedIncomingNotViewedVideos(){
         return sortVideosByTimeStamp(getIncomingNotViewedVideos());
     }
     
@@ -255,31 +245,31 @@ public class Friend extends ActiveModel{
     //--------------------------------
     // Playable (DOWNLOADED || VIEWED)
     //--------------------------------
-    public ArrayList<Video> getIncomingPlayableVideos(){
-        ArrayList<Video> videos = getIncomingVideos();
-        Iterator<Video> i = videos.iterator();
+    public ArrayList<IncomingVideo> getIncomingPlayableVideos(){
+        ArrayList<IncomingVideo> incomingVideos = getIncomingVideos();
+        Iterator<IncomingVideo> i = incomingVideos.iterator();
         while (i.hasNext()){
-            Video v = i.next();
-            if(v.getIncomingVideoStatus() != Video.IncomingVideoStatus.DOWNLOADED && v.getIncomingVideoStatus() != Video.IncomingVideoStatus.VIEWED)
+            IncomingVideo v = i.next();
+            if(v.getVideoStatus() != IncomingVideo.Status.DOWNLOADED && v.getVideoStatus() != IncomingVideo.Status.VIEWED)
                 i.remove();
         }
-        return videos;
+        return incomingVideos;
     } 
 
     public boolean hasIncomingPlayableVideos() {
-        ArrayList<Video> videos = getIncomingVideos();
-        Iterator<Video> i = videos.iterator();
+        ArrayList<IncomingVideo> incomingVideos = getIncomingVideos();
+        Iterator<IncomingVideo> i = incomingVideos.iterator();
         while (i.hasNext()) {
-            Video v = i.next();
-            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED ||
-                    v.getIncomingVideoStatus() == Video.IncomingVideoStatus.VIEWED) {
+            IncomingVideo v = i.next();
+            if (v.getVideoStatus() == IncomingVideo.Status.DOWNLOADED ||
+                    v.getVideoStatus() == IncomingVideo.Status.VIEWED) {
                 return true;
             }
         }
         return false;
     }
 
-    public ArrayList<Video> getSortedIncomingPlayableVideos(){
+    public ArrayList<IncomingVideo> getSortedIncomingPlayableVideos(){
         Log.i(TAG, "getSortedIncomingPlayableVideos: " + sortVideosByTimeStamp(getIncomingPlayableVideos()));
         return sortVideosByTimeStamp(getIncomingPlayableVideos());
     }
@@ -296,9 +286,9 @@ public class Friend extends ActiveModel{
     //--------------------------------
     // Private helpers for above lists
     //--------------------------------
-    private String getNextVideoIdInList(String videoId, List<Video> videoList){
+    private String getNextVideoIdInList(String videoId, List<IncomingVideo> videoList){
         boolean found = false;
-        for (Video v : videoList){
+        for (IncomingVideo v : videoList){
             if (found) {
                 return v.getId();
             }
@@ -313,15 +303,15 @@ public class Friend extends ActiveModel{
         return null;
     }
     
-    private String getFirstVideoIdInList(List<Video> videoList){
+    private String getFirstVideoIdInList(List<IncomingVideo> videoList){
         if(videoList.size()==0)
             return null;
         else 
             return videoList.get(0).getId();
     }
     
-    private ArrayList<Video> sortVideosByTimeStamp(ArrayList<Video> videos){
-        Collections.sort(videos, new Video.VideoTimestampComparator());
+    private ArrayList<IncomingVideo> sortVideosByTimeStamp(ArrayList<IncomingVideo> videos){
+        Collections.sort(videos, new Video.VideoTimestampComparator<IncomingVideo>());
         return videos;
     }
 
@@ -382,9 +372,9 @@ public class Friend extends ActiveModel{
     }
 
     private void migrateLegacyThumbs() {
-        Iterator<Video> videos = getSortedIncomingVideos().iterator();
+        Iterator<IncomingVideo> videos = getSortedIncomingVideos().iterator();
         while (videos.hasNext()) {
-            Video video = videos.next();
+            IncomingVideo video = videos.next();
             File thumb = new File(buildPath(video.getId(), "thumb_from", MP4));
             if (thumb.exists()) {
                 thumb.renameTo(thumbFile());
@@ -394,9 +384,9 @@ public class Friend extends ActiveModel{
 
     public boolean incomingVideoNotViewed(){
         // Return true if any of the incoming videos are status DOWNLOADED
-        Iterator<Video> iterator = getIncomingVideos().iterator();
+        Iterator<IncomingVideo> iterator = getIncomingVideos().iterator();
         while (iterator.hasNext()) {
-            if (iterator.next().getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED){
+            if (iterator.next().getVideoStatus() == IncomingVideo.Status.DOWNLOADED){
                 return true;
             }
         }
@@ -406,9 +396,9 @@ public class Friend extends ActiveModel{
     public int incomingVideoNotViewedCount(){
         // Return true if any of the incoming videos are status DOWNLOADED
         int i = 0;
-        Iterator<Video> iterator = getIncomingVideos().iterator();
+        Iterator<IncomingVideo> iterator = getIncomingVideos().iterator();
         while (iterator.hasNext()) {
-            if (iterator.next().getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADED) {
+            if (iterator.next().getVideoStatus() == IncomingVideo.Status.DOWNLOADED) {
                 i++;
             }
         }
@@ -421,8 +411,8 @@ public class Friend extends ActiveModel{
             return;
         }
 
-        Video v = VideoFactory.getFactoryInstance().find(videoId);
-        v.setIncomingVideoStatus(Video.IncomingVideoStatus.VIEWED);
+        IncomingVideo v = IncomingVideoFactory.getFactoryInstance().find(videoId);
+        v.setVideoStatus(IncomingVideo.Status.VIEWED);
     }
 
     //-------------
@@ -464,19 +454,18 @@ public class Friend extends ActiveModel{
     // Video upload and download
     //--------------------------
 
-    public void uploadVideo(){
+    public void uploadVideo(String videoId) {
         Log.i(TAG, "uploadVideo. For friend=" + getUniqueName());
-
-        setAndNotifyOutgoingVideoStatus(OutgoingVideoStatus.QUEUED);
+        setAndNotifyOutgoingVideoStatus(videoId, OutgoingVideo.Status.QUEUED);
 
         Intent i = new Intent(getContext(), FileUploadService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
-        i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(getOutgoingVideoId()));
-        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, getOutgoingVideoId());
-        i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this));
+        i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(videoId));
+        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this, videoId));
         // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
-        params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
+        params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
         getContext().startService(i);
     }
@@ -484,7 +473,7 @@ public class Friend extends ActiveModel{
     public void downloadVideo(String videoId){
         Log.i(TAG, "downloadVideo. friend=" + getUniqueName() + " videoId=" + videoId);
 
-        setAndNotifyIncomingVideoStatus(videoId, Video.IncomingVideoStatus.QUEUED);
+        setAndNotifyIncomingVideoStatus(videoId, IncomingVideo.Status.QUEUED);
 
         Intent i = new Intent(getContext(), FileDownloadService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
@@ -511,6 +500,15 @@ public class Friend extends ActiveModel{
         getContext().startService(i);
     }
 
+    public void requestDownload(String videoId) {
+        Intent intent = new Intent(getContext(), IntentHandlerService.class);
+        intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+        intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingVideo.Status.NEW);
+        intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        intent.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, getId());
+
+        getContext().startService(intent);
+    }
 
     //=============
     // Video Status
@@ -530,50 +528,54 @@ public class Friend extends ActiveModel{
         return Integer.parseInt(get(Attributes.OUTGOING_VIDEO_STATUS));
     }
 
-    public void setAndNotifyOutgoingVideoStatus(int status){
-        if (getOutgoingVideoStatus() != status){
-            setOutgoingVideoStatus(status);
-            if (status == OutgoingVideoStatus.NEW)
-                setUploadRetryCount(0);
-            setLastEventTypeOutgoing();
-            FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+    public void setAndNotifyOutgoingVideoStatus(String videoId, int status) {
+        OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().find(videoId);
+        if (video != null && video.getVideoStatus() != status) {
+            video.setVideoStatus(status);
+            if (status == OutgoingVideo.Status.NEW) {
+                video.setRetryCount(0);
+            }
+            if (getOutgoingVideoId().equals(videoId)) {
+                setOutgoingVideoStatus(status);
+                setLastEventTypeOutgoing();
+                FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+            }
         }
     }
 
-    // Upload retryCount
-    private void setUploadRetryCount(int retryCount){
-        set(Attributes.UPLOAD_RETRY_COUNT, String.valueOf(retryCount));
+    private int getUploadRetryCount() {
+        OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().find(getOutgoingVideoId());
+        return (video != null) ? video.getRetryCount() : 0;
     }
 
-    private int getUploadRetryCount(){
-        return Integer.parseInt(get(Attributes.UPLOAD_RETRY_COUNT));
-    }
-
-    public void setAndNotifyUploadRetryCount(int retryCount){
-        if (getUploadRetryCount() != retryCount){
-            setUploadRetryCount(retryCount);
-            setLastEventTypeOutgoing();
-            FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+    public void setAndNotifyUploadRetryCount(String videoId, int retryCount) {
+        OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().find(videoId);
+        if (video != null && video.getRetryCount() != retryCount) {
+            video.setRetryCount(retryCount);
+            if (getOutgoingVideoId().equals(videoId)) {
+                setLastEventTypeOutgoing();
+                FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+            }
         }
     }
 
     // Incoming video status
     public void setAndNotifyIncomingVideoStatus(String videoId, int status){
-        Video v = VideoFactory.getFactoryInstance().find(videoId);
+        IncomingVideo v = IncomingVideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
             Dispatch.dispatch(TAG + " setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
             return;
         }
 
-        if (v.getIncomingVideoStatus() != status){
-            v.setIncomingVideoStatus(status);
-            if (status == Video.IncomingVideoStatus.VIEWED)
+        if (v.getVideoStatus() != status){
+            v.setVideoStatus(status);
+            if (status == IncomingVideo.Status.VIEWED)
                 notifyServerVideoViewed(videoId);
 
             // Only notify the UI of changes in status to the last incoming video.
             if (newestIncomingVideo().getId().equals(videoId)){
                 // We want to preserve previous status if last event type is incoming and status is VIEWED
-                if (status != Video.IncomingVideoStatus.VIEWED) {
+                if (status != IncomingVideo.Status.VIEWED) {
                     setLastEventTypeIncoming();
                 }
                 FriendFactory.getFactoryInstance().notifyStatusChanged(this);
@@ -582,23 +584,23 @@ public class Friend extends ActiveModel{
     }
 
     // Download retryCount
-    //	private void setDownloadRetryCount(int retryCount){
-    //		set(Attributes.DOWNLOAD_RETRY_COUNT, ((Integer) retryCount).toString());
+    //	private void setRetryCount(int retryCount){
+    //		set(Attributes.RETRY_COUNT, ((Integer) retryCount).toString());
     //	}
     //
-    //	private int getDownloadRetryCount(){
-    //		return Integer.parseInt(get(Attributes.DOWNLOAD_RETRY_COUNT));
+    //	private int getRetryCount(){
+    //		return Integer.parseInt(get(Attributes.RETRY_COUNT));
     //	}
 
     public void setAndNotifyDownloadRetryCount(String videoId, int retryCount){
-        Video v = VideoFactory.getFactoryInstance().find(videoId);
+        IncomingVideo v = IncomingVideoFactory.getFactoryInstance().find(videoId);
         if (v == null){
             Dispatch.dispatch(TAG + " setAndNotifyIncomingVideoStatus: ERROR: incoming video doesnt exist");
             return;
         }
 
-        if (v.getDownloadRetryCount() != retryCount){
-            v.setDownloadRetryCount(retryCount);
+        if (v.getRetryCount() != retryCount){
+            v.setRetryCount(retryCount);
 
             // Only notify the UI of changes in retry count of the last incoming video.
             if (newestIncomingVideo().getId().equals(videoId)){
@@ -623,26 +625,26 @@ public class Friend extends ActiveModel{
 
 
     public int getIncomingVideoStatus(){
-        Video v = newestIncomingVideo();
+        IncomingVideo v = newestIncomingVideo();
         if (v == null)
             return -1;
-        return v.getIncomingVideoStatus();
+        return v.getVideoStatus();
     }
     
     public boolean hasDownloadingVideo(){
-        Iterator<Video> iterator = getIncomingVideos().iterator();
+        Iterator<IncomingVideo> iterator = getIncomingVideos().iterator();
         while (iterator.hasNext()) {
-            if (iterator.next().getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING)
+            if (iterator.next().getVideoStatus() == IncomingVideo.Status.DOWNLOADING)
                 return true;
         }
         return false;
     }
     
     public boolean hasRetryingDownload(){
-        Iterator<Video> iterator = getIncomingVideos().iterator();
+        Iterator<IncomingVideo> iterator = getIncomingVideos().iterator();
         while (iterator.hasNext()) {
-            Video v = iterator.next();
-            if (v.getIncomingVideoStatus() == Video.IncomingVideoStatus.DOWNLOADING && v.getDownloadRetryCount() > 0)
+            IncomingVideo v = iterator.next();
+            if (v.getVideoStatus() == IncomingVideo.Status.DOWNLOADING && v.getRetryCount() > 0)
                 return true;
         }
         return false;
@@ -677,52 +679,52 @@ public class Friend extends ActiveModel{
         String sfn = shortFirstName();
 
         switch (status){
-            case OutgoingVideoStatus.NEW:
+            case OutgoingVideo.Status.NEW:
                 return sfn + " n...";
-            case OutgoingVideoStatus.QUEUED:
+            case OutgoingVideo.Status.QUEUED:
                 return sfn + " q...";
-            case OutgoingVideoStatus.UPLOADING:
+            case OutgoingVideo.Status.UPLOADING:
                 if (count > 0){
                     return sfn + " r" + count + "...";
                 } else {
                     return sfn + " u...";
                 }
-            case OutgoingVideoStatus.UPLOADED:
+            case OutgoingVideo.Status.UPLOADED:
                 return sfn + " .s..";
-            case OutgoingVideoStatus.DOWNLOADED:
+            case OutgoingVideo.Status.DOWNLOADED:
                 return sfn + " ..p.";
-            case OutgoingVideoStatus.VIEWED:
+            case OutgoingVideo.Status.VIEWED:
                 return sfn + " v!";
-            case OutgoingVideoStatus.FAILED_PERMANENTLY:
+            case OutgoingVideo.Status.FAILED_PERMANENTLY:
                 return sfn + " e!";
         }
         return getUniqueName();
     }
 
     private String incomingStatusStr() {
-        Video v = newestIncomingVideo();
+        IncomingVideo v = newestIncomingVideo();
         if (v == null)
             return getUniqueName();
 
-        int status = v.getIncomingVideoStatus();
-        int count = v.getDownloadRetryCount();
+        int status = v.getVideoStatus();
+        int count = v.getRetryCount();
 
         switch (status){
-            case Video.IncomingVideoStatus.NEW:
+            case IncomingVideo.Status.NEW:
                 return "Dwnld new";
-            case Video.IncomingVideoStatus.QUEUED:
+            case IncomingVideo.Status.QUEUED:
                 return "Dwnld q";
-            case Video.IncomingVideoStatus.DOWNLOADING:
+            case IncomingVideo.Status.DOWNLOADING:
                 if (count > 0){
                     return "Dwnld r" + count;
                 } else {
                     return "Dwnld...";
                 }
-            case Video.IncomingVideoStatus.DOWNLOADED:
+            case IncomingVideo.Status.DOWNLOADED:
                 return getUniqueName();
-            case Video.IncomingVideoStatus.VIEWED:
+            case IncomingVideo.Status.VIEWED:
                 return getUniqueName();
-            case Video.IncomingVideoStatus.FAILED_PERMANENTLY:
+            case IncomingVideo.Status.FAILED_PERMANENTLY:
                 return "Dwnld e!";
         }
         return getUniqueName();

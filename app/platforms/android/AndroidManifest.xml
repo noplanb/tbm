@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zazoapp.client"
-    android:versionCode="71"
-    android:versionName="2.4.11" > <!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
+    android:versionCode="72"
+    android:versionName="2.5.0" > <!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -22,6 +22,7 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_LOGS"/>
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <permission
         android:name="com.zazoapp.client.permission.C2D_MESSAGE"
@@ -41,7 +42,7 @@
         android:logo="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" 
-        android:name=".TbmApplication">
+        android:name=".core.TbmApplication">
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -85,7 +86,7 @@
 
         <service android:name=".notification.gcm.GcmIntentService" />
 
-        <service android:name=".DispatcherService"/>
+        <service android:name=".core.IntentHandlerService"/>
 
         <service
             android:name=".network.FileUploadService" />
@@ -99,6 +100,11 @@
             android:name=".network.FileDeleteService" />
             <!-- android:process=":FileTransferService" -->
 
+        <receiver android:name=".core.BootCompleteReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
         <!-- For tests -->
         <!--<activity android:name=".tests.TestActivity" android:screenOrientation="portrait" android:launchMode="singleTask"/>-->
         <!--<service android:name=".tests.FileDownloadServiceTest"/>-->

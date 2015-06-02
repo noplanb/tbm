@@ -12,7 +12,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-import com.zazoapp.client.ContactsManager;
+import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
@@ -79,7 +79,7 @@ public class BenchDataHandler {
 	//-------------------------------------------------
 	public void getRankedPhoneData(){
         if(!isRequestRunning)
-            AsyncTaskManager.executeAsyncTask(new GetRankedPhoneDataAsync(), new Void[]{});
+            AsyncTaskManager.executeAsyncTask(false, new GetRankedPhoneDataAsync(), new Void[]{});
 	}
 
     private class GetRankedPhoneDataAsync extends AsyncTask<Void, Void, Void>{

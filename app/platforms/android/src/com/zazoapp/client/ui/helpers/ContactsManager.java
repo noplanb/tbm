@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.ui.helpers;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -29,6 +29,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.UserFactory;
@@ -66,7 +67,7 @@ public class ContactsManager implements OnItemClickListener {
 	// AutocompleteContactsView
 	// -------------------------
 	public void setupAutoComplete(AutoCompleteTextView view) {
-		AsyncTaskManager.executeAsyncTask(new SetupAutoCompleteAsync(view), new Void[] {});
+		AsyncTaskManager.executeAsyncTask(false, new SetupAutoCompleteAsync(view), new Void[] {});
 	}
 
 	public class SetupAutoCompleteAsync extends AsyncTask<Void, Void, List<String>> {

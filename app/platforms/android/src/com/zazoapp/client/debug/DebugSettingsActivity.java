@@ -18,8 +18,8 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import com.google.i18n.phonenumbers.Phonenumber;
-import com.zazoapp.client.GridManager;
-import com.zazoapp.client.PreferencesHelper;
+import com.zazoapp.client.model.GridManager;
+import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
@@ -27,7 +27,7 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
-import com.zazoapp.client.model.VideoFactory;
+import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.tutorial.HintType;
 import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.utilities.DialogShower;
@@ -234,7 +234,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                         if (input != null) {
                             Context context = DebugSettingsActivity.this;
                             FriendFactory.getFactoryInstance().destroyAll(context);
-                            VideoFactory.getFactoryInstance().destroyAll(context);
+                            IncomingVideoFactory.getFactoryInstance().destroyAll(context);
                             GridElementFactory.getFactoryInstance().destroyAll(context);
                             ActiveModelsHandler.getInstance(context).ensureAll();
                             GridManager.getInstance().initGrid(context);

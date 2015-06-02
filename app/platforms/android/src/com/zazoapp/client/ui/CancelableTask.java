@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.ui;
 
 /**
  * Created by skamenkovych@codeminders.com on 5/5/2015.

@@ -1,4 +1,4 @@
-package com.zazoapp.client;
+package com.zazoapp.client.core;
 
 import android.util.Log;
 import com.google.gson.Gson;
@@ -121,8 +121,8 @@ public class RemoteStorageHandler {
 	//------------------------
 	// Keys for remote storage
 	//------------------------
-	public static String outgoingVideoRemoteFilename(Friend friend) {
-		return buildOutgoingVideoFilenameKey(friend, friend.getOutgoingVideoId());
+	public static String outgoingVideoRemoteFilename(Friend friend, String videoId) {
+		return buildOutgoingVideoFilenameKey(friend, videoId);
 	}
 
 	public static String incomingVideoRemoteFilename(Friend friend, String videoId) {

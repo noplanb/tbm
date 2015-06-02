@@ -3,9 +3,10 @@ package com.zazoapp.client.ui.helpers;
 import android.content.Context;
 import android.util.Log;
 import android.view.ViewGroup;
-import com.zazoapp.client.GridManager;
+import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.R;
-import com.zazoapp.client.ZazoManagerProvider;
+import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.GridElement;
@@ -60,8 +61,8 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         if (videoRecorder.stopRecording()) {
             Friend f = videoRecorder.getCurrentFriend();
             Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
-            f.setAndNotifyOutgoingVideoStatus(Friend.OutgoingVideoStatus.NEW);
-            f.uploadVideo();
+            f.setAndNotifyOutgoingVideoStatus(f.getOutgoingVideoId(), OutgoingVideo.Status.NEW);
+            f.uploadVideo(f.getOutgoingVideoId());
         }
     }
 

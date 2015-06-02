@@ -4,8 +4,8 @@ import android.content.Context;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.Video;
-import com.zazoapp.client.model.VideoFactory;
+import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.model.IncomingVideoFactory;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -21,7 +21,7 @@ public class UserInfoCollector {
     public static String collect(Context context) {
         StringBuilder info = new StringBuilder();
         ArrayList<Friend> friends = FriendFactory.getFactoryInstance().all();
-        ArrayList<Video> videos = VideoFactory.getFactoryInstance().all();
+        ArrayList<IncomingVideo> incomingVideos = IncomingVideoFactory.getFactoryInstance().all();
         if (friends.size() > 0) {
             addRow(info, "Friends");
             addRow(info, "Name", "ID", "Has app", "IV !v count", "OV ID", "OV status", "Last event", "Has thumb", "Downloading");
@@ -42,17 +42,17 @@ public class UserInfoCollector {
             addRow(info, list.toArray(new String[list.size()]));
         }
         info.append("\n");
-        if (videos.size() > 0) {
+        if (incomingVideos.size() > 0) {
             addRow(info, "Videos");
             addRow(info, "ID", "IV status", "Exists", "Size");
         }
         for (Friend friend : friends) {
-            videos = friend.getIncomingVideos();
+            incomingVideos = friend.getIncomingVideos();
             addRow(info, friend.getFullName());
-            for (Video video : videos) {
+            for (IncomingVideo video : incomingVideos) {
                 List<String> list = new ArrayList<>();
                 list.add(video.getId());
-                list.add(String.valueOf(video.getIncomingVideoStatus()));
+                list.add(String.valueOf(video.getVideoStatus()));
                 File file = friend.videoFromFile(video.getId());
                 list.add(String.valueOf(file.exists()));
                 list.add(file.exists() ? String.valueOf(file.length()) : "");

@@ -4,10 +4,10 @@ import android.content.Context;
 import android.graphics.RectF;
 import android.view.View;
 import android.view.ViewParent;
-import com.zazoapp.client.PreferencesHelper;
+import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.VideoFactory;
+import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.ui.view.NineViewGroup;
 
 /**
@@ -28,7 +28,7 @@ public enum HintType {
     INVITE_2(R.string.tutorial_hint_invite_2) {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            boolean allViewed = VideoFactory.getFactoryInstance().allNotViewedCount() == 0;
+            boolean allViewed = IncomingVideoFactory.getFactoryInstance().allNotViewedCount() == 0;
             boolean playHintShowed = !prefs.getBoolean(HintType.PLAY.getPrefName(), true);
             boolean recordHintShowed = !prefs.getBoolean(HintType.RECORD.getPrefName(), true);
             boolean sentHintShowed = !prefs.getBoolean(HintType.SENT.getPrefName(), true);
@@ -56,7 +56,7 @@ public enum HintType {
     PLAY(R.string.tutorial_hint_play) {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            int unviewedCount = VideoFactory.getFactoryInstance().allNotViewedCount();
+            int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
             return hasOneFriend() && unviewedCount > 0 && prefs.getBoolean(getPrefName(), true) && current == null;
         }
 
@@ -70,7 +70,7 @@ public enum HintType {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
             boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
-            int unviewedCount = VideoFactory.getFactoryInstance().allNotViewedCount();
+            int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
             return hasOneFriend() && unviewedCount == 0 && firstInSession && current != HintType.PLAY && prefs.getBoolean(getPrefName(), true);
         }
 
