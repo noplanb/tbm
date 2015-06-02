@@ -17,10 +17,11 @@ import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.OutgoingVideo;
-import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.model.OutgoingVideoFactory;
+import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.Video;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.notification.NotificationAlertManager;
@@ -146,6 +147,17 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     break;
             }
         }
+        ArrayList<OutgoingVideo> outgoingVideos = OutgoingVideoFactory.getFactoryInstance().all();
+        for (OutgoingVideo video : outgoingVideos) {
+            switch (video.getVideoStatus()) {
+                case OutgoingVideo.Status.NEW:
+                    Friend friend = friendFactory.find(video.get(Video.Attributes.FRIEND_ID));
+                    if (friend != null) {
+                        friend.uploadVideo(video.getId());
+                    }
+                    break;
+            }
+        }
     }
 
     public static void onApplicationStart() {
@@ -155,6 +167,16 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 case IncomingVideo.Status.QUEUED:
                 case IncomingVideo.Status.DOWNLOADING:
                     video.setVideoStatus(IncomingVideo.Status.NEW);
+                    video.setRetryCount(0);
+                    break;
+            }
+        }
+        ArrayList<OutgoingVideo> outgoingVideos = OutgoingVideoFactory.getFactoryInstance().all();
+        for (OutgoingVideo video : outgoingVideos) {
+            switch (video.getVideoStatus()) {
+                case OutgoingVideo.Status.QUEUED:
+                case OutgoingVideo.Status.UPLOADING:
+                    video.setVideoStatus(OutgoingVideo.Status.NEW);
                     video.setRetryCount(0);
                     break;
             }
@@ -326,10 +348,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 friend.setAndNotifyIncomingVideoStatus(videoId, status);
                 friend.setAndNotifyDownloadRetryCount(videoId, retryCount);
             } else if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD)) {
-                if (videoId.equals(friend.getOutgoingVideoId())) {
-                    friend.setAndNotifyOutgoingVideoStatus(status);
-                    friend.setAndNotifyUploadRetryCount(retryCount);
-                }
+                friend.setAndNotifyOutgoingVideoStatus(videoId, status);
+                friend.setAndNotifyUploadRetryCount(videoId, retryCount);
             } else {
                 Dispatch.dispatch("ERROR: updateStatus: unknown TransferType passed in intent. This should never happen.");
                 throw new RuntimeException();

@@ -1,6 +1,7 @@
 package com.zazoapp.client.model;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
@@ -14,7 +15,7 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     private UserFactory userFactory;
     private FriendFactory friendFactory;
     private IncomingVideoFactory incomingVideoFactory;
-    private OutgoingVideoFactory outgoingVideoFactory; // TODO
+    private OutgoingVideoFactory outgoingVideoFactory;
     private GridElementFactory gridElementFactory;
 
     private Context context;
@@ -47,10 +48,13 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         friendFactory = FriendFactory.getFactoryInstance();
         incomingVideoFactory = IncomingVideoFactory.getFactoryInstance();
         gridElementFactory = GridElementFactory.getFactoryInstance();
+        outgoingVideoFactory = OutgoingVideoFactory.getFactoryInstance();
         ensureUser();
         ensure(friendFactory);
         ensure(incomingVideoFactory);
         ensure(gridElementFactory);
+        ensure(outgoingVideoFactory);
+        migrateOldOutgoingVideoModel();
         new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
         Log.d(TAG, "ensureAll end");
     }
@@ -60,6 +64,7 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         save(friendFactory);
         save(incomingVideoFactory);
         save(gridElementFactory);
+        save(outgoingVideoFactory);
         new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
         Log.i(TAG, "saveAll end");
     }
@@ -70,6 +75,7 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         retrieve(IncomingVideoFactory.getFactoryInstance());
         Log.i(TAG, "retrieveAll: retrieved " + IncomingVideoFactory.getFactoryInstance().count() + "videos");
         retrieve(GridElementFactory.getFactoryInstance());
+        retrieve(OutgoingVideoFactory.getFactoryInstance());
     }
 
     public void destroyAll() {
@@ -77,6 +83,7 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         friendFactory.destroyAll(context);
         incomingVideoFactory.destroyAll(context);
         gridElementFactory.destroyAll(context);
+        outgoingVideoFactory.destroyAll(context);
     }
 
     public UserFactory ensureUser() {
@@ -120,5 +127,22 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     @Override
     public void onTerminate() {
         saveAll();
+    }
+
+    private void migrateOldOutgoingVideoModel() {
+        if (friendFactory.getModelVersion() < 72) {
+            for (Friend friend : friendFactory.all()) {
+                String id = friend.getOutgoingVideoId();
+                if (!TextUtils.isEmpty(id)) {
+                    int status = friend.getOutgoingVideoStatus();
+                    OutgoingVideo video = outgoingVideoFactory.makeInstance(context);
+                    video.setVideoStatus(status);
+                    video.set(Video.Attributes.ID, id);
+                    video.set(Video.Attributes.FRIEND_ID, friend.getId());
+                }
+            }
+            friendFactory.save(context);
+            outgoingVideoFactory.save(context);
+        }
     }
 }

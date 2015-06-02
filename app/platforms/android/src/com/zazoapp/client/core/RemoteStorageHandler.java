@@ -121,8 +121,8 @@ public class RemoteStorageHandler {
 	//------------------------
 	// Keys for remote storage
 	//------------------------
-	public static String outgoingVideoRemoteFilename(Friend friend) {
-		return buildOutgoingVideoFilenameKey(friend, friend.getOutgoingVideoId());
+	public static String outgoingVideoRemoteFilename(Friend friend, String videoId) {
+		return buildOutgoingVideoFilenameKey(friend, videoId);
 	}
 
 	public static String incomingVideoRemoteFilename(Friend friend, String videoId) {

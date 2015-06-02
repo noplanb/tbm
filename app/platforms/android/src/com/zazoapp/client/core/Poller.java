@@ -71,9 +71,9 @@ public class Poller {
                 }
 
                 if(status.equals(RemoteStorageHandler.StatusEnum.DOWNLOADED))
-                    getFriend().setAndNotifyOutgoingVideoStatus(OutgoingVideo.Status.DOWNLOADED);
+                    getFriend().setAndNotifyOutgoingVideoStatus(videoId, OutgoingVideo.Status.DOWNLOADED);
                 else if(status.equals(RemoteStorageHandler.StatusEnum.VIEWED))
-                    getFriend().setAndNotifyOutgoingVideoStatus(OutgoingVideo.Status.VIEWED);
+                    getFriend().setAndNotifyOutgoingVideoStatus(videoId, OutgoingVideo.Status.VIEWED);
             }
         }
 

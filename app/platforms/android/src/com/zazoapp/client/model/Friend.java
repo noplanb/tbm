@@ -83,7 +83,6 @@ public class Friend extends ActiveModel{
         super.init(context);
         setOutgoingVideoStatus(OutgoingVideo.Status.NONE);
         set(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE, VideoStatusEventType.INCOMING.toString());
-        setUploadRetryCount(0);
     }
 
     public String getLastActionTime() {
@@ -109,12 +108,15 @@ public class Friend extends ActiveModel{
     //------------------------------
     // Attribute Getters and Setters
     //------------------------------
-    public String getOutgoingVideoId(){
-        return  get(Friend.Attributes.OUTGOING_VIDEO_ID);
+    public String getOutgoingVideoId() {
+        return get(Friend.Attributes.OUTGOING_VIDEO_ID);
     }
-    
-    public void setOutGoingVideoId(String videoId){
+
+    public void setNewOutgoingVideoId(String videoId) {
         set(Attributes.OUTGOING_VIDEO_ID, videoId);
+        OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().makeInstance(getContext());
+        video.set(OutgoingVideo.Attributes.ID, videoId);
+        video.set(OutgoingVideo.Attributes.FRIEND_ID, getId());
     }
 
     //------------
@@ -451,19 +453,19 @@ public class Friend extends ActiveModel{
     // Video upload and download
     //--------------------------
 
-    public void uploadVideo(){
+    public void uploadVideo(String videoId) {
         Log.i(TAG, "uploadVideo. For friend=" + getUniqueName());
 
-        setAndNotifyOutgoingVideoStatus(OutgoingVideo.Status.QUEUED);
+        setAndNotifyOutgoingVideoStatus(videoId, OutgoingVideo.Status.QUEUED);
 
         Intent i = new Intent(getContext(), FileUploadService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
-        i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(getOutgoingVideoId()));
-        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, getOutgoingVideoId());
-        i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this));
+        i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(videoId));
+        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this, videoId));
         // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
-        params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this));
+        params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
         getContext().startService(i);
     }
@@ -526,30 +528,34 @@ public class Friend extends ActiveModel{
         return Integer.parseInt(get(Attributes.OUTGOING_VIDEO_STATUS));
     }
 
-    public void setAndNotifyOutgoingVideoStatus(int status){
-        if (getOutgoingVideoStatus() != status){
-            setOutgoingVideoStatus(status);
-            if (status == OutgoingVideo.Status.NEW)
-                setUploadRetryCount(0);
-            setLastEventTypeOutgoing();
-            FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+    public void setAndNotifyOutgoingVideoStatus(String videoId, int status) {
+        OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().find(videoId);
+        if (video != null && video.getVideoStatus() != status) {
+            video.setVideoStatus(status);
+            if (status == OutgoingVideo.Status.NEW) {
+                video.setRetryCount(0);
+            }
+            if (getOutgoingVideoId().equals(videoId)) {
+                setOutgoingVideoStatus(status);
+                setLastEventTypeOutgoing();
+                FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+            }
         }
     }
 
-    // Upload retryCount
-    private void setUploadRetryCount(int retryCount){
-        set(Attributes.UPLOAD_RETRY_COUNT, String.valueOf(retryCount));
+    private int getUploadRetryCount() {
+        OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().find(getOutgoingVideoId());
+        return (video != null) ? video.getRetryCount() : 0;
     }
 
-    private int getUploadRetryCount(){
-        return Integer.parseInt(get(Attributes.UPLOAD_RETRY_COUNT));
-    }
-
-    public void setAndNotifyUploadRetryCount(int retryCount){
-        if (getUploadRetryCount() != retryCount){
-            setUploadRetryCount(retryCount);
-            setLastEventTypeOutgoing();
-            FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+    public void setAndNotifyUploadRetryCount(String videoId, int retryCount) {
+        OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().find(videoId);
+        if (video != null && video.getRetryCount() != retryCount) {
+            video.setRetryCount(retryCount);
+            if (getOutgoingVideoId().equals(videoId)) {
+                setLastEventTypeOutgoing();
+                FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+            }
         }
     }
 

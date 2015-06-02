@@ -272,7 +272,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             @Override
             public void run() {
                 switch (status) {
-                    case OutgoingVideoStatus.QUEUED:
+                    case OutgoingVideo.Status.QUEUED:
                         updateContent(true);
                         managerProvider.getTutorial().onVideoRecorded();
                         gridElementView.animateUploading(new Runnable() {
@@ -287,7 +287,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             }
                         });
                         break;
-                    case OutgoingVideoStatus.VIEWED:
+                    case OutgoingVideo.Status.VIEWED:
                         gridElementView.showUploadingMark(false);
                         updateContent(gridElementView.isAnimating());
                         break;

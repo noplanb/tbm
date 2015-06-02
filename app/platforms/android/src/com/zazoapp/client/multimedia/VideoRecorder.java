@@ -188,7 +188,7 @@ public class VideoRecorder implements SurfaceTextureListener {
         File ed = friend.videoToFile(videoId);
         File ing = Config.recordingFile(context);
         ing.renameTo(ed);
-        friend.setOutGoingVideoId(videoId);
+        friend.setNewOutgoingVideoId(videoId);
     }
 
     // ---------------------------------
