@@ -23,4 +23,14 @@ public class OutgoingVideoFactory extends ActiveModelFactory<OutgoingVideo>  {
     public ArrayList<OutgoingVideo> allWithFriendId(String friendId) {
         return allWhere(Video.Attributes.FRIEND_ID, friendId);
     }
+
+    public void deleteAllSent(String friendId) {
+        ArrayList<OutgoingVideo> videos = allWithFriendId(friendId);
+        for (OutgoingVideo video : videos) {
+            if (video.isSent() || video.getVideoStatus() == OutgoingVideo.Status.FAILED_PERMANENTLY) {
+                delete(video.getId());
+            }
+        }
+    }
+
 }

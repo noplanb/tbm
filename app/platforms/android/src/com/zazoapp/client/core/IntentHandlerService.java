@@ -153,7 +153,12 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 case OutgoingVideo.Status.NEW:
                     Friend friend = friendFactory.find(video.get(Video.Attributes.FRIEND_ID));
                     if (friend != null) {
-                        friend.uploadVideo(video.getId());
+                        String videoId = video.getId();
+                        if (friend.videoToFile(videoId).exists()) {
+                            friend.uploadVideo(videoId);
+                        } else {
+                            friend.setAndNotifyOutgoingVideoStatus(videoId, OutgoingVideo.Status.UPLOADED);
+                        }
                     }
                     break;
             }

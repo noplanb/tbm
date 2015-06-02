@@ -26,4 +26,9 @@ public class OutgoingVideo extends Video {
         setVideoStatus(Status.NONE);
         setRetryCount(0);
     }
+
+    public boolean isSent() {
+        int status = getVideoStatus();
+        return status == Status.UPLOADED || status == Status.DOWNLOADED || status == Status.VIEWED;
+    }
 }

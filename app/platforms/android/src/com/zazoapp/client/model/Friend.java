@@ -117,6 +117,7 @@ public class Friend extends ActiveModel{
         OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().makeInstance(getContext());
         video.set(OutgoingVideo.Attributes.ID, videoId);
         video.set(OutgoingVideo.Attributes.FRIEND_ID, getId());
+        OutgoingVideoFactory.getFactoryInstance().deleteAllSent(getId());
     }
 
     //------------
@@ -455,7 +456,6 @@ public class Friend extends ActiveModel{
 
     public void uploadVideo(String videoId) {
         Log.i(TAG, "uploadVideo. For friend=" + getUniqueName());
-
         setAndNotifyOutgoingVideoStatus(videoId, OutgoingVideo.Status.QUEUED);
 
         Intent i = new Intent(getContext(), FileUploadService.class);
