@@ -5,17 +5,9 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
-import com.zazoapp.client.core.TbmApplication;
-import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.utilities.Convenience;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,7 +15,6 @@ import java.util.Set;
 
 public abstract class ActiveModelFactory<T extends ActiveModel> {
     private static final String TAG = ActiveModelFactory.class.getSimpleName();
-    private static final String ATTR_VERSION = "model_version";
 
     protected ArrayList<T> instances = new ArrayList<>();
 
@@ -31,8 +22,6 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
 
     private Set<ModelChangeCallback> callbacks = new HashSet<>();
     private boolean notifyCallbacks = true;
-
-    private LinkedTreeMap<String, String> modelData = new LinkedTreeMap<>();
 
     //--------------------
     // Factory
@@ -68,56 +57,19 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
             return "";
 
         ArrayList<LinkedTreeMap<String, String>> all = new ArrayList<>();
-
-        // save model version
-        LinkedTreeMap<String, String> version = new LinkedTreeMap<>();
-        version.put(ATTR_VERSION, TbmApplication.getVersionNumber());
-        all.add(version);
-
         for (T i : instances) {
             all.add(i.attributes);
         }
         Gson g = new Gson();
         String j = g.toJson(all);
-        try {
-            File f = new File(getSaveFilePath(context));
-            if (f.exists())
-                f.delete();
-            FileOutputStream fos = new FileOutputStream(f, true);
-            OutputStreamWriter osw = new OutputStreamWriter(fos);
-            osw.write(j);
-            osw.close();
-            fos.close();
-        } catch (IOException e) {
-            Dispatch.dispatch("ERROR: This should never happen." + e.getMessage() + e.toString());
-            throw new RuntimeException();
-        }
-        modelData.put(ATTR_VERSION, TbmApplication.getVersionNumber());
+        Convenience.saveJsonToFile(j, getSaveFilePath(context));
         return j;
     }
 
     public synchronized boolean retrieve(Context context) {
         instances.clear();
-        String json = null;
-        try {
-            File f = new File(getSaveFilePath(context));
-            FileInputStream fis = new FileInputStream(f);
-            InputStreamReader isr = new InputStreamReader(fis);
-            BufferedReader br = new BufferedReader(isr);
-            String s = "";
-            StringBuilder sb = new StringBuilder();
-            while ((s = br.readLine()) != null) {
-                sb.append(s);
-            }
-            json = sb.toString();
-            br.close();
-            isr.close();
-            fis.close();
-        } catch (FileNotFoundException e) {
-            Log.i(TAG, e.getMessage() + e.toString());
-            return false;
-        } catch (IOException e) {
-            Dispatch.dispatch(e.getMessage() + e.toString());
+        String json = Convenience.getJsonFromFile(getSaveFilePath(context));
+        if (json == null) {
             return false;
         }
         Log.i(TAG, "retrieve(): retrieved from file.");
@@ -134,18 +86,18 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
         }
 
         notifyCallbacks = false;
-        for (LinkedTreeMap<String, String> ats : all) {
-            if (ats.containsKey(ATTR_VERSION)) {
-                modelData.put(ATTR_VERSION, ats.get(ATTR_VERSION));
-            } else {
-                T i = makeInstance(context);
-                i.attributes.clear();
-                i.attributes.putAll(ats);
-            }
-        }
+        replaceAttributes(context, all);
         notifyCallbacks = true;
         notifyCallbacks();
         return true;
+    }
+
+    protected void replaceAttributes(Context context, ArrayList<LinkedTreeMap<String, String>> all) {
+        for (LinkedTreeMap<String, String> ats : all) {
+            T i = makeInstance(context);
+            i.attributes.clear();
+            i.attributes.putAll(ats);
+        }
     }
 
     public String getSaveFilePath(Context context) {
@@ -233,11 +185,6 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
                 callback.onModelChanged(this);
             }
         }
-    }
-
-    public int getModelVersion() {
-        String version = modelData.get(ATTR_VERSION);
-        return (version == null) ? 1 : Integer.parseInt(version);
     }
 
     public interface ModelChangeCallback {

@@ -22,13 +22,16 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import org.apache.commons.io.FileUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.Locale;
 
@@ -272,5 +275,47 @@ public class Convenience {
             }
         }
         return false;
+    }
+
+    public static void saveJsonToFile(String json, String path) {
+        try {
+            File f = new File(path);
+            if (f.exists())
+                f.delete();
+            FileOutputStream fos = new FileOutputStream(f, true);
+            OutputStreamWriter osw = new OutputStreamWriter(fos);
+            osw.write(json);
+            osw.close();
+            fos.close();
+        } catch (IOException e) {
+            Dispatch.dispatch("ERROR: This should never happen." + e.getMessage() + e.toString());
+            throw new RuntimeException();
+        }
+    }
+
+    public static String getJsonFromFile(String path) {
+        String json;
+        try {
+            File f = new File(path);
+            FileInputStream fis = new FileInputStream(f);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+            String s = "";
+            StringBuilder sb = new StringBuilder();
+            while ((s = br.readLine()) != null) {
+                sb.append(s);
+            }
+            json = sb.toString();
+            br.close();
+            isr.close();
+            fis.close();
+        } catch (FileNotFoundException e) {
+            Log.i(TAG, e.getMessage() + e.toString());
+            return null;
+        } catch (IOException e) {
+            Dispatch.dispatch(e.getMessage() + e.toString());
+            return null;
+        }
+        return json;
     }
 }

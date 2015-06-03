@@ -6,8 +6,12 @@ import android.content.DialogInterface;
 import android.content.res.AssetManager;
 import android.os.Environment;
 import android.text.InputType;
+import android.util.Pair;
 import android.widget.EditText;
+import com.google.gson.Gson;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -17,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 
 /**
  * Created by skamenkovych@codeminders.com on 3/24/2015.
@@ -40,13 +45,38 @@ public final class DebugUtils {
 
     public static void makeBackup(Context context) {
         copy(Config.homeDirPath(context), backupFolder());
+        PreferencesHelper p = new PreferencesHelper(context, DebugConfig.DEBUG_SETTINGS);
+        Preferences preferences = new Preferences();
+        preferences.prefs = p.getAll();
+        Gson gson = new Gson();
+        String json = gson.toJson(preferences);
+        Convenience.saveJsonToFile(json, backupFolder() + File.separator + DebugConfig.DEBUG_SETTINGS + ".json");
+        p = new PreferencesHelper(context);
+        int version = p.getInt(ActiveModelsHandler.MODEL_VERSION_PREF, 1);
+        preferences.prefs.clear();
+        preferences.prefs.put(ActiveModelsHandler.MODEL_VERSION_PREF, Pair.create(Integer.class.getSimpleName(), String.valueOf(version)));
+        json = gson.toJson(preferences);
+        Convenience.saveJsonToFile(json, backupFolder() + File.separator + "zazo_preferences.json");
         DialogShower.showToast(context, "Saved");
-        // TODO add storing settings
     }
 
     public static void restoreBackup(Context context) {
         copy(backupFolder(), Config.homeDirPath(context));
-        // TODO add restoring settings
+        String json = Convenience.getJsonFromFile(backupFolder() + File.separator + DebugConfig.DEBUG_SETTINGS + ".json");
+        if (json != null) {
+            Gson gson = new Gson();
+            Preferences preferences = gson.fromJson(json, Preferences.class);
+            PreferencesHelper p = new PreferencesHelper(context, DebugConfig.DEBUG_SETTINGS);
+            p.putAll(preferences.prefs);
+            DebugConfig.getInstance(context).reloadPrefs();
+        }
+        json = Convenience.getJsonFromFile(backupFolder() + File.separator + "zazo_preferences.json");
+        if (json != null) {
+            Gson gson = new Gson();
+            Preferences preferences = gson.fromJson(json, Preferences.class);
+            PreferencesHelper p = new PreferencesHelper(context);
+            p.putAll(preferences.prefs);
+        }
     }
 
     private static String backupFolder() {
@@ -170,5 +200,9 @@ public final class DebugUtils {
 
     public interface InputDialogCallback {
         void onReceive(String input);
+    }
+
+    public static class Preferences {
+        Map<String, Pair<String, String>> prefs;
     }
 }

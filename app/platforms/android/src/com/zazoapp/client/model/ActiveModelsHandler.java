@@ -1,7 +1,6 @@
 package com.zazoapp.client.model;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
@@ -9,6 +8,8 @@ import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 public class ActiveModelsHandler implements UnexpectedTerminationHelper.TerminationCallback {
     public static final String USER_REGISTERED = "user_registered";
     private static final String TAG = ActiveModelsHandler.class.getSimpleName();
+    public static final String MODEL_VERSION_PREF = "model_version_pref";
+    public static final int MODEL_VERSION = 2;
 
     private static ActiveModelsHandler instance;
 
@@ -49,14 +50,16 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         incomingVideoFactory = IncomingVideoFactory.getFactoryInstance();
         gridElementFactory = GridElementFactory.getFactoryInstance();
         outgoingVideoFactory = OutgoingVideoFactory.getFactoryInstance();
-        ensureUser();
-        ensure(friendFactory);
-        ensure(incomingVideoFactory);
-        ensure(gridElementFactory);
-        ensure(outgoingVideoFactory);
-        migrateOldOutgoingVideoModel();
-        new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
-        Log.d(TAG, "ensureAll end");
+        boolean upgraded = onUpgrade(new PreferencesHelper(context).getInt(MODEL_VERSION_PREF, 1), MODEL_VERSION);
+        if (!upgraded) {
+            ensureUser();
+            ensure(friendFactory);
+            ensure(incomingVideoFactory);
+            ensure(gridElementFactory);
+            ensure(outgoingVideoFactory);
+            new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
+            Log.d(TAG, "ensureAll end");
+        }
     }
 
     public void saveAll() {
@@ -65,7 +68,9 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         save(incomingVideoFactory);
         save(gridElementFactory);
         save(outgoingVideoFactory);
-        new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
+        PreferencesHelper prefs = new PreferencesHelper(context);
+        prefs.putBoolean(USER_REGISTERED, User.isRegistered(context));
+        prefs.putInt(MODEL_VERSION_PREF, MODEL_VERSION);
         Log.i(TAG, "saveAll end");
     }
 
@@ -129,20 +134,16 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         saveAll();
     }
 
-    private void migrateOldOutgoingVideoModel() {
-        if (friendFactory.getModelVersion() < 72) {
-            for (Friend friend : friendFactory.all()) {
-                String id = friend.getOutgoingVideoId();
-                if (!TextUtils.isEmpty(id)) {
-                    int status = friend.getOutgoingVideoStatus();
-                    OutgoingVideo video = outgoingVideoFactory.makeInstance(context);
-                    video.setVideoStatus(status);
-                    video.set(Video.Attributes.ID, id);
-                    video.set(Video.Attributes.FRIEND_ID, friend.getId());
-                }
-            }
-            friendFactory.save(context);
-            outgoingVideoFactory.save(context);
+    private boolean onUpgrade(int currentVersion, int newVersion) {
+        if (currentVersion >= newVersion) {
+            return false;
         }
+        switch (currentVersion) {
+            case 1:
+                ModelUpgradeHelper.upgradeTo2(this, context);
+            //case 2:
+        }
+        saveAll();
+        return true;
     }
 }
