@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public abstract class ActiveModelFactory<T extends ActiveModel> {
+public abstract class ActiveModelFactory<T extends ActiveModel> implements ActiveModel.ModelChangeCallback {
     private static final String TAG = ActiveModelFactory.class.getSimpleName();
 
     protected ArrayList<T> instances = new ArrayList<>();
@@ -21,7 +21,8 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
     public abstract Class<T> getModelClass();
 
     private Set<ModelChangeCallback> callbacks = new HashSet<>();
-    private boolean notifyCallbacks = true;
+    private volatile boolean notifyCallbacks = true;
+    private Runnable saveTask;
 
     //--------------------
     // Factory
@@ -36,6 +37,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
             e.printStackTrace();
         }
         i.init(context);
+        i.addCallback(this);
         instances.add(i);
         notifyCallbacks();
         return i;
@@ -55,7 +57,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
     public synchronized String save(Context context) {
         if (instances == null || instances.isEmpty())
             return "";
-
+        long start = System.currentTimeMillis();
         ArrayList<LinkedTreeMap<String, String>> all = new ArrayList<>();
         for (T i : instances) {
             all.add(i.attributes);
@@ -63,6 +65,8 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
         Gson g = new Gson();
         String j = g.toJson(all);
         Convenience.saveJsonToFile(j, getSaveFilePath(context));
+        long time = System.currentTimeMillis() - start;
+        Log.i(TAG, String.format("Saved %ss (%d) for %d ms", getModelClass().getSimpleName(), instances.size(), time));
         return j;
     }
 
@@ -185,6 +189,35 @@ public abstract class ActiveModelFactory<T extends ActiveModel> {
                 callback.onModelChanged(this);
             }
         }
+    }
+
+    @Override
+    public void onModelUpdated(boolean changed) {
+        if (changed) {
+            notifyCallbacks();
+        }
+    }
+
+    public Runnable getSaveTask(Context context) {
+        final Context c = context.getApplicationContext();
+        if (saveTask == null) {
+            saveTask = new Runnable() {
+                @Override
+                public void run() {
+                    save(c);
+                }
+            };
+        }
+        return saveTask;
+    }
+
+    /**
+     * May be used to conceal changes.
+     * Should be set back to <b>true</b> after.
+     * @param notify set <b>true</b> to notify callbacks when model is changed, <b>false</b> to conceal changes
+     */
+    protected void notifyOnChanged(boolean notify) {
+        notifyCallbacks = notify;
     }
 
     public interface ModelChangeCallback {

@@ -14,6 +14,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.model.ActiveModelFactory;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -95,6 +96,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         super.onDestroy();
         Logger.d(TAG, "onDestroy");
         releaseResources();
+        mServiceHandler.removeCallbacksAndMessages(null);
         mServiceLooper.quit();
     }
 
@@ -220,6 +222,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 handleDownloadIntent();
             } else if (isUploadIntent()) {
                 handleUploadIntent();
+            } else if (isStoringIntent()) {
+                handleStoringIntent();
             }
         }
 
@@ -232,6 +236,10 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
         private boolean isDownloadIntent() {
             return transferType != null && transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+        }
+
+        private boolean isStoringIntent() {
+            return IntentActions.SAVE_MODEL.equals(intent.getAction());
         }
 
         // ---------------------
@@ -336,6 +344,16 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             updateStatus();
         }
 
+        private void handleStoringIntent() {
+            ActiveModelFactory<?> modelFactory = ActiveModelsHandler.getInstance(IntentHandlerService.this).getModelFromIntent(intent);
+            if (modelFactory != null) {
+                // It is posted with delay to skip several requests in the row per one factory
+                // Only last one will be handled
+                mServiceHandler.removeCallbacks(modelFactory.getSaveTask(IntentHandlerService.this));
+                mServiceHandler.postDelayed(modelFactory.getSaveTask(IntentHandlerService.this), 200);
+            }
+        }
+
         //--------
         // Helpers
         //--------
@@ -365,12 +383,13 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
     public class IntentParamKeys {
         public static final String FRIEND_ID = "friendId";
-        public static final String ACTION = "action";
+        public static final String MODEL = "modelName";
     }
 
     public class IntentActions {
         public static final String NONE = "none";
         public static final String PLAY_VIDEO = "playVideo";
         public static final String SMS_RESULT = "smsResult";
+        public static final String SAVE_MODEL = "saveModel";
     }
 }

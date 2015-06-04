@@ -17,6 +17,8 @@ public abstract class ActiveModel {
 
     private Set<ModelChangeCallback> callbacks = new HashSet<>();
 
+    private volatile boolean notifyOnChanged = true;
+
 	public void init(Context context){
 		this.context = context;
 		for(String atr : attributeList()){
@@ -27,21 +29,22 @@ public abstract class ActiveModel {
 	// Must be overridden in subclass.	
 	public abstract String[] attributeList();
 
-	//--------------------
-	// Getters and setters
-	//--------------------
-	public ActiveModel set(String a, String v){
-		ActiveModel result = this;
-		if ( attributes.containsKey(a) ) {
-			Log.i(TAG, "setting " + a + " : " + v);
-			attributes.put(a, v);
-		} else {
-			result = null;
+    //--------------------
+    // Getters and setters
+    //--------------------
+    public ActiveModel set(String a, String v) {
+        if (attributes.containsKey(a)) {
+            Log.i(TAG, "setting " + a + " : " + v);
+            String oldValue = attributes.put(a, v);
+            if (!v.equals(oldValue)) {
+                notifyCallbacks(true);
+            }
+        } else {
             Dispatch.dispatch("ERROR: set: " + a + " is not an attr. This should neve happen");
-			throw new RuntimeException();
-		}
-		return result;
-	}
+            throw new RuntimeException();
+        }
+        return this;
+    }
 
 	public String get(String a){
 		return attributes.get(a);
@@ -60,8 +63,10 @@ public abstract class ActiveModel {
     }
 
     protected void notifyCallbacks(boolean changed) {
-        for (ModelChangeCallback callback : callbacks) {
-            callback.onModelUpdated(changed);
+        if (notifyOnChanged) {
+            for (ModelChangeCallback callback : callbacks) {
+                callback.onModelUpdated(changed);
+            }
         }
     }
 
@@ -76,6 +81,15 @@ public abstract class ActiveModel {
 
     protected Context getContext() {
         return context;
+    }
+
+    /**
+     * May be used to conceal changes before using {@link #set(String, String)}.
+     * Should be set back to <b>true</b> after.
+     * @param notify set <b>true</b> to notify callbacks when model is changed, <b>false</b> to conceal changes
+     */
+    protected void notifyOnChanged(boolean notify) {
+        notifyOnChanged = notify;
     }
 
     public interface ModelChangeCallback {

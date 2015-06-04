@@ -1,11 +1,18 @@
 package com.zazoapp.client.model;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
-public class ActiveModelsHandler implements UnexpectedTerminationHelper.TerminationCallback {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class ActiveModelsHandler implements UnexpectedTerminationHelper.TerminationCallback, ActiveModelFactory.ModelChangeCallback {
     public static final String USER_REGISTERED = "user_registered";
     private static final String TAG = ActiveModelsHandler.class.getSimpleName();
     public static final String MODEL_VERSION_PREF = "model_version_pref";
@@ -50,6 +57,7 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         incomingVideoFactory = IncomingVideoFactory.getFactoryInstance();
         gridElementFactory = GridElementFactory.getFactoryInstance();
         outgoingVideoFactory = OutgoingVideoFactory.getFactoryInstance();
+        removeCallbacks();
         boolean upgraded = onUpgrade(new PreferencesHelper(context).getInt(MODEL_VERSION_PREF, 1), MODEL_VERSION);
         if (!upgraded) {
             ensureUser();
@@ -60,14 +68,13 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
             new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
             Log.d(TAG, "ensureAll end");
         }
+        setCallbacks();
     }
 
     public void saveAll() {
-        save(userFactory);
-        save(friendFactory);
-        save(incomingVideoFactory);
-        save(gridElementFactory);
-        save(outgoingVideoFactory);
+        for (ActiveModelFactory<?> factory : getFactories()) {
+            save(factory);
+        }
         PreferencesHelper prefs = new PreferencesHelper(context);
         prefs.putBoolean(USER_REGISTERED, User.isRegistered(context));
         prefs.putInt(MODEL_VERSION_PREF, MODEL_VERSION);
@@ -84,11 +91,9 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     }
 
     public void destroyAll() {
-        userFactory.destroyAll(context);
-        friendFactory.destroyAll(context);
-        incomingVideoFactory.destroyAll(context);
-        gridElementFactory.destroyAll(context);
-        outgoingVideoFactory.destroyAll(context);
+        for (ActiveModelFactory<?> factory : getFactories()) {
+            factory.destroyAll(context);
+        }
     }
 
     public UserFactory ensureUser() {
@@ -145,5 +150,71 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         }
         saveAll();
         return true;
+    }
+
+    public ActiveModelFactory<?> getModelFromIntent(Intent intent) {
+        int modelId = intent.getIntExtra(IntentHandlerService.IntentParamKeys.MODEL, -1);
+        if (modelId == -1) {
+            return null;
+        }
+        switch (Model.values()[modelId]) {
+            case USER: return userFactory;
+            case FRIEND: return friendFactory;
+            case GRID_ELEMENT: return gridElementFactory;
+            case INCOMING_VIDEO: return incomingVideoFactory;
+            case OUTGOING_VIDEO: return outgoingVideoFactory;
+            default: return null;
+        }
+    }
+
+    private void removeCallbacks() {
+        for (ActiveModelFactory<?> factory : getFactories()) {
+            factory.removeCallback(this);
+        }
+    }
+
+    private void setCallbacks() {
+        for (ActiveModelFactory<?> factory : getFactories()) {
+            factory.addCallback(this);
+        }
+    }
+
+    @Override
+    public void onModelChanged(ActiveModelFactory<?> factory) {
+        if (!TbmApplication.getInstance().isForeground()) {
+            Intent intent = new Intent(context, IntentHandlerService.class);
+            intent.setAction(IntentHandlerService.IntentActions.SAVE_MODEL);
+            intent.putExtra(IntentHandlerService.IntentParamKeys.MODEL, Model.getId(factory.getModelClass()));
+            context.startService(intent);
+        }
+    }
+
+    private List<ActiveModelFactory<?>> getFactories() {
+        ArrayList<ActiveModelFactory<?>> factories = new ArrayList<>();
+        Collections.addAll(factories, userFactory, friendFactory, incomingVideoFactory, gridElementFactory, outgoingVideoFactory);
+        return factories;
+    }
+
+    public enum Model {
+        USER(User.class),
+        FRIEND(Friend.class),
+        INCOMING_VIDEO(IncomingVideo.class),
+        OUTGOING_VIDEO(OutgoingVideo.class),
+        GRID_ELEMENT(GridElement.class);
+
+        private final Class<? extends ActiveModel> clazz;
+
+        Model(Class<? extends ActiveModel> userClass) {
+            clazz = userClass;
+        }
+
+        public static int getId(Class<? extends ActiveModel> clazz) {
+            for (Model model : values()) {
+                if (model.clazz.equals(clazz)) {
+                    return model.ordinal();
+                }
+            }
+            return -1;
+        }
     }
 }

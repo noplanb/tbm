@@ -85,6 +85,8 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
     }
 
     public void reconcileFriends(Context context, final List<LinkedTreeMap<String, String>> remoteFriends) {
+        notifyOnChanged(false);
+        boolean needToNotify = false;
         for (LinkedTreeMap<String, String> friendParams : remoteFriends) {
             Friend f = getFriendFromMkey(friendParams.get(ServerParamKeys.MKEY));
             if (f != null) {
@@ -95,7 +97,12 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
             // if friend was updated or created then move him to grid
             if (f != null) {
                 GridManager.getInstance().moveFriendToGrid(f);
+                needToNotify = true;
             }
+        }
+        notifyOnChanged(true);
+        if (needToNotify) {
+            notifyCallbacks();
         }
     }
 
