@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -34,13 +36,17 @@ import com.zazoapp.client.utilities.Logger;
 import java.util.ArrayList;
 
 public class IntentHandlerService extends Service implements UnexpectedTerminationHelper.TerminationCallback {
+
     private static final String TAG = IntentHandlerService.class.getSimpleName();
 
     private volatile Looper mServiceLooper;
     private volatile ServiceHandler mServiceHandler;
 
-    private ShutdownReceiver receiver;
+    private ShutdownReceiver shutdownReceiver;
     private TransferTasksHolder transferTasks;
+
+    // The BroadcastReceiver that tracks network connectivity changes.
+    private NetworkReceiver networkReceiver;
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -65,9 +71,15 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
 
-        receiver = new ShutdownReceiver();
-        IntentFilter filter = new IntentFilter(Intent.ACTION_SHUTDOWN);
-        registerReceiver(receiver, filter);
+        shutdownReceiver = new ShutdownReceiver();
+        IntentFilter shutDownIntentFilter = new IntentFilter(Intent.ACTION_SHUTDOWN);
+        registerReceiver(shutdownReceiver, shutDownIntentFilter);
+
+        // Register BroadcastReceiver to track connection changes.
+        networkReceiver = new NetworkReceiver();
+        IntentFilter networkIntentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkReceiver, networkIntentFilter);
+
         transferTasks = new TransferTasksHolder();
         restoreTransferring();
     }
@@ -98,6 +110,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         releaseResources();
         mServiceHandler.removeCallbacksAndMessages(null);
         mServiceLooper.quit();
+        onTerminate();
     }
 
     @Override
@@ -128,12 +141,12 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
     private void releaseResources() {
         ActiveModelsHandler.getInstance(this).onTerminate();
-        unregisterReceiver(receiver);
     }
 
     @Override
     public void onTerminate() {
-        unregisterReceiver(receiver);
+        unregisterReceiver(shutdownReceiver);
+        unregisterReceiver(networkReceiver);
     }
 
     private void restoreTransferring() {
@@ -391,5 +404,25 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         public static final String PLAY_VIDEO = "playVideo";
         public static final String SMS_RESULT = "smsResult";
         public static final String SAVE_MODEL = "saveModel";
+    }
+
+    public class NetworkReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager connMgr =
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+            if (networkInfo != null && networkInfo.isConnected()) {
+                if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                    Log.i(TAG, "Wi-Fi connected");
+                } else {
+                    Log.i(TAG, "Wi-Fi connection lost");
+                }
+            } else {
+                Log.i(TAG, "Connection lost");
+            }
+        }
     }
 }
