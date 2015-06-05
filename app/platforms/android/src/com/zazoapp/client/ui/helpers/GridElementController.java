@@ -8,15 +8,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import com.zazoapp.client.R;
-import com.zazoapp.client.model.IncomingVideo;
-import com.zazoapp.client.model.OutgoingVideo;
-import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.model.ActiveModel;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
+import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.notification.NotificationAlertManager;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.utilities.DialogShower;
 

@@ -26,7 +26,9 @@ import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.model.OutgoingVideoFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.Video;
+import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
+import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
@@ -420,6 +422,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 } else {
                     Log.i(TAG, "Wi-Fi connection lost");
                 }
+                FileTransferService.reset(context, FileUploadService.class);
+                FileTransferService.reset(context, FileDownloadService.class);
             } else {
                 Log.i(TAG, "Connection lost");
             }
