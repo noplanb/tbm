@@ -210,6 +210,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                     GridManager.getInstance().initGrid(context);
                     if (User.isRegistered(context)) {
                         DialogShower.showToast(context, "Loaded");
+                        finish();
                     } else {
                         DialogShower.showToast(context, "Nothing to restore");
                     }
@@ -315,6 +316,5 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
 
     @Override
     public void onChange() {
-
     }
 }

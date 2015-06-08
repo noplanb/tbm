@@ -8,10 +8,10 @@ import com.zazoapp.client.core.PreferencesHelper;
  */
 public class S3CredentialsStore {
 
-    private static final String SECRET_KEY = "secret_key";
-    private static final String ACCESS_KEY_ID = "access_key";
-    private static final String BUCKET_NAME = "bucket_name";
-    private static final String REGION = "region";
+    public static final String SECRET_KEY = "secret_key";
+    public static final String ACCESS_KEY_ID = "access_key";
+    public static final String BUCKET_NAME = "bucket_name";
+    public static final String REGION = "region";
 
     private static S3CredentialsStore s3CredentialsStore;
 

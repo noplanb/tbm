@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +16,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.model.ActiveModelFactory;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -23,7 +26,9 @@ import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.model.OutgoingVideoFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.Video;
+import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
+import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
@@ -33,13 +38,17 @@ import com.zazoapp.client.utilities.Logger;
 import java.util.ArrayList;
 
 public class IntentHandlerService extends Service implements UnexpectedTerminationHelper.TerminationCallback {
+
     private static final String TAG = IntentHandlerService.class.getSimpleName();
 
     private volatile Looper mServiceLooper;
     private volatile ServiceHandler mServiceHandler;
 
-    private ShutdownReceiver receiver;
+    private ShutdownReceiver shutdownReceiver;
     private TransferTasksHolder transferTasks;
+
+    // The BroadcastReceiver that tracks network connectivity changes.
+    private NetworkReceiver networkReceiver;
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -64,9 +73,15 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
 
-        receiver = new ShutdownReceiver();
-        IntentFilter filter = new IntentFilter(Intent.ACTION_SHUTDOWN);
-        registerReceiver(receiver, filter);
+        shutdownReceiver = new ShutdownReceiver();
+        IntentFilter shutDownIntentFilter = new IntentFilter(Intent.ACTION_SHUTDOWN);
+        registerReceiver(shutdownReceiver, shutDownIntentFilter);
+
+        // Register BroadcastReceiver to track connection changes.
+        networkReceiver = new NetworkReceiver();
+        IntentFilter networkIntentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkReceiver, networkIntentFilter);
+
         transferTasks = new TransferTasksHolder();
         restoreTransferring();
     }
@@ -95,7 +110,9 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         super.onDestroy();
         Logger.d(TAG, "onDestroy");
         releaseResources();
+        mServiceHandler.removeCallbacksAndMessages(null);
         mServiceLooper.quit();
+        onTerminate();
     }
 
     @Override
@@ -126,12 +143,12 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
     private void releaseResources() {
         ActiveModelsHandler.getInstance(this).onTerminate();
-        unregisterReceiver(receiver);
     }
 
     @Override
     public void onTerminate() {
-        unregisterReceiver(receiver);
+        unregisterReceiver(shutdownReceiver);
+        unregisterReceiver(networkReceiver);
     }
 
     private void restoreTransferring() {
@@ -220,6 +237,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 handleDownloadIntent();
             } else if (isUploadIntent()) {
                 handleUploadIntent();
+            } else if (isStoringIntent()) {
+                handleStoringIntent();
             }
         }
 
@@ -232,6 +251,10 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
         private boolean isDownloadIntent() {
             return transferType != null && transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+        }
+
+        private boolean isStoringIntent() {
+            return IntentActions.SAVE_MODEL.equals(intent.getAction());
         }
 
         // ---------------------
@@ -336,6 +359,16 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             updateStatus();
         }
 
+        private void handleStoringIntent() {
+            ActiveModelFactory<?> modelFactory = ActiveModelsHandler.getInstance(IntentHandlerService.this).getModelFromIntent(intent);
+            if (modelFactory != null) {
+                // It is posted with delay to skip several requests in the row per one factory
+                // Only last one will be handled
+                mServiceHandler.removeCallbacks(modelFactory.getSaveTask(IntentHandlerService.this));
+                mServiceHandler.postDelayed(modelFactory.getSaveTask(IntentHandlerService.this), 200);
+            }
+        }
+
         //--------
         // Helpers
         //--------
@@ -365,12 +398,35 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
     public class IntentParamKeys {
         public static final String FRIEND_ID = "friendId";
-        public static final String ACTION = "action";
+        public static final String MODEL = "modelName";
     }
 
     public class IntentActions {
         public static final String NONE = "none";
         public static final String PLAY_VIDEO = "playVideo";
         public static final String SMS_RESULT = "smsResult";
+        public static final String SAVE_MODEL = "saveModel";
+    }
+
+    public class NetworkReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager connMgr =
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+            if (networkInfo != null && networkInfo.isConnected()) {
+                if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                    Log.i(TAG, "Wi-Fi connected");
+                } else {
+                    Log.i(TAG, "Wi-Fi connection lost");
+                }
+                FileTransferService.reset(context, FileUploadService.class);
+                FileTransferService.reset(context, FileDownloadService.class);
+            } else {
+                Log.i(TAG, "Connection lost");
+            }
+        }
     }
 }

@@ -554,7 +554,9 @@ public class Friend extends ActiveModel{
             video.setRetryCount(retryCount);
             if (getOutgoingVideoId().equals(videoId)) {
                 setLastEventTypeOutgoing();
-                FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+                if (DebugConfig.getInstance(getContext()).isDebugEnabled()) {
+                    FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+                }
             }
         }
     }
@@ -605,7 +607,9 @@ public class Friend extends ActiveModel{
             // Only notify the UI of changes in retry count of the last incoming video.
             if (newestIncomingVideo().getId().equals(videoId)){
                 setLastEventTypeIncoming();
-                FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+                if (DebugConfig.getInstance(getContext()).isDebugEnabled()) {
+                    FriendFactory.getFactoryInstance().notifyStatusChanged(this);
+                }
             }
         }
     }
