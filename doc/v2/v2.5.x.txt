@@ -1,0 +1,48 @@
+Previous v2.4.1 (71)
+Current v2.5.1 (73)
+
+BACKGROUND CHANGES:
+- Added on boot complete receiver and start main service to restore transferring
+- Removed NonStopIntentService. Used IntentService instead.
+- Removed reset transferring on app resume.
+- Skip already downloading files
+- Implemented OutgoingVideo model handling.
+- Added network connection listener to reset transferring tasks when connection appears 
+
+---------
+FIX #120
+---------
+App not saving models sometimes
+
+SOLUTION:
+Storing models when application is in background on model changed event
+
+Testcase:
+C2499
+
+---------
+FIX #158, 165, 298, 333, 310
+---------
+Problems with restoring data transferring after Airplane mode
+
+SOLUTION:
+Changed data transferring mechanism.
+Checking models on Application start for unfinished downloads/uploads and restoring them
+
+Testcases:
+C56, C90, C91, C92, C93, C94, C95, C96, C97, C98
+C113, C112, C114, C115, C116, C117, C118, C123, C119, C124
+
+---------
+FIX #319
+---------
+Downloading stops when massive number of videos arriving simultaneously
+
+PROBLEM:
+Too much tasks in AsyncTask pool
+
+SOLUTION:
+Execute HttpRequest on SerialExecutor
+
+Testcase:
+C104
