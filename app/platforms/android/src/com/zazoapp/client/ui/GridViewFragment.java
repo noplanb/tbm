@@ -10,6 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.network.FileDownloadService;
+import com.zazoapp.client.network.FileTransferService;
+import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.ui.helpers.GridElementController;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.R;
@@ -76,6 +79,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     @Override
     public void onStart() {
         super.onStart();
+        FileTransferService.reset(getActivity(), FileDownloadService.class);
+        FileTransferService.reset(getActivity(), FileUploadService.class);
         new SyncManager(getActivity()).getAndPollAllFriends();
     }
 
