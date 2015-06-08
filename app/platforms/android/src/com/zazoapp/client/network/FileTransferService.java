@@ -90,7 +90,9 @@ public abstract class FileTransferService extends IntentService {
             retryCount.set(0);
             while (true) {
                 if (!isConnected()) {
-                    reset.await();
+                    if (!reset.await(2, TimeUnit.SECONDS)) {
+                        continue;
+                    }
                     intent.putExtra(IntentFields.RETRY_COUNT_KEY, retryCount.get());
                 }
                 if (retryCount.get() > MAX_RETRIES) {
