@@ -128,7 +128,7 @@
             android:layout_height="18dp"
             android:layout_alignParentRight="true"
             android:background="@drawable/bg_red_circle"
-            android:padding="2dp"
+            android:padding="1dp"
             android:gravity="center"
             android:text="12"
             android:textColor="@android:color/white"
