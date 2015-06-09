@@ -3,7 +3,6 @@ package com.zazoapp.client.network.aws;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
@@ -53,16 +52,15 @@ public class S3CredentialsGetter {
 
 	public void gotCredentials(Context context, String r) {
 		Gson g = new Gson();
-        Response response;
+        Response response = null;
         try {
             response = g.fromJson(r, Response.class);
         } catch (JsonSyntaxException e) {
-            throw new JsonSyntaxException("gotCredentials: " + r, e);
         }
 
-		Log.i(TAG, "gotCredentials");
+        Log.i(TAG, "gotCredentials");
 
-        if(!response.getStatus().equalsIgnoreCase("success")){
+        if(response == null || !response.getStatus().equalsIgnoreCase("success")){
             Dispatch.dispatch("CredentialsGetter: got failure from server in gotCredentials()");
             failure();
             return;

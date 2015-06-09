@@ -1,6 +1,8 @@
 package com.zazoapp.client.utilities;
 
+import android.util.Log;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.util.Random;
@@ -36,12 +38,21 @@ public class StringUtils {
 	public static void stripSpaces(String s){
 		s.replaceAll(" ", "");
 	}
-	
-	@SuppressWarnings("unchecked")
-	public static LinkedTreeMap<String, String> linkedTreeMapWithJson(String json){
-		Gson g = new Gson();
-		LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-		data = g.fromJson(json, data.getClass());
-		return data;
-	}
+
+    /**
+     *
+     * @param json JSON string
+     * @return LinkedTreeMap with data or null if JSON string is broken
+     */
+    public static LinkedTreeMap<String, String> linkedTreeMapWithJson(String json) {
+        Gson g = new Gson();
+        LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
+        try {
+            data = g.fromJson(json, data.getClass());
+        } catch (JsonSyntaxException e) {
+            Log.d("ZazoJsonParser", e.getMessage());
+            return null;
+        }
+        return data;
+    }
 }

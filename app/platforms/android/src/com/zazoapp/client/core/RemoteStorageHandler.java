@@ -2,11 +2,13 @@ package com.zazoapp.client.core;
 
 import android.util.Log;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
+import com.zazoapp.client.utilities.StringUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -72,10 +74,10 @@ public class RemoteStorageHandler {
             ArrayList<String>values = new ArrayList<String>();          
             for (LinkedTreeMap<String, String> kv : kvs){
                 String vidJson = kv.get(DataKeys.VALUE_KEY);
-                Gson g = new Gson();
-                LinkedTreeMap<String, String> vidObj = new LinkedTreeMap<String, String>();
-                vidObj = g.fromJson(vidJson, vidObj.getClass());
-                values.add(vidObj.get(DataKeys.VIDEO_ID_KEY));
+                LinkedTreeMap<String, String> vidObj = StringUtils.linkedTreeMapWithJson(vidJson);
+                if (vidObj != null) {
+                    values.add(vidObj.get(DataKeys.VIDEO_ID_KEY));
+                }
             }
             gotVideoIds(values);
         }
@@ -242,22 +244,19 @@ public class RemoteStorageHandler {
 	                @SuppressWarnings("unchecked")
 	                @Override
 	                public void success(String response) {
-	                    LinkedTreeMap<String, String> data;
-	                    
-	                    if (response.isEmpty()){
-	                        gotRemoteKV(null);
-	                        return;
-	                    }
 
-                        Gson gson = new Gson();
-                        data = gson.fromJson(response, LinkedTreeMap.class);
-                        if(data!=null) {
-                            LinkedTreeMap<String, String> value;
-                            value = gson.fromJson(data.get(DataKeys.VALUE_KEY), LinkedTreeMap.class);
-                            gotRemoteKV(value);
-                        }else
+                        if (response.isEmpty()){
                             gotRemoteKV(null);
-	                }
+                            return;
+                        }
+
+                        LinkedTreeMap<String, String> data = StringUtils.linkedTreeMapWithJson(response);
+                        if (data != null) {
+                            gotRemoteKV(StringUtils.linkedTreeMapWithJson(data.get(DataKeys.VALUE_KEY)));
+                        } else {
+                            gotRemoteKV(null);
+                        }
+                    }
 
 	                @Override
 	                public void error(String errorString) {
@@ -285,8 +284,12 @@ public class RemoteStorageHandler {
                     public void success(String response) {
                         Gson g = new Gson();
                         ArrayList<LinkedTreeMap<String, String>> kvs = new ArrayList<LinkedTreeMap<String, String>>();
-                        kvs = g.fromJson(response, kvs.getClass());
-                        gotRemoteKVs(kvs);
+                        try {
+                            kvs = g.fromJson(response, kvs.getClass());
+                            gotRemoteKVs(kvs);
+                        } catch (JsonSyntaxException e) {
+                            error("JsonSyntaxException");
+                        }
                     }
 
                     @Override

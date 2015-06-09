@@ -25,9 +25,8 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.Config;
-import com.zazoapp.client.ui.helpers.ContactsManager;
-import com.zazoapp.client.core.FriendGetter;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.FriendGetter;
 import com.zazoapp.client.debug.DebugSettingsActivity;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
@@ -37,9 +36,11 @@ import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.ui.dialogs.EnterCodeDialogFragment;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
+import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.ui.view.CountryCodeAdapter;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
+import com.zazoapp.client.utilities.StringUtils;
 
 public class RegisterActivity extends Activity implements EnterCodeDialogFragment.Callbacks{
     private static final int DEBUG_SCREEN_CODE = 293;
@@ -252,14 +253,12 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	// Handle verification code 
 	//-------------------------
 	public void didRegister(String r) {
-		Gson g = new Gson();
-		LinkedTreeMap<String, String> params = new LinkedTreeMap<String,String>();
-        try {
-            params = g.fromJson(r, params.getClass());
-        } catch (JsonSyntaxException e) {
-            throw new JsonSyntaxException("didRegister: " + r, e);
+        LinkedTreeMap<String, String> params = StringUtils.linkedTreeMapWithJson(r);
+        if (params == null) {
+            serverError();
+            return;
         }
-		Log.i(TAG, "didRegister: " + params.toString());
+        Log.i(TAG, "didRegister: " + params.toString());
 
 		if ( HttpRequest.isSuccess(params.get(HttpRequest.ParamKeys.RESPONSE_STATUS)) ){
 			auth = params.get(UserFactory.ServerParamKeys.AUTH);
@@ -269,7 +268,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 			String title = params.get(HttpRequest.ParamKeys.ERROR_TITLE);
 			String msg = params.get(HttpRequest.ParamKeys.ERROR_MSG);
 			showErrorDialog(title, msg);
-		}
+        }
 	}
 
 	private void showVerificationDialog() {
@@ -325,7 +324,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         try {
             params = g.fromJson(r, params.getClass());
         } catch (JsonSyntaxException e) {
-            throw new JsonSyntaxException("didReceiveCodeResponse: " + r, e);
+            serverError();
+            return;
         }
 		if ( HttpRequest.isSuccess(params.get(HttpRequest.ParamKeys.RESPONSE_STATUS)) ){
 			gotUser(params);

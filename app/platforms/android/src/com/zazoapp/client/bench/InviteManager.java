@@ -7,22 +7,22 @@ import android.net.Uri;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
-import com.zazoapp.client.core.IntentHandlerService;
-import com.zazoapp.client.ui.helpers.ContactsManager;
-import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.MainActivity;
+import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.Logger;
+import com.zazoapp.client.utilities.StringUtils;
 
 public class InviteManager implements InviteHelper {
 
@@ -143,11 +143,9 @@ public class InviteManager implements InviteHelper {
     }
     @SuppressWarnings("unchecked")
 	private void gotHasApp(String response) {
-		LinkedTreeMap <String, String> params = new LinkedTreeMap <String, String>();
-		Gson g = new Gson();
-		params = g.fromJson(response, params.getClass());
-		if (checkIsFailureAndShowDialog(params))
-			return;
+        LinkedTreeMap<String, String> params = StringUtils.linkedTreeMapWithJson(response);
+        if (checkIsFailureAndShowDialog(params))
+            return;
 
 		String hasAppStr = params.get(FriendFactory.ServerParamKeys.HAS_APP);
 		boolean hasApp = hasAppStr != null && hasAppStr.equalsIgnoreCase("true");
@@ -197,9 +195,7 @@ public class InviteManager implements InviteHelper {
 
     @SuppressWarnings("unchecked")
     private void gotFriend(String response) {
-        LinkedTreeMap<String, String> params = new LinkedTreeMap<>();
-        Gson g = new Gson();
-        params = g.fromJson(response, params.getClass());
+        LinkedTreeMap<String, String> params = StringUtils.linkedTreeMapWithJson(response);
 
         if (checkIsFailureAndShowDialog(params))
             return;
@@ -337,6 +333,10 @@ public class InviteManager implements InviteHelper {
 	}
 
     private boolean checkIsFailureAndShowDialog(LinkedTreeMap<String, String> params) {
+        if (params == null) {
+            listener.onShowInfoDialog(context.getString(R.string.dialog_server_error_title), context.getString(R.string.dialog_server_error_message, Config.appName));
+            return true;
+        }
         String status = params.get(HttpRequest.ParamKeys.RESPONSE_STATUS);
         if (HttpRequest.isFailure(status)) {
             listener.onShowInfoDialog(params.get(HttpRequest.ParamKeys.ERROR_TITLE), params.get(HttpRequest.ParamKeys.ERROR_MSG));

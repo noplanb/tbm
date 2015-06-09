@@ -3,6 +3,7 @@ package com.zazoapp.client.model;
 import android.content.Context;
 import android.util.Log;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.utilities.Convenience;
@@ -78,14 +79,17 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
         }
         Log.i(TAG, "retrieve(): retrieved from file.");
 
-        ArrayList<LinkedTreeMap<String, String>> all = new ArrayList<>();
+        ArrayList<LinkedTreeMap<String, String>> all = null;
         Gson g = new Gson();
-        all = g.fromJson(json, all.getClass());
+        try {
+            all = g.fromJson(json, all.getClass());
+        } catch (JsonSyntaxException e) {
+        }
 
         if (all == null) {
             Log.i(TAG, "retrieve: got null for objects");
             return false;
-        } else {
+        } else if (all.size() > 0) {
             Log.i(TAG, "class of attr: " + all.get(0).getClass().getSimpleName());
         }
 

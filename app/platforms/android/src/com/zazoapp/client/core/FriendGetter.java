@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.network.HttpRequest;
@@ -48,10 +49,15 @@ public class FriendGetter {
 	private void gotFriends(Context context, String r) {
         Log.i(TAG, "gotFriends: " + r);
 		Gson g = new Gson();
-		friendList = g.fromJson(r, friendList.getClass());
-		
-		if (destroyAll)
-			FriendFactory.getFactoryInstance().destroyAll(context);
+        try {
+            friendList = g.fromJson(r, friendList.getClass());
+        } catch (JsonSyntaxException e) {
+            failure();
+            return;
+        }
+
+        if (destroyAll)
+            FriendFactory.getFactoryInstance().destroyAll(context);
 
         FriendFactory.getFactoryInstance().reconcileFriends(context, friendList);
         success();
