@@ -39,7 +39,7 @@ public class Dispatch {
         ensureTracker(new Runnable() {
             @Override
             public void run() {
-                tracker.setIncludeLogcat(false);
+                tracker.setIncludeLogcat(includeLogcat);
                 tracker.trackMessage(UserInfoCollector.collect(context), ErrorLevel.INFO);
             }
         });

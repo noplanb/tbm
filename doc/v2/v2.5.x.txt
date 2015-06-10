@@ -1,5 +1,5 @@
 Previous v2.4.11 (71)
-Current v2.5.1 (73)
+Current v2.5.2 (74)
 
 BACKGROUND CHANGES:
 - Added on boot complete receiver and start main service to restore transferring
@@ -46,3 +46,58 @@ Execute HttpRequest on SerialExecutor
 
 Testcase:
 C104
+
+---------
+Fix #446
+---------
+Change title for you are connected dialog
+
+SOLUTION:
+Changed title to "Send a Zazo"
+
+---------
+Fix #116
+---------
+Number in unviewed count is not centered.
+
+PROBLEM:
+Text is lowered because of big padding
+
+SOLUTION:
+Decreased padding value
+
+---------
+Fix #481
+---------
+Zazo crash on receiving response from mobile service provider instead of server
+
+PROBLEM:
+Unhandled JsonSyntaxException issue
+
+SOLUTION:
+Show error dialog to user in most cases when it's happening. Skip response for others.
+
+---------
+Fix #480
+---------
+Zazo crashes if user put Zazo to background while "inviting new friend" is in progress
+
+PROBLEM:
+Asynchronous respond from server comes after onSaveInstanceState of Activity which is an illegal state to add or dismiss dialog
+
+SOLUTION:
+Allow state loss for this operations.
+May interfere on progress dialog to be infinite
+
+---------
+Fix #482
+---------
+Zazo crashes on multiple videos arriving simultaneously
+
+PROBLEM:
+Friend is left from the grid due to many arriving new videos
+Storing only first friend id
+
+SOLUTION:
+Save new incoming intent to the last friend
+Do not crash if friend is currently not on the grid. Just open Zazo.
