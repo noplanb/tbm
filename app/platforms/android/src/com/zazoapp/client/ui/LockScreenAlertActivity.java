@@ -45,6 +45,7 @@ public class LockScreenAlertActivity extends Activity {
 		super.onNewIntent(intent);
 		Log.i(TAG, "onNewIntent");
 		setupViews(intent);
+        setIntent(intent);
 	}
 
 	@Override

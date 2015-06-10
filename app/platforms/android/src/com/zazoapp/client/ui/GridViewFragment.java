@@ -180,9 +180,10 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
         int index = GridElementFactory.getFactoryInstance().gridElementIndexWithFriend(f);
 
-        if (index == -1)
-            throw new RuntimeException("Play from notification found no grid element index for friendId: " + friendId);
-
+        if (index == -1) {
+            Log.d(TAG, "Play from notification found no grid element index for friendId: " + friendId);
+            return;
+        }
         View view = nineViewGroup.getSurroundingFrame(index);
         getManagerProvider().getPlayer().togglePlayOverView(view, friendId);
     }
