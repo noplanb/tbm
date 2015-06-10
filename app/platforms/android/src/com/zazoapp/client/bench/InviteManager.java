@@ -334,7 +334,7 @@ public class InviteManager implements InviteHelper {
 
     private boolean checkIsFailureAndShowDialog(LinkedTreeMap<String, String> params) {
         if (params == null) {
-            listener.onShowInfoDialog(context.getString(R.string.dialog_server_error_title), context.getString(R.string.dialog_server_error_message, Config.appName));
+            serverError();
             return true;
         }
         String status = params.get(HttpRequest.ParamKeys.RESPONSE_STATUS);

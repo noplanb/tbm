@@ -283,9 +283,9 @@ public class RemoteStorageHandler {
                     @Override
                     public void success(String response) {
                         Gson g = new Gson();
-                        ArrayList<LinkedTreeMap<String, String>> kvs = new ArrayList<LinkedTreeMap<String, String>>();
+                        ArrayList<LinkedTreeMap<String, String>> kvs = null;
                         try {
-                            kvs = g.fromJson(response, kvs.getClass());
+                            kvs = g.fromJson(response, ArrayList.class);
                             gotRemoteKVs(kvs);
                         } catch (JsonSyntaxException e) {
                             error("JsonSyntaxException");

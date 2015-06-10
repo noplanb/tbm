@@ -82,7 +82,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
         ArrayList<LinkedTreeMap<String, String>> all = null;
         Gson g = new Gson();
         try {
-            all = g.fromJson(json, all.getClass());
+            all = g.fromJson(json, ArrayList.class);
         } catch (JsonSyntaxException e) {
         }
 

@@ -46,9 +46,9 @@ public class StringUtils {
      */
     public static LinkedTreeMap<String, String> linkedTreeMapWithJson(String json) {
         Gson g = new Gson();
-        LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
+        LinkedTreeMap<String, String> data;
         try {
-            data = g.fromJson(json, data.getClass());
+            data = g.fromJson(json, LinkedTreeMap.class);
         } catch (JsonSyntaxException e) {
             Log.d("ZazoJsonParser", e.getMessage());
             return null;

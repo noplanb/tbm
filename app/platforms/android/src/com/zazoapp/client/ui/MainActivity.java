@@ -226,7 +226,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     private void dismissProgressDialog() {
         if (pd != null)
-            pd.dismiss();
+            pd.dismissAllowingStateLoss();
     }
 
     @Override

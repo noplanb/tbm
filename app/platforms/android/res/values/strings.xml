@@ -54,7 +54,7 @@
     <string name="dialog_record_hint_message">Hint: Press and hold a friend to record.</string>
     <string name="dialog_already_connected_title">Send a Zazo</string>
     <string name="dialog_already_connected_message">It seems that %1$s is already connected with you.\n\nRecord %2$s to %3$s now.</string>
-    <string name="dialog_connected_title">You are Connected</string>
+    <string name="dialog_connected_title">Send a Zazo</string>
     <string name="dialog_connected_message">You and %1$s are connected.\n\nRecord a welcome %2$s to %3$s now.</string>
     <string name="dialog_nudge_friend_title">Nudge %1$s</string>
     <string name="dialog_nudge_friend_message">%1$s still hasn\'t installed %2$s.\n\nDo you want to send them a link again?</string>

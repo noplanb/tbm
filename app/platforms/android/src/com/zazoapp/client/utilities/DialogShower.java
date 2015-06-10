@@ -2,6 +2,9 @@ package com.zazoapp.client.utilities;
 
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
@@ -51,15 +54,15 @@ public class DialogShower {
 
     public static void showActionInfoDialog(Activity activity, String title, String message, String action,
                                             boolean needCancel, boolean editable, int actionId, AbstractDialogFragment.DialogListener listener) {
-        DialogFragment dialog = ActionInfoDialogFragment.getInstance(title, message, action, actionId,
+        DialogFragment d = ActionInfoDialogFragment.getInstance(title, message, action, actionId,
                 needCancel, editable, listener);
-        dialog.show(activity.getFragmentManager(), null);
+        showDialog(activity, d, null);
     }
 
     public static void showDoubleActionDialog(Activity activity, String title, String message, String actionPositive,
                                               String actionNegative, int dialogId, boolean editable, DoubleActionDialogListener listener) {
-        DialogFragment dialog = DoubleActionDialogFragment.getInstance(dialogId, title, message, actionPositive, actionNegative, editable, listener);
-        dialog.show(activity.getFragmentManager(), null);
+        DialogFragment d = DoubleActionDialogFragment.getInstance(dialogId, title, message, actionPositive, actionNegative, editable, listener);
+        showDialog(activity, d, null);
     }
 
     public static void showCameraException(final Activity activity, CameraException cameraException, final DoubleActionDialogListener listener, final int id) {
@@ -73,33 +76,40 @@ public class DialogShower {
 
             @Override
             public void run() {
-                DialogFragment dialogFragment = DoubleActionDialogFragment.getInstance(id, title, message, positiveText, negativeText, listener);
-                dialogFragment.show(activity.getFragmentManager(), null);
+                DialogFragment d = DoubleActionDialogFragment.getInstance(id, title, message, positiveText, negativeText, listener);
+                showDialog(activity, d, null);
             }
         });
     }
 
     public static void showInfoDialog(Activity activity, String title, String message) {
-        DialogFragment info = InfoDialogFragment.getInstance(title, message);
-        info.show(activity.getFragmentManager(), null);
+        DialogFragment d = InfoDialogFragment.getInstance(title, message);
+        showDialog(activity, d, null);
     }
 
     public static void showHintDialog(Activity activity, String title, String message) {
         if (activity.getFragmentManager().findFragmentByTag("hint") == null) {
-            DialogFragment info = InfoDialogFragment.getInstance(title, message);
-            info.show(activity.getFragmentManager(), "hint");
+            DialogFragment d = InfoDialogFragment.getInstance(title, message);
+            showDialog(activity, d, "hint");
         }
     }
 
     public static void showVersionHandlerDialog(Activity activity, String message, boolean negativeButton) {
         if (activity.getFragmentManager().findFragmentByTag("compatibility") == null) {
             DialogFragment d = VersionDialogFragment.getInstance(message, negativeButton);
-            d.show(activity.getFragmentManager(), "compatibility");
+            showDialog(activity, d, "compatibility");
         }
     }
 
     public static void showSelectPhoneNumberDialog(Activity activity, Contact contact, SelectPhoneNumberDialog.Callbacks callbacks) {
-        DialogFragment f = SelectPhoneNumberDialog.getInstance(contact, callbacks);
-        f.show(activity.getFragmentManager(), null);
+        DialogFragment d = SelectPhoneNumberDialog.getInstance(contact, callbacks);
+        showDialog(activity, d, null);
+    }
+
+    private static void showDialog(Activity activity, Fragment dialog, String tag) {
+        FragmentManager manager = activity.getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.add(dialog, tag);
+        transaction.commitAllowingStateLoss();
     }
 }

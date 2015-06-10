@@ -320,9 +320,9 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	public void didReceiveCodeResponse(String r) {
 		Log.i(TAG, "didReceiveCodeResponse: " + r);
 		Gson g = new Gson();
-		LinkedTreeMap<String,String> params = new LinkedTreeMap<String, String>();
+		LinkedTreeMap<String,String> params;
         try {
-            params = g.fromJson(r, params.getClass());
+            params = g.fromJson(r, LinkedTreeMap.class);
         } catch (JsonSyntaxException e) {
             serverError();
             return;
