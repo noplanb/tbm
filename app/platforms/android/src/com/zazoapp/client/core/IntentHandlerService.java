@@ -222,7 +222,9 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
             status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
             retryCount = intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
-            Log.i(TAG, "status:" + status + " retry:" + intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0));
+            if (i.getExtras() != null) {
+                Log.i(TAG, i.getExtras().toString());
+            }
         }
 
         public void handle() {
