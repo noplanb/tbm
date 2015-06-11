@@ -1,5 +1,5 @@
 Previous v2.4.11 (71)
-Current v2.5.2 (74)
+Current v2.5.3 (75)
 
 BACKGROUND CHANGES:
 - Added on boot complete receiver and start main service to restore transferring
@@ -101,3 +101,15 @@ Storing only first friend id
 SOLUTION:
 Save new incoming intent to the last friend
 Do not crash if friend is currently not on the grid. Just open Zazo.
+
+---------
+Fix #488
+---------
+"Unread" status changed into "Dwnld e!..." and video becomes "not playable"
+
+PROBLEM:
+Polling restarts video that is already exists in model
+
+SOLUTION:
+Check if this videoId is already exists before requestDonwloading.
+Retry request to remote server to delete videoId if video has been already downloaded

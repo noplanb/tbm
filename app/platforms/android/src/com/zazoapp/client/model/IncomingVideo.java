@@ -24,4 +24,7 @@ public class IncomingVideo extends Video {
         setRetryCount(0);
     }
 
+    public boolean isDownloaded() {
+        return getVideoStatus() == Status.DOWNLOADED || getVideoStatus() == Status.VIEWED;
+    }
 }

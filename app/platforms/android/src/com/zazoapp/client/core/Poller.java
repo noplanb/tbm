@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.Log;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.model.OutgoingVideo;
 
 import java.util.ArrayList;
@@ -50,7 +52,12 @@ public class Poller {
 
         public void handleVideoIds(Friend friend, ArrayList<String> videoIds) {
             for (String videoId : videoIds){
-                friend.requestDownload(videoId);
+                IncomingVideo video = IncomingVideoFactory.getFactoryInstance().find(videoId);
+                if (video == null) {
+                    friend.requestDownload(videoId);
+                } else if (video.isDownloaded()) {
+                    RemoteStorageHandler.deleteRemoteIncomingVideoId(friend, videoId);
+                }
             }
         }
 
