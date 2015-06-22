@@ -9,27 +9,27 @@ import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
 
 public class NotificationHandler {
-	public static String STAG = NotificationHandler.class.getSimpleName();
+	public static final String STAG = NotificationHandler.class.getSimpleName();
 	
 	public static class DataKeys{
-		public static String TARGET_MKEY = "target_mkey";
-		public static String FROM_MKEY = "from_mkey";
-	    public static String SENDER_NAME = "sender_name";
-	    public static String VIDEO_ID = "video_id";
-	    public static String TO_MKEY = "to_mkey";
-	    public static String STATUS = "status";
-	    public static String TYPE = "type";
-	    public static String SERVER_HOST = "host";
+		public static final String TARGET_MKEY = "target_mkey";
+		public static final String FROM_MKEY = "from_mkey";
+	    public static final String SENDER_NAME = "sender_name";
+	    public static final String VIDEO_ID = "video_id";
+	    public static final String TO_MKEY = "to_mkey";
+	    public static final String STATUS = "status";
+	    public static final String TYPE = "type";
+	    public static final String SERVER_HOST = "host";
 	}
 	
 	public static class StatusEnum{
-		public static String DOWNLOADED = "downloaded";
-		public static String VIEWED = "viewed";
+		public static final String DOWNLOADED = "downloaded";
+		public static final String VIEWED = "viewed";
 	}
 	
 	public static class TypeEnum{
-		public static String VIDEO_RECEIVED = "video_received";
-		public static String VIDEO_STATUS_UPDATE = "video_status_update";
+		public static final String VIDEO_RECEIVED = "video_received";
+		public static final String VIDEO_STATUS_UPDATE = "video_status_update";
 	}
 
 	public static void sendForVideoReceived(Friend friend, String videoId) {

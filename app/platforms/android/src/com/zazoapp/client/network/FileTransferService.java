@@ -31,17 +31,17 @@ public abstract class FileTransferService extends IntentService {
 
     public class IntentFields {
         public static final String ID_KEY = "id";
-        public final static String TRANSFER_TYPE_KEY = "transferType";
-        public final static String RETRY_COUNT_KEY = "retryCount";
-        public final static String FILE_PATH_KEY = "filePath";
-        public final static String FILE_NAME_KEY = "filename";
-        public final static String PARAMS_KEY = "params";
-        public final static String STATUS_KEY = "status";
-        public final static String VIDEO_ID_KEY = "videoIdKey";
+        public static final String TRANSFER_TYPE_KEY = "transferType";
+        public static final String RETRY_COUNT_KEY = "retryCount";
+        public static final String FILE_PATH_KEY = "filePath";
+        public static final String FILE_NAME_KEY = "filename";
+        public static final String PARAMS_KEY = "params";
+        public static final String STATUS_KEY = "status";
+        public static final String VIDEO_ID_KEY = "videoIdKey";
 
-        public final static String TRANSFER_TYPE_UPLOAD = "upload";
-        public final static String TRANSFER_TYPE_DOWNLOAD = "download";
-        public final static String TRANSFER_TYPE_DELETE = "delete";
+        public static final String TRANSFER_TYPE_UPLOAD = "upload";
+        public static final String TRANSFER_TYPE_DOWNLOAD = "download";
+        public static final String TRANSFER_TYPE_DELETE = "delete";
     }
 
     protected abstract void maxRetriesReached(Intent intent) throws InterruptedException;

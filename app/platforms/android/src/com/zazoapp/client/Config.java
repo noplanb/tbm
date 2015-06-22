@@ -12,16 +12,16 @@ import java.util.regex.Pattern;
 public class Config {
     private static final String TAG = Config.class.getSimpleName();
 
-//	public final static String SERVER_HOST = "192.168.1.82";
+//    public static final String SERVER_HOST = "192.168.1.82";
 //    public static final int SERVER_PORT = 3000;
-//    public final static String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;
+//    public static final String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;
 
-    private final static String STAGE_HOST = "staging.zazoapp.com";
-    private final static String STAGE_URI = "http://" + STAGE_HOST;
-    private final static String SERVER_HOST = "prod.zazoapp.com";
-    private final static String SERVER_URI = "http://" + SERVER_HOST;
+    private static final String STAGE_HOST = "staging.zazoapp.com";
+    private static final String STAGE_URI = "http://" + STAGE_HOST;
+    private static final String SERVER_HOST = "prod.zazoapp.com";
+    private static final String SERVER_URI = "http://" + SERVER_HOST;
 
-	public final static String appName = "Zazo";
+    public static final String appName = "Zazo";
     public static final String landingPageUrl = "zazoapp.com/l/";
 
     private static File publicDir = null;

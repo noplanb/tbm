@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 public class SyncManager {
-    private static String TAG = SyncManager.class.getSimpleName();
+    private static final String TAG = SyncManager.class.getSimpleName();
     private Context context;
     
     public SyncManager(Context c){

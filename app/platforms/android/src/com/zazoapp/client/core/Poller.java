@@ -12,7 +12,7 @@ import java.util.ArrayList;
 // Polls for new videos and schedules downloads.
 public class Poller {
 
-        private static String TAG = Poller.class.getSimpleName();
+        private static final String TAG = Poller.class.getSimpleName();
         private Context context;
 
         //-----------------

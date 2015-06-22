@@ -16,34 +16,33 @@ import java.util.ArrayList;
 
 
 public class RemoteStorageHandler {
-    private final static String TAG = RemoteStorageHandler.class.getSimpleName();
+    private static final String TAG = RemoteStorageHandler.class.getSimpleName();
     private static final String VIDEO_ID_KV_KEY = "-VideoIdKVKey";
     private static final String VIDEO_STATUS_KV_KEY = "-VideoStatusKVKey";
 
     //--------------------------------
-	// Data structures keys and values
-	//--------------------------------
-	private static class DataKeys{
-		public static String VIDEO_ID_KEY = "videoId";
-		public static String STATUS_KEY = "status";
-		public static String VALUE_KEY = "value";
-		public static String KEY1_KEY = "key1";
-		public static String KEY2_KEY = "key2";
-	}
-	
-	public static class StatusEnum{
-		public static String DOWNLOADED = "downloaded";
-		public static String VIEWED = "viewed";
-	}
-	
-	
+    // Data structures keys and values
+    //--------------------------------
+    private static class DataKeys {
+        public static final String VIDEO_ID_KEY = "videoId";
+        public static final String STATUS_KEY = "status";
+        public static final String VALUE_KEY = "value";
+        public static final String KEY1_KEY = "key1";
+        public static final String KEY2_KEY = "key2";
+    }
+
+    public static class StatusEnum {
+        public static final String DOWNLOADED = "downloaded";
+        public static final String VIEWED = "viewed";
+    }
+
     //=======================================
-	// Convenience Public setters and getters
+    // Convenience Public setters and getters
     //=======================================
-	
-	//--------
-	// Setters
-	//--------
+
+    //--------
+    // Setters
+    //--------
    public static void addRemoteOutgoingVideoId(Friend friend, String videoId){
         LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
         data.put(DataKeys.VIDEO_ID_KEY, videoId);

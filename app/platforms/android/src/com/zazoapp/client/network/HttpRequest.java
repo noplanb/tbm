@@ -40,7 +40,7 @@ public class HttpRequest {
     
     private String method;
 
-    private static String TAG = HttpRequest.class.getSimpleName();
+    private static final String TAG = HttpRequest.class.getSimpleName();
     private String pass;
     private String login;
     private String uri;

@@ -15,7 +15,6 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.model.Contact;
 
 public class SelectPhoneNumberDialog extends AbstractDialogFragment implements AdapterView.OnItemClickListener {
-    private final static String TAG = SelectPhoneNumberDialog.class.getSimpleName();
 
     private static final String CONTACT_KEY = "contact_key";
 

@@ -18,7 +18,7 @@ import java.io.IOException;
 
 public class VideoRecorder implements SurfaceTextureListener {
 
-    private final static String TAG = VideoRecorder.class.getSimpleName();
+    private static final String TAG = VideoRecorder.class.getSimpleName();
 
     // Even though I set up this exception handling interface to be complete I
     // probably wont use it the failure cause of failure
