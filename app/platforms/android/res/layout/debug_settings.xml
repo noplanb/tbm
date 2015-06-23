@@ -239,5 +239,12 @@
                     android:text="Reset"
                     android:textColor="@android:color/white"/>
         </LinearLayout>
+        <Switch
+                android:id="@+id/disable_gcm_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Disable GCM notifications"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="5dp"/>
     </LinearLayout>
 </ScrollView>

@@ -29,6 +29,9 @@ public class RemoteStorageHandler {
         public static final String VALUE_KEY = "value";
         public static final String KEY1_KEY = "key1";
         public static final String KEY2_KEY = "key2";
+        public static final String MKEY = "mkey";
+        public static final String VIDEO_IDS = "video_ids";
+        public static final String STATUS_VIDEO_ID = "video_id";
     }
 
     public static class StatusEnum {
@@ -60,58 +63,76 @@ public class RemoteStorageHandler {
     // Getters
     //--------
     // incomingVideoIds
-    public static abstract class GetRemoteIncomingVideoIds extends GetRemoteKVs{
-        private final Friend friend;
-        
-        public GetRemoteIncomingVideoIds(Friend friend){
-            super(incomingVideoIdsRemoteKVKey(friend));
-            this.friend = friend;
-        }
+    public static abstract class GetAllRemoteIncomingVideoIds {
 
-        @Override
-        public void gotRemoteKVs(ArrayList<LinkedTreeMap<String, String>> kvs) {    
-            ArrayList<String>values = new ArrayList<String>();          
-            for (LinkedTreeMap<String, String> kv : kvs){
-                String vidJson = kv.get(DataKeys.VALUE_KEY);
-                LinkedTreeMap<String, String> vidObj = StringUtils.linkedTreeMapWithJson(vidJson);
-                if (vidObj != null) {
-                    values.add(vidObj.get(DataKeys.VIDEO_ID_KEY));
+        public GetAllRemoteIncomingVideoIds() {
+            new HttpRequest("kvstore/received_videos", new HttpRequest.Callbacks() {
+                @Override
+                public void success(String response) {
+                    Gson g = new Gson();
+                    ArrayList<LinkedTreeMap<String, Object>> kvs = null;
+                    try {
+                        kvs = g.fromJson(response, ArrayList.class);
+                        gotRemoteKVs(kvs);
+                    } catch (JsonSyntaxException e) {
+                        error("JsonSyntaxException");
+                    }
                 }
-            }
-            gotVideoIds(values);
-        }
-        protected abstract void gotVideoIds(ArrayList<String>videoIds);
 
-        protected Friend getFriend() {
-            return friend;
+                @Override
+                public void error(String errorString) {
+                    Log.e(TAG, "GetAllRemoteIncomingVideoIds: " + errorString);
+                }
+            });
         }
+
+        private void gotRemoteKVs(ArrayList<LinkedTreeMap<String, Object>> kvs) {
+            for (LinkedTreeMap<String, Object> kv : kvs) {
+                String mkey = (String) kv.get(DataKeys.MKEY);
+                ArrayList<String> vidIds = (ArrayList<String>) kv.get(DataKeys.VIDEO_IDS);
+                gotVideoIds(mkey, vidIds);
+            }
+        }
+
+        protected abstract void gotVideoIds(String mkey, ArrayList<String> videoIds);
     }
 
     // OutgoingVideoStatus
-    public static abstract class GetRemoteOutgoingVideoStatus extends GetRemoteKV{
-        private final Friend friend;
+    public static abstract class GetAllRemoteOutgoingVideoStatus {
 
-        public GetRemoteOutgoingVideoStatus(Friend friend){
-            super(outgoingVideoStatusRemoteKVKey(friend), null);
-            this.friend = friend;
+        public GetAllRemoteOutgoingVideoStatus(){
+            new HttpRequest("kvstore/video_status", new HttpRequest.Callbacks() {
+                @Override
+                public void success(String response) {
+                    Gson g = new Gson();
+                    ArrayList<LinkedTreeMap<String, String>> kvs = null;
+                    try {
+                        kvs = g.fromJson(response, ArrayList.class);
+                        gotRemoteKVs(kvs);
+                    } catch (JsonSyntaxException e) {
+                        error("JsonSyntaxException");
+                    }
+                }
+
+                @Override
+                public void error(String errorString) {
+                    Log.e(TAG, "GetAllRemoteOutgoingVideoStatus: " + errorString);
+                }
+            });
         }
 
-        @Override
-        protected void gotRemoteKV(LinkedTreeMap<String, String> kv) {
-            if (kv == null)
-                gotVideoIdStatus(null, null);
-            else
-                gotVideoIdStatus(kv.get(DataKeys.VIDEO_ID_KEY), kv.get(DataKeys.STATUS_KEY));
+        private void gotRemoteKVs(ArrayList<LinkedTreeMap<String, String>> kvs) {
+            if (kvs != null) {
+                for (LinkedTreeMap<String, String> kv : kvs) {
+                    gotVideoIdStatus(kv.get(DataKeys.MKEY), kv.get(DataKeys.STATUS_VIDEO_ID), kv.get(DataKeys.STATUS_KEY));
+                }
+            }
         }
 
-        protected abstract void gotVideoIdStatus(String videoId, String status);
+        protected abstract void gotVideoIdStatus(String mkey, String videoId, String status);
 
-        protected Friend getFriend() {
-            return friend;
-        }
     }
 
-    
     //-------
     // Delete
     //-------
@@ -220,83 +241,6 @@ public class RemoteStorageHandler {
                     Log.e(TAG, "SetRemote: ERROR: " + errorString);
                 }
             });
-		}
-	}
-
-	// Get key1, key2
-	private static abstract class GetRemoteKV{
-
-	    public GetRemoteKV(String key1, String key2){
-	        LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-	        params.put(DataKeys.KEY1_KEY, key1);
-	        if (key2 != null)
-	            params.put(DataKeys.KEY2_KEY, key2);
-	        new GetRemoteKVRequest("kvstore/get", params, "GET");
-	    }
-
-	    protected abstract void gotRemoteKV(LinkedTreeMap<String, String>kv);
-
-	    private class GetRemoteKVRequest extends HttpRequest{
-	        public GetRemoteKVRequest(String uri, LinkedTreeMap<String, String> params, String method) {
-	            super(uri, params, method, new Callbacks() {
-
-	                @SuppressWarnings("unchecked")
-	                @Override
-	                public void success(String response) {
-
-                        if (response.isEmpty()){
-                            gotRemoteKV(null);
-                            return;
-                        }
-
-                        LinkedTreeMap<String, String> data = StringUtils.linkedTreeMapWithJson(response);
-                        if (data != null) {
-                            gotRemoteKV(StringUtils.linkedTreeMapWithJson(data.get(DataKeys.VALUE_KEY)));
-                        } else {
-                            gotRemoteKV(null);
-                        }
-                    }
-
-	                @Override
-	                public void error(String errorString) {
-	                    Log.e(TAG, "GetRemoteKV: " + errorString);
-	                }
-	            });
-	        }
-	    }
-	}
-	
-	// Get all
-	private static abstract class GetRemoteKVs{
-		public GetRemoteKVs(String key1){
-			LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-			params.put(DataKeys.KEY1_KEY, key1);
-			new GetRemoteKVsRequest("kvstore/get_all", params, "GET");
-		}
-		
-		protected abstract void gotRemoteKVs(ArrayList<LinkedTreeMap<String, String>> kvs);
-		
-		private class GetRemoteKVsRequest extends HttpRequest{			
-			public GetRemoteKVsRequest(String uri, LinkedTreeMap<String, String> params, String method) {
-				super(uri, params, method, new Callbacks() {
-                    @Override
-                    public void success(String response) {
-                        Gson g = new Gson();
-                        ArrayList<LinkedTreeMap<String, String>> kvs = null;
-                        try {
-                            kvs = g.fromJson(response, ArrayList.class);
-                            gotRemoteKVs(kvs);
-                        } catch (JsonSyntaxException e) {
-                            error("JsonSyntaxException");
-                        }
-                    }
-
-                    @Override
-                    public void error(String errorString) {
-                        Log.e(TAG, "GetRemoteKVs: " + errorString);
-                    }
-                });
-			}
 		}
 	}
 

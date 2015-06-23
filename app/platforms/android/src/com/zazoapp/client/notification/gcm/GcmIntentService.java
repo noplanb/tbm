@@ -1,6 +1,5 @@
 package com.zazoapp.client.notification.gcm;
 
-
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +7,7 @@ import android.util.Log;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.OutgoingVideo;
@@ -100,9 +100,11 @@ public class GcmIntentService extends IntentService {
 		startDataHolderService(intent);
 	}
 
-	private void startDataHolderService(Intent intent) {
-		intent.setClass(getApplicationContext(), IntentHandlerService.class);
-		startService(intent);
-	}
+    private void startDataHolderService(Intent intent) {
+        if (!DebugConfig.getInstance(this).isGcmNotificationsDisabled()) {
+            intent.setClass(getApplicationContext(), IntentHandlerService.class);
+            startService(intent);
+        }
+    }
 
 }

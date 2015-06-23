@@ -27,4 +27,8 @@ public class IncomingVideo extends Video {
     public boolean isDownloaded() {
         return getVideoStatus() == Status.DOWNLOADED || getVideoStatus() == Status.VIEWED;
     }
+
+    public boolean isFailed() {
+        return getVideoStatus() == Status.FAILED_PERMANENTLY;
+    }
 }

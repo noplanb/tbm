@@ -19,6 +19,7 @@ public class DebugConfig {
     private static final String KEY_USE_CUSTOM_SERVER = "use_custom_server";
     private static final String KEY_USE_REAR_CAMERA = "use_rear_camera";
     private static final String KEY_SEND_BROKEN_VIDEO = "send_broken_video";
+    private static final String KEY_DISABLE_GCM_NOTIFICATIONS = "disable_gcm_notifications";
 
     public static final boolean DEBUG_LOG = false;
 
@@ -43,6 +44,7 @@ public class DebugConfig {
     private boolean useCustomServer;
     private boolean useRearCamera;
     private boolean sendBrokenVideo;
+    private boolean disableGcmNotifications;
 
     private DebugConfig() {
     }
@@ -81,6 +83,7 @@ public class DebugConfig {
         useCustomServer = prefs.getBoolean(KEY_USE_CUSTOM_SERVER, false);
         useRearCamera = prefs.getBoolean(KEY_USE_REAR_CAMERA, false);
         sendBrokenVideo = prefs.getBoolean(KEY_SEND_BROKEN_VIDEO, false);
+        disableGcmNotifications = prefs.getBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, false);
     }
 
     public boolean isDebugEnabled() {
@@ -109,6 +112,10 @@ public class DebugConfig {
 
     public boolean shouldSendBrokenVideo() {
         return sendBrokenVideo;
+    }
+
+    public boolean isGcmNotificationsDisabled() {
+        return disableGcmNotifications;
     }
 
     public void enableSendSms(boolean sendSms) {
@@ -153,6 +160,12 @@ public class DebugConfig {
         notifyChanges();
     }
 
+    public void setDisableGcmNotifications(boolean disable) {
+        disableGcmNotifications = disable;
+        prefs.getBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, disable);
+        notifyChanges();
+    }
+
     public void savePrefs() {
         prefs.putInt(KEY_MODE, mode);
         prefs.putBoolean(KEY_SEND_SMS, shouldSendSms);
@@ -161,6 +174,7 @@ public class DebugConfig {
         prefs.putBoolean(KEY_USE_CUSTOM_SERVER, useCustomServer);
         prefs.putBoolean(KEY_USE_REAR_CAMERA, useRearCamera);
         prefs.putBoolean(KEY_SEND_BROKEN_VIDEO, sendBrokenVideo);
+        prefs.putBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, disableGcmNotifications);
     }
 
     public void reloadPrefs() {
@@ -171,6 +185,7 @@ public class DebugConfig {
         useCustomServer = prefs.getBoolean(KEY_USE_CUSTOM_SERVER, false);
         useRearCamera = prefs.getBoolean(KEY_USE_REAR_CAMERA, false);
         sendBrokenVideo = prefs.getBoolean(KEY_SEND_BROKEN_VIDEO, false);
+        disableGcmNotifications = prefs.getBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, false);
     }
 
     public void addCallback(DebugConfigChangesCallback callback) {

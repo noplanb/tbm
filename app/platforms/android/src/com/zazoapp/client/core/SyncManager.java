@@ -23,12 +23,12 @@ public class SyncManager {
         
         @Override
         protected void success() {
-            new Poller(context).pollAll();
+            new Poller().pollAll();
         }
 
         @Override
         protected void failure() {
-            new Poller(context).pollAll();
+            new Poller().pollAll();
         }
 
     }

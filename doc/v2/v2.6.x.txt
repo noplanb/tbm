@@ -8,3 +8,8 @@ Welcome message hint after adding a friend.
 
 Testcase:
 C2501
+
+---------
+NEW #521
+---------
+Single request for polling status and received videos

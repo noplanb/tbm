@@ -18,16 +18,16 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import com.google.i18n.phonenumbers.Phonenumber;
-import com.zazoapp.client.model.GridManager;
-import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElementFactory;
+import com.zazoapp.client.model.GridManager;
+import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
-import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.tutorial.HintType;
 import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.utilities.DialogShower;
@@ -58,6 +58,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         setUpCrashButton();
         setUpSendBrokenVideo();
         setUpTutorialOption();
+        setUpDisableGcmNotificationsOption();
     }
 
     @Override
@@ -310,6 +311,17 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 p.putBoolean(HintType.SENT.getPrefName(), true);
                 p.putBoolean(HintType.VIEWED.getPrefName(), true);
                 p.putBoolean(HintType.INVITE_2.getPrefSessionName(), true);
+            }
+        });
+    }
+
+    private void setUpDisableGcmNotificationsOption() {
+        Switch disableGcm = (Switch) findViewById(R.id.disable_gcm_notifications);
+        disableGcm.setChecked(config.isGcmNotificationsDisabled());
+        disableGcm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                config.setDisableGcmNotifications(isChecked);
             }
         });
     }
