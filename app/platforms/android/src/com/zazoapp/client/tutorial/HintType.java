@@ -111,6 +111,20 @@ public enum HintType {
             layout.dim();
             delayedDismiss(layout, this, tutorial);
         }
+    },
+    SEND_WELCOME(R.string.tutorial_hint_send_welcome) {
+        @Override
+        boolean shouldShow(HintType current, PreferencesHelper prefs) {
+            return current == null;
+        }
+
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial) {
+            layout.clear();
+            layout.hideButton();
+            layout.setExcludedRect(getViewRect(view));
+            layout.dim();
+        }
     };
 
     private static final String SESSION = "_session";
@@ -133,6 +147,10 @@ public enum HintType {
 
     String getHint(Context context) {
         return context.getString(hintTextId);
+    }
+
+    String getHint(Context context, String... vars) {
+        return context.getString(hintTextId, vars);
     }
 
     abstract boolean shouldShow(HintType current, PreferencesHelper prefs);

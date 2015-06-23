@@ -44,6 +44,7 @@ public class InviteManager implements InviteHelper {
 	private Context context;
     private BenchObject benchObject;
     private Friend friend;
+    private Friend lastInvitedFriend;
     private InviteDialogListener listener;
 
     public InviteManager(Context context, InviteDialogListener listener) {
@@ -199,11 +200,10 @@ public class InviteManager implements InviteHelper {
 
         if (checkIsFailureAndShowDialog(params))
             return;
-
         friend = FriendFactory.getFactoryInstance().createWithServerParams(context, params);
         if (friend != null) {
             if (friend.hasApp()) {
-                showConnectedDialog();
+                finishInvitation();
             } else {
                 showSmsDialog();
             }
@@ -213,21 +213,15 @@ public class InviteManager implements InviteHelper {
         }
     }
 
-    //-----------------
-    // Connected Dialog
-    //-----------------
     @Override
-    public void showConnectedDialog() {
+    public void finishInvitation() {
         if (friend == null) {
             Log.e(TAG, "Friend is null on this step. This should never happen");
             Dispatch.dispatch(new NullPointerException(), "Friend is null");
             return;
         }
-        String name = friend.getFirstName();
-        String msg = context.getString(R.string.dialog_connected_message, name, Config.appName, name);
-        String title = context.getString(R.string.dialog_connected_title);
-        String action = context.getString(R.string.dialog_action_ok);
-        listener.onShowActionInfoDialog(title, msg, action, false, false, MainActivity.CONNECTED_DIALOG);
+        lastInvitedFriend = friend;
+        moveFriendToGrid();
     }
 
     private void showAlreadyConnectedDialog() {
@@ -288,10 +282,20 @@ public class InviteManager implements InviteHelper {
     public void sendInvite(String message) {
         if (canSendSms()) {
             sendSms(message);
-            showConnectedDialog();
+            finishInvitation();
         } else {
             failureNoSimDialog();
         }
+    }
+
+    @Override
+    public Friend getLastInvitedFriend() {
+        return lastInvitedFriend;
+    }
+
+    @Override
+    public void dropLastInvitedFriend() {
+        lastInvitedFriend = null;
     }
 
     private String getDefaultInviteMessage() {

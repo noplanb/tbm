@@ -168,7 +168,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 getInviteHelper().inviteNewFriend();
                 break;
             case NO_SIM_DIALOG:
-                getInviteHelper().showConnectedDialog();
+                getInviteHelper().finishInvitation();
                 break;
         }
     }

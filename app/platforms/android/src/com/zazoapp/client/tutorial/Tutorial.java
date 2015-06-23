@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.TbmApplication;
+import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideoFactory;
@@ -99,12 +100,15 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         markHintAsShowed(HintType.PLAY);
     }
 
-    public void onFriendModelChanged(View view) {
+    public void onFriendModelChanged(View view, Friend friend) {
         int friendsCount = FriendFactory.getFactoryInstance().count();
         Log.i(TAG, "onFriendModelChanged: friends " + friendsCount);
         if (shouldShow(HintType.RECORD)) {
             showHint(HintType.RECORD, view);
             markHintAsShowedForSession(HintType.RECORD);
+        } else if (friend != null && friend.equals(managers.getInviteHelper().getLastInvitedFriend()) && shouldShow(HintType.SEND_WELCOME)) {
+            showHint(HintType.SEND_WELCOME, view, HintType.SEND_WELCOME.getHint(tutorialLayout.getContext(), friend.getFirstName()));
+            managers.getInviteHelper().dropLastInvitedFriend();
         }
     }
 
@@ -137,12 +141,16 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     }
 
     private void showHint(HintType hint, View view) {
+        showHint(hint, view, hint.getHint(tutorialLayout.getContext()));
+    }
+
+    private void showHint(HintType hint, View view, String text) {
         Log.i(TAG, "Show hint " + hint + " " + HintType.getViewRect(view));
         if (managers.getBenchViewManager().isBenchShowed()) {
             managers.getBenchViewManager().hideBench();
         }
         current = hint;
-        tutorialLayout.setHintText(current.getHint(tutorialLayout.getContext()));
+        tutorialLayout.setHintText(text);
         hint.show(tutorialLayout, view, this);
     }
 

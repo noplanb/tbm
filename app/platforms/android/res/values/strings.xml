@@ -93,5 +93,6 @@
     <string name="tutorial_hint_record">Press and hold to record</string>
     <string name="tutorial_hint_sent">Zazo sent! Well done!</string>
     <string name="tutorial_hint_viewed">Your Zazo was Viewed!</string>
+    <string name="tutorial_hint_send_welcome">Record a welcome Zazo for %1$s.</string>
     <string name="tutorial_got_it">Got It</string>
 </resources>

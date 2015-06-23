@@ -180,7 +180,7 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     }
 
     @Override
-    public void onModelChanged(ActiveModelFactory<?> factory) {
+    public void onModelChanged(ActiveModelFactory<?> factory, ActiveModelFactory.ModelChangeType changeType) {
         if (!TbmApplication.getInstance().isForeground()) {
             Intent intent = new Intent(context, IntentHandlerService.class);
             intent.setAction(IntentHandlerService.IntentActions.SAVE_MODEL);
@@ -215,6 +215,15 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
                 }
             }
             return -1;
+        }
+    }
+
+    public static Model getModel(ActiveModelFactory<?> factory) {
+        int id = Model.getId(factory.getModelClass());
+        if (id == -1) {
+            return null;
+        } else {
+            return Model.values()[id];
         }
     }
 }

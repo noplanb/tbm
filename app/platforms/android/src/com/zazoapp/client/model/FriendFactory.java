@@ -102,7 +102,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         }
         notifyOnChanged(true);
         if (needToNotify) {
-            notifyCallbacks();
+            notifyCallbacks(ModelChangeType.UPDATED);
         }
     }
 

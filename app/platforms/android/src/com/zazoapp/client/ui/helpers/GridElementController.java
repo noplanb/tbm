@@ -348,13 +348,15 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (changed) {
             updateContentFromUi(false);
             managerProvider.getBenchViewManager().updateBench();
-            uiHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    managerProvider.getTutorial().onFriendModelChanged(gridElementView);
-                }
-            });
         }
+        uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                managerProvider.getTutorial().onFriendModelChanged(
+                        gridElementView,
+                        gridElement.getFriend());
+            }
+        });
         highLightElementForFriend();
     }
 

@@ -13,8 +13,10 @@ public interface InviteHelper {
     void invite(Contact contact);
     void nudge(Friend f);
     void moveFriendToGrid();
-    void showConnectedDialog();
+    void finishInvitation();
     void failureNoSimDialog();
     void showSmsDialog();
     void sendInvite(String message);
+    Friend getLastInvitedFriend();
+    void dropLastInvitedFriend();
 }

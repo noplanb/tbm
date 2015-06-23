@@ -1,0 +1,10 @@
+Previous v2.5.3 (75)
+Current v2.6.0 (76)
+
+---------
+NEW #498
+---------
+Welcome message hint after adding a friend.
+
+Testcase:
+C2501

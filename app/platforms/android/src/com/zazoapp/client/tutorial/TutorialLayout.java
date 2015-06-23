@@ -14,6 +14,7 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -117,33 +118,30 @@ public class TutorialLayout extends FrameLayout {
         hint.setText(hintText);
         Typeface tf = getTypeface();
         hint.setTypeface(tf);
-        LayoutParams arrowParams = (LayoutParams) arrowView.getLayoutParams();
         if (arrowAnchorRect == null) {
             arrowAnchorRect = dimExcludedRect;
         }
+        ArrowPosition arrowPosition;
         if (dimExcludedRect.intersects(0, 0, getRight(), getHeight() / 3)) {
             // TOP part, place just below
             LayoutParams p = (LayoutParams) hint.getLayoutParams();
             p.setMargins(0, (int) dimExcludedRect.bottom, 0, 0);
             hint.setLayoutParams(p);
             hint.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-            arrowView.setImageResource(R.drawable.arrow_yellow_top_right);
-            int arrowRightMargin = (int) (getWidth() - arrowAnchorRect.left);
-            int arrowBottomMargin = getHeight() - (int) arrowAnchorRect.bottom - hint.getPaddingTop();
-            arrowParams.setMargins(0, 0, arrowRightMargin, arrowBottomMargin);
-            arrowParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+            arrowPosition = ArrowPosition.TOP_CENTER;
         } else {
             LayoutParams p = (LayoutParams) hint.getLayoutParams();
             p.setMargins(0, 0, 0, (int) (getHeight() - dimExcludedRect.top));
             hint.setLayoutParams(p);
             hint.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-            arrowView.setImageResource(R.drawable.arrow_yellow_bottom_right);
-            int arrowRightMargin = (int) (getWidth() - arrowAnchorRect.left);
-            int arrowTopMargin = (int) arrowAnchorRect.top - hint.getPaddingBottom();
-            arrowParams.setMargins(0, arrowTopMargin, arrowRightMargin, 0);
-            arrowParams.gravity = Gravity.TOP | Gravity.RIGHT;
+            arrowPosition = ArrowPosition.BOTTOM_CENTER;
         }
-        arrowView.setLayoutParams(arrowParams);
+        if (dimExcludedRect.right < getWidth() / 2) {
+            arrowPosition = arrowPosition.left();
+        } else if (dimExcludedRect.left > getWidth() / 2) {
+            arrowPosition = arrowPosition.right();
+        }
+        ArrowPosition.setUpArrowView(arrowView, hint, arrowAnchorRect, arrowPosition, getWidth(), getHeight());
     }
 
     private Typeface getTypeface() {
@@ -264,8 +262,13 @@ public class TutorialLayout extends FrameLayout {
         arrowAnchorRect = rect;
     }
 
+    public void hideButton() {
+        findViewById(R.id.tutorial_btn).setVisibility(INVISIBLE);
+    }
+
     private void reset() {
         setVisibility(INVISIBLE);
+        findViewById(R.id.tutorial_btn).setVisibility(VISIBLE);
         dimmed = false;
         dimValue = 0;
         dimExcludedCircleX = 0;
@@ -280,4 +283,93 @@ public class TutorialLayout extends FrameLayout {
         void onDimmed();
     }
 
+    public enum ArrowPosition {
+        TOP_LEFT(R.drawable.arrow_yellow_top_left, Gravity.BOTTOM | Gravity.LEFT) {
+            @Override
+            void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
+                int arrowLeftMargin = (int) anchorRect.right;
+                int arrowBottomMargin = height - (int) anchorRect.bottom - baseView.getPaddingTop();
+                arrowParams.setMargins(arrowLeftMargin, 0, 0, arrowBottomMargin);
+            }
+        },
+        TOP_CENTER(R.drawable.arrow_yellow_top_center, Gravity.BOTTOM | Gravity.LEFT) {
+            @Override
+            void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
+                int arrowLeftMargin = (int) anchorRect.right;
+                int arrowBottomMargin = height - (int) anchorRect.bottom - baseView.getPaddingTop();
+                arrowParams.setMargins(arrowLeftMargin, 0, 0, arrowBottomMargin);
+            }
+        },
+        TOP_RIGHT(R.drawable.arrow_yellow_top_right, Gravity.BOTTOM | Gravity.RIGHT) {
+            @Override
+            void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
+                int arrowRightMargin = (int) (width - anchorRect.left);
+                int arrowBottomMargin = height - (int) anchorRect.bottom - baseView.getPaddingTop();
+                arrowParams.setMargins(0, 0, arrowRightMargin, arrowBottomMargin);
+            }
+        },
+        BOTTOM_LEFT(R.drawable.arrow_yellow_bottom_left, Gravity.TOP | Gravity.LEFT) {
+            @Override
+            void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
+                int arrowLeftMargin = (int) anchorRect.right;
+                int arrowTopMargin = (int) anchorRect.top - baseView.getPaddingBottom();
+                arrowParams.setMargins(arrowLeftMargin, arrowTopMargin, 0, 0);
+            }
+        },
+        BOTTOM_CENTER(R.drawable.arrow_yellow_bottom_center, Gravity.TOP | Gravity.LEFT) {
+            @Override
+            void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
+                int arrowLeftMargin = (int) anchorRect.right;
+                int arrowTopMargin = (int) anchorRect.top - baseView.getPaddingBottom();
+                arrowParams.setMargins(arrowLeftMargin, arrowTopMargin, 0, 0);
+            }
+        },
+        BOTTOM_RIGHT(R.drawable.arrow_yellow_bottom_right, Gravity.TOP | Gravity.RIGHT) {
+            @Override
+            void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
+                int arrowRightMargin = (int) (width - anchorRect.left);
+                int arrowTopMargin = (int) anchorRect.top - baseView.getPaddingBottom();
+                arrowParams.setMargins(0, arrowTopMargin, arrowRightMargin, 0);
+            }
+        };
+
+        private final int image;
+        private final int gravity;
+
+        ArrowPosition(int image, int gravity) {
+            this.image = image;
+            this.gravity = gravity;
+        }
+
+        public static void setUpArrowView(ImageView arrowView, View baseView, RectF anchorRect, ArrowPosition position, int width, int height) {
+            LayoutParams arrowParams = (LayoutParams) arrowView.getLayoutParams();
+            arrowView.setImageResource(position.image);
+            position.locate(baseView, anchorRect, width, height, arrowParams);
+            arrowParams.gravity = position.gravity;
+            arrowView.setLayoutParams(arrowParams);
+        }
+
+        abstract void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams);
+
+        public ArrowPosition left() {
+            return values()[ordinal() / 3 * 3];
+        }
+
+        public ArrowPosition center() {
+            return values()[ordinal() / 3 * 3 + 1];
+        }
+
+        public ArrowPosition right() {
+            return values()[ordinal() / 3 * 3 + 2];
+        }
+
+        public ArrowPosition top() {
+            return values()[ordinal() % 3];
+        }
+
+        public ArrowPosition bottom() {
+            return values()[ordinal() % 3 + 3];
+        }
+
+    }
 }

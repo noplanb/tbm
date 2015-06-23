@@ -40,7 +40,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
         i.init(context);
         i.addCallback(this);
         instances.add(i);
-        notifyCallbacks();
+        notifyCallbacks(ModelChangeType.ADDED);
         return i;
     }
 
@@ -48,7 +48,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
         instances.clear();
         File f = new File(getSaveFilePath(context));
         f.delete();
-        notifyCallbacks();
+        notifyCallbacks(ModelChangeType.DELETED);
     }
 
     //--------------------
@@ -96,7 +96,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
         notifyCallbacks = false;
         replaceAttributes(context, all);
         notifyCallbacks = true;
-        notifyCallbacks();
+        notifyCallbacks(ModelChangeType.UPDATED);
         return true;
     }
 
@@ -169,7 +169,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
             T model = it.next();
             if (model.getId().equals(id)) {
                 it.remove();
-                notifyCallbacks();
+                notifyCallbacks(ModelChangeType.DELETED);
                 break;
             }
         }
@@ -187,10 +187,10 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
         callbacks.remove(callback);
     }
 
-    protected void notifyCallbacks() {
+    protected void notifyCallbacks(ModelChangeType changeType) {
         if (notifyCallbacks) {
             for (ModelChangeCallback callback : callbacks) {
-                callback.onModelChanged(this);
+                callback.onModelChanged(this, changeType);
             }
         }
     }
@@ -198,7 +198,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
     @Override
     public void onModelUpdated(boolean changed) {
         if (changed) {
-            notifyCallbacks();
+            notifyCallbacks(ModelChangeType.UPDATED);
         }
     }
 
@@ -225,6 +225,12 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
     }
 
     public interface ModelChangeCallback {
-        void onModelChanged(ActiveModelFactory<?> factory);
+        void onModelChanged(ActiveModelFactory<?> factory, ModelChangeType changeType);
+    }
+
+    public enum ModelChangeType {
+        ADDED,
+        DELETED,
+        UPDATED
     }
 }
