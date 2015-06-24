@@ -1,10 +1,12 @@
 package com.zazoapp.client.ui.helpers;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
@@ -38,6 +40,7 @@ import com.zazoapp.client.utilities.AsyncTaskManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -392,6 +395,47 @@ public class ContactsManager implements OnItemClickListener {
 		}
 		return pn;
 	}
+
+/*    Intent i = new Intent(Intent.ACTION_SEND);
+    i.setType("text/plain");
+    i.putExtra(Intent.EXTRA_TEXT, "Some text");
+    i.putExtra(Intent.EXTRA_SUBJECT, "Invitation to Zazo");
+    i.putExtra(Intent.EXTRA_EMAIL, "some@email.com");
+    try {
+        activity.startActivity(Intent.createChooser(i, "Send invite..."));
+    } catch (ActivityNotFoundException e) {
+        DialogShower.showToast(activity, "No appropriate application found");
+    }*/
+    public static Set<String> getEmailsForPhone(Context context, String phone) {
+        ContentResolver cr = context.getContentResolver();
+        Uri uri = Uri.withAppendedPath(android.provider.ContactsContract.Contacts.CONTENT_FILTER_URI,
+                                       Uri.encode(phone));
+        Cursor phoneCursor = cr.query(uri, null, null, null, null);
+        Set<String> emails = new LinkedHashSet<>();
+        if (phoneCursor != null && phoneCursor.moveToFirst()) {
+            do {
+                String id = phoneCursor.getString(phoneCursor.getColumnIndex(PhoneLookup._ID));
+                Cursor emailCursor = context.getContentResolver().query(
+                        ContactsContract.CommonDataKinds.Email.CONTENT_URI, null,
+                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+                        new String[] {id}, null);
+                if (emailCursor != null && emailCursor.moveToFirst()) {
+                    do {
+                        String email = emailCursor.getString(emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+                        emails.add(email);
+                    } while (emailCursor.moveToNext());
+                }
+                if (emailCursor != null) {
+                    emailCursor.close();
+                }
+            } while (phoneCursor.moveToNext());
+
+        }
+        if (phoneCursor != null) {
+            phoneCursor.close();
+        }
+        return emails;
+    }
 
 	// We want to be able to do this:
 	// cursor = database.query(contentUri, projection, "columnName IN(?)", new

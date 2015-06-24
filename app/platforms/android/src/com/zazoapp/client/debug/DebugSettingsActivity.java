@@ -262,7 +262,6 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         });
     }
 
-
     private void setUpCrashButton() {
         Button crashMainButton = (Button) findViewById(R.id.crash_main_button);
         crashMainButton.setOnClickListener(new View.OnClickListener() {

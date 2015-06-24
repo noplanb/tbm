@@ -275,7 +275,8 @@ public class InviteManager implements InviteHelper {
         String title = context.getString(R.string.dialog_invite_sms_title);
         String posText = context.getString(R.string.dialog_invite_sms_action);
         String negText = context.getString(R.string.dialog_action_cancel);
-        listener.onShowDoubleActionDialog(title, getDefaultInviteMessage(), posText, negText, MainActivity.SENDLINK_DIALOG, true);
+        listener.onShowDoubleActionDialog(title, getDefaultInviteMessage(), posText, negText,
+                                          MainActivity.SENDLINK_DIALOG, true);
     }
 
     @Override
@@ -303,24 +304,27 @@ public class InviteManager implements InviteHelper {
         return context.getString(R.string.dialog_invite_sms_message, Config.appName, Config.landingPageUrl, id);
     }
 
-	private void sendSms(String body){
-		String addr = null;
-		if (friend != null)
-			addr = friend.get(Friend.Attributes.MOBILE_NUMBER);
+    private void sendSms(String body) {
+        String addr = getMobileNumber();
 
-		if (benchObject != null)
-			addr = benchObject.mobileNumber;
-
-        //addr = "+16502453537"; Only for Sani, it is not a development option
-
-		Log.i(TAG, "sendSms: " + addr + ": " + body);
+        Log.i(TAG, "sendSms: " + addr + ": " + body);
         if (DebugConfig.getInstance(context).shouldSendSms()) {
             SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
         } else {
             listener.onShowInfoDialog("Fake SMS invitation", "It is a fake SMS invitation to number " + addr
                     + " with text: \"" + body + "\"");
         }
-	}
+    }
+
+    private String getMobileNumber() {
+        String addr = null;
+        if (friend != null)
+            addr = friend.get(Friend.Attributes.MOBILE_NUMBER);
+
+        if (benchObject != null)
+            addr = benchObject.mobileNumber;
+        return addr;
+    }
 
     @Override
     public void moveFriendToGrid() {
