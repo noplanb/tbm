@@ -87,10 +87,10 @@ public class BenchDataHandler {
         protected Void doInBackground(Void... params) {
             Log.i(TAG, "GetRankedPhoneDataAsync");
             isRequestRunning = true;
-            // Issue 101. Add phone data from messages. If it is empty then add all contacts
-            if (!addPhoneData(getMessagesPhoneData())) {
-                addPhoneData(getContactsPhoneData());
-            }
+
+            rankedPhoneData.clear();
+            addPhoneData(getMessagesPhoneData());
+            addPhoneData(getContactsPhoneData());
             Logger.d(TAG, "rankedPhoneData: " + rankedPhoneData);
             printRankedPhoneData();
             return null;
@@ -240,7 +240,6 @@ public class BenchDataHandler {
             return false;
 
         boolean result = false;
-        rankedPhoneData = new ArrayList<LinkedTreeMap<String, String>>();
         Map<String, String> firstLast = null;
 
         for (Map<String, String> data : phoneData) {

@@ -97,6 +97,16 @@
 
                 <requestFocus />
             </ListView>
+            <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentBottom="true"
+                    android:layout_below="@id/contacts_auto_complete_text_view">
+
+                <include layout="@layout/contacts_heading"
+                         android:id="@+id/contacts_heading"/>
+
+            </FrameLayout>
         </RelativeLayout>
     </android.support.v4.widget.DrawerLayout>
     <com.zazoapp.client.tutorial.TutorialLayout
@@ -134,4 +144,5 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
     </com.zazoapp.client.tutorial.TutorialLayout>
+
 </RelativeLayout>

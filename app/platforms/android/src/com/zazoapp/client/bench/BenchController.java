@@ -9,6 +9,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AutoCompleteTextView;
@@ -16,14 +17,15 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import butterknife.ButterKnife;
 import com.google.gson.internal.LinkedTreeMap;
-import com.zazoapp.client.ui.helpers.ContactsManager;
-import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.R;
-import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.model.GridManager;
+import com.zazoapp.client.ui.ZazoManagerProvider;
+import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 
 import java.util.ArrayList;
@@ -35,8 +37,9 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         ContactsManager.ContactSelected, BenchViewManager, DrawerLayout.DrawerListener {
 
     private static final String TAG = BenchController.class.getSimpleName();
+    private final AbsListView.OnScrollListener mScrollListener;
 
-	private Activity activity;
+    private Activity activity;
     private ZazoManagerProvider managerProvider;
 	private ListView listView;
     private DrawerLayout drawerLayout;
@@ -44,21 +47,27 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	private FriendFactory friendFactory;
 	private BenchDataHandler benchDataHandler;
 	private ArrayList<BenchObject> smsBenchObjects;
+	private ArrayList<BenchObject> contactBenchObjects;
 	private ArrayList<BenchObject> currentAllOnBench;
 	private ContactsManager contactsManager;
+    private final View slidingHeading;
+    private final TextView slidingTitle;
 
-	// ----------------------
+    // ----------------------
 	// Constructor and setup
 	// ----------------------
 	public BenchController(Activity a, ZazoManagerProvider mp) {
 		activity = a;
         managerProvider = mp;
-        drawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
+        drawerLayout = ButterKnife.findById(activity, R.id.drawer_layout);
         drawerLayout.setDrawerListener(this);
-        adapter = new BenchAdapter(activity, null);
-
-        listView = (ListView) activity.findViewById(R.id.bench_list);
-		listView.setOnItemClickListener(this);
+        adapter = new BenchAdapter(activity);
+        slidingHeading = ButterKnife.findById(activity, R.id.contacts_heading);
+        slidingTitle = ButterKnife.findById(slidingHeading, R.id.title);
+        listView = ButterKnife.findById(activity, R.id.bench_list);
+        listView.setOnItemClickListener(this);
+        mScrollListener = new BenchScrollListener();
+        listView.setOnScrollListener(mScrollListener);
 
 		contactsManager = new ContactsManager(activity, this);
 		benchDataHandler = new BenchDataHandler(activity);
@@ -150,6 +159,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             @Override
             protected Void doInBackground(Void... params) {
                 smsBenchObjects = new ArrayList<>();
+                contactBenchObjects = new ArrayList<>();
                 for (LinkedTreeMap<String, String> e : phoneData) {
                     LinkedTreeMap<String, String> b = new LinkedTreeMap<String, String>();
                     b.put(BenchObject.Keys.FIRST_NAME, e.get(BenchDataHandler.Keys.FIRST_NAME));
@@ -157,7 +167,12 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     b.put(BenchObject.Keys.DISPLAY_NAME, e.get(BenchDataHandler.Keys.DISPLAY_NAME));
                     b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(BenchDataHandler.Keys.MOBILE_NUMBER));
                     b.put(BenchObject.Keys.CONTACT_ID, e.get(BenchDataHandler.Keys.CONTACT_ID));
-                    smsBenchObjects.add(new BenchObject(b));
+                    BenchObject bo = new BenchObject(b);
+                    if (bo.hasFixedContact()) {
+                        smsBenchObjects.add(bo);
+                    } else {
+                        contactBenchObjects.add(bo);
+                    }
                 }
                 adapter.setList(allOnBench());
                 return null;
@@ -172,13 +187,19 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         });
 	}
 
-	private ArrayList<BenchObject> allOnBench() {
-		currentAllOnBench = benchFriendsAsBenchObjects();
-		currentAllOnBench.addAll(dedupedSmsBenchObjects());
-		return currentAllOnBench;
-	}
+    private List<BenchObject>[] allOnBench() {
+        List<BenchObject>[] allLists = new List[3];
+        allLists[0] = benchFriendsAsBenchObjects();
+        allLists[1] = dedupedSmsBenchObjects();
+        allLists[2] = allContacts();
+        currentAllOnBench = new ArrayList<>();
+        for (List<BenchObject> list : allLists) {
+            currentAllOnBench.addAll(list);
+        }
+        return allLists;
+    }
 
-	// --------------------------
+    // --------------------------
 	// Friend overflow from grid
 	// --------------------------
 	private ArrayList<BenchObject> benchFriendsAsBenchObjects() {
@@ -195,6 +216,10 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         sortBench(r);
         return r;
 	}
+
+    private List<BenchObject> allContacts() {
+        return contactBenchObjects;
+    }
 
 	// -------------
 	// Sms Contacts
@@ -256,50 +281,97 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
     private class BenchAdapter extends BaseAdapter{
 
-		private Context context;
-		private List<BenchObject> list;
+        private Context context;
+        private List<BenchObject>[] lists;
 
-		public BenchAdapter(Context context, List<BenchObject> list) {
-			this.context = context;
-			this.list = list;
-		}
+        public BenchAdapter(Context context) {
+            this.context = context;
+            this.lists = null;
+        }
 
-        public void setList(List<BenchObject> list) {
-            this.list = list;
+        public void setList(List<BenchObject>[] lists) {
+            this.lists = lists;
+        }
+
+        public boolean isFirstPositionForType(int position, int type) {
+            BenchObject o = getItem(position);
+            if (lists[type].size() > 0 && lists[type].get(0).equals(o)) {
+                return true;
+            }
+            return false;
+        }
+
+        public boolean isLastPositionForType(int position, int type) {
+            BenchObject o = getItem(position);
+            if (lists[type].size() > 0 && lists[type].get(lists[type].size() - 1).equals(o)) {
+                return true;
+            }
+            return false;
         }
 
         @Override
-		public int getCount() {
-			return list.size();
-		}
+        public int getViewTypeCount() {
+            return lists.length;
+        }
 
-		@Override
-		public BenchObject getItem(int position) {
-			return list.get(position);
-		}
+        @Override
+        public int getItemViewType(int position) {
+            int offset = 0;
+            for (int i = 0; i < getViewTypeCount(); i++) {
+                if (offset + lists[i].size() > position) {
+                    return i;
+                }
+                offset += lists[i].size();
+            }
+            throw new IndexOutOfBoundsException("Wrong position: " + position + " " + getCount());  // never get here
+        }
 
-		@Override
-		public long getItemId(int position) {
-			return position;
-		}
+        @Override
+        public int getCount() {
+            int count = 0;
+            for (List<BenchObject> list : lists) {
+                count += list.size();
+            }
+            return count;
+        }
+
+        @Override
+        public BenchObject getItem(int position) {
+            int correctedPos = position;
+            for (List<BenchObject> list : lists) {
+                if (list.size() > correctedPos) {
+                    return list.get(correctedPos);
+                } else {
+                    correctedPos -= list.size();
+                }
+            }
+            throw new IndexOutOfBoundsException("Wrong position: " + position + " " + getCount()); // never get here
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder = null;
-            View v = null;
+            ViewHolder holder;
+            View v;
             if(convertView == null){
                 v = LayoutInflater.from(context).inflate(R.layout.bench_list_item, parent, false);
                 holder = new ViewHolder();
                 holder.name = (TextView) v.findViewById(R.id.name);
                 holder.thumb = (ImageView) v.findViewById(R.id.thumb);
                 holder.thumbBorder = (ImageView) v.findViewById(R.id.borderImage);
+                holder.header = v.findViewById(R.id.header);
+                holder.headerTitle = (TextView) v.findViewById(R.id.title);
                 v.setTag(holder);
             }else{
                 v = convertView;
                 holder = (ViewHolder) v.getTag();
             }
 
-            BenchObject item = list.get(position);
+            BenchObject item = getItem(position);
 
             Friend friend = FriendFactory.getFactoryInstance().find(item.friendId);
             if (friend!=null){
@@ -315,7 +387,15 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 holder.thumb.setVisibility(View.GONE);
                 holder.thumbBorder.setVisibility(View.GONE);
             }
-
+            if (isFirstPositionForType(position, 1)) {
+                holder.header.setVisibility(View.VISIBLE);
+                holder.headerTitle.setText(R.string.bench_heading_sms);
+            } else if (isFirstPositionForType(position, 2)) {
+                holder.header.setVisibility(View.VISIBLE);
+                holder.headerTitle.setText(R.string.bench_heading_all);
+            } else {
+                holder.header.setVisibility(View.INVISIBLE);
+            }
             holder.name.setText(item.displayName);
 
             return v;
@@ -325,6 +405,54 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             ImageView thumb;
             ImageView thumbBorder;
             TextView name;
+            View header;
+            TextView headerTitle;
+        }
+    }
+
+    private class BenchScrollListener implements AbsListView.OnScrollListener {
+
+        BenchScrollListener() {
+            slidingHeading.setTag(0);
+        }
+
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+        }
+
+        @Override
+        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+            if (visibleItemCount > 0) {
+                int type = adapter.getItemViewType(firstVisibleItem);
+                View item = view.getChildAt(0);
+                boolean firstForSms = adapter.isFirstPositionForType(firstVisibleItem, 1);
+                boolean lastForSms = adapter.isLastPositionForType(firstVisibleItem, 1);
+                boolean firstForAll = adapter.isFirstPositionForType(firstVisibleItem, 2);
+                if (firstForSms && item.getTop() >= 0 || firstForAll && item.getTop() >= 0) {
+                    type = 0;
+                }
+                if ((int) slidingHeading.getTag() != type) {
+                    slidingHeading.setTag(type);
+                    switch (type) {
+                        case 1:
+                            slidingTitle.setText(R.string.bench_heading_sms);
+                            slidingHeading.setVisibility(View.VISIBLE);
+                            break;
+                        case 2:
+                            slidingTitle.setText(R.string.bench_heading_all);
+                            slidingHeading.setVisibility(View.VISIBLE);
+                            break;
+                        default:
+                            slidingHeading.setVisibility(View.INVISIBLE);
+                            break;
+                    }
+                }
+                if (lastForSms && item.getBottom() < slidingHeading.getHeight()) {
+                    slidingHeading.setTranslationY(item.getBottom() - slidingHeading.getHeight());
+                } else {
+                    slidingHeading.setTranslationY(0);
+                }
+            }
         }
     }
 }
