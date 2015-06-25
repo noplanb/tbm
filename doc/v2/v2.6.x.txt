@@ -1,6 +1,11 @@
 Previous v2.5.3 (75)
 Current v2.6.0 (76)
 
+BACKGROUND CHANGES:
+- New #505 Provide array of invitees emails in invitation#invite call
+- Added debug option to disable GCM notifications
+- Improved modelChanged callbacks for future interactions.
+
 ---------
 NEW #498
 ---------
@@ -13,3 +18,20 @@ C2501
 NEW #521
 ---------
 Single request for polling status and received videos
+
+Testcases:
+C58, C59
+
+---------
+NEW #492 
+---------
+Contact list enhancement
+Solution:
+Added sliding headings for "SMS Contacts" and "All Contacts" sections in contacts list.
+
+---------
+FIX #356
+---------
+Contacts drawer's list is empty if all SMS contacts are friends already
+Solution:
+Always add all contacts section.
