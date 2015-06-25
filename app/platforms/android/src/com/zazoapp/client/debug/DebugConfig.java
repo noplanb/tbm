@@ -162,7 +162,7 @@ public class DebugConfig {
 
     public void setDisableGcmNotifications(boolean disable) {
         disableGcmNotifications = disable;
-        prefs.getBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, disable);
+        prefs.putBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, disable);
         notifyChanges();
     }
 
