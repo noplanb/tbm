@@ -15,7 +15,6 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
     private static final String MSG = "msg";
     private static final String ACTION_POSITIVE = "action_positive";
     private static final String ACTION_NEGATIVE = "action_negative";
-    private static final String ID = "dialog_id";
 
     public interface DoubleActionDialogListener extends DialogListener {
         int BUTTON_POSITIVE = DialogInterface.BUTTON_POSITIVE;
@@ -31,8 +30,13 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
 
     public static DialogFragment getInstance(int id, String title, String message, String actionPositive,
                                              String actionNegative, boolean editable, DialogListener listener) {
-        AbstractDialogFragment fragment = new DoubleActionDialogFragment();
+        DoubleActionDialogFragment fragment = new DoubleActionDialogFragment();
 
+        putData(id, title, message, actionPositive, actionNegative, editable, listener, fragment);
+        return fragment;
+    }
+
+    protected static void putData(int id, String title, String message, String actionPositive, String actionNegative, boolean editable, DialogListener listener, AbstractDialogFragment fragment) {
         Bundle args = new Bundle();
         args.putString(TITLE, title);
         args.putString(MSG, message);
@@ -41,7 +45,6 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
         fragment.setArguments(args);
         fragment.setDialogListener(listener, id);
         fragment.setEditable(editable);
-        return fragment;
     }
 
     @Override
@@ -77,14 +80,14 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
         doNegativeAction();
     }
 
-    private void doNegativeAction() {
+    protected void doNegativeAction() {
         if (getListener() instanceof DoubleActionDialogListener) {
             DoubleActionDialogListener listener = ((DoubleActionDialogListener) getListener());
             listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_NEGATIVE, null);
         }
     }
 
-    private void doPositiveAction() {
+    protected void doPositiveAction() {
         if (getListener() instanceof DoubleActionDialogListener) {
             DoubleActionDialogListener listener = ((DoubleActionDialogListener) getListener());
             if (isEditable()) {

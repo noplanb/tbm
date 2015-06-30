@@ -34,6 +34,7 @@ public class InviteManager implements InviteHelper {
         void onShowInfoDialog(String title, String msg);
         void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, boolean editable, int actionId);
         void onShowDoubleActionDialog(String title, String msg, String posText, String negText, int id, boolean editable);
+        void onShowSendLinkDialog(int id, String phone, String msg);
         void onShowProgressDialog(String title, String msg);
         void onShowSelectPhoneNumberDialog(Contact contact);
         void onDismissProgressDialog();
@@ -272,11 +273,7 @@ public class InviteManager implements InviteHelper {
 
     @Override
     public void showSmsDialog() {
-        String title = context.getString(R.string.dialog_invite_sms_title);
-        String posText = context.getString(R.string.dialog_invite_sms_action);
-        String negText = context.getString(R.string.dialog_action_cancel);
-        listener.onShowDoubleActionDialog(title, getDefaultInviteMessage(), posText, negText,
-                                          MainActivity.SENDLINK_DIALOG, true);
+        listener.onShowSendLinkDialog(MainActivity.SENDLINK_DIALOG, getMobileNumber(), getDefaultInviteMessage());
     }
 
     @Override

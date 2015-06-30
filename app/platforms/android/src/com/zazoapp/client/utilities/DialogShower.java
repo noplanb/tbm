@@ -20,6 +20,7 @@ import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
 import com.zazoapp.client.ui.dialogs.InfoDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
+import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
 import com.zazoapp.client.ui.dialogs.VersionDialogFragment;
 
 /**
@@ -76,7 +77,8 @@ public class DialogShower {
 
             @Override
             public void run() {
-                DialogFragment d = DoubleActionDialogFragment.getInstance(id, title, message, positiveText, negativeText, listener);
+                DialogFragment d = DoubleActionDialogFragment.getInstance(id, title, message, positiveText,
+                        negativeText, listener);
                 showDialog(activity, d, null);
             }
         });
@@ -111,5 +113,10 @@ public class DialogShower {
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.add(dialog, tag);
         transaction.commitAllowingStateLoss();
+    }
+
+    public static void showSendLinkDialog(Activity activity, int dialogId, String phone, String message, DoubleActionDialogListener callbacks) {
+        DialogFragment d = SendLinkThroughDialog.getInstance(dialogId, phone, activity, message, callbacks);
+        showDialog(activity, d, null);
     }
 }

@@ -33,6 +33,7 @@ import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogLi
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
+import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -46,6 +47,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     public static final int SMS_DIALOG = 2;
     public static final int SENDLINK_DIALOG = 3;
     public static final int NO_SIM_DIALOG = 4;
+    public static final int INVITATION_REQUEST_ID = 101;
 
     private GcmHandler gcmHandler;
     private VersionHandler versionHandler;
@@ -178,7 +180,16 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         if (id == SENDLINK_DIALOG) {
             switch (button) {
                 case BUTTON_POSITIVE:
-                    getInviteHelper().sendInvite(AbstractDialogFragment.getEditedMessage(params));
+                    if (params != null) {
+                        if (params.getBoolean(SendLinkThroughDialog.SEND_SMS_KEY, false)) {
+                            getInviteHelper().sendInvite(AbstractDialogFragment.getEditedMessage(params));
+                        } else {
+                            Intent invite = params.getParcelable(SendLinkThroughDialog.INTENT_KEY);
+                            if (invite != null) {
+                                startActivityForResult(invite, INVITATION_REQUEST_ID);
+                            }
+                        }
+                    }
                     break;
                 case BUTTON_NEGATIVE:
                     getInviteHelper().failureNoSimDialog();
@@ -205,6 +216,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     public void onShowDoubleActionDialog(String title, String msg, String posText, String negText, int id, boolean editable) {
         DialogShower.showDoubleActionDialog(this, title, msg, posText, negText, id, editable, this);
+    }
+
+    @Override
+    public void onShowSendLinkDialog(int id, String phone, String msg) {
+        DialogShower.showSendLinkDialog(this, id, phone, msg, this);
     }
 
     @Override
@@ -312,4 +328,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == INVITATION_REQUEST_ID) {
+            getInviteHelper().finishInvitation();
+        }
+    }
 }

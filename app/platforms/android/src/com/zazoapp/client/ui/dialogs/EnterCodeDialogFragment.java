@@ -45,7 +45,7 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment implements O
 
 		String e164 = getArguments().getString(PHONE_NUMBER);
 
-		setTitle("Enter Code");
+		setTitle(getString(R.string.enter_code_dlg_helper));
 		View v = LayoutInflater.from(getActivity()).inflate(R.layout.enter_code_dialog,
 				null, false);
 		TextView twMsg = (TextView) v.findViewById(R.id.tw_msg);
@@ -59,7 +59,7 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment implements O
 
 		setCustomView(v);
 
-        setPositiveButton("Enter", new OnClickListener() {
+        setPositiveButton(getString(R.string.dialog_action_enter), new OnClickListener() {
 			@Override
 			public void onClick(View v) {
                 if (getListener() instanceof Callbacks) {
@@ -69,7 +69,7 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment implements O
                 dismiss();
             }
         });
-        setNegativeButton("Cancel", new OnClickListener() {
+        setNegativeButton(getString(R.string.dialog_action_cancel), new OnClickListener() {
             @Override
             public void onClick(View v) {
                 edtVerificationCode.setText("");

@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.zazoapp.client.R;
 
@@ -28,7 +29,7 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
 	private TextView twTitle;
 	private TextView twMsg;
     private EditText editMsg;
-	private FrameLayout body;
+	private LinearLayout body;
 	private View btnsDivider;
     private DialogListener listener;
 
@@ -56,14 +57,14 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
         editMsg = (EditText) v.findViewById(R.id.dlg_edit_msg);
         editMsg.addTextChangedListener(this);
 
-        body = (FrameLayout)v.findViewById(R.id.dlg_body);
+        body = (LinearLayout) v.findViewById(R.id.dlg_body);
 		
 		btnOk.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				dismiss();
-			}
-		});
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
 		btnCancel.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -144,7 +145,7 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
 	}
 	
 	protected void setCustomView(View ll) {
-		body.addView(ll, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT));
+		body.addView(ll, new LinearLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT));
 	}
 
     /**
@@ -205,6 +206,10 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
     @Override
     public void afterTextChanged(Editable s) {
         int textLength = s.toString().length();
-        btnOk.setEnabled(textLength != 0);
+        btnOk.setEnabled(textLength != 0 && positiveButtonMightBeEnabled());
+    }
+
+    protected boolean positiveButtonMightBeEnabled() {
+        return true;
     }
 }

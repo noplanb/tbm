@@ -18,7 +18,7 @@
         android:visibility="gone"
         android:textColor="@android:color/white" />
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/dlg_body"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -48,7 +48,7 @@
                 android:gravity="start"
                 android:text="EditText" />
 
-    </FrameLayout>
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"

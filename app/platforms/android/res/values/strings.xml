@@ -14,6 +14,7 @@
     <string name="dialog_action_try_again">Try Again</string>
     <string name="dialog_action_cancel">Cancel</string>
     <string name="dialog_action_ok">OK</string>
+    <string name="dialog_action_enter">Enter</string>
     <string name="dialog_action_update">Update</string>
     <string name="dialog_action_later">Later</string>
     <string name="dialog_checking_title">Checking</string>
@@ -43,12 +44,16 @@
     <string name="dialog_server_error_message">Can\'t reach %1$s.\n\nCheck your connection and try again.</string>
     <string name="dialog_register_bad_code_title">Bad Code</string>
     <string name="dialog_register_bad_code_message">The code you entered is wrong. Please try again.</string>
-    <string name="dialog_send_sms_failure_title">Didn\'t Send SMS</string>
-    <string name="dialog_send_sms_failure_message">It looks like you can\'t or didn\'t send a link by SMS. Perhaps you can just call or email %1$s and tell them about %2$s.</string>
+    <string name="dialog_send_sms_failure_title">Didn\'t Send Invitation</string>
+    <string name="dialog_send_sms_failure_message">It looks like you can\'t or didn\'t send an invitation link. Perhaps you can just call or email %1$s and tell them about %2$s.</string>
     <string name="dialog_select_phone_number">Select number to invite %1$s</string>
+    <string name="dialog_send_link_through">Send Link As</string>
     <string name="dialog_invite_sms_title">Send Link</string>
     <string name="dialog_invite_sms_message">I sent you a message on %1$s. Get the app: %2$s%3$s</string>
     <string name="dialog_invite_sms_action">Send</string>
+    <string name="dialog_invite_send_through_sms">Send as SMS</string>
+    <string name="dialog_invite_send_through_other">Send via...</string>
+    <string name="dialog_invite_send_through_other_selected">Send via %1$s</string>
     <string name="dialog_hint_title">Hint</string>
     <string name="dialog_play_hint_message">Hint: Tap a friend to play.</string>
     <string name="dialog_record_hint_message">Hint: Press and hold a friend to record.</string>
@@ -97,4 +102,7 @@
     <string name="tutorial_got_it">Got It</string>
     <string name="bench_heading_sms">SMS Contacts</string>
     <string name="bench_heading_all">All Contacts</string>
+
+    <string name="invite_subject">Invitation to Zazo</string>
+    <string name="no_app_selected">No app selected</string>
 </resources>

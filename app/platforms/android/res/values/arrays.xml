@@ -714,4 +714,15 @@
         <item>@drawable/ic_flag_zm</item>
         <item>@drawable/ic_flag_zw</item>
     </string-array>
+    <string-array name="supported_invite_apps">
+        <item>com.google.android.talk</item><!--Hangouts-->
+        <item>com.android.email</item><!--Email-->
+        <item>com.google.android.gm</item><!--Gmail-->
+        <item>com.viber.voip</item><!--Viber-->
+        <item>com.facebook.orca</item><!--Facebook Messenger-->
+        <item>com.Slack</item><!--Slack-->
+        <item>com.whatsapp</item><!--Whatsapp-->
+        <item>org.telegram.messenger</item><!--Telegram-->
+        <item>com.skype.raider</item><!--Skype-->
+    </string-array>
 </resources>
