@@ -76,6 +76,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
 	public void loadContacts() {
         friendFactory = FriendFactory.getFactoryInstance();
+        listView.setSelection(0); // to scroll list to the first position
 		benchDataHandler.getRankedPhoneData();
 	}
 
@@ -181,7 +182,11 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
-                listView.setAdapter(adapter);
+                if (listView.getAdapter() == adapter) {
+                    adapter.notifyDataSetChanged();
+                } else {
+                    listView.setAdapter(adapter);
+                }
                 listView.setVisibility(View.VISIBLE);
             }
         });
