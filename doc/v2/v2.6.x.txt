@@ -1,10 +1,11 @@
 Previous v2.5.3 (75)
-Current v2.6.0 (76)
+Current v2.6.2 (78)
 
 BACKGROUND CHANGES:
 - New #505 Provide array of invitees emails in invitation#invite call
 - Added debug option to disable GCM notifications
 - Improved modelChanged callbacks for future interactions.
+- Notifying server with invite vector information for statistics
 
 ---------
 NEW #498
@@ -35,3 +36,20 @@ FIX #356
 Contacts drawer's list is empty if all SMS contacts are friends already
 Solution:
 Always add all contacts section.
+
+---------
+New #526
+---------
+Provide alternatives vectors for invitation
+SOLUTION:
+Added option to share invitation link via most popular messengers
+
+---------
+Fixed #529
+---------
+Contacts updating (jumping to the top when contacts list reloaded)
+PROBLEM:
+Always set adapter to bench ListView when contact list data loaded 
+SOLUTION:
+If adapter is already set to ListView just notify data set changed
+Scroll to 0 position on start loading data
