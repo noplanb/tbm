@@ -725,4 +725,15 @@
         <item>org.telegram.messenger</item><!--Telegram-->
         <item>com.skype.raider</item><!--Skype-->
     </string-array>
+    <string-array name="supported_invite_app_names">
+        <item>Hangouts</item>
+        <item>Email</item>
+        <item>Gmail</item>
+        <item>Viber</item>
+        <item>Facebook Messenger</item>
+        <item>Slack</item>
+        <item>Whatsapp</item>
+        <item>Telegram</item>
+        <item>Skype</item>
+    </string-array>
 </resources>

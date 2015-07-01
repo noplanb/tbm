@@ -2,8 +2,10 @@ package com.zazoapp.client.ui;
 
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -185,8 +187,14 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                             getInviteHelper().sendInvite(AbstractDialogFragment.getEditedMessage(params));
                         } else {
                             Intent invite = params.getParcelable(SendLinkThroughDialog.INTENT_KEY);
-                            if (invite != null) {
-                                startActivityForResult(invite, INVITATION_REQUEST_ID);
+                            String name = params.getString(SendLinkThroughDialog.APP_NAME_KEY);
+                            if (invite != null && !TextUtils.isEmpty(name)) {
+                                try {
+                                    startActivityForResult(invite, INVITATION_REQUEST_ID);
+                                    getInviteHelper().notifyInviteVector(name, true);
+                                } catch (ActivityNotFoundException e) {
+                                    getInviteHelper().notifyInviteVector(name, false);
+                                }
                             }
                         }
                     }

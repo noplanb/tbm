@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -23,8 +24,8 @@ import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.DialogShower;
 import org.apache.http.protocol.HTTP;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -37,10 +38,11 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
     private static final String SUBJECT_KEY = "subject_key";
     public static final String INTENT_KEY = "intent";
     public static final String SEND_SMS_KEY = "send_sms";
+    public static final String APP_NAME_KEY = "application_name";
     private String phoneNumber;
     private Set<String> emails;
     private RadioGroup radioGroup;
-    private ResolveInfo selectedAppInfo;
+    private AppInfo selectedAppInfo;
 
     public static DialogFragment getInstance(int id, String phoneNumber, Context context, String message, DialogListener listener) {
         String title = context.getString(R.string.dialog_invite_sms_title);
@@ -69,7 +71,7 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
         }
         if (checkedId == R.id.send_through_other && (((RadioButton) group.findViewById(R.id.send_through_other)).isChecked())) {
             final ListPopupWindow popupWindow = new ListPopupWindow(getActivity());
-            List<ResolveInfo> apps = getApplications(getActivity().getApplicationContext(), getIntentBundle());
+            List<AppInfo> apps = getApplications(getActivity().getApplicationContext(), getIntentBundle());
             final RadioButton otherButton = ButterKnife.findById(group, R.id.send_through_other);
             popupWindow.setAdapter(new ApplicationAdapter(getActivity(), apps));
             popupWindow.setAnchorView(otherButton);
@@ -87,8 +89,8 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
             popupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    selectedAppInfo = (ResolveInfo) parent.getItemAtPosition(position);
-                    otherButton.setText(getString(R.string.dialog_invite_send_through_other_selected, selectedAppInfo.loadLabel(getActivity().getPackageManager())));
+                    selectedAppInfo = (AppInfo) parent.getItemAtPosition(position);
+                    otherButton.setText(getString(R.string.dialog_invite_send_through_other_selected, selectedAppInfo.loadName(getActivity())));
                     popupWindow.dismiss();
                 }
             });
@@ -105,12 +107,12 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
                 putEditedMessage(bundle, getEditedMessage());
                 bundle.putBoolean(SEND_SMS_KEY, true);
             } else {
-                ComponentName name = new ComponentName(selectedAppInfo.activityInfo.packageName,
-                        selectedAppInfo.activityInfo.name);
+                ComponentName name = new ComponentName(selectedAppInfo.getPackageName(), selectedAppInfo.getClassName());
                 Intent invite = IntentType.TEXT.getIntent(getIntentBundle());
                 invite.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                 invite.setComponent(name);
                 bundle.putParcelable(INTENT_KEY, invite);
+                bundle.putString(APP_NAME_KEY, selectedAppInfo.getSystemName());
             }
             listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_POSITIVE, bundle);
         }
@@ -121,20 +123,22 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
         return radioGroup != null && radioGroup.getCheckedRadioButtonId() != -1;
     }
 
-    private static List<ResolveInfo> getApplications(Context context, Bundle data) {
-        List<ResolveInfo> infos = context.getPackageManager().queryIntentActivities(IntentType.TEXT.getIntent(data), 0);
-        Iterator<ResolveInfo> i = infos.iterator();
-        String[] supportedApps = context.getResources().getStringArray(R.array.supported_invite_apps) ;
+    private static List<AppInfo> getApplications(Context context, Bundle data) {
+        List<AppInfo> infos = new ArrayList<>();
+        List<ResolveInfo> apps = context.getPackageManager().queryIntentActivities(IntentType.TEXT.getIntent(data), 0);
+        Iterator<ResolveInfo> i = apps.iterator();
+        String[] supportedApps = context.getResources().getStringArray(R.array.supported_invite_apps);
+        String[] supportedAppNames = context.getResources().getStringArray(R.array.supported_invite_app_names);
         List<String> supportedAppsList = null;
         if (supportedApps != null) {
             supportedAppsList = Arrays.asList(supportedApps);
-            Collections.sort(supportedAppsList);
         }
         while (i.hasNext()) {
             ResolveInfo info  = i.next();
             String packageName = info.activityInfo.packageName;
-            if (Collections.binarySearch(supportedAppsList, packageName) < 0) {
-                i.remove();
+            int index;
+            if ((index = supportedAppsList.indexOf(packageName)) >= 0) {
+                infos.add(new AppInfo(info, supportedAppNames[index]));
             }
         }
         return infos;
@@ -193,10 +197,10 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
 
     private class ApplicationAdapter extends BaseAdapter {
 
-        private final List<ResolveInfo> applications;
+        private final List<AppInfo> applications;
         private Context context;
 
-        ApplicationAdapter(Context context, List<ResolveInfo> applications) {
+        ApplicationAdapter(Context context, List<AppInfo> applications) {
             this.context = context;
             this.applications = applications;
         }
@@ -207,7 +211,7 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
         }
 
         @Override
-        public ResolveInfo getItem(int position) {
+        public AppInfo getItem(int position) {
             return applications.get(position);
         }
 
@@ -228,14 +232,44 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
             } else {
                 holder = (Holder) convertView.getTag();
             }
-            holder.icon.setImageDrawable(getItem(position).loadIcon(context.getPackageManager()));
-            holder.title.setText(getItem(position).loadLabel(context.getPackageManager()));
+            holder.icon.setImageDrawable(getItem(position).loadIcon(context));
+            holder.title.setText(getItem(position).loadName(context));
             return convertView;
         }
 
         private class Holder {
             ImageView icon;
             TextView title;
+        }
+    }
+
+    private static class AppInfo {
+        private final ResolveInfo info;
+        private final String name;
+
+        AppInfo(ResolveInfo info, String name) {
+            this.name = name;
+            this.info = info;
+        }
+
+        String loadName(Context context) {
+            return String.valueOf(info.loadLabel(context.getPackageManager()));
+        }
+
+        String getSystemName() {
+            return name;
+        }
+
+        String getClassName() {
+            return info.activityInfo.name;
+        }
+
+        String getPackageName() {
+            return info.activityInfo.applicationInfo.packageName;
+        }
+
+        Drawable loadIcon(Context context) {
+            return info.loadIcon(context.getPackageManager());
         }
     }
 

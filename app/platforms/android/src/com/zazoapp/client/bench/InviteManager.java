@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
@@ -25,6 +26,8 @@ import com.zazoapp.client.utilities.Logger;
 import com.zazoapp.client.utilities.StringUtils;
 
 public class InviteManager implements InviteHelper {
+
+    public static final String SMS = "SMS";
 
     private static class IntentActions{
         public static final String SMS_RESULT = "smsResult";
@@ -280,8 +283,10 @@ public class InviteManager implements InviteHelper {
     public void sendInvite(String message) {
         if (canSendSms()) {
             sendSms(message);
+            notifyInviteVector(SMS, true);
             finishInvitation();
         } else {
+            notifyInviteVector(SMS, false);
             failureNoSimDialog();
         }
     }
@@ -294,6 +299,19 @@ public class InviteManager implements InviteHelper {
     @Override
     public void dropLastInvitedFriend() {
         lastInvitedFriend = null;
+    }
+
+    @Override
+    public void notifyInviteVector(String name, boolean success) {
+        if (friend == null || TextUtils.isEmpty(name)) {
+            return;
+        }
+        LinkedTreeMap<String, String> params = new LinkedTreeMap<>();
+        params.put("mkey", friend.get(Friend.Attributes.MKEY));
+        params.put("messaging_platform", name);
+        params.put("message_status", success ? HttpRequest.StatusValues.STATUS_SUCCESS :
+                HttpRequest.StatusValues.STATUS_FAILURE);
+        new HttpRequest("invitation/direct_invite_message", params, "POST");
     }
 
     private String getDefaultInviteMessage() {
@@ -359,4 +377,5 @@ public class InviteManager implements InviteHelper {
     private boolean canSendSms() {
         return hasSim() || !DebugConfig.getInstance(context).shouldSendSms();
     }
+
 }

@@ -19,4 +19,5 @@ public interface InviteHelper {
     void sendInvite(String message);
     Friend getLastInvitedFriend();
     void dropLastInvitedFriend();
+    void notifyInviteVector(String name, boolean success);
 }
