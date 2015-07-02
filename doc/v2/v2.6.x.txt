@@ -1,5 +1,5 @@
 Previous v2.5.3 (75)
-Current v2.6.2 (78)
+Current v2.6.3 (79)
 
 BACKGROUND CHANGES:
 - New #505 Provide array of invitees emails in invitation#invite call
