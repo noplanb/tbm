@@ -66,12 +66,16 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
 
     @Override
     public void onCheckedChanged(final RadioGroup group, int checkedId) {
-        if (positiveButtonMightBeEnabled() && !getEditedMessage().isEmpty()) {
-            ButterKnife.findById(getView(), R.id.btn_dialog_ok).setEnabled(true);
-        }
+        ButterKnife.findById(getView(), R.id.btn_dialog_ok).setEnabled(
+                positiveButtonMightBeEnabled() && !getEditedMessage().isEmpty());
         if (checkedId == R.id.send_through_other && (((RadioButton) group.findViewById(R.id.send_through_other)).isChecked())) {
-            final ListPopupWindow popupWindow = new ListPopupWindow(getActivity());
             List<AppInfo> apps = getApplications(getActivity().getApplicationContext(), getIntentBundle());
+            if (apps.isEmpty()) {
+                DialogShower.showToast(getActivity(), R.string.no_supported_app_available);
+                group.clearCheck();
+                return;
+            }
+            final ListPopupWindow popupWindow = new ListPopupWindow(getActivity());
             final RadioButton otherButton = ButterKnife.findById(group, R.id.send_through_other);
             popupWindow.setAdapter(new ApplicationAdapter(getActivity(), apps));
             popupWindow.setAnchorView(otherButton);
@@ -148,6 +152,7 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
         Bundle data = new Bundle();
         data.putString(PHONE_NUMBER_KEY, phoneNumber);
         data.putString(MESSAGE_KEY, getEditedMessage());
+        data.putString(EMAIL_KEY, "");
         if (phoneNumber != null) {
             emails = ContactsManager.getEmailsForPhone(getActivity(), phoneNumber);
             if (!emails.isEmpty()) {

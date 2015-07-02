@@ -724,6 +724,7 @@
         <item>com.whatsapp</item><!--Whatsapp-->
         <item>org.telegram.messenger</item><!--Telegram-->
         <item>com.skype.raider</item><!--Skype-->
+        <item>com.google.android.apps.inbox</item><!--Inbox-->
     </string-array>
     <string-array name="supported_invite_app_names">
         <item>Hangouts</item>
@@ -735,5 +736,6 @@
         <item>Whatsapp</item>
         <item>Telegram</item>
         <item>Skype</item>
+        <item>Inbox</item>
     </string-array>
 </resources>

@@ -105,4 +105,5 @@
 
     <string name="invite_subject">Invitation to Zazo</string>
     <string name="no_app_selected">No app selected</string>
+    <string name="no_supported_app_available">No applications available</string>
 </resources>
