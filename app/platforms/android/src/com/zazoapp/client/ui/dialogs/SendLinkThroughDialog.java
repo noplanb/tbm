@@ -113,7 +113,7 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
             } else {
                 ComponentName name = new ComponentName(selectedAppInfo.getPackageName(), selectedAppInfo.getClassName());
                 Intent invite = IntentType.TEXT.getIntent(getIntentBundle());
-                invite.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                invite.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 invite.setComponent(name);
                 bundle.putParcelable(INTENT_KEY, invite);
                 bundle.putString(APP_NAME_KEY, selectedAppInfo.getSystemName());
