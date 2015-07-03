@@ -58,9 +58,9 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         phoneNumber = getArguments().getString(PHONE_NUMBER_KEY);
-        ButterKnife.findById(view, R.id.btn_dialog_ok).setEnabled(false);
         radioGroup = (RadioGroup) View.inflate(getActivity(), R.layout.send_through_layout, null);
         radioGroup.setOnCheckedChangeListener(this);
+        radioGroup.check(R.id.send_through_sms);
         setCustomView(radioGroup);
     }
 
@@ -72,7 +72,7 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
             List<AppInfo> apps = getApplications(getActivity().getApplicationContext(), getIntentBundle());
             if (apps.isEmpty()) {
                 DialogShower.showToast(getActivity(), R.string.no_supported_app_available);
-                group.clearCheck();
+                group.check(R.id.send_through_sms);
                 return;
             }
             final ListPopupWindow popupWindow = new ListPopupWindow(getActivity());
@@ -84,8 +84,7 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
                 @Override
                 public void onDismiss() {
                     if (selectedAppInfo == null) {
-                        group.clearCheck();
-                        ButterKnife.findById(getView(), R.id.btn_dialog_ok).setEnabled(false);
+                        group.check(R.id.send_through_sms);
                         DialogShower.showToast(getActivity(), R.string.no_app_selected);
                     }
                 }
