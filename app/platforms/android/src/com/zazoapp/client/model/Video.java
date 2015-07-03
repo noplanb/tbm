@@ -51,4 +51,8 @@ public abstract class Video extends ActiveModel {
     public int getRetryCount(){
         return Integer.parseInt(get(Attributes.RETRY_COUNT));
     }
+
+    public String getFriendId() {
+        return get(Attributes.FRIEND_ID);
+    }
 }

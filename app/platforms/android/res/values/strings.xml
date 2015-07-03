@@ -106,4 +106,12 @@
     <string name="invite_subject">Invitation to Zazo</string>
     <string name="no_app_selected">No app selected</string>
     <string name="no_supported_app_available">No applications available</string>
+
+    <string name="action_view">View</string>
+    <plurals name="notification_title">
+        <item quantity="one">%d new Zazo</item>
+        <item quantity="other">%d new Zazos</item>
+    </plurals>
+    <string name="notification_list_more">%d more</string>
+    <string name="notification_from">From %1$s!</string>
 </resources>

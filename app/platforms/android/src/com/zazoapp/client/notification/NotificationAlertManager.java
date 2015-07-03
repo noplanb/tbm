@@ -2,10 +2,12 @@ package com.zazoapp.client.notification;
 
 import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
@@ -20,9 +22,15 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.ui.LockScreenAlertActivity;
 import com.zazoapp.client.ui.MainActivity;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class NotificationAlertManager {
 
@@ -49,9 +57,15 @@ public class NotificationAlertManager {
 		return friend.thumbPath();
 	}
 
-	private static String title(Friend friend){
-		return "From " + friend.get(Friend.Attributes.FIRST_NAME) + "!";
-	}
+    private static String title(Context context, int count) {
+        Resources r = context.getResources();
+        return r.getQuantityString(R.plurals.notification_title, count, count);
+    }
+
+    private static String title(Context context, Friend friend){
+        return context.getString(R.string.notification_from, friend.get(Friend.Attributes.FIRST_NAME));
+    }
+
 
     private static int getNotificationIcon() {
         return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) ? R.drawable.ic_notification_white : R.drawable.ic_launcher;
@@ -109,51 +123,110 @@ public class NotificationAlertManager {
 		final int NOTIFICATION_ID = 1;
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
-		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, makePlayVideoIntent(intent, context, friend), 0);
+		PendingIntent playVideoIntent = PendingIntent.getActivity(context, 0,
+                makePlayVideoIntent(intent, context, friend), 0);
+
+        int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount() + 1;
+        String title = title(context, unviewedCount);
+        NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
+        notiStyle.bigText(formatFriendsList(context, friend, true));
+        notiStyle.setBigContentTitle(title);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setCategory(Notification.CATEGORY_MESSAGE)
                 .setSound(getNotificationToneUri(context))
                 .setSmallIcon(getNotificationIcon())
-                .setContentTitle(title(friend))
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(title(friend)))
-                .setContentText(subTitle)
-                .setContentIntent(contentIntent)
+                .setContentTitle(title)
+                .setStyle(notiStyle)
+                .setNumber(unviewedCount)
                 .setColor(context.getResources().getColor(R.color.green))
                 .setAutoCancel(true);
-
-        if (friend.thumbExists()) {
-            mBuilder.setLargeIcon(largeImage(friend));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, intent, 0);
+            mBuilder.setContentIntent(openAppIntent);
+            mBuilder.setContentText(formatFriendsList(context, friend, false));
+            if (unviewedCount == friend.incomingVideoNotViewedCount() + 1) {
+                mBuilder.addAction(R.drawable.ic_action_view, context.getString(R.string.action_view), playVideoIntent);
+            }
         } else {
-            mBuilder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_no_pic_z));
+            mBuilder.setContentIntent(playVideoIntent);
+            mBuilder.setContentText(friend.getFullName());
+        }
+        if (unviewedCount == friend.incomingVideoNotViewedCount() + 1) {
+            if (friend.thumbExists()) {
+                mBuilder.setLargeIcon(largeImage(friend));
+            } else {
+                mBuilder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_no_pic_z));
+            }
         }
 
+        notificationManager.cancel(NOTIFICATION_ID);
 		notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 	}
 
-	private static void postLockScreenAlert(Context context, Friend friend, String videoId) {
+    private static String formatFriendsList(Context context, Friend friend, boolean longList) {
+        ArrayList<IncomingVideo> notViewedVideos = IncomingVideoFactory.getFactoryInstance().allNotViewed();
+        Set<String> friendIds = new LinkedHashSet<>();
+        friendIds.add(friend.getId());
+        for (IncomingVideo video : notViewedVideos) {
+            friendIds.add(video.getFriendId());
+        }
+        FriendFactory friends = FriendFactory.getFactoryInstance();
+        StringBuilder friendsList = new StringBuilder();
+        int friendCount = 0;
+        for (String id : friendIds) {
+            if (friendCount == 5 && longList) {
+                friendsList.append("'\n");
+                friendsList.append(context.getString(R.string.notification_list_more, friendIds.size() - 5));
+                break;
+            }
+            Friend f = friends.find(id);
+            if (f != null) {
+                if (friendCount > 0) {
+                    friendsList.append(longList ? "\n" : ", ");
+                    if (friendCount == 3 && !longList) {
+                        friendsList.append(context.getString(R.string.notification_list_more, friendIds.size() - 3));
+                        break;
+                    }
+                }
+                if (longList) {
+                    friendsList.append(f.getFullName());
+                } else {
+                    friendsList.append((friendIds.size() == 1) ? f.getFullName() :f.getUniqueName());
+                }
+                friendCount++;
+            }
+        }
+        return friendsList.toString();
+    }
+
+    private static void postLockScreenAlert(Context context, Friend friend, String videoId) {
 		Log.i(TAG, "postLockScreenAlert");
 		Intent ri = new Intent(context, LockScreenAlertActivity.class);
 		Intent i = makePlayVideoIntent(ri, context, friend);
 		i.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId());
 		i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend));
 		i.putExtra(SMALL_ICON_KEY, R.drawable.ic_launcher);
-		i.putExtra(TITLE_KEY, title(friend));
+		i.putExtra(TITLE_KEY, title(context, friend));
 		i.putExtra(SUB_TITLE_KEY, subTitle);
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 		i.addFlags(Intent.FLAG_FROM_BACKGROUND);
 		//i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK); // This is probably not necessary since the activity has launch mode singleInstance.
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startActivity(i);
 	}
 	
 	public static Intent makePlayVideoIntent(Intent intent, Context context, Friend friend){
-		intent.setAction(IntentHandlerService.IntentActions.PLAY_VIDEO);
-		Uri uri = new Uri.Builder().appendPath(IntentHandlerService.IntentActions.PLAY_VIDEO).appendQueryParameter(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
-		intent.setData(uri);
-		return intent;
-	}
-	
-	public static boolean screenIsLocked(Context context){
+        Intent i = new Intent(intent);
+        i.setAction(IntentHandlerService.IntentActions.PLAY_VIDEO);
+        Uri uri = new Uri.Builder().appendPath(IntentHandlerService.IntentActions.PLAY_VIDEO).appendQueryParameter(
+                IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
+        i.setData(uri);
+        return i;
+    }
+
+    public static boolean screenIsLocked(Context context){
 		KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
 		return km.inKeyguardRestrictedInputMode();
 	}
@@ -171,4 +244,5 @@ public class NotificationAlertManager {
     private static Uri getNotificationToneUri(Context context) {
         return Uri.parse("android.resource://"+ context.getPackageName() + "/" + R.raw.notification_tone);
     }
+
 }

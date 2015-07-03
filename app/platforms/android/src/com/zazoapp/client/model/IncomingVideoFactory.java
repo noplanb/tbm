@@ -16,7 +16,11 @@ public class IncomingVideoFactory extends ActiveModelFactory<IncomingVideo> {
     }
 
     public int allNotViewedCount() {
-        return allWhere(Video.Attributes.STATUS, String.valueOf(IncomingVideo.Status.DOWNLOADED)).size();
+        return allNotViewed().size();
+    }
+
+    public ArrayList<IncomingVideo> allNotViewed() {
+        return allWhere(Video.Attributes.STATUS, String.valueOf(IncomingVideo.Status.DOWNLOADED));
     }
 
     @Override
