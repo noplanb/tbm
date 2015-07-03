@@ -1,5 +1,5 @@
 Previous v2.5.3 (75)
-Current v2.6.3 (79)
+Current v2.6.5 (81)
 
 BACKGROUND CHANGES:
 - New #505 Provide array of invitees emails in invitation#invite call
@@ -53,3 +53,12 @@ Always set adapter to bench ListView when contact list data loaded
 SOLUTION:
 If adapter is already set to ListView just notify data set changed
 Scroll to 0 position on start loading data
+
+---------
+New
+---------
+Improved notifications:
+Added heads-ups (Android 5.0+)
+Added expandable layout style with more information (Android 4.1+)
+Added View action in case of the only friend's messages notification (Android 4.1+)
+
