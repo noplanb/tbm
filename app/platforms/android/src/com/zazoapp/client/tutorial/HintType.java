@@ -125,6 +125,17 @@ public enum HintType {
             layout.setExcludedRect(getViewRect(view));
             layout.dim();
         }
+    },
+    SEND_WELCOME_WITH_RECORD(R.string.tutorial_hint_send_welcome_with_record) {
+        @Override
+        boolean shouldShow(HintType current, PreferencesHelper prefs) {
+            return prefs.getBoolean(RECORD.getPrefName(), true) && SEND_WELCOME.shouldShow(current, prefs);
+        }
+
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial) {
+            SEND_WELCOME.show(layout, view, tutorial);
+        }
     };
 
     private static final String SESSION = "_session";

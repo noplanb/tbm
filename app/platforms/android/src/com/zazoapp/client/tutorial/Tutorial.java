@@ -107,7 +107,11 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
             showHint(HintType.RECORD, view);
             markHintAsShowedForSession(HintType.RECORD);
         } else if (friend != null && friend.equals(managers.getInviteHelper().getLastInvitedFriend()) && shouldShow(HintType.SEND_WELCOME)) {
-            showHint(HintType.SEND_WELCOME, view, HintType.SEND_WELCOME.getHint(tutorialLayout.getContext(), friend.getFirstName()));
+            if (shouldShow(HintType.SEND_WELCOME_WITH_RECORD) || !friend.hasApp()) {
+                showHint(HintType.SEND_WELCOME_WITH_RECORD, view, HintType.SEND_WELCOME_WITH_RECORD.getHint(tutorialLayout.getContext(), friend.getFirstName()));
+            } else {
+                showHint(HintType.SEND_WELCOME, view, HintType.SEND_WELCOME.getHint(tutorialLayout.getContext(), friend.getFirstName()));
+            }
             managers.getInviteHelper().dropLastInvitedFriend();
         }
     }
