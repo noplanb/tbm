@@ -33,8 +33,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     }
 
     public void registerCallbacks() {
-        //FriendFactory.getFactoryInstance().addVideoStatusObserver(this);
-        //FriendFactory.getFactoryInstance().addCallback(this);
+        preferences.putBoolean(HintType.INVITE_2.getPrefSessionName(), true);
     }
 
     public void unregisterCallbacks() {
@@ -116,10 +115,17 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         }
     }
 
-    public void onVideoSentIndicatorShowed(View view) {
+    public void onVideoSentIndicatorShowed(final View view) {
         Log.i(TAG, "onVideoSentIndicatorShowed");
         if (shouldShow(HintType.SENT)) {
             showHint(HintType.SENT, view);
+            onNextHintAction = new Runnable() {
+                @Override
+                public void run() {
+                    showHint(HintType.INVITE_2, view);
+                    markHintAsShowedForSession(HintType.INVITE_2);
+                }
+            };
             markHintAsShowed(HintType.SENT);
         } else if (shouldShow(HintType.INVITE_2)) {
             showHint(HintType.INVITE_2, view);
