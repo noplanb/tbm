@@ -29,12 +29,13 @@ public enum HintType {
         @Override
         boolean shouldShow(HintType current, PreferencesHelper prefs) {
             boolean allViewed = IncomingVideoFactory.getFactoryInstance().allNotViewedCount() == 0;
-            boolean playHintShowed = !prefs.getBoolean(HintType.PLAY.getPrefName(), true);
-            boolean recordHintShowed = !prefs.getBoolean(HintType.RECORD.getPrefName(), true);
-            boolean sentHintShowed = !prefs.getBoolean(HintType.SENT.getPrefName(), true);
-            boolean viewedHintShowed = !prefs.getBoolean(HintType.VIEWED.getPrefName(), true);
+            //Changed to show INVITE_2 regardless of other hints state
+            //boolean playHintShowed = !prefs.getBoolean(HintType.PLAY.getPrefName(), true);
+            //boolean viewedHintShowed = !prefs.getBoolean(HintType.VIEWED.getPrefName(), true);
+            //boolean recordHintShowed = !prefs.getBoolean(HintType.RECORD.getPrefName(), true);
+            //boolean sentHintShowed = !prefs.getBoolean(HintType.SENT.getPrefName(), true);
             boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
-            return hasOneFriend() && firstInSession && allViewed && playHintShowed && recordHintShowed && sentHintShowed && viewedHintShowed;
+            return hasOneFriend() && firstInSession && allViewed && (current == null || current == SENT) /*&& playHintShowed && recordHintShowed && sentHintShowed && viewedHintShowed*/;
         }
 
         @Override

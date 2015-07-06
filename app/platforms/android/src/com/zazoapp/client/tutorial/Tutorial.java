@@ -119,13 +119,15 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         Log.i(TAG, "onVideoSentIndicatorShowed");
         if (shouldShow(HintType.SENT)) {
             showHint(HintType.SENT, view);
-            onNextHintAction = new Runnable() {
-                @Override
-                public void run() {
-                    showHint(HintType.INVITE_2, view);
-                    markHintAsShowedForSession(HintType.INVITE_2);
-                }
-            };
+            if (shouldShow(HintType.INVITE_2)) {
+                onNextHintAction = new Runnable() {
+                    @Override
+                    public void run() {
+                        showHint(HintType.INVITE_2, view);
+                        markHintAsShowedForSession(HintType.INVITE_2);
+                    }
+                };
+            }
             markHintAsShowed(HintType.SENT);
         } else if (shouldShow(HintType.INVITE_2)) {
             showHint(HintType.INVITE_2, view);
