@@ -108,7 +108,7 @@ public class DialogShower {
         showDialog(activity, d, null);
     }
 
-    private static void showDialog(Activity activity, Fragment dialog, String tag) {
+    public static void showDialog(Activity activity, Fragment dialog, String tag) {
         FragmentManager manager = activity.getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.add(dialog, tag);

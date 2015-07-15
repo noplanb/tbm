@@ -235,7 +235,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     public void onShowProgressDialog(String title, String msg) {
         dismissProgressDialog();
         pd = ProgressDialogFragment.getInstance(title, msg);
-        pd.show(getFragmentManager(), null);
+        DialogShower.showDialog(this, pd, null);
     }
 
     @Override
