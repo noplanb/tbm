@@ -90,8 +90,13 @@ public class VersionHandler {
             super(uri, params, new Callbacks() {
                 @Override
                 public void success(String response) {
-                    String result = StringUtils.linkedTreeMapWithJson(response).get(VersionHandler.ParamKeys.RESULT_KEY);
-                    handleCompatibilityResult(result);
+                    LinkedTreeMap<String, String> responseData = StringUtils.linkedTreeMapWithJson(response);
+                    if (responseData != null) {
+                        String result = responseData.get(VersionHandler.ParamKeys.RESULT_KEY);
+                        handleCompatibilityResult(result);
+                    } else {
+                        error("Wrong response");
+                    }
                 }
 
                 @Override
