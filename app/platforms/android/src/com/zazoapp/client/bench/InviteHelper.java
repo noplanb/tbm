@@ -1,5 +1,6 @@
 package com.zazoapp.client.bench;
 
+import android.app.Activity;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
 
@@ -16,7 +17,7 @@ public interface InviteHelper {
     void finishInvitation();
     void failureNoSimDialog();
     void showSmsDialog();
-    void sendInvite(String message);
+    void sendInvite(String message, Activity activity);
     Friend getLastInvitedFriend();
     void dropLastInvitedFriend();
     void notifyInviteVector(String name, boolean success);

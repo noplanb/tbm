@@ -33,6 +33,7 @@ import com.zazoapp.client.tutorial.Tutorial;
 import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
 import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
+import com.zazoapp.client.ui.dialogs.InviteIntent;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
 import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
@@ -49,7 +50,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     public static final int SMS_DIALOG = 2;
     public static final int SENDLINK_DIALOG = 3;
     public static final int NO_SIM_DIALOG = 4;
-    public static final int INVITATION_REQUEST_ID = 101;
 
     private GcmHandler gcmHandler;
     private VersionHandler versionHandler;
@@ -184,13 +184,13 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 case BUTTON_POSITIVE:
                     if (params != null) {
                         if (params.getBoolean(SendLinkThroughDialog.SEND_SMS_KEY, false)) {
-                            getInviteHelper().sendInvite(AbstractDialogFragment.getEditedMessage(params));
+                            getInviteHelper().sendInvite(AbstractDialogFragment.getEditedMessage(params), this);
                         } else {
                             Intent invite = params.getParcelable(SendLinkThroughDialog.INTENT_KEY);
                             String name = params.getString(SendLinkThroughDialog.APP_NAME_KEY);
                             if (invite != null && !TextUtils.isEmpty(name)) {
                                 try {
-                                    startActivityForResult(invite, INVITATION_REQUEST_ID);
+                                    startActivityForResult(invite, InviteIntent.INVITATION_REQUEST_ID);
                                     getInviteHelper().notifyInviteVector(name, true);
                                 } catch (ActivityNotFoundException e) {
                                     getInviteHelper().notifyInviteVector(name, false);
@@ -339,7 +339,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == INVITATION_REQUEST_ID) {
+        if (requestCode == InviteIntent.INVITATION_REQUEST_ID) {
             getInviteHelper().finishInvitation();
         }
     }

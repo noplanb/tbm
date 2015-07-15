@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +21,6 @@ import butterknife.ButterKnife;
 import com.zazoapp.client.R;
 import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.DialogShower;
-import org.apache.http.protocol.HTTP;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,10 +30,6 @@ import java.util.Set;
 
 public class SendLinkThroughDialog extends DoubleActionDialogFragment implements RadioGroup.OnCheckedChangeListener {
 
-    private static final String PHONE_NUMBER_KEY = "phone_number_key";
-    private static final String MESSAGE_KEY = "message_key";
-    private static final String EMAIL_KEY = "email_key";
-    private static final String SUBJECT_KEY = "subject_key";
     public static final String INTENT_KEY = "intent";
     public static final String SEND_SMS_KEY = "send_sms";
     public static final String APP_NAME_KEY = "application_name";
@@ -50,14 +44,14 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
         String negText = context.getString(R.string.dialog_action_cancel);
         SendLinkThroughDialog f = new SendLinkThroughDialog();
         DoubleActionDialogFragment.putData(id, title, message, posText, negText, true, listener, f);
-        f.getArguments().putString(PHONE_NUMBER_KEY, phoneNumber);
+        f.getArguments().putString(InviteIntent.PHONE_NUMBER_KEY, phoneNumber);
         return f;
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        phoneNumber = getArguments().getString(PHONE_NUMBER_KEY);
+        phoneNumber = getArguments().getString(InviteIntent.PHONE_NUMBER_KEY);
         radioGroup = (RadioGroup) View.inflate(getActivity(), R.layout.send_through_layout, null);
         radioGroup.setOnCheckedChangeListener(this);
         radioGroup.check(R.id.send_through_sms);
@@ -111,7 +105,7 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
                 bundle.putBoolean(SEND_SMS_KEY, true);
             } else {
                 ComponentName name = new ComponentName(selectedAppInfo.getPackageName(), selectedAppInfo.getClassName());
-                Intent invite = IntentType.TEXT.getIntent(getIntentBundle());
+                Intent invite = InviteIntent.TEXT.getIntent(getIntentBundle());
                 invite.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 invite.setComponent(name);
                 bundle.putParcelable(INTENT_KEY, invite);
@@ -128,7 +122,7 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
 
     private static List<AppInfo> getApplications(Context context, Bundle data) {
         List<AppInfo> infos = new ArrayList<>();
-        List<ResolveInfo> apps = context.getPackageManager().queryIntentActivities(IntentType.TEXT.getIntent(data), 0);
+        List<ResolveInfo> apps = context.getPackageManager().queryIntentActivities(InviteIntent.TEXT.getIntent(data), 0);
         Iterator<ResolveInfo> i = apps.iterator();
         String[] supportedApps = context.getResources().getStringArray(R.array.supported_invite_apps);
         String[] supportedAppNames = context.getResources().getStringArray(R.array.supported_invite_app_names);
@@ -149,54 +143,17 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
 
     private Bundle getIntentBundle() {
         Bundle data = new Bundle();
-        data.putString(PHONE_NUMBER_KEY, phoneNumber);
-        data.putString(MESSAGE_KEY, getEditedMessage());
-        data.putString(EMAIL_KEY, "");
+        data.putString(InviteIntent.PHONE_NUMBER_KEY, phoneNumber);
+        data.putString(InviteIntent.MESSAGE_KEY, getEditedMessage());
+        data.putString(InviteIntent.EMAIL_KEY, "");
         if (phoneNumber != null) {
             emails = ContactsManager.getEmailsForPhone(getActivity(), phoneNumber);
             if (!emails.isEmpty()) {
-                data.putString(EMAIL_KEY, emails.iterator().next());
+                data.putString(InviteIntent.EMAIL_KEY, emails.iterator().next());
             }
         }
-        data.putString(SUBJECT_KEY, getString(R.string.invite_subject));
+        data.putString(InviteIntent.SUBJECT_KEY, getString(R.string.invite_subject));
         return data;
-    }
-
-    private enum IntentType {
-        SMS {
-            @Override
-            Intent getIntent(Bundle bundle) {
-                Intent i = new Intent(Intent.ACTION_SENDTO);
-                Uri smsUri = Uri.parse("smsto:" + bundle.getString(PHONE_NUMBER_KEY));
-                i.putExtra("sms_body", bundle.getString(MESSAGE_KEY));
-                i.setData(smsUri);
-                return i;
-            }
-        },
-        EMAIL {
-            @Override
-            Intent getIntent(Bundle bundle) {
-                Intent i = new Intent(Intent.ACTION_SENDTO);
-                String email = "mailto:" + bundle.getString(EMAIL_KEY)
-                        + "?subject=" + Uri.encode(bundle.getString(SUBJECT_KEY))
-                        + "&body=" + Uri.encode(bundle.getString(MESSAGE_KEY));
-                i.setData(Uri.parse(email));
-                return i;
-            }
-        },
-        TEXT {
-            @Override
-            Intent getIntent(Bundle bundle) {
-                Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType(HTTP.PLAIN_TEXT_TYPE);
-                i.putExtra(Intent.EXTRA_TEXT, bundle.getString(MESSAGE_KEY));
-                i.putExtra(Intent.EXTRA_SUBJECT, bundle.getString(SUBJECT_KEY));
-                i.putExtra(Intent.EXTRA_EMAIL, new String[] {bundle.getString(EMAIL_KEY)});
-                return i;
-            }
-        };
-
-        abstract Intent getIntent(Bundle bundle);
     }
 
     private class ApplicationAdapter extends BaseAdapter {

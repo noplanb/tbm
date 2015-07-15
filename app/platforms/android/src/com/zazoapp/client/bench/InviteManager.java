@@ -1,9 +1,11 @@
 package com.zazoapp.client.bench;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -21,6 +23,7 @@ import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.MainActivity;
+import com.zazoapp.client.ui.dialogs.InviteIntent;
 import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.Logger;
 import com.zazoapp.client.utilities.StringUtils;
@@ -280,11 +283,13 @@ public class InviteManager implements InviteHelper {
     }
 
     @Override
-    public void sendInvite(String message) {
+    public void sendInvite(String message, Activity activity) {
         if (canSendSms()) {
-            sendSms(message);
+            boolean sentInstantly = sendSms(message, activity);
             notifyInviteVector(SMS, true);
-            finishInvitation();
+            if (sentInstantly) {
+                finishInvitation();
+            }
         } else {
             notifyInviteVector(SMS, false);
             failureNoSimDialog();
@@ -319,16 +324,27 @@ public class InviteManager implements InviteHelper {
         return context.getString(R.string.dialog_invite_sms_message, Config.appName, Config.landingPageUrl, id);
     }
 
-    private void sendSms(String body) {
+    private boolean sendSms(String body, Activity activity) {
         String addr = getMobileNumber();
 
         Log.i(TAG, "sendSms: " + addr + ": " + body);
         if (DebugConfig.getInstance(context).shouldSendSms()) {
-            SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
+            try {
+                SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
+            } catch (RuntimeException e) {
+                Dispatch.dispatch(e.getMessage());
+                Bundle data = new Bundle();
+                data.putString(InviteIntent.PHONE_NUMBER_KEY, addr);
+                data.putString(InviteIntent.MESSAGE_KEY, body);
+                activity.startActivityForResult(InviteIntent.SMS.getIntent(data), InviteIntent.INVITATION_REQUEST_ID);
+                return false;
+            }
+
         } else {
             listener.onShowInfoDialog("Fake SMS invitation", "It is a fake SMS invitation to number " + addr
                     + " with text: \"" + body + "\"");
         }
+        return true;
     }
 
     private String getMobileNumber() {
