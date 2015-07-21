@@ -342,6 +342,8 @@ public class VideoRecorder implements SurfaceTextureListener {
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         Log.i(TAG, "onSurfaceTextureDestroyed ");
         isSurfaceAvailable = false;
+        isPreviewing = false;
+        CameraManager.releaseCamera();
         return true;
     }
 

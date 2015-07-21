@@ -1,6 +1,7 @@
 package com.zazoapp.client.ui;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,23 +10,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import com.zazoapp.client.core.IntentHandlerService;
-import com.zazoapp.client.network.FileDownloadService;
-import com.zazoapp.client.network.FileTransferService;
-import com.zazoapp.client.network.FileUploadService;
-import com.zazoapp.client.ui.helpers.GridElementController;
-import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.SyncManager;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.GridElementFactory;
+import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.multimedia.CameraException;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.CameraManager.CameraExceptionHandler;
+import com.zazoapp.client.network.FileDownloadService;
+import com.zazoapp.client.network.FileTransferService;
+import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
+import com.zazoapp.client.ui.helpers.GridElementController;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.NineViewGroup.LayoutCompleteListener;
 import com.zazoapp.client.ui.view.VideoView;
@@ -36,9 +38,10 @@ import java.util.ArrayList;
 
 // TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
-public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener {
+public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener, NineViewGroup.SpinChangedListener {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
+    private static final String PREF_SPIN_OFFSET = "spin_offset";
 
     private ArrayList<GridElementController> viewControllers;
 
@@ -86,6 +89,9 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     private void setupNineViewGroup(View v) {
         nineViewGroup = (NineViewGroup) v.findViewById(R.id.grid_view);
+        nineViewGroup.setSpinStrategy(new RectangleSpin(nineViewGroup));
+        nineViewGroup.setSpinOffset(new PreferencesHelper(v.getContext()).getInt(PREF_SPIN_OFFSET, 0));
+        nineViewGroup.setSpinChangedListener(this);
         nineViewGroup.setGestureListener(new NineViewGestureListener());
         nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
             @Override
@@ -212,7 +218,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
         if (Intent.ACTION_MAIN.equals(action)) {
             currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
-            getManagerProvider().getTutorial().onLaunch(nineViewGroup.getSurroundingFrame(0));
+            getManagerProvider().getTutorial().onLaunch(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT));
             return;
         }
 
@@ -245,6 +251,22 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         focused = hasFocus;
         if (getActivity() != null) { // callback may come when fragment isn't attached to activity yet
             handleIntentAction(getActivity().getIntent());
+        }
+    }
+
+    @Override
+    public void onSpinChanged(int newSpinOffset) {
+        Context context = getActivity();
+        if (context != null) {
+            new PreferencesHelper(context).putInt(PREF_SPIN_OFFSET, newSpinOffset);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (nineViewGroup.getSpinStrategy() != null) {
+            nineViewGroup.getSpinStrategy().reset();
         }
     }
 
@@ -287,6 +309,13 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             DialogShower.showToast(getActivity(), reason);
             getManagerProvider().getRecorder().cancel();
             return false;
+        }
+
+        @Override
+        public void notifyUpdateDebug() {
+            if (getManagerProvider().getPlayer().isPlaying()) {
+                getManagerProvider().getPlayer().stop();
+            }
         }
 
         @Override

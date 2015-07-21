@@ -223,7 +223,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	}
 
     private List<BenchObject> allContacts() {
-        return contactBenchObjects;
+        return (contactBenchObjects != null) ? contactBenchObjects : new ArrayList<BenchObject>();
     }
 
 	// -------------

@@ -50,7 +50,7 @@ public enum HintType {
                 }
             }
             if (nineViewGroup != null) {
-                layout.dimExceptForRect(getViewRect(nineViewGroup.getSurroundingFrame(4)));
+                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.TOP_RIGHT)));
             }
         }
     },

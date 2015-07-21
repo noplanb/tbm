@@ -3,4 +3,8 @@
     <dimen name="video_status_indicator_maximum_width">40dp</dimen>
     <dimen name="record_frame_thickness">2.5dp</dimen>
     <dimen name="tutorial_text_size">32sp</dimen>
+    <dimen name="nine_view_padding">5dp</dimen>
+    <dimen name="nine_view_marging">10dp</dimen>
+    <dimen name="nine_view_big_move">90dp</dimen>
+    <dimen name="nine_view_min_bounce">10dp</dimen>
 </resources>
