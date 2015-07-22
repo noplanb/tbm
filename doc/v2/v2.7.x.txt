@@ -1,0 +1,34 @@
+Previous v2.6.7 (83)
+Current v2.7.0 (85)
+
+BACKGROUND CHANGES:
+
+
+---------
+Fix Rollbar #817
+---------
+java.lang.NullPointerException in CheckVersionCompatibility
+https://rollbar.com/zazo/zazo-android/items/817/?item_page=0&#traceback
+
+---------
+Fix Rollbar #821
+---------
+java.lang.NullPointerException
+https://rollbar.com/zazo/zazo-android/items/821/?item_page=0&#traceback
+SOLUTION:
+Send sms through intent if something wrong with SmsManager
+
+---------
+Fix Rollbar #823
+---------
+java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState
+https://rollbar.com/zazo/zazo-android/items/823/?item_page=0&#traceback
+SOLUTION:
+Allowed state loss for progress dialog
+
+---------
+NEW
+---------
+Spin the wheel feature
+
+
