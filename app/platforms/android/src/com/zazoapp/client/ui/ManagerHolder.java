@@ -7,6 +7,7 @@ import android.util.Log;
 import com.zazoapp.client.R;
 import com.zazoapp.client.bench.BenchController;
 import com.zazoapp.client.bench.InviteManager;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.multimedia.AudioManager;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Player;
@@ -30,6 +31,7 @@ public class ManagerHolder {
     private Recorder videoRecorder;
     private Player videoPlayer;
     private Tutorial tutorial;
+    private Features features;
 
     public void init(MainActivity activity) {
         inviteManager = new InviteManager(activity, activity);
@@ -43,6 +45,7 @@ public class ManagerHolder {
             Log.i(TAG, "Proximity sensor not found");
         }
         tutorial = new Tutorial((TutorialLayout) activity.findViewById(R.id.tutorial_layout), activity);
+        features = new Features(activity);
     }
 
     public void registerManagers() {
@@ -93,5 +96,9 @@ public class ManagerHolder {
 
     public Tutorial getTutorial() {
         return tutorial;
+    }
+
+    public Features getFeatures() {
+        return features;
     }
 }

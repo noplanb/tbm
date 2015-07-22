@@ -14,6 +14,7 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.SyncManager;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
@@ -35,8 +36,6 @@ import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.Logger;
 
 import java.util.ArrayList;
-
-// TODO: This file is still really ugly and needs to be made more organized and more readable. Some work may need to be factored out. -- Sani
 
 public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener, NineViewGroup.SpinChangedListener {
 
@@ -89,9 +88,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     private void setupNineViewGroup(View v) {
         nineViewGroup = (NineViewGroup) v.findViewById(R.id.grid_view);
-        nineViewGroup.setSpinStrategy(new RectangleSpin(nineViewGroup));
-        nineViewGroup.setSpinOffset(new PreferencesHelper(v.getContext()).getInt(PREF_SPIN_OFFSET, 0));
-        nineViewGroup.setSpinChangedListener(this);
+        setupSpinFeature(v.getContext());
         nineViewGroup.setGestureListener(new NineViewGestureListener());
         nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
             @Override
@@ -102,6 +99,14 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
                 handleIntentAction(getActivity().getIntent());
             }
         });
+    }
+
+    private void setupSpinFeature(Context context) {
+        if (getManagerProvider().getFeatures().isUnlocked(Features.Feature.CAROUSEL)) {
+            nineViewGroup.setSpinStrategy(new RectangleSpin(nineViewGroup));
+            nineViewGroup.setSpinOffset(new PreferencesHelper(context).getInt(PREF_SPIN_OFFSET, 0));
+            nineViewGroup.setSpinChangedListener(this);
+        }
     }
 
     private void setupVideoPlayer(View v) {
@@ -320,7 +325,9 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
         @Override
         public boolean onCenterClick(View view) {
-            checkAndShowHint();
+            if (getManagerProvider().getFeatures().isUnlocked(Features.Feature.SWITCH_CAMERA)) {
+                getManagerProvider().getRecorder().switchCamera();
+            }
             return true;
         }
 

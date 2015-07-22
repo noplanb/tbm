@@ -2,6 +2,7 @@ package com.zazoapp.client.ui;
 
 import com.zazoapp.client.bench.BenchViewManager;
 import com.zazoapp.client.bench.InviteHelper;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.multimedia.AudioController;
 import com.zazoapp.client.multimedia.Player;
 import com.zazoapp.client.multimedia.Recorder;
@@ -17,4 +18,5 @@ public interface ZazoManagerProvider {
     Player getPlayer();
     InviteHelper getInviteHelper();
     Tutorial getTutorial();
+    Features getFeatures();
 }

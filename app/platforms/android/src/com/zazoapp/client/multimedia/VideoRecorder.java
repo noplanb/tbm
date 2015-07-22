@@ -61,7 +61,7 @@ public class VideoRecorder implements SurfaceTextureListener {
     }
 
     public void onPause() {
-        release();
+        release(true);
     }
 
     public Friend getCurrentFriend() {
@@ -152,7 +152,7 @@ public class VideoRecorder implements SurfaceTextureListener {
         return rval;
     }
 
-    public void release() {
+    public void release(boolean releaseCamera) {
         Log.i(TAG, "release");
         isPreviewing = false;
         Boolean abortedRecording = false;
@@ -165,7 +165,9 @@ public class VideoRecorder implements SurfaceTextureListener {
             }
         }
         releaseMediaRecorder();
-        CameraManager.releaseCamera();
+        if (releaseCamera) {
+            CameraManager.releaseCamera();
+        }
         if (abortedRecording && videoRecorderExceptionHandler != null)
             videoRecorderExceptionHandler.recordingAborted();
     }

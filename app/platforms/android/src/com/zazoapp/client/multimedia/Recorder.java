@@ -48,4 +48,9 @@ public interface Recorder {
      * @param container
      */
     void addPreviewTo(ViewGroup container);
+
+    /**
+     * Switches front/back cameras
+     */
+    void switchCamera();
 }

@@ -59,6 +59,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         setUpSendBrokenVideo();
         setUpTutorialOption();
         setUpDisableGcmNotificationsOption();
+        setUpEnableFeatures();
     }
 
     @Override
@@ -321,6 +322,17 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 config.setDisableGcmNotifications(isChecked);
+            }
+        });
+    }
+
+    private void setUpEnableFeatures() {
+        Switch enableFeatures = (Switch) findViewById(R.id.enable_all_features);
+        enableFeatures.setChecked(config.isAllFeaturesEnabled());
+        enableFeatures.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                config.enableAllFeatures(isChecked);
             }
         });
     }

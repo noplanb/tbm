@@ -21,6 +21,7 @@ import com.zazoapp.client.bench.InviteHelper;
 import com.zazoapp.client.bench.InviteManager.InviteDialogListener;
 import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.multimedia.AudioController;
@@ -301,6 +302,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     public Tutorial getTutorial() {
         return managerHolder.getTutorial();
+    }
+
+    @Override
+    public Features getFeatures() {
+        return managerHolder.getFeatures();
     }
 
     private void releaseManagers() {

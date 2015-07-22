@@ -246,5 +246,12 @@
                 android:text="Disable GCM notifications"
                 android:textColor="@android:color/white"
                 android:layout_marginTop="5dp"/>
+        <Switch
+                android:id="@+id/enable_all_features"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enable all features"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="5dp"/>
     </LinearLayout>
 </ScrollView>

@@ -3,16 +3,17 @@ package com.zazoapp.client.ui.helpers;
 import android.content.Context;
 import android.util.Log;
 import android.view.ViewGroup;
-import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.R;
-import com.zazoapp.client.model.OutgoingVideo;
-import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.GridElementFactory;
+import com.zazoapp.client.model.GridManager;
+import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoRecorder;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.view.PreviewTextureFrame;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -115,6 +116,13 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         PreviewTextureFrame vrFrame = (PreviewTextureFrame) videoRecorder.getView();
         container.addView(vrFrame, new PreviewTextureFrame.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    }
+
+    @Override
+    public void switchCamera() {
+        videoRecorder.release(false);
+        CameraManager.switchCamera(context);
+        videoRecorder.onResume();
     }
 
     @Override

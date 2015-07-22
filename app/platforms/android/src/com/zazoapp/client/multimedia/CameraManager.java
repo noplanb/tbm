@@ -36,6 +36,7 @@ public class CameraManager {
     }
 
     private static Camera camera = null;
+    private static boolean useFrontCamera = true;
     private static Camera.Size selectedPreviewSize = null;
     private static int orientation;                        //used in videoRecorder to set video recording orientation
     private static int recalculatedOrientation;            //used in cameraParams to set camera parameters properly
@@ -46,7 +47,7 @@ public class CameraManager {
     // --------------
     public static synchronized Camera getCamera(Context context) {
         if (camera == null)
-            setupFrontCamera(context);
+            setupCamera(context);
         return camera;
     }
 
@@ -60,6 +61,7 @@ public class CameraManager {
             camera.stopPreview();
             lockCamera(); // lock camera in case it was unlocked by the VideoRecorder.
             camera.release();
+            useFrontCamera = true;
         }
         camera = null;
     }
@@ -93,11 +95,19 @@ public class CameraManager {
         return true;
     }
 
+    public static synchronized void switchCamera(Context context) {
+        if (camera != null) {
+            boolean useFront = useFrontCamera;
+            releaseCamera();
+            useFrontCamera = !useFront;
+            setupCamera(context);
+        }
+    }
     // ---------------
     // Private methods
     // ---------------
-    private static Camera setupFrontCamera(Context context){
-        Log.i(TAG, "getFrontCamera:");
+    private static Camera setupCamera(Context context){
+        Log.i(TAG, "setupCamera:");
         releaseCamera();
 
         if (!hasCameraHardware(context)){
@@ -107,7 +117,7 @@ public class CameraManager {
         }
 
         int cameraNum;
-        if (DebugConfig.getInstance(context).shouldUseRearCamera()) {
+        if (DebugConfig.getInstance(context).shouldUseRearCamera() || !useFrontCamera) {
             cameraNum = rearCameraNum();
         } else {
             cameraNum = frontCameraNum();

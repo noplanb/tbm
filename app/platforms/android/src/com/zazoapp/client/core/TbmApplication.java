@@ -64,7 +64,6 @@ public class TbmApplication extends Application {
 
             @Override
             public void onActivityPaused(Activity activity) {
-                // TODO temporary until we fix storing model on its update
                 activeModelsHandler.saveAll();
             }
 

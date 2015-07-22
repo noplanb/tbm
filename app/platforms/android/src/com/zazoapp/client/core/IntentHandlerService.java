@@ -357,7 +357,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             }
 
             // Update the status and notify based on the intent if we have not exited for another reason above.
-            // TODO: bring this method into this file
             updateStatus();
         }
 
