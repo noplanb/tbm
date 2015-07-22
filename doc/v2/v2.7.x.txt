@@ -31,4 +31,11 @@ NEW
 ---------
 Spin the wheel feature
 
-
+---------
+Fix Rollbar #834
+---------
+Problem:
+java.lang.IllegalStateException
+The content of the adapter has changed but ListView did not receive a notification. Make sure the content of your adapter is not modified from a background thread, but only from the UI thread. Make sure your adapter calls
+SOLUTION:
+Set updated list to adapter in main thread in onPostExecute method

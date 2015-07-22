@@ -133,15 +133,17 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @Override
     public void updateBench() {
         AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
+            private List<BenchObject>[] list;
             @Override
             protected Void doInBackground(Void... params) {
-                adapter.setList(allOnBench());
+                list = allOnBench();
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
+                adapter.setList(list);
                 adapter.notifyDataSetChanged();
             }
         });
@@ -157,6 +159,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	// ---------
 	private void populate(final ArrayList<LinkedTreeMap<String, String>> phoneData) {
         AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
+            private List<BenchObject>[] list;
             @Override
             protected Void doInBackground(Void... params) {
                 smsBenchObjects = new ArrayList<>();
@@ -175,13 +178,14 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                         contactBenchObjects.add(bo);
                     }
                 }
-                adapter.setList(allOnBench());
+                list = allOnBench();
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
+                adapter.setList(list);
                 if (listView.getAdapter() == adapter) {
                     adapter.notifyDataSetChanged();
                 } else {
