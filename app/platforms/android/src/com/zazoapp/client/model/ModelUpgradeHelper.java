@@ -25,11 +25,7 @@ public final class ModelUpgradeHelper {
         if (videoFile.exists()) {
             videoFile.renameTo(new File(incomingVideoPath));
         }
-        handler.ensureUser();
-        handler.ensure(FriendFactory.getFactoryInstance());
-        handler.ensure(IncomingVideoFactory.getFactoryInstance());
-        handler.ensure(GridElementFactory.getFactoryInstance());
-        handler.ensure(OutgoingVideoFactory.getFactoryInstance());
+        ensureAll(handler);
 
         // migrate old outgoing video model
         for (Friend friend : FriendFactory.getFactoryInstance().all()) {
@@ -42,5 +38,26 @@ public final class ModelUpgradeHelper {
                 video.set(Video.Attributes.FRIEND_ID, friend.getId());
             }
         }
+    }
+
+    /**
+     * Changes in Friend model:
+     * 1. Added CONNECTION CREATOR flag
+     * 2. Added DELETED flag
+     */
+    public static void upgradeTo3(ActiveModelsHandler handler, Context context) {
+        ensureAll(handler);
+        for (Friend friend : FriendFactory.getFactoryInstance().all()) {
+            friend.setCreator(true);
+            friend.setDeleted(false);
+        }
+    }
+
+    private static void ensureAll(ActiveModelsHandler handler) {
+        handler.ensureUser();
+        handler.ensure(FriendFactory.getFactoryInstance());
+        handler.ensure(IncomingVideoFactory.getFactoryInstance());
+        handler.ensure(GridElementFactory.getFactoryInstance());
+        handler.ensure(OutgoingVideoFactory.getFactoryInstance());
     }
 }

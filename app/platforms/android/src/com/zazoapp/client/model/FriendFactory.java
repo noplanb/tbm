@@ -172,5 +172,8 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
             observer.onVideoStatusChanged(f);
         }
     }
-    
+
+    public int getInviteeCount() {
+        return allWhere(Friend.Attributes.CONNECTION_CREATOR, ActiveModel.FALSE).size();
+    }
 }

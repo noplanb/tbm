@@ -53,6 +53,9 @@ public class Friend extends ActiveModel{
         public static final String TIME_OF_LAST_ACTION = "timeOfLastAction";
         public static final String MOBILE_NUMBER = "mobileNumber";
         public static final String HAS_APP = "hasApp";
+        public static final String CONNECTION_CREATOR = "isConnectionCreator";
+        public static final String DELETED = "deleted";
+
     }
 
     public static class VideoStatusEventType{
@@ -74,7 +77,9 @@ public class Friend extends ActiveModel{
                 Attributes.LAST_VIDEO_STATUS_EVENT_TYPE,
                 Attributes.TIME_OF_LAST_ACTION,
                 Attributes.MOBILE_NUMBER,
-                Attributes.HAS_APP};
+                Attributes.HAS_APP,
+                Attributes.CONNECTION_CREATOR,
+                Attributes.DELETED};
         return a;
     }
 
@@ -94,17 +99,33 @@ public class Friend extends ActiveModel{
     }
 
     public boolean hasApp() {
-        return get(Attributes.HAS_APP).equals("true");
+        return get(Attributes.HAS_APP).equals(TRUE);
     }
 
     public void setHasApp(){
-        set(Attributes.HAS_APP, "true");
+        set(Attributes.HAS_APP, TRUE);
     }
     
     public void setHasApp(boolean value){
-        set(Attributes.HAS_APP, value ? "true" : "false");
+        set(Attributes.HAS_APP, value ? TRUE : FALSE);
     }
-    
+
+    public boolean isDeleted() {
+        return get(Attributes.DELETED).equals(TRUE);
+    }
+
+    public void setDeleted(boolean value) {
+        set(Attributes.DELETED, value ? TRUE : FALSE);
+    }
+
+    public boolean isCreator() {
+        return get(Attributes.CONNECTION_CREATOR).equals(TRUE);
+    }
+
+    public void setCreator(boolean value) {
+        set(Attributes.CONNECTION_CREATOR, value ? TRUE : FALSE);
+    }
+
     //------------------------------
     // Attribute Getters and Setters
     //------------------------------

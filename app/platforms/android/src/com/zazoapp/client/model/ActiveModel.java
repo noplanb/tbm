@@ -10,8 +10,10 @@ import java.util.Set;
 
 public abstract class ActiveModel {
 	protected static final String TAG = ActiveModel.class.getSimpleName();
+    public static final String TRUE = "true";
+    public static final String FALSE = "false";
 
-	public LinkedTreeMap<String, String> attributes = new LinkedTreeMap<String, String>();
+    public LinkedTreeMap<String, String> attributes = new LinkedTreeMap<String, String>();
 
     private Context context;
 

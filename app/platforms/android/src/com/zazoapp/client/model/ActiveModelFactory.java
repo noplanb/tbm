@@ -103,7 +103,6 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
     protected void replaceAttributes(Context context, ArrayList<LinkedTreeMap<String, String>> all) {
         for (LinkedTreeMap<String, String> ats : all) {
             T i = makeInstance(context);
-            i.attributes.clear();
             i.attributes.putAll(ats);
         }
     }
