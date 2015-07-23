@@ -65,7 +65,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         managerProvider.getPlayer().registerStatusCallbacks(this);
 
-        updateVideoStatus();
+        updateVideoStatus(false);
     }
 
     /**
@@ -76,7 +76,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     @Override
     public void onVideoStatusChanged(Friend friend) {
         if (isForMe(friend.getId())) {
-            updateVideoStatus();
+            updateVideoStatus(true);
         }
     }
 
@@ -205,7 +205,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         container.setVisibility(View.VISIBLE); // as content is loaded, display view
     }
 
-    private void updateVideoStatus() {
+    private void updateVideoStatus(boolean statusChanged) {
         Friend friend = gridElement.getFriend();
         if (friend == null) {
             updateContent(false);
@@ -221,14 +221,14 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         // if video is currently not played we update view content and show animation if needed
         if (!isVideoPlaying) {
             if (lastEventType == Friend.VideoStatusEventType.INCOMING) {
-                updateUiForIncomingVideoStatus(incomingStatus);
+                updateUiForIncomingVideoStatus(incomingStatus, statusChanged);
             } else if (lastEventType == Friend.VideoStatusEventType.OUTGOING) {
-                updateUiForOutgoingVideoStatus(outgoingStatus);
+                updateUiForOutgoingVideoStatus(outgoingStatus, statusChanged);
             }
         }
     }
 
-    private void updateUiForIncomingVideoStatus(final int status) {
+    private void updateUiForIncomingVideoStatus(final int status, final boolean statusChanged) {
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -239,7 +239,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         updateContent(false);
                         break;
                     case IncomingVideo.Status.DOWNLOADED:
-                        if (gridElementView.isReadyToAnimate()) {
+                        if (gridElementView.isReadyToAnimate() && statusChanged) {
                             // sound only if activity is really visible to user
                             if (!(NotificationAlertManager.screenIsLocked(activity) ||
                                     NotificationAlertManager.screenIsOff(activity))) {
@@ -267,7 +267,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         });
     }
 
-    private void updateUiForOutgoingVideoStatus(final int status) {
+    private void updateUiForOutgoingVideoStatus(final int status, boolean statusChanged) {
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
