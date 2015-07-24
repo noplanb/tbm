@@ -1,6 +1,7 @@
 package com.zazoapp.client.ui.view;
 
 import android.app.Activity;
+import android.view.MotionEvent;
 import android.view.View;
 import com.zazoapp.client.R;
 import com.zazoapp.client.features.Features;
@@ -51,7 +52,8 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
 
     @Override
     public boolean bigMove(View v) {
-        return nineViewGroup.handleAbort(v, R.string.toast_dragged_finger_away);
+        return managerProvider.getFeatures().isUnlocked(Features.Feature.ABORT_RECORDING) &&
+                nineViewGroup.handleAbort(v, R.string.toast_dragged_finger_away);
     }
 
     @Override
@@ -117,7 +119,7 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
 
     @Override
     public boolean isSlidingSupported() {
-        return nineViewGroup.getSpinStrategy() != null;
+        return nineViewGroup.getSpinStrategy() != null && nineViewGroup.isSpinEnabled();
     }
 
     private boolean angleInBetween(double angle, double startAngle, double endAngle) {
@@ -147,5 +149,10 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
                 nineViewGroup.getGestureListener().onSurroundingMovingIn(view, nineViewGroup.positionOfView(view));
             }
         });
+    }
+
+    @Override
+    protected boolean isAbortLongpressMove(MotionEvent event) {
+        return managerProvider.getFeatures().isUnlocked(Features.Feature.ABORT_RECORDING) && super.isAbortLongpressMove(event);
     }
 }

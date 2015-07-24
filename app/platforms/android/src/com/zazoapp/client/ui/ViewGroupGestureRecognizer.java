@@ -235,9 +235,9 @@ public abstract class ViewGroupGestureRecognizer {
                     // This should never happen but ignore rather than abort..
                     return;
                 case MotionEvent.ACTION_MOVE:
-                    if (isBigMove(event)) {
+                    if (isAbortLongpressMove(event)) {
                         state = State.IDLE;
-                        runBigMove(targetView);
+                        runAbortLongpress(targetView);
                     }
                     return;
                 case MotionEvent.ACTION_CANCEL:
@@ -342,7 +342,7 @@ public abstract class ViewGroupGestureRecognizer {
         });
     }
 
-    private void runBigMove(final View v) {
+    private void runAbortLongpress(final View v) {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -367,7 +367,7 @@ public abstract class ViewGroupGestureRecognizer {
         return targetViews.contains(v);
     }
 
-    private boolean isBigMove(MotionEvent event) {
+    protected boolean isAbortLongpressMove(MotionEvent event) {
         double a2 = Math.pow(downPosition[0] - (double) event.getX(), 2D);
         double b2 = Math.pow(downPosition[1] - (double) event.getY(), 2D);
         double limit = Math.pow(activity.getResources().getDimension(R.dimen.nine_view_big_move), 2D);

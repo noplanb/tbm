@@ -75,6 +75,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     public void onResume() {
         super.onResume();
         Logger.i(TAG, "onResume");
+        setupSpinFeature(getActivity()); // FIXME Do it in another way
         getManagerProvider().getRecorder().resume();
     }
 
@@ -88,7 +89,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     private void setupNineViewGroup(View v) {
         nineViewGroup = (NineViewGroup) v.findViewById(R.id.grid_view);
-        setupSpinFeature(v.getContext());
+        setupSpinFeature(getActivity());
         nineViewGroup.setGestureRecognizer(getManagerProvider());
         nineViewGroup.setGestureListener(new NineViewGestureListener());
         nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
@@ -103,11 +104,12 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     private void setupSpinFeature(Context context) {
-        if (getManagerProvider().getFeatures().isUnlocked(Features.Feature.CAROUSEL)) {
+        if (nineViewGroup.getSpinStrategy() == null) {
             nineViewGroup.setSpinStrategy(new RectangleSpin(nineViewGroup));
             nineViewGroup.setSpinOffset(new PreferencesHelper(context).getInt(PREF_SPIN_OFFSET, 0));
             nineViewGroup.setSpinChangedListener(this);
         }
+        nineViewGroup.enableSpin(getManagerProvider().getFeatures().isUnlocked(Features.Feature.CAROUSEL));
     }
 
     private void setupVideoPlayer(View v) {

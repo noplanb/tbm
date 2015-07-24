@@ -14,6 +14,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.Poller;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
@@ -81,6 +82,7 @@ public class InviteManager implements InviteHelper {
             if (friend.isDeleted()) {
                 friend.setDeleted(false);
                 finishInvitation();
+                new Poller().pollAll();
             } else {
                 showAlreadyConnectedDialog();
             }

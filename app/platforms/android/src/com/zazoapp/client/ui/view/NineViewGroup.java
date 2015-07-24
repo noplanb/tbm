@@ -47,6 +47,7 @@ public class NineViewGroup extends ViewGroup {
     private LayoutCompleteListener layoutCompleteListener;
     private SpinChangedListener spinChangedListener;
     private int spinOffset;
+    private boolean spinEnabled;
 
     public interface GestureCallbacks {
         boolean onSurroundingClick(View view, int position);
@@ -365,6 +366,14 @@ public class NineViewGroup extends ViewGroup {
 
     public int getSpinOffset() {
         return spinOffset;
+    }
+
+    public void enableSpin(boolean enable) {
+        spinEnabled = enable;
+    }
+
+    public boolean isSpinEnabled() {
+        return spinEnabled;
     }
 
     public ArrayList<View> getNineViews() {

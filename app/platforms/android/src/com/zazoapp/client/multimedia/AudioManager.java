@@ -6,6 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.Build;
 import android.util.Log;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.dispatch.Dispatch;
 
@@ -88,7 +89,9 @@ public class AudioManager implements SensorEventListener, AudioController {
     public void onSensorChanged(SensorEvent event) {
         isProximityClose = event.values[0] == 0;
         Log.i(TAG, "Proximity is close " + isProximityClose);
-        setSpeakerPhoneOn(managerProvider.getPlayer().isPlaying());
+        if (managerProvider.getFeatures().isUnlocked(Features.Feature.EARPIECE)) {
+            setSpeakerPhoneOn(managerProvider.getPlayer().isPlaying());
+        }
     }
 
     @Override
