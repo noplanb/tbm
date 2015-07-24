@@ -124,6 +124,13 @@ public class NineViewGroup extends ViewGroup {
             return getByOrdinal((spinOrder + 1) % 8);
         }
 
+        public Box getPrevious() {
+            if (this == CENTER) {
+                return this;
+            }
+            return getByOrdinal((spinOrder + 7) % 8);
+        }
+
         public Box getWithOffset(int offset) {
             if (this == CENTER) {
                 return this;
@@ -458,8 +465,28 @@ public class NineViewGroup extends ViewGroup {
 
         @Override
         public void startMove(View target, double startX, double startY, double offsetX, double offsetY) {
-            if (spinStrategy != null && !isCenterView(target)) {
-                spinStrategy.initSpin(startX, startY, offsetX, offsetY);
+            if (!isCenterView(target)) {
+
+                if (target != null) {
+                    double x0 = SpinStrategy.getInitialPositionX(getFrame(Box.CENTER));
+                    double y0 = SpinStrategy.getInitialPositionY(getFrame(Box.CENTER));
+                    double angle = Math.atan2(SpinStrategy.getInitialPositionY(target) - y0,
+                            SpinStrategy.getInitialPositionX(target) - x0);
+                    double prevAngle = SpinStrategy.normalizedAngle(angle - Math.PI / 6);
+                    double nextAngle = SpinStrategy.normalizedAngle(angle + Math.PI / 6);
+                    if (angleInBetween(Math.atan2(offsetY, offsetX), prevAngle, nextAngle)) {
+                        // Move out
+                        return;
+                    }
+                    if (angleInBetween(SpinStrategy.normalizedAngle(Math.atan2(offsetY, offsetX) + Math.PI),
+                            prevAngle, nextAngle)) {
+                        // Move in
+                        return;
+                    }
+                }
+                if (spinStrategy != null) {
+                    spinStrategy.initSpin(startX, startY, offsetX, offsetY);
+                }
             }
         }
 
@@ -485,6 +512,17 @@ public class NineViewGroup extends ViewGroup {
         @Override
         public boolean isSlidingSupported() {
             return spinStrategy != null;
+        }
+
+        private boolean angleInBetween(double angle, double startAngle, double endAngle) {
+            if (endAngle > startAngle) {
+                return startAngle < angle && angle < endAngle;
+            } else {
+                endAngle = SpinStrategy.normalizedAngle(endAngle + Math.PI);
+                startAngle = SpinStrategy.normalizedAngle(startAngle + Math.PI);
+                angle = SpinStrategy.normalizedAngle(angle + Math.PI);
+                return startAngle < angle && angle < endAngle;
+            }
         }
     }
 
@@ -520,11 +558,11 @@ public class NineViewGroup extends ViewGroup {
         abstract protected void finishSpin(double startX, double startY, double offsetX, double offsetY);
         abstract protected boolean isSpinning();
 
-        protected double getInitialPositionX(View v) {
+        public static double getInitialPositionX(View v) {
             return v.getLeft() + v.getWidth() / 2;
         }
 
-        protected double getInitialPositionY(View v) {
+        public static double getInitialPositionY(View v) {
             return v.getTop() + v.getHeight() / 2;
         }
 
