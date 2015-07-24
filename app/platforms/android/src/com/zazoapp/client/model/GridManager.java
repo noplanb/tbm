@@ -5,6 +5,7 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 
 public class GridManager implements Friend.VideoStatusChangedCallback{
     private static final String TAG = GridManager.class.getSimpleName();
@@ -62,14 +63,20 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
         return isOnGrid;
     }
 
-	public ArrayList<Friend> friendsOnBench(){
-		ArrayList<Friend> allFriends = FriendFactory.getFactoryInstance().all();
-		ArrayList<Friend> gridFriends = friendsOnGrid();
-		for (Friend gf : gridFriends){
-			allFriends.remove(gf);
-		}
-		return allFriends;
-	}
+    public ArrayList<Friend> friendsOnBench() {
+        ArrayList<Friend> allFriends = FriendFactory.getFactoryInstance().all();
+        ArrayList<Friend> gridFriends = friendsOnGrid();
+        for (Friend gf : gridFriends) {
+            allFriends.remove(gf);
+        }
+        Iterator<Friend> it = allFriends.iterator();
+        while (it.hasNext()) {
+            if (it.next().isDeleted()) {
+                it.remove();
+            }
+        }
+        return allFriends;
+    }
 
     public ArrayList<Friend> friendsOnGrid(){
         ArrayList<Friend> r = new ArrayList<Friend>();
@@ -80,26 +87,33 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
         return r;
     }
 
-    public void moveFriendToGrid(Friend f){
-		rankingActionOccurred(f);
-		if (!GridElementFactory.getFactoryInstance().friendIsOnGrid(f)) {
-			nextAvailableGridElement().setFriend(f);
-		} else {
+    public void moveFriendToGrid(Friend f) {
+        if (f == null)
+            return;
+        f.setLastActionTime();
+        if (!GridElementFactory.getFactoryInstance().friendIsOnGrid(f)) {
+            nextAvailableGridElement().setFriend(f);
+        } else {
             GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(f.getId());
             if (ge != null) {
                 ge.notifyUpdate();
             }
         }
-	}
+    }
 
-	//--------
+    public void moveNextFriendTo(GridElement ge) {
+        ArrayList<Friend> list = friendsOnBench();
+        Friend newFriend = (list.size() > 0) ? list.get(0): null;
+        if (newFriend != null) {
+            newFriend.setLastActionTime();
+        }
+        ge.setFriend(newFriend);
+    }
+
+    //--------
     // Ranking
-	//--------
-	public void rankingActionOccurred(Friend f){
-		f.set(Friend.Attributes.TIME_OF_LAST_ACTION, System.currentTimeMillis() + "");
-	}
-
-	public ArrayList<Friend> rankedFriendsOnGrid(){
+    //--------
+    public ArrayList<Friend> rankedFriendsOnGrid(){
 		ArrayList<Friend> fog = friendsOnGrid();
 		Collections.sort(fog, new FriendRankComparator()); 
 		return fog;

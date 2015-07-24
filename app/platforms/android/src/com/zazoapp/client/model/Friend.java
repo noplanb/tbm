@@ -94,8 +94,8 @@ public class Friend extends ActiveModel{
         return get(Friend.Attributes.TIME_OF_LAST_ACTION);
     }
 
-    public void setLastActionTime(long lastActionTime){
-        set(Friend.Attributes.TIME_OF_LAST_ACTION, Long.toString(lastActionTime));
+    public void setLastActionTime(){
+        set(Friend.Attributes.TIME_OF_LAST_ACTION, Long.toString(System.currentTimeMillis()));
     }
 
     public boolean hasApp() {

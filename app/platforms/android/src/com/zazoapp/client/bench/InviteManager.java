@@ -63,7 +63,7 @@ public class InviteManager implements InviteHelper {
     public void invite(BenchObject bo) {
         Logger.d(TAG, "invite: " + bo);
         benchObject = bo;
-        checkHasApp();
+        inviteInner(bo);
     }
 
     @Override
@@ -71,10 +71,19 @@ public class InviteManager implements InviteHelper {
         Logger.d(TAG, "invite: " + contact + " (" + phoneIndex + ")");
         LinkedTreeMap<String, String> mobileNumber = contact.phoneObjects.get(phoneIndex);
         benchObject = BenchObject.benchObjectWithContact(contact, mobileNumber);
-        Friend friend = friendMatchingContact(contact, mobileNumber);
+        inviteInner(benchObject);
+    }
+
+    private void inviteInner(BenchObject bo) {
+        Friend friend = friendMatchingContact(bo.mobileNumber);
         if (friend != null) {
             this.friend = friend;
-            showAlreadyConnectedDialog();
+            if (friend.isDeleted()) {
+                friend.setDeleted(false);
+                finishInvitation();
+            } else {
+                showAlreadyConnectedDialog();
+            }
             return;
         }
         checkHasApp();
@@ -106,10 +115,9 @@ public class InviteManager implements InviteHelper {
         preNudgeDialog();
     }
 
-    private Friend friendMatchingContact(Contact contact, LinkedTreeMap<String, String> mobileNumber) {
+    private Friend friendMatchingContact(String mobileNumber) {
         for (Friend f : FriendFactory.getFactoryInstance().all()) {
-            if (ContactsManager.isPhoneNumberMatch(f.get(Friend.Attributes.MOBILE_NUMBER),
-                    mobileNumber.get(Contact.PhoneNumberKeys.E164))) {
+            if (ContactsManager.isPhoneNumberMatch(f.get(Friend.Attributes.MOBILE_NUMBER), mobileNumber)) {
                 return f;
             }
         }

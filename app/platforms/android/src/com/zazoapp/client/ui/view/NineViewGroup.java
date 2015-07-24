@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.zazoapp.client.R;
 import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 
 import java.util.ArrayList;
 
@@ -59,6 +60,10 @@ public class NineViewGroup extends ViewGroup {
         boolean onEndLongpress();
 
         boolean onCancelLongpress(int reason);
+
+        boolean onSurroundingMovingAway(View view, int position);
+
+        boolean onSurroundingMovingIn(View view, int position);
 
         void notifyUpdateDebug();
     }
@@ -162,7 +167,6 @@ public class NineViewGroup extends ViewGroup {
         addElementViews();
         if (isInEditMode())
             return;
-        addGestureRecognizer();
     }
 
     @Override
@@ -363,10 +367,7 @@ public class NineViewGroup extends ViewGroup {
         return spinOffset;
     }
 
-    //---------------------------
-    // Private child view helpers
-    //---------------------------
-    private ArrayList<View> getNineViews() {
+    public ArrayList<View> getNineViews() {
         ArrayList<View> r = new ArrayList<View>();
         for (int i = 0; i < getChildCount(); i++) {
             r.add(getChildAt(i));
@@ -375,11 +376,11 @@ public class NineViewGroup extends ViewGroup {
     }
 
     @SuppressWarnings("ResourceType")
-    private boolean isCenterView(View v) {
+    boolean isCenterView(View v) {
         return v != null && v.getId() == 4;
     }
 
-    private int positionOfView(View v) {
+    int positionOfView(View v) {
         if (isCenterView(v))
             return -1;
 
@@ -409,121 +410,9 @@ public class NineViewGroup extends ViewGroup {
         return vgGestureRecognizer.onTouchEvent(event);
     }
 
-    private void addGestureRecognizer() {
-        vgGestureRecognizer = new NineViewGroupGestureRecognizer((Activity) getContext(), this, getNineViews());
+    public void setGestureRecognizer(ZazoManagerProvider provider) {
+        vgGestureRecognizer = new NineViewGroupGestureRecognizer((Activity) getContext(), this, getNineViews(), provider);
         vgGestureRecognizer.enable();
-    }
-
-    private class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
-        public NineViewGroupGestureRecognizer(Activity a, ViewGroup vg, ArrayList<View> tvs) {
-            super(a, vg, tvs);
-        }
-
-        @Override
-        public boolean click(View v) {
-            if (gestureCallbacks == null)
-                return false;
-
-            if (isCenterView(v))
-                return gestureCallbacks.onCenterClick(v);
-            return gestureCallbacks.onSurroundingClick(v, positionOfView(v));
-        }
-
-        @Override
-        public boolean startLongpress(View v) {
-            if (gestureCallbacks == null)
-                return false;
-
-            if (isCenterView(v))
-                return gestureCallbacks.onCenterStartLongpress(v);
-            return gestureCallbacks.onSurroundingStartLongpress(v, positionOfView(v));
-        }
-
-        @Override
-        public boolean endLongpress(View v) {
-            if (gestureCallbacks == null)
-                return false;
-            return gestureCallbacks.onEndLongpress();
-        }
-
-        @Override
-        public boolean bigMove(View v) {
-            return handleAbort(v, R.string.toast_dragged_finger_away);
-        }
-
-        @Override
-        public boolean abort(View v, int reason) {
-            return handleAbort(v, reason);
-        }
-
-        @Override
-        public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY) {
-            if (spinStrategy != null && !isCenterView(target)) {
-                spinStrategy.spin(startX, startY, offsetX, offsetY);
-            }
-        }
-
-        @Override
-        public void startMove(View target, double startX, double startY, double offsetX, double offsetY) {
-            if (!isCenterView(target)) {
-
-                if (target != null) {
-                    double x0 = SpinStrategy.getInitialPositionX(getFrame(Box.CENTER));
-                    double y0 = SpinStrategy.getInitialPositionY(getFrame(Box.CENTER));
-                    double angle = Math.atan2(SpinStrategy.getInitialPositionY(target) - y0,
-                            SpinStrategy.getInitialPositionX(target) - x0);
-                    double prevAngle = SpinStrategy.normalizedAngle(angle - Math.PI / 6);
-                    double nextAngle = SpinStrategy.normalizedAngle(angle + Math.PI / 6);
-                    if (angleInBetween(Math.atan2(offsetY, offsetX), prevAngle, nextAngle)) {
-                        // Move out
-                        return;
-                    }
-                    if (angleInBetween(SpinStrategy.normalizedAngle(Math.atan2(offsetY, offsetX) + Math.PI),
-                            prevAngle, nextAngle)) {
-                        // Move in
-                        return;
-                    }
-                }
-                if (spinStrategy != null) {
-                    spinStrategy.initSpin(startX, startY, offsetX, offsetY);
-                }
-            }
-        }
-
-        @Override
-        public void endMove(double startX, double startY, double offsetX, double offsetY) {
-            if (spinStrategy != null) {
-                spinStrategy.finishSpin(startX, startY, offsetX, offsetY);
-            }
-        }
-
-        @Override
-        public void onTouch(double startX, double startY) {
-            if (spinStrategy != null) {
-                spinStrategy.stopSpin(startX, startY);
-            }
-        }
-
-        @Override
-        public boolean isSliding() {
-            return spinStrategy != null && spinStrategy.isSpinning();
-        }
-
-        @Override
-        public boolean isSlidingSupported() {
-            return spinStrategy != null;
-        }
-
-        private boolean angleInBetween(double angle, double startAngle, double endAngle) {
-            if (endAngle > startAngle) {
-                return startAngle < angle && angle < endAngle;
-            } else {
-                endAngle = SpinStrategy.normalizedAngle(endAngle + Math.PI);
-                startAngle = SpinStrategy.normalizedAngle(startAngle + Math.PI);
-                angle = SpinStrategy.normalizedAngle(angle + Math.PI);
-                return startAngle < angle && angle < endAngle;
-            }
-        }
     }
 
     public void notifyUpdateDebug() {

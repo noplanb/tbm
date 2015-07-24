@@ -46,7 +46,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         if (friend != null){
             if (friend.hasApp() ^ remoteHasApp){
                 friend.setHasApp(remoteHasApp);
-                GridManager.getInstance().rankingActionOccurred(friend);
+                friend.setLastActionTime();
                 notifyStatusChanged(friend);
                 return friend;
             }
@@ -75,7 +75,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         f.set(Friend.Attributes.MOBILE_NUMBER, params.get(ServerParamKeys.MOBILE_NUMBER));
         f.set(Friend.Attributes.CKEY, params.get(ServerParamKeys.CKEY));
         f.setHasApp(servHasApp(params));
-        GridManager.getInstance().rankingActionOccurred(f);
+        f.setLastActionTime();
         notifyStatusChanged(f);
         return f;
     }

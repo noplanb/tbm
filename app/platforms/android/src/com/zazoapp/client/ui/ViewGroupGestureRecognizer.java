@@ -417,6 +417,10 @@ public abstract class ViewGroupGestureRecognizer {
         return null;
     }
 
+    public void runAction(Runnable runnable) {
+        activity.runOnUiThread(runnable);
+    }
+
     private void move(View target, double x, double y) {
         notifyMove(target, downPosition[0], downPosition[1], x, y);
     }

@@ -32,12 +32,13 @@ public class GridElement extends ActiveModel {
 
     public void setFriend(Friend f, boolean notify) {
         final String currentFriendId = getFriendId();
-        if (!currentFriendId.equals(f.getId())) {
+        String newId = (f != null) ? f.getId() : "";
+        if (!currentFriendId.equals(newId)) {
             if (notify) {
-                set(Attributes.FRIEND_ID, f.getId());
+                set(Attributes.FRIEND_ID, newId);
             } else {
                 notifyOnChanged(false);
-                set(Attributes.FRIEND_ID, f.getId());
+                set(Attributes.FRIEND_ID, newId);
                 notifyOnChanged(true);
             }
         }

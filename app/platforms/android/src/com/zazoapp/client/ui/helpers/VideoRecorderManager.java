@@ -8,7 +8,6 @@ import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.GridElementFactory;
-import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Recorder;
@@ -42,7 +41,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
             return;
 
         Friend f = ge.getFriend();
-        GridManager.getInstance().rankingActionOccurred(f);
+        f.setLastActionTime();
         if (videoRecorder.startRecording(f)) {
             Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
         } else {

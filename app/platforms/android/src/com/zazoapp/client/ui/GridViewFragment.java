@@ -89,6 +89,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     private void setupNineViewGroup(View v) {
         nineViewGroup = (NineViewGroup) v.findViewById(R.id.grid_view);
         setupSpinFeature(v.getContext());
+        nineViewGroup.setGestureRecognizer(getManagerProvider());
         nineViewGroup.setGestureListener(new NineViewGestureListener());
         nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
             @Override
@@ -313,6 +314,23 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             Log.d(TAG, "onCancelLongpress: " + getActivity().getString(reason));
             DialogShower.showToast(getActivity(), reason);
             getManagerProvider().getRecorder().cancel();
+            return false;
+        }
+
+        @Override
+        public boolean onSurroundingMovingAway(View view, int position) {
+            // delete friend
+            GridElement ge = GridElementFactory.getFactoryInstance().get(position);
+            Friend friend = ge.getFriend();
+            if (friend != null) {
+                friend.setDeleted(true);
+                GridManager.getInstance().moveNextFriendTo(ge);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean onSurroundingMovingIn(View view, int position) {
             return false;
         }
 

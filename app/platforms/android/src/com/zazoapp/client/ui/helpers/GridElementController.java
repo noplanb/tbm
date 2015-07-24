@@ -166,6 +166,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         Friend friend = gridElement.getFriend();
         if (friend == null) {
             container.setVisibility(View.VISIBLE); // as content is loaded, display view
+            gridElementView.showEmpty(true);
             return;
         }
         gridElementView.showEmpty(false);
