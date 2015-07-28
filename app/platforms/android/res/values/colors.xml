@@ -56,4 +56,7 @@
     <color name="spinner_ring_start">#00F48A31</color>
     <color name="spinner_ring_middle">#DDF48A31</color>
     <color name="splash_background">@color/light_grey_new</color>
+
+    <color name="feature_unlock_dialog_bg">#CC2f2e28</color>
+    <color name="feature_unlock_popup_bg">#CC1c1c19</color>
 </resources>

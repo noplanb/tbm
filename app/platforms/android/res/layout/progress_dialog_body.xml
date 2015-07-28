@@ -15,7 +15,7 @@
         android:paddingTop="20dp"
         android:text="TextView"
         android:textStyle="bold"
-        android:textSize="18sp"
+        android:textSize="@dimen/text_large"
         android:visibility="gone"
         android:textColor="@android:color/white" />
 

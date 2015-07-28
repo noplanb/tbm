@@ -67,7 +67,7 @@
                     android:layout_gravity="top|center_horizontal"
                     android:text="Country Code"
                     android:textColor="@android:color/white"
-                    android:textSize="8dp" />
+                    android:textSize="8sp" />
 
                 <TextView
                         android:id="@+id/usa_hint_label"
@@ -76,7 +76,7 @@
                         android:layout_gravity="top|center_horizontal"
                         android:text="(+1 USA)"
                         android:textColor="@android:color/white"
-                        android:textSize="8dp" />
+                        android:textSize="8sp" />
             </LinearLayout>
 
             <EditText
@@ -100,7 +100,7 @@
             android:text="@string/register_sign_in"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
-            android:textSize="22dp" />
+            android:textSize="@dimen/text_very_large" />
 
         <View
             android:id="@+id/transparent_view"

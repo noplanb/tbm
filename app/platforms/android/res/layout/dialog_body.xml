@@ -14,7 +14,7 @@
         android:paddingTop="20dp"
         android:text="TextView"
         android:textStyle="bold"
-        android:textSize="18sp"
+        android:textSize="@dimen/text_large"
         android:visibility="gone"
         android:textColor="@android:color/white" />
 
@@ -68,7 +68,7 @@
             android:background="@android:color/transparent"
             android:text="@string/dialog_action_cancel"
             android:textColor="@color/dialog_action_text"
-            android:textSize="18sp"
+            android:textSize="@dimen/text_large"
             android:visibility="gone"/>
 
         <View
@@ -87,7 +87,7 @@
             android:text="@string/dialog_action_ok"
             android:textColor="@color/dialog_action_text"
             android:textStyle="bold"
-            android:textSize="18sp"
+            android:textSize="@dimen/text_large"
             android:visibility="gone"/>
     </LinearLayout>
 

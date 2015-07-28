@@ -115,4 +115,9 @@
     </plurals>
     <string name="notification_list_more">%d more</string>
     <string name="notification_from">From %1$s!</string>
+    <string name="action_show_me">Show Me</string>
+    <string name="hurray_message">Hurray,</string>
+    <string name="feature_unlock_message">You unlocked a new feature!</string>
+    <string name="unlock_another_feature">Unlock Another Feature</string>
+    <string name="just_zazo_someone_new">Just Zazo someone new!</string>
 </resources>

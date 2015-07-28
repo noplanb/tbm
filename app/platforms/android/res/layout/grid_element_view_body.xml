@@ -27,7 +27,7 @@
                 android:gravity="center"
                 android:text="@string/nudge"
                 android:textColor="@color/orange"
-                android:textSize="16sp"
+                android:textSize="@dimen/text_normal"
                 android:textStyle="bold"/>
 
         <TextView
@@ -42,7 +42,7 @@
                 android:gravity="center"
                 android:text="@string/record"
                 android:textColor="@color/bg_unread_msg_count"
-                android:textSize="16sp"
+                android:textSize="@dimen/text_normal"
                 android:textStyle="bold"/>
     </LinearLayout>
 

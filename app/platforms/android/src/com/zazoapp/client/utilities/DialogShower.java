@@ -18,6 +18,7 @@ import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
 import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
+import com.zazoapp.client.ui.dialogs.FeatureAwardDialogFragment;
 import com.zazoapp.client.ui.dialogs.InfoDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
 import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
@@ -118,5 +119,16 @@ public class DialogShower {
     public static void showSendLinkDialog(Activity activity, int dialogId, String phone, String message, DoubleActionDialogListener callbacks) {
         DialogFragment d = SendLinkThroughDialog.getInstance(dialogId, phone, activity, message, callbacks);
         showDialog(activity, d, null);
+    }
+
+    public static void showFeatureAwardDialog(Activity activity) {
+        Fragment fragment = activity.getFragmentManager().findFragmentByTag("featureFrame");
+        if (fragment != null) {
+            activity.getFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
+        }
+        FragmentTransaction tr = activity.getFragmentManager().beginTransaction();
+        tr.setCustomAnimations(R.animator.fade_in, R.animator.fade_out);
+        tr.replace(R.id.feature_frame, new FeatureAwardDialogFragment(), "featureFrame");
+        tr.commitAllowingStateLoss();
     }
 }

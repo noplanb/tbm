@@ -38,11 +38,10 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
     }
 
     @Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_TITLE, R.style.base_dialog);
-	}
+    }
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
