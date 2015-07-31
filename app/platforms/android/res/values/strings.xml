@@ -120,4 +120,9 @@
     <string name="feature_unlock_message">You unlocked a new feature!</string>
     <string name="unlock_another_feature">Unlock Another Feature</string>
     <string name="just_zazo_someone_new">Just Zazo someone new!</string>
+    <string name="feature_switch_camera_action">Use your back camera!</string>
+    <string name="abort_recording_action">Drag finger away to abort recording!</string>
+    <string name="delete_friend_action">Move your friend aside to delete!</string>
+    <string name="earpiece_action">Use earpiece now!</string>
+    <string name="carousel_action">Spin your friends over the grid!</string>
 </resources>

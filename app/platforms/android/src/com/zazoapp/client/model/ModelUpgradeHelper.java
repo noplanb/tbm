@@ -42,14 +42,16 @@ public final class ModelUpgradeHelper {
 
     /**
      * Changes in Friend model:
-     * 1. Added CONNECTION CREATOR flag
+     * 1. Added CONNECTION_CREATOR flag, default value true
      * 2. Added DELETED flag
+     * 3. Added EVER_SENT flag
+     * Added INVITEE flag to User model
      */
     public static void upgradeTo3(ActiveModelsHandler handler, Context context) {
         ensureAll(handler);
         for (Friend friend : FriendFactory.getFactoryInstance().all()) {
-            friend.setCreator(true);
             friend.setDeleted(false);
+            friend.setEverSent(OutgoingVideo.Status.isSent(friend.getOutgoingVideoStatus()));
         }
     }
 

@@ -6,10 +6,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.TbmApplication;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 
 /**
  * Created by skamenkovych@codeminders.com on 5/7/2015.
@@ -67,6 +68,8 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
                 }
             };
             tutorialLayout.postDelayed(onNewMessageAction, 2000);
+        } else if (managers.getFeatures().shouldShowAwardDialog()) {
+            managers.getFeatures().showFeatureAwardDialog(managers, managers.getFeatures().lastUnlockedFeature());
         }
     }
 
@@ -144,6 +147,15 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         if (shouldShow(HintType.VIEWED)) {
             showHint(HintType.VIEWED, view);
             markHintAsShowed(HintType.VIEWED);
+        }
+    }
+
+    public void onMessageSent() {
+        Features.Feature feature = managers.getFeatures().checkAndUnlock();
+        if (feature != null) {
+            tutorialLayout.dismiss();
+            onNextHintAction = null;
+            managers.getFeatures().showFeatureAwardDialog(managers, feature);
         }
     }
 

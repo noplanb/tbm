@@ -5,19 +5,32 @@ import android.animation.AnimatorInflater;
 import android.app.DialogFragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import butterknife.ButterKnife;
 import com.zazoapp.client.R;
+import com.zazoapp.client.features.Features;
 
 /**
  * Created by skamenkovych@codeminders.com on 7/22/2015.
  */
 public class FeatureAwardDialogFragment extends DialogFragment implements View.OnClickListener {
+    private static final String FEATURE = "feature";
+
     private boolean resumed;
     private boolean showAction;
+    private Features.Feature feature;
+
+    public static DialogFragment getInstance(Features.Feature feature) {
+        FeatureAwardDialogFragment f = new FeatureAwardDialogFragment();
+        Bundle args = new Bundle();
+        args.putInt(FEATURE, feature.ordinal());
+        f.setArguments(args);
+        return f;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -25,10 +38,12 @@ public class FeatureAwardDialogFragment extends DialogFragment implements View.O
         setStyle(DialogFragment.STYLE_NO_TITLE, R.style.base_dialog);
     }
 
-    @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.feature_unlock_reward_dialog, container, false);
+        feature = Features.Feature.values()[getArguments().getInt(FEATURE, 0)];
+        TextView textView = ButterKnife.findById(v, R.id.hint_message);
+        textView.setText(feature.getHint(getActivity()));
         v.findViewById(R.id.btn_show_me).setOnClickListener(this);
         v.findViewById(R.id.feature_unlock_body).setOnClickListener(this);
         v.setOnClickListener(this);

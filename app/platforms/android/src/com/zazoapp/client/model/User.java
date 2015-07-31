@@ -6,29 +6,32 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 public class User extends ActiveModel{
-    
-	public static class Attributes{
-		public static final String ID = "id";
-		public static final String AUTH = "auth";
-		public static final String MKEY = "mkey";
-		public static final String FIRST_NAME = "firstName";
-		public static final String LAST_NAME = "lastName";
-		public static final String REGISTERED = "registered";
-		public static final String MOBILE_NUMBER = "mobileNumber";
-	}
-	
-	@Override
-	public String[] attributeList() {
-      final String[] a = {
-    		  Attributes.ID, 
-    		  Attributes.AUTH, 
-    		  Attributes.MKEY,
-    		  Attributes.FIRST_NAME,
-    		  Attributes.LAST_NAME,
-    		  Attributes.REGISTERED,
-    		  Attributes.MOBILE_NUMBER};
-      return a;
-	}
+
+    public static class Attributes {
+        public static final String ID = "id";
+        public static final String AUTH = "auth";
+        public static final String MKEY = "mkey";
+        public static final String FIRST_NAME = "firstName";
+        public static final String LAST_NAME = "lastName";
+        public static final String REGISTERED = "registered";
+        public static final String MOBILE_NUMBER = "mobileNumber";
+        public static final String INVITEE = "invitee";
+    }
+
+    @Override
+    public String[] attributeList() {
+        final String[] a = {
+                Attributes.ID,
+                Attributes.AUTH,
+                Attributes.MKEY,
+                Attributes.FIRST_NAME,
+                Attributes.LAST_NAME,
+                Attributes.REGISTERED,
+                Attributes.MOBILE_NUMBER,
+                Attributes.INVITEE
+        };
+        return a;
+    }
 
     public static boolean isRegistered(Context context) {
         UserFactory uf = ActiveModelsHandler.getInstance(context).ensureUser();
@@ -59,7 +62,19 @@ public class User extends ActiveModel{
     public String getFullName(){
     	return getFirstName() + " " + getLastName();
     }
-    
+
+    public boolean isInvitee() {
+        return TRUE.equals(get(Attributes.INVITEE));
+    }
+
+    public void setInvitee(boolean invitee) {
+        set(Attributes.INVITEE, invitee ? TRUE : FALSE);
+    }
+
+    public boolean inviteeIsNotSet() {
+        return get(Attributes.INVITEE).isEmpty();
+    }
+
     public PhoneNumber getPhoneNumberObj(){
     	PhoneNumber r = null;
     	try {

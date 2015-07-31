@@ -55,7 +55,7 @@ public class Friend extends ActiveModel{
         public static final String HAS_APP = "hasApp";
         public static final String CONNECTION_CREATOR = "isConnectionCreator";
         public static final String DELETED = "deleted";
-
+        public static final String EVER_SENT = "everSent";
     }
 
     public static class VideoStatusEventType{
@@ -79,7 +79,8 @@ public class Friend extends ActiveModel{
                 Attributes.MOBILE_NUMBER,
                 Attributes.HAS_APP,
                 Attributes.CONNECTION_CREATOR,
-                Attributes.DELETED};
+                Attributes.DELETED,
+                Attributes.EVER_SENT};
         return a;
     }
 
@@ -87,6 +88,7 @@ public class Friend extends ActiveModel{
     public void init(Context context) {
         super.init(context);
         setOutgoingVideoStatus(OutgoingVideo.Status.NONE);
+        setConnectionCreator(true);
         set(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE, VideoStatusEventType.INCOMING.toString());
     }
 
@@ -118,12 +120,20 @@ public class Friend extends ActiveModel{
         set(Attributes.DELETED, value ? TRUE : FALSE);
     }
 
-    public boolean isCreator() {
-        return get(Attributes.CONNECTION_CREATOR).equals(TRUE);
+    public boolean isConnectionCreator() {
+        return TRUE.equals(get(Attributes.CONNECTION_CREATOR));
     }
 
-    public void setCreator(boolean value) {
+    public void setConnectionCreator(boolean value) {
         set(Attributes.CONNECTION_CREATOR, value ? TRUE : FALSE);
+    }
+
+    public boolean everSent() {
+        return TRUE.equals(get(Attributes.EVER_SENT));
+    }
+
+    public void setEverSent(boolean value) {
+        set(Attributes.EVER_SENT, value ? TRUE : FALSE);
     }
 
     //------------------------------

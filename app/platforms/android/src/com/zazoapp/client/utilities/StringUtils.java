@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 
+import java.util.Date;
 import java.util.Random;
 
 public class StringUtils {
@@ -54,5 +55,18 @@ public class StringUtils {
             return null;
         }
         return data;
+    }
+
+    /**
+     *
+     * @param input date in format "yyyy-MM-ddTHH:mm:ss.sssZ"
+     * @return Date object or null if couldn't parse
+     */
+    public static Date parseTime(String input) {
+        try {
+            return com.amazonaws.util.DateUtils.parseISO8601Date(input);
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 }

@@ -6,7 +6,10 @@ import android.os.Bundle;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.model.Friend.VideoStatusChangedCallback;
+import com.zazoapp.client.utilities.StringUtils;
 
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +25,9 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         public static final String CKEY = "ckey";
         public static final String MOBILE_NUMBER = "mobile_number";
         public static final String HAS_APP = "has_app";
-        
+        public static final String CONNECTION_CREATED_ON = "connection_created_on";
+        public static final String CONNECTION_CREATOR_MKEY = "connection_creator_mkey";
+
         public static final String HAS_APP_TRUE_VALUE = "true";
         public static final String HAS_APP_FALSE_VALUE = "false";
     }
@@ -39,12 +44,14 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
      *
      * @param context context
      * @param friend friend to update
-     * @param remoteHasApp true if on remote server it marks as has app
+     * @param params server params
      * @return Returns a friend only one was found and changed. Otherwise returns null.
      */
-    private Friend updateWithServerParams(Context context, Friend friend, boolean remoteHasApp){
-        if (friend != null){
-            if (friend.hasApp() ^ remoteHasApp){
+    private Friend updateWithServerParams(Context context, Friend friend, LinkedTreeMap<String, String> params){
+        if (friend != null) {
+            setConnectionParams(friend, params);
+            boolean remoteHasApp = servHasApp(params);
+            if (friend.hasApp() ^ remoteHasApp) {
                 friend.setHasApp(remoteHasApp);
                 friend.setLastActionTime();
                 notifyStatusChanged(friend);
@@ -54,10 +61,20 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         return null;
     }
 
+    private void setConnectionParams(Friend friend, LinkedTreeMap<String, String> params) {
+        if (params.containsKey(ServerParamKeys.CONNECTION_CREATOR_MKEY)) {
+            friend.setConnectionCreator(isFriendInviter(params));
+        }
+    }
+
+    private boolean isFriendInviter(LinkedTreeMap<String, String> params) {
+        return params.get(ServerParamKeys.CONNECTION_CREATOR_MKEY).equals(params.get(ServerParamKeys.MKEY));
+    }
+
     /**
      * 
      * @param context
-     * @param params (server params)
+     * @param params server params
      * @return Returns a friend only if a new one was created. It only creates a new friend if  
      * none was found with the same id as in params. Returns null if friend is already exist.
      */
@@ -76,6 +93,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         f.set(Friend.Attributes.CKEY, params.get(ServerParamKeys.CKEY));
         f.setHasApp(servHasApp(params));
         f.setLastActionTime();
+        setConnectionParams(f, params);
         notifyStatusChanged(f);
         return f;
     }
@@ -87,10 +105,15 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
     public void reconcileFriends(Context context, final List<LinkedTreeMap<String, String>> remoteFriends) {
         notifyOnChanged(false);
         boolean needToNotify = false;
+        if (remoteFriends.size() > 0) {
+            LinkedTreeMap<String, String> firstFriend = remoteFriends.get(0);
+            UserFactory.current_user().setInvitee(isFriendInviter(firstFriend));
+        }
+
         for (LinkedTreeMap<String, String> friendParams : remoteFriends) {
             Friend f = getFriendFromMkey(friendParams.get(ServerParamKeys.MKEY));
             if (f != null) {
-                f = updateWithServerParams(context, f, servHasApp(friendParams));
+                f = updateWithServerParams(context, f, friendParams);
             } else {
                 f = createWithServerParams(context, friendParams);
             }
@@ -175,5 +198,14 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
 
     public int getInviteeCount() {
         return allWhere(Friend.Attributes.CONNECTION_CREATOR, ActiveModel.FALSE).size();
+    }
+
+    public static class ConnectionComparator implements Comparator<LinkedTreeMap<String, String>> {
+        @Override
+        public int compare(LinkedTreeMap<String, String> lhs, LinkedTreeMap<String, String> rhs) {
+            Date ld = StringUtils.parseTime(lhs.get(ServerParamKeys.CONNECTION_CREATED_ON));
+            Date rd = StringUtils.parseTime(rhs.get(ServerParamKeys.CONNECTION_CREATED_ON));
+            return ld.compareTo(rd);
+        }
     }
 }

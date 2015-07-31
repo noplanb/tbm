@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.widget.Toast;
 import com.zazoapp.client.R;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.multimedia.CameraException;
 import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
@@ -121,14 +122,15 @@ public class DialogShower {
         showDialog(activity, d, null);
     }
 
-    public static void showFeatureAwardDialog(Activity activity) {
+    public static void showFeatureAwardDialog(Activity activity, Features.Feature feature) {
         Fragment fragment = activity.getFragmentManager().findFragmentByTag("featureFrame");
         if (fragment != null) {
             activity.getFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
         }
+        DialogFragment d = FeatureAwardDialogFragment.getInstance(feature);
         FragmentTransaction tr = activity.getFragmentManager().beginTransaction();
         tr.setCustomAnimations(R.animator.fade_in, R.animator.fade_out);
-        tr.replace(R.id.feature_frame, new FeatureAwardDialogFragment(), "featureFrame");
+        tr.replace(R.id.feature_frame, d, "featureFrame");
         tr.commitAllowingStateLoss();
     }
 }

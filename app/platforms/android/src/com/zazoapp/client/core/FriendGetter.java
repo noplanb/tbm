@@ -2,14 +2,17 @@ package com.zazoapp.client.core;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.network.HttpRequest;
+import com.zazoapp.client.utilities.AsyncTaskManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class FriendGetter {
@@ -46,20 +49,35 @@ public class FriendGetter {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void gotFriends(Context context, String r) {
+	private void gotFriends(final Context context, final String r) {
         Log.i(TAG, "gotFriends: " + r);
-		Gson g = new Gson();
-        try {
-            friendList = g.fromJson(r, friendList.getClass());
-        } catch (JsonSyntaxException e) {
-            failure();
-            return;
-        }
+        AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, List<LinkedTreeMap<String, String>>>() {
+            @Override
+            protected List<LinkedTreeMap<String, String>> doInBackground(Void... params) {
+                List<LinkedTreeMap<String, String>> list = null;
+                try {
+                    Gson g = new Gson();
+                    list = g.fromJson(r, friendList.getClass());
+                } catch (JsonSyntaxException e) {
+                    failure();
+                    return null;
+                }
+                Collections.sort(list, new FriendFactory.ConnectionComparator());
+                return list;
+            }
 
-        if (destroyAll)
-            FriendFactory.getFactoryInstance().destroyAll(context);
+            @Override
+            protected void onPostExecute(List<LinkedTreeMap<String, String>> list) {
+                if (list != null) {
+                    friendList = list;
+                }
+                if (destroyAll)
+                    FriendFactory.getFactoryInstance().destroyAll(context);
 
-        FriendFactory.getFactoryInstance().reconcileFriends(context, friendList);
-        success();
+                FriendFactory.getFactoryInstance().reconcileFriends(context, friendList);
+                success();
+            }
+        });
 	}
+
 }

@@ -18,6 +18,10 @@ public class OutgoingVideo extends Video {
         public static final int DOWNLOADED = 5;
         public static final int VIEWED = 6;
         public static final int FAILED_PERMANENTLY = 7;
+
+        public static boolean isSent(int status) {
+            return status == UPLOADED || status == DOWNLOADED || status == VIEWED;
+        }
     }
 
     @Override
@@ -29,6 +33,6 @@ public class OutgoingVideo extends Video {
 
     public boolean isSent() {
         int status = getVideoStatus();
-        return status == Status.UPLOADED || status == Status.DOWNLOADED || status == Status.VIEWED;
+        return Status.isSent(status);
     }
 }

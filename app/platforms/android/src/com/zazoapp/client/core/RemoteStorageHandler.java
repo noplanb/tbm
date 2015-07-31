@@ -244,6 +244,49 @@ public class RemoteStorageHandler {
 		}
 	}
 
+    // Get key1, key2
+    private static abstract class GetRemoteKV {
+
+        public GetRemoteKV(String key1, String key2) {
+            LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+            params.put(DataKeys.KEY1_KEY, key1);
+            if (key2 != null)
+                params.put(DataKeys.KEY2_KEY, key2);
+            new GetRemoteKVRequest("kvstore/get", params, "GET");
+        }
+
+        protected abstract void gotRemoteKV(String json);
+
+        private class GetRemoteKVRequest extends HttpRequest {
+            public GetRemoteKVRequest(String uri, LinkedTreeMap<String, String> params, String method) {
+                super(uri, params, method, new Callbacks() {
+
+                    @SuppressWarnings("unchecked")
+                    @Override
+                    public void success(String response) {
+
+                        if (response.isEmpty()) {
+                            gotRemoteKV(null);
+                            return;
+                        }
+
+                        LinkedTreeMap<String, String> data = StringUtils.linkedTreeMapWithJson(response);
+                        if (data != null) {
+                            gotRemoteKV(data.get(DataKeys.VALUE_KEY));
+                        } else {
+                            gotRemoteKV(null);
+                        }
+                    }
+
+                    @Override
+                    public void error(String errorString) {
+                        Log.e(TAG, "GetRemoteKV: " + errorString);
+                    }
+                });
+            }
+        }
+    }
+
     //-----------------
     // DeleteRemoteKV
     //-----------------

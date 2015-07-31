@@ -28,6 +28,7 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.FriendGetter;
 import com.zazoapp.client.debug.DebugSettingsActivity;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.User;
@@ -403,6 +404,8 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         
         @Override
         protected void success() {
+            Features features = new Features(RegisterActivity.this);
+            features.checkAndUnlock();
             getAWSCredentials();
         }
 
