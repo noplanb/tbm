@@ -151,6 +151,9 @@ public class Friend extends ActiveModel{
         OutgoingVideoFactory.getFactoryInstance().deleteAllSent(getId());
     }
 
+    public String getMkey() {
+        return get(Attributes.MKEY);
+    }
     //------------
     // PhoneNumber
     //------------

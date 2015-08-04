@@ -34,7 +34,7 @@ public class NotificationHandler {
 
 	public static void sendForVideoReceived(Friend friend, String videoId) {
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		params.put(NotificationHandler.DataKeys.TARGET_MKEY, friend.get(Friend.Attributes.MKEY));
+		params.put(NotificationHandler.DataKeys.TARGET_MKEY, friend.getMkey());
 		params.put(NotificationHandler.DataKeys.FROM_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
 		params.put(NotificationHandler.DataKeys.SENDER_NAME, UserFactory.current_user().get(User.Attributes.FIRST_NAME));
 		params.put(NotificationHandler.DataKeys.VIDEO_ID, videoId);
@@ -43,7 +43,7 @@ public class NotificationHandler {
 	
 	public static void sendForVideoStatusUpdate(Friend friend, String videoId, String status){
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		params.put(NotificationHandler.DataKeys.TARGET_MKEY, friend.get(Friend.Attributes.MKEY));
+		params.put(NotificationHandler.DataKeys.TARGET_MKEY, friend.getMkey());
 		params.put(NotificationHandler.DataKeys.TO_MKEY, UserFactory.current_user().get(User.Attributes.MKEY));
 		params.put(NotificationHandler.DataKeys.STATUS, status);
 		params.put("video_id", videoId);

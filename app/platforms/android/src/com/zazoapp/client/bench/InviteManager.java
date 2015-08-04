@@ -322,7 +322,7 @@ public class InviteManager implements InviteHelper {
             return;
         }
         LinkedTreeMap<String, String> params = new LinkedTreeMap<>();
-        params.put("mkey", friend.get(Friend.Attributes.MKEY));
+        params.put("mkey", friend.getMkey());
         params.put("messaging_platform", name);
         params.put("message_status", success ? HttpRequest.StatusValues.STATUS_SUCCESS :
                 HttpRequest.StatusValues.STATUS_FAILURE);

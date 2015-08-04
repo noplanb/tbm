@@ -21,6 +21,7 @@ public class DebugConfig {
     private static final String KEY_SEND_BROKEN_VIDEO = "send_broken_video";
     private static final String KEY_DISABLE_GCM_NOTIFICATIONS = "disable_gcm_notifications";
     private static final String KEY_ENABLE_ALL_FEATURES = "enable_all_features";
+    private static final String KEY_FEATURE_OPTIONS_OPENED = "feature_options_opened";
 
     public static final boolean DEBUG_LOG = false;
 
@@ -47,6 +48,7 @@ public class DebugConfig {
     private boolean sendBrokenVideo;
     private boolean disableGcmNotifications;
     private boolean enableAllFeatures;
+    private boolean featureOptionsOpened;
 
     private DebugConfig() {
     }
@@ -87,6 +89,7 @@ public class DebugConfig {
         sendBrokenVideo = prefs.getBoolean(KEY_SEND_BROKEN_VIDEO, false);
         disableGcmNotifications = prefs.getBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, false);
         enableAllFeatures = prefs.getBoolean(KEY_ENABLE_ALL_FEATURES, false);
+        featureOptionsOpened = prefs.getBoolean(KEY_FEATURE_OPTIONS_OPENED, false);
     }
 
     public boolean isDebugEnabled() {
@@ -123,6 +126,10 @@ public class DebugConfig {
 
     public boolean isAllFeaturesEnabled() {
         return enableAllFeatures;
+    }
+
+    public boolean isFeatureOptionsOpened() {
+        return featureOptionsOpened;
     }
 
     public void enableSendSms(boolean sendSms) {
@@ -179,6 +186,12 @@ public class DebugConfig {
         notifyChanges();
     }
 
+    public void openFeatureOptions(boolean open) {
+        featureOptionsOpened = open;
+        prefs.putBoolean(KEY_FEATURE_OPTIONS_OPENED, open);
+        notifyChanges();
+    }
+
     public void savePrefs() {
         prefs.putInt(KEY_MODE, mode);
         prefs.putBoolean(KEY_SEND_SMS, shouldSendSms);
@@ -189,6 +202,7 @@ public class DebugConfig {
         prefs.putBoolean(KEY_SEND_BROKEN_VIDEO, sendBrokenVideo);
         prefs.putBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, disableGcmNotifications);
         prefs.putBoolean(KEY_ENABLE_ALL_FEATURES, enableAllFeatures);
+        prefs.putBoolean(KEY_FEATURE_OPTIONS_OPENED, featureOptionsOpened);
     }
 
     public void reloadPrefs() {
@@ -201,6 +215,7 @@ public class DebugConfig {
         sendBrokenVideo = prefs.getBoolean(KEY_SEND_BROKEN_VIDEO, false);
         disableGcmNotifications = prefs.getBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, false);
         enableAllFeatures = prefs.getBoolean(KEY_ENABLE_ALL_FEATURES, false);
+        featureOptionsOpened = prefs.getBoolean(KEY_FEATURE_OPTIONS_OPENED, false);
     }
 
     public void addCallback(DebugConfigChangesCallback callback) {

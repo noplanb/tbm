@@ -27,10 +27,13 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.FriendGetter;
+import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.debug.DebugSettingsActivity;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
+import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
@@ -42,6 +45,8 @@ import com.zazoapp.client.ui.view.CountryCodeAdapter;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.StringUtils;
+
+import java.util.List;
 
 public class RegisterActivity extends Activity implements EnterCodeDialogFragment.Callbacks{
     private static final int DEBUG_SCREEN_CODE = 293;
@@ -404,9 +409,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         
         @Override
         protected void success() {
-            Features features = new Features(RegisterActivity.this);
-            features.checkAndUnlock();
-            getAWSCredentials();
+            new GetWelcomedFriends();
         }
 
         @Override
@@ -558,5 +561,34 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         }
         pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
         pd.show(getFragmentManager(), null);
+    }
+
+    private class GetWelcomedFriends extends RemoteStorageHandler.GetWelcomedFriends {
+
+        @Override
+        protected void gotWelcomedFriends(List<String> mkeys) {
+            if (mkeys != null && !mkeys.isEmpty()) {
+                List<Friend> friends = FriendFactory.getFactoryInstance().all();
+                for (Friend friend : friends) {
+                    String mkey = friend.getMkey();
+                    if (mkeys.contains(mkey)) {
+                        friend.setEverSent(true);
+                        mkeys.remove(mkey);
+                    } else {
+                        friend.setEverSent(false);
+                    }
+                }
+            }
+            RemoteStorageHandler.setWelcomedFriends();
+            Features features = new Features(RegisterActivity.this);
+            features.checkAndUnlock();
+            getAWSCredentials();
+        }
+
+        @Override
+        protected void failure() {
+            pd.dismissAllowingStateLoss();
+            serverError();
+        }
     }
 }

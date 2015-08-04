@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
@@ -13,12 +14,13 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.util.ArrayList;
-
+import java.util.List;
 
 public class RemoteStorageHandler {
     private static final String TAG = RemoteStorageHandler.class.getSimpleName();
     private static final String VIDEO_ID_KV_KEY = "-VideoIdKVKey";
     private static final String VIDEO_STATUS_KV_KEY = "-VideoStatusKVKey";
+    private static final String WELCOMED_FRIENDS_KV_KEY = "-WelcomedFriends";
 
     //--------------------------------
     // Data structures keys and values
@@ -46,7 +48,7 @@ public class RemoteStorageHandler {
     //--------
     // Setters
     //--------
-   public static void addRemoteOutgoingVideoId(Friend friend, String videoId){
+    public static void addRemoteOutgoingVideoId(Friend friend, String videoId){
         LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
         data.put(DataKeys.VIDEO_ID_KEY, videoId);
         setRemoteKV(outgoingVideoIdsRemoteKVKey(friend), videoId, data);
@@ -133,6 +135,47 @@ public class RemoteStorageHandler {
 
     }
 
+    public abstract static class GetWelcomedFriends extends GetRemoteKV {
+
+        protected abstract void gotWelcomedFriends(List<String> mkeys);
+
+        public GetWelcomedFriends() {
+            super(buildWelcomedFriendsKvKey(), null);
+        }
+
+        @Override
+        protected void gotRemoteKV(String json) {
+            if (json == null) {
+                gotWelcomedFriends(null);
+            }
+            List<String> list = null;
+            Gson gson = new Gson();
+            try {
+                list = gson.fromJson(json, List.class);
+            } catch (JsonSyntaxException e) {
+            }
+            gotWelcomedFriends(list);
+        }
+
+    }
+
+    public static void setWelcomedFriends() {
+        List<String> list = new ArrayList<>();
+        ArrayList<Friend> friends = FriendFactory.getFactoryInstance().all();
+        for (Friend friend : friends) {
+            if (friend.everSent()) {
+                list.add(friend.getMkey());
+            }
+        }
+        Gson g = new Gson();
+        String value = g.toJson(list);
+        setRemoteKV(buildWelcomedFriendsKvKey(), null, value);
+    }
+
+    public static void deleteWelcomedFriends() {
+        deleteRemoteKV(buildWelcomedFriendsKvKey(), null);
+    }
+
     //-------
     // Delete
     //-------
@@ -169,7 +212,7 @@ public class RemoteStorageHandler {
 
     public static String buildIncomingVideoFilenameKey(Friend friend, String videoId) {
         StringBuilder builder = new StringBuilder();
-        builder.append(friend.get(Friend.Attributes.MKEY)).append("-");
+        builder.append(friend.getMkey()).append("-");
         builder.append(UserFactory.current_user().get(User.Attributes.MKEY)).append("-");
         builder.append(md5(friend.get(Friend.Attributes.CKEY) + videoId));
         return builder.toString();
@@ -178,14 +221,14 @@ public class RemoteStorageHandler {
     public static String buildOutgoingVideoFilenameKey(Friend friend, String videoId) {
         StringBuilder builder = new StringBuilder();
         builder.append(UserFactory.current_user().get(User.Attributes.MKEY)).append("-");
-        builder.append(friend.get(Friend.Attributes.MKEY)).append("-");
+        builder.append(friend.getMkey()).append("-");
         builder.append(md5(friend.get(Friend.Attributes.CKEY) + videoId));
         return builder.toString();
     }
 
     public static String buildIncomingKvKey(Friend friend, String suffix) {
         StringBuilder builder = new StringBuilder();
-        String sender = friend.get(Friend.Attributes.MKEY);
+        String sender = friend.getMkey();
         String receiver = UserFactory.current_user().get(User.Attributes.MKEY);
         String ckey = friend.get(Friend.Attributes.CKEY);
         builder.append(sender).append("-").append(receiver).append("-");
@@ -197,36 +240,47 @@ public class RemoteStorageHandler {
     public static String buildOutgoingKvKey(Friend friend, String suffix) {
         StringBuilder builder = new StringBuilder();
         String sender = UserFactory.current_user().get(User.Attributes.MKEY);
-        String receiver = friend.get(Friend.Attributes.MKEY);
+        String receiver = friend.getMkey();
         String ckey = friend.get(Friend.Attributes.CKEY);
         builder.append(sender).append("-").append(receiver).append("-");
         builder.append(md5(sender + receiver + ckey));
         builder.append(suffix);
         return builder.toString();
     }
-	//--------------------------
-	// Set Get and Delete Remote
-	//--------------------------
-	
-	// Set key
-	private static void setRemoteKV(String key, LinkedTreeMap<String, String>data){
-		String key2 = null;
-		setRemoteKV(key, key2, data);
-	}
-	
-	// Set key1, key2
-	private static void setRemoteKV(String key1, String key2, LinkedTreeMap<String, String>data){
-		Gson g = new Gson();
-		String value = g.toJson(data, data.getClass());
-		
-		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		params.put(DataKeys.KEY1_KEY, key1);
-		if (key2 != null)
-			params.put(DataKeys.KEY2_KEY, key2);
-		params.put(DataKeys.VALUE_KEY, value);
-		new SetRemote("kvstore/set", params, "POST");
-	}
-	
+
+    private static String buildWelcomedFriendsKvKey() {
+        return UserFactory.current_user().get(User.Attributes.MKEY) + WELCOMED_FRIENDS_KV_KEY;
+    }
+    //--------------------------
+    // Set Get and Delete Remote
+    //--------------------------
+
+    // Set key
+    private static void setRemoteKV(String key, LinkedTreeMap<String, String> data) {
+        String key2 = null;
+        setRemoteKV(key, key2, data);
+    }
+
+    // Set key1, key2
+    private static void setRemoteKV(String key1, String key2, LinkedTreeMap<String, String> data) {
+        Gson g = new Gson();
+        String value = g.toJson(data, data.getClass());
+        setRemoteKV(key1, key2, value);
+    }
+
+    private static void setRemoteKV(String key1, String key2, String value) {
+        if (key1 == null || value == null) {
+            Log.e(TAG, "KVStore key1 or value can't be null");
+            return;
+        }
+        LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
+        params.put(DataKeys.KEY1_KEY, key1);
+        if (key2 != null)
+            params.put(DataKeys.KEY2_KEY, key2);
+        params.put(DataKeys.VALUE_KEY, value);
+        new SetRemote("kvstore/set", params, "POST");
+    }
+
 	private static class SetRemote extends HttpRequest {
 		public SetRemote (String uri, LinkedTreeMap<String, String> params, String method){		
 			super(uri, params, method, new Callbacks() {
@@ -256,6 +310,7 @@ public class RemoteStorageHandler {
         }
 
         protected abstract void gotRemoteKV(String json);
+        protected abstract void failure();
 
         private class GetRemoteKVRequest extends HttpRequest {
             public GetRemoteKVRequest(String uri, LinkedTreeMap<String, String> params, String method) {
@@ -281,6 +336,7 @@ public class RemoteStorageHandler {
                     @Override
                     public void error(String errorString) {
                         Log.e(TAG, "GetRemoteKV: " + errorString);
+                        failure();
                     }
                 });
             }

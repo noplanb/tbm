@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.FriendFactory;
@@ -59,7 +60,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         setUpSendBrokenVideo();
         setUpTutorialOption();
         setUpDisableGcmNotificationsOption();
-        setUpEnableFeatures();
+        setUpFeatureOptions();
     }
 
     @Override
@@ -326,7 +327,27 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         });
     }
 
-    private void setUpEnableFeatures() {
+    private void setUpFeatureOptions() {
+        boolean opened = config.isFeatureOptionsOpened();
+        final Button openBtn = (Button) findViewById(R.id.feature_options_open_btn);
+        openBtn.setEnabled(!opened);
+        openBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DebugUtils.requestCode(DebugSettingsActivity.this, new DebugUtils.InputDialogCallback() {
+                    @Override
+                    public void onReceive(String input) {
+                        if ("Sani".equalsIgnoreCase(input)) {
+                            config.openFeatureOptions(true);
+                            openBtn.setEnabled(false);
+                            findViewById(R.id.feature_options_layout).setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+            }
+        });
+        findViewById(R.id.feature_options_layout).setVisibility(opened ? View.VISIBLE : View.GONE);
+
         Switch enableFeatures = (Switch) findViewById(R.id.enable_all_features);
         enableFeatures.setChecked(config.isAllFeaturesEnabled());
         enableFeatures.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -335,9 +356,17 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 config.enableAllFeatures(isChecked);
             }
         });
+
+        findViewById(R.id.delete_welcomed_friends).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RemoteStorageHandler.deleteWelcomedFriends();
+            }
+        });
     }
 
     @Override
     public void onChange() {
     }
+
 }

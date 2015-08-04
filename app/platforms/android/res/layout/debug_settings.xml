@@ -246,12 +246,43 @@
                 android:text="Disable GCM notifications"
                 android:textColor="@android:color/white"
                 android:layout_marginTop="5dp"/>
-        <Switch
-                android:id="@+id/enable_all_features"
+        <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enable all features"
-                android:textColor="@android:color/white"
-                android:layout_marginTop="5dp"/>
+                android:orientation="horizontal">
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Feature options"
+                    android:layout_weight="1"
+                    android:textColor="@android:color/white"
+                    android:layout_gravity="center_vertical"/>
+            <Button
+                    android:id="@+id/feature_options_open_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Open"
+                    android:textColor="@android:color/white"/>
+        </LinearLayout>
+        <LinearLayout
+                android:id="@+id/feature_options_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+            <Switch
+                    android:id="@+id/enable_all_features"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Enable all features"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="5dp"/>
+            <Button
+                    android:id="@+id/delete_welcomed_friends"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Delete welcomed friends"
+                    android:textColor="@android:color/white"/>
+        </LinearLayout>
+
     </LinearLayout>
 </ScrollView>
