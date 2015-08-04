@@ -409,7 +409,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         
         @Override
         protected void success() {
-            new GetWelcomedFriends();
+            new RegSyncWelcomedFriends();
         }
 
         @Override
@@ -563,7 +563,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         pd.show(getFragmentManager(), null);
     }
 
-    private class GetWelcomedFriends extends RemoteStorageHandler.GetWelcomedFriends {
+    private class RegSyncWelcomedFriends extends RemoteStorageHandler.GetWelcomedFriends {
 
         @Override
         protected void gotWelcomedFriends(List<String> mkeys) {

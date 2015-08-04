@@ -303,7 +303,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             // new friends and poll them all.
             if (friend == null) {
                 Log.i(TAG, "Got Video from a user who is not currently a friend. Getting friends.");
-                new SyncManager(getApplicationContext()).getAndPollAllFriends();
+                SyncManager.getAndPollAllFriends(getApplicationContext(), null);
                 return;
             }
 

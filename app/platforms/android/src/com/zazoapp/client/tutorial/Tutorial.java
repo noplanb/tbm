@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.core.SyncManager;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
@@ -150,8 +151,13 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         }
     }
 
-    public void onMessageSent() {
+    public void onMessageSent(Friend friend) {
+        if (friend == null || friend.everSent()) {
+            return;
+        }
+        friend.setEverSent(true);
         Features.Feature feature = managers.getFeatures().checkAndUnlock();
+        SyncManager.syncWelcomedFriends(managers);
         if (feature != null) {
             tutorialLayout.dismiss();
             onNextHintAction = null;

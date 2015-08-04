@@ -66,7 +66,11 @@ public class Poller {
             return;
         }
         Log.i(TAG, "Got video status: " + friend.getUniqueName() + ": vId:" + videoId + " sts: " + status);
-
+        if (status.equals(RemoteStorageHandler.StatusEnum.DOWNLOADED) || status.equals(RemoteStorageHandler.StatusEnum.VIEWED)) {
+            if (!friend.everSent()) {
+                friend.setEverSent(true);
+            }
+        }
         if (!friend.getOutgoingVideoId().equals(videoId)) {
             Log.i(TAG, "gotVideoIdStatus: got status for " + friend.get(Friend.Attributes.FIRST_NAME) +
                     " for non current videoId. Ignoring");

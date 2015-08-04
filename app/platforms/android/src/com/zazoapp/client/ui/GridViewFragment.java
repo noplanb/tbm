@@ -84,7 +84,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         super.onStart();
         FileTransferService.reset(getActivity(), FileDownloadService.class);
         FileTransferService.reset(getActivity(), FileUploadService.class);
-        new SyncManager(getActivity()).getAndPollAllFriends();
+        SyncManager.getAndPollAllFriends(getActivity(), getManagerProvider());
     }
 
     private void setupNineViewGroup(View v) {
