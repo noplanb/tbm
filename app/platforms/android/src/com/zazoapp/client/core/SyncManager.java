@@ -16,12 +16,21 @@ public class SyncManager {
     private SyncManager(){
     }
 
-    public static void getAndPollAllFriends(Context context, ZazoManagerProvider managers) {
+    /**
+     * Loads friends from server and sync status data
+     * @param context context
+     * @param managers if not null will try to unlock features silently on sync finish
+     */
+    public static void getAndPollAllFriends(Context context, @Nullable ZazoManagerProvider managers) {
         Log.d(TAG, "getAndPollAllFriends");
         new SyncFriendGetter(context, managers).getFriends();
     }
 
-    public static void syncWelcomedFriends(ZazoManagerProvider managers) {
+    /**
+     * Sync welcomed friends with server
+     * @param managers if not null will try to unlock features silently on sync finish
+     */
+    public static void syncWelcomedFriends(@Nullable ZazoManagerProvider managers) {
         Log.d(TAG, "syncWelcomedFriends");
         new SyncWelcomedFriends(managers);
     }
@@ -55,6 +64,12 @@ public class SyncManager {
         }
     }
 
+    /**
+     * Applies welcomed friends depending on parameters
+     *
+     * @param sync flag means whether welcomed friends will be posted on server
+     * @param managers if not null will try to unlock features silently
+     */
     private static void applyWelcomedFriends(boolean sync, @Nullable ZazoManagerProvider managers) {
         if (sync) {
             RemoteStorageHandler.setWelcomedFriends();

@@ -118,6 +118,7 @@
     <string name="action_show_me">Show Me</string>
     <string name="hurray_message">Hurray,</string>
     <string name="feature_unlock_message">You unlocked a new feature!</string>
+    <string name="feature_unlock_discover_message">Discover what it is</string>
     <string name="unlock_another_feature">Unlock Another Feature</string>
     <string name="just_zazo_someone_new">Just Zazo someone new!</string>
     <string name="feature_switch_camera_action">Use your back camera!</string>

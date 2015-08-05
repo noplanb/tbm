@@ -9,7 +9,9 @@ import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.ui.ZazoManagerProvider;
+import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
 import java.util.List;
@@ -42,6 +44,7 @@ public class Features {
         }
     }
     private static final String PREF_SHOW_LAST_FEATURE = "pref_show_last_feature";
+    private static final long[] awardVibrationPattern = {50, 300, 90, 100, 90, 100, 90, 330};
     private Activity activity;
     private PreferencesHelper prefs;
 
@@ -98,6 +101,12 @@ public class Features {
             prefs.putBoolean(PREF_SHOW_LAST_FEATURE, false);
         } else {
             prefs.putBoolean(PREF_SHOW_LAST_FEATURE, true);
+            if (!TbmApplication.getInstance().isForeground() || Convenience.screenIsLockedOrOff(activity)) {
+                NotificationAlertManager.alert(activity,
+                        activity.getString(R.string.feature_unlock_message),
+                        activity.getString(R.string.feature_unlock_discover_message),
+                        awardVibrationPattern);
+            }
         }
     }
 

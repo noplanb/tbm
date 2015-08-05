@@ -83,7 +83,34 @@ public class NotificationAlertManager {
 		
 		postNativeAlert(context, friend, videoId);
 	}
-	
+
+    public static void alert(Context context, String title, String subTitle, long[] vibratePattern) {
+        final int NOTIFICATION_ID = 2;
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
+        PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, intent, 0);
+
+        NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
+        notiStyle.setBigContentTitle(title);
+        notiStyle.bigText(subTitle);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
+                .setPriority(Notification.PRIORITY_DEFAULT)
+                .setCategory(Notification.CATEGORY_RECOMMENDATION)
+                .setVibrate(vibratePattern)
+                //.setSound(getNotificationToneUri(context))
+                .setSmallIcon(getNotificationIcon())
+                .setContentTitle(title)
+                .setContentText(subTitle)
+                .setStyle(notiStyle)
+                .setColor(context.getResources().getColor(R.color.green))
+                .setContentIntent(openAppIntent)
+                .setAutoCancel(true);
+
+        notificationManager.cancel(NOTIFICATION_ID);
+        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+    }
+
 	private static void cancelNativeAlerts(Context context){
 		Log.i(TAG, "cancelNativeAlerts");
 		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
