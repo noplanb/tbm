@@ -22,6 +22,7 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElementFactory;
@@ -361,6 +362,15 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
             @Override
             public void onClick(View v) {
                 RemoteStorageHandler.deleteWelcomedFriends();
+            }
+        });
+        findViewById(R.id.lock_all_features).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Features features = new Features(DebugSettingsActivity.this);
+                for (Features.Feature feature : Features.Feature.values()) {
+                    features.lock(feature);
+                }
             }
         });
     }

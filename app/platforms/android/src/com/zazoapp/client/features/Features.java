@@ -57,8 +57,12 @@ public class Features {
         prefs.putBoolean(feature.getPrefName(), true);
     }
 
+    public void lock(Feature feature) {
+        prefs.remove(feature.getPrefName());
+    }
+
     public boolean isUnlocked(Feature feature) {
-        return prefs.getBoolean(feature.getPrefName(), DebugConfig.getInstance(activity).isAllFeaturesEnabled());
+        return prefs.getBoolean(feature.getPrefName(), false) || DebugConfig.getInstance(activity).isAllFeaturesEnabled();
     }
 
     /**
@@ -112,6 +116,10 @@ public class Features {
 
     public boolean shouldShowAwardDialog() {
         return prefs.getBoolean(PREF_SHOW_LAST_FEATURE, false);
+    }
+
+    public boolean isAwardDialogShowed() {
+        return DialogShower.isFeatureAwardDialogShown(activity);
     }
 
     public Feature nextFeature() {

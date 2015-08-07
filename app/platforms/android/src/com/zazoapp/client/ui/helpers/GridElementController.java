@@ -285,11 +285,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                                 } else {
                                     managerProvider.getTutorial().onNewMessage(gridElementView);
                                 }
+                                managerProvider.getTutorial().onMessageSent(gridElement.getFriend());
                             }
                         });
-                        break;
-                    case OutgoingVideo.Status.UPLOADED:
-                        managerProvider.getTutorial().onMessageSent(gridElement.getFriend());
                         break;
                     case OutgoingVideo.Status.VIEWED:
                         gridElementView.showUploadingMark(false);

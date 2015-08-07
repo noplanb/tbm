@@ -147,6 +147,7 @@ public class RemoteStorageHandler {
         protected void gotRemoteKV(String json) {
             if (json == null) {
                 gotWelcomedFriends(null);
+                return;
             }
             List<String> list = null;
             Gson gson = new Gson();
@@ -174,6 +175,9 @@ public class RemoteStorageHandler {
 
     public static void deleteWelcomedFriends() {
         deleteRemoteKV(buildWelcomedFriendsKvKey(), null);
+        for (Friend friend : FriendFactory.getFactoryInstance().all()) {
+            deleteRemoteKV(outgoingVideoStatusRemoteKVKey(friend), null);
+        }
     }
 
     //-------

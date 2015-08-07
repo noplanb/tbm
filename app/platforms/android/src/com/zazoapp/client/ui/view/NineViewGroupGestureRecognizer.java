@@ -79,11 +79,12 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
                         NineViewGroup.SpinStrategy.getInitialPositionX(target) - x0);
                 double prevAngle = NineViewGroup.SpinStrategy.normalizedAngle(angle - Math.PI / 9);
                 double nextAngle = NineViewGroup.SpinStrategy.normalizedAngle(angle + Math.PI / 9);
+                if (angleInBetween(Math.atan2(offsetY, offsetX), prevAngle, nextAngle)) {
+                    runSurroundingMovingAway(target);
+                    return;
+                }
                 if (managerProvider.getFeatures().isUnlocked(Features.Feature.DELETE_FRIEND)) {
-                    if (angleInBetween(Math.atan2(offsetY, offsetX), prevAngle, nextAngle)) {
-                        runSurroundingMovingAway(target);
-                        return;
-                    }
+
                 }
 
                 //if (angleInBetween(NineViewGroup.SpinStrategy.normalizedAngle(Math.atan2(offsetY, offsetX) + Math.PI),

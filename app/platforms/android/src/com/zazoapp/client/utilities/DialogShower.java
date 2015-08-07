@@ -30,6 +30,9 @@ import com.zazoapp.client.ui.dialogs.VersionDialogFragment;
  * Created by skamenkovych@codeminders.com on 2/10/2015.
  */
 public class DialogShower {
+
+    private static final String FEATURE_FRAME = "featureFrame";
+
     private DialogShower() {};
 
     public static void showToast(final Context context, final String message) {
@@ -123,14 +126,25 @@ public class DialogShower {
     }
 
     public static void showFeatureAwardDialog(Activity activity, Features.Feature feature) {
-        Fragment fragment = activity.getFragmentManager().findFragmentByTag("featureFrame");
+        Fragment fragment = activity.getFragmentManager().findFragmentByTag(FEATURE_FRAME);
         if (fragment != null) {
             activity.getFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
         }
         DialogFragment d = FeatureAwardDialogFragment.getInstance(feature);
         FragmentTransaction tr = activity.getFragmentManager().beginTransaction();
         tr.setCustomAnimations(R.animator.fade_in, R.animator.fade_out);
-        tr.replace(R.id.feature_frame, d, "featureFrame");
+        tr.replace(R.id.feature_frame, d, FEATURE_FRAME);
         tr.commitAllowingStateLoss();
+    }
+
+    public static boolean isFeatureAwardDialogShown(Activity activity) {
+        FragmentManager fm = activity.getFragmentManager();
+        if (fm != null) {
+            Fragment fragment = fm.findFragmentByTag(FEATURE_FRAME);
+            if (fragment instanceof FeatureAwardDialogFragment) {
+                return ((FeatureAwardDialogFragment) fragment).isShown();
+            }
+        }
+        return false;
     }
 }

@@ -200,6 +200,16 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         return allWhere(Friend.Attributes.CONNECTION_CREATOR, ActiveModel.FALSE).size();
     }
 
+    public void deleteFriend(Friend friend) {
+        if (friend != null) {
+            friend.setDeleted(true);
+            GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(friend.getId());
+            if (ge != null) {
+                GridManager.getInstance().moveNextFriendTo(ge);
+            }
+        }
+    }
+
     public static class ConnectionComparator implements Comparator<LinkedTreeMap<String, String>> {
         @Override
         public int compare(LinkedTreeMap<String, String> lhs, LinkedTreeMap<String, String> rhs) {

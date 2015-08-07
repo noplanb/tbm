@@ -69,6 +69,7 @@ public class Poller {
         if (status.equals(RemoteStorageHandler.StatusEnum.DOWNLOADED) || status.equals(RemoteStorageHandler.StatusEnum.VIEWED)) {
             if (!friend.everSent()) {
                 friend.setEverSent(true);
+                RemoteStorageHandler.setWelcomedFriends();
             }
         }
         if (!friend.getOutgoingVideoId().equals(videoId)) {

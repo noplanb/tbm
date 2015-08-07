@@ -77,6 +77,7 @@ public class FeatureAwardDialogFragment extends DialogFragment implements View.O
     public void onPause() {
         super.onPause();
         dismiss();
+        resumed = false;
     }
 
     @Override
@@ -121,5 +122,9 @@ public class FeatureAwardDialogFragment extends DialogFragment implements View.O
             }
         });
         return anim;
+    }
+
+    public boolean isShown() {
+        return resumed;
     }
 }

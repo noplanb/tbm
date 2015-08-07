@@ -309,9 +309,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
             friend.setLastActionTime();
             friend.setHasApp();
-            if (friend.isDeleted()) {
-                return;
-            }
             // Create and download the video if this was a videoReceived intent.
             if (status == IncomingVideo.Status.NEW) {
 

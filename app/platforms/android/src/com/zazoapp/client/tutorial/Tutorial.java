@@ -57,6 +57,8 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         if (!shouldShow(HintType.PLAY) && shouldShow(HintType.RECORD)) {
             showHint(HintType.RECORD, view);
             markHintAsShowedForSession(HintType.RECORD);
+        } else if (managers.getFeatures().shouldShowAwardDialog()) {
+            managers.getFeatures().showFeatureAwardDialog(managers, managers.getFeatures().lastUnlockedFeature());
         } else if (shouldShow(HintType.PLAY)) {
             // FIX for https://zazo.fogbugz.com/f/cases/443/ caused by long view layout
             // Do not show this hint at all if it is still not loaded after some time
@@ -69,8 +71,6 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
                 }
             };
             tutorialLayout.postDelayed(onNewMessageAction, 2000);
-        } else if (managers.getFeatures().shouldShowAwardDialog()) {
-            managers.getFeatures().showFeatureAwardDialog(managers, managers.getFeatures().lastUnlockedFeature());
         }
     }
 
@@ -92,10 +92,8 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     public void onVideoViewed(View view) {
         Log.i(TAG, "onVideoViewed");
         if (shouldShow(HintType.RECORD)) {
-            if (!managers.getRecorder().isRecording() && !managers.getPlayer().isPlaying()) {
-                showHint(HintType.RECORD, view);
-                markHintAsShowedForSession(HintType.RECORD);
-            }
+            showHint(HintType.RECORD, view);
+            markHintAsShowedForSession(HintType.RECORD);
         }
     }
 
@@ -156,12 +154,19 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
             return;
         }
         friend.setEverSent(true);
-        Features.Feature feature = managers.getFeatures().checkAndUnlock();
+        final Features.Feature feature = managers.getFeatures().checkAndUnlock();
         SyncManager.syncWelcomedFriends(managers);
         if (feature != null) {
-            tutorialLayout.dismiss();
-            onNextHintAction = null;
-            managers.getFeatures().showFeatureAwardDialog(managers, feature);
+            if (current != null) {
+                onNextHintAction = new Runnable() {
+                    @Override
+                    public void run() {
+                        managers.getFeatures().showFeatureAwardDialog(managers, feature);
+                    }
+                };
+            } else {
+                managers.getFeatures().showFeatureAwardDialog(managers, feature);
+            }
         }
     }
 
@@ -171,6 +176,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     }
 
     private void showHint(HintType hint, View view) {
+        // TODO Check if featureaward dialog isn't showed
         showHint(hint, view, hint.getHint(tutorialLayout.getContext()));
     }
 

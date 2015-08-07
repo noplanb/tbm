@@ -321,13 +321,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
         @Override
         public boolean onSurroundingMovingAway(View view, int position) {
-            // delete friend
-            GridElement ge = GridElementFactory.getFactoryInstance().get(position);
-            Friend friend = ge.getFriend();
-            if (friend != null) {
-                friend.setDeleted(true);
-                GridManager.getInstance().moveNextFriendTo(ge);
-            }
             return false;
         }
 

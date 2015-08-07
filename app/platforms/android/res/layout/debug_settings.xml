@@ -281,7 +281,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Delete welcomed friends"
-                    android:textColor="@android:color/white"/>
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="5dp"/>
+            <Button
+                    android:id="@+id/lock_all_features"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Lock all features"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="5dp"/>
         </LinearLayout>
 
     </LinearLayout>

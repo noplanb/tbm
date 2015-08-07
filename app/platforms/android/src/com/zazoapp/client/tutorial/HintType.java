@@ -137,7 +137,23 @@ public enum HintType {
         void show(TutorialLayout layout, View view, Tutorial tutorial) {
             SEND_WELCOME.show(layout, view, tutorial);
         }
-    };
+    },
+    //FEATURE_SWITCH_CAMERA_HINT() {
+    //
+    //},
+    //FEATURE_ABORT_RECORDING_HINT() {
+    //
+    //},
+    //FEATURE_DELETE_FRIEND_HINT() {
+    //
+    //},
+    //FEATURE_EARPIECE_HINT() {
+    //
+    //},
+    //FEATURE_CAROUSEL_HINT() {
+    //
+    //},
+    ;
 
     private static final String SESSION = "_session";
 
