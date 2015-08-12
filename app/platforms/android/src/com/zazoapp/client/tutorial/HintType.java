@@ -2,10 +2,14 @@ package com.zazoapp.client.tutorial;
 
 import android.content.Context;
 import android.graphics.RectF;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewParent;
-import com.zazoapp.client.core.PreferencesHelper;
+import butterknife.ButterKnife;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.features.Features;
+import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.ui.view.NineViewGroup;
@@ -16,153 +20,230 @@ import com.zazoapp.client.ui.view.NineViewGroup;
 public enum HintType {
     INVITE_1(R.string.tutorial_hint_invite_1) {
         @Override
-        boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            return FriendFactory.getFactoryInstance().count() == 0;
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            return event == TutorialEvent.LAUNCH && FriendFactory.getFactoryInstance().count() == 0;
         }
 
         @Override
-        void show(TutorialLayout layout, View view, Tutorial tutorial) {
-            layout.dimExceptForRect(getViewRect(view));
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            NineViewGroup nineViewGroup = getNineViewGroup(view);
+            if (nineViewGroup != null) {
+                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT)));
+            }
         }
     },
-    INVITE_2(R.string.tutorial_hint_invite_2) {
+    FEATURE_SWITCH_CAMERA_HINT(R.string.feature_switch_camera_hint, Features.Feature.SWITCH_CAMERA) {
         @Override
-        boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            boolean allViewed = IncomingVideoFactory.getFactoryInstance().allNotViewedCount() == 0;
-            //Changed to show INVITE_2 regardless of other hints state
-            //boolean playHintShowed = !prefs.getBoolean(HintType.PLAY.getPrefName(), true);
-            //boolean viewedHintShowed = !prefs.getBoolean(HintType.VIEWED.getPrefName(), true);
-            //boolean recordHintShowed = !prefs.getBoolean(HintType.RECORD.getPrefName(), true);
-            //boolean sentHintShowed = !prefs.getBoolean(HintType.SENT.getPrefName(), true);
-            boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
-            return hasOneFriend() && firstInSession && allViewed && (current == null || current == SENT) /*&& playHintShowed && recordHintShowed && sentHintShowed && viewedHintShowed*/;
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            NineViewGroup nineViewGroup = getNineViewGroup(view);
+            if (nineViewGroup != null) {
+                layout.dimExceptForRect(getViewRect(nineViewGroup.getCenterFrame()));
+            }
         }
-
+    },
+    FEATURE_ABORT_RECORDING_HINT(R.string.feature_abort_recording_hint, Features.Feature.ABORT_RECORDING) {
         @Override
-        void show(TutorialLayout layout, View view, Tutorial tutorial) {
-            NineViewGroup nineViewGroup = null;
-            ViewParent parentView = view.getParent();
-            while (nineViewGroup == null && parentView != null) {
-                if (parentView instanceof NineViewGroup) {
-                    nineViewGroup = (NineViewGroup) parentView;
-                } else {
-                    parentView = parentView.getParent();
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            NineViewGroup nineViewGroup = getNineViewGroup(view);
+            if (nineViewGroup != null) {
+                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT)));
+            }
+        }
+    },
+    FEATURE_DELETE_FRIEND_HINT(R.string.feature_delete_friend_hint, Features.Feature.DELETE_FRIEND) {
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            View parent = (View) layout.getParent();
+            if (parent != null) {
+                View button = parent.findViewById(R.id.home_menu);
+                if (button != null) {
+                    layout.dimExceptForRect(getViewRect(button));
                 }
             }
+        }
+    },
+    FEATURE_EARPIECE_HINT(R.string.feature_earpiece_hint, Features.Feature.EARPIECE) {
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            NineViewGroup nineViewGroup = getNineViewGroup(view);
             if (nineViewGroup != null) {
-                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.TOP_RIGHT)));
+                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT)));
+            }
+        }
+    },
+    FEATURE_CAROUSEL_HINT(R.string.feature_carousel_hint, Features.Feature.CAROUSEL) {
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            NineViewGroup nineViewGroup = getNineViewGroup(view);
+            if (nineViewGroup != null) {
+                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.BOTTOM_LEFT)));
             }
         }
     },
     PLAY(R.string.tutorial_hint_play) {
         @Override
-        boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
-            return hasOneFriend() && unviewedCount > 0 && prefs.getBoolean(getPrefName(), true) && current == null;
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            switch (event) {
+                case LAUNCH:
+                case NEW_MESSAGE:
+                    int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
+                    return hasOneFriend() && unviewedCount > 0 && prefs.getBoolean(getPrefName(), true) && current == null;
+            }
+            return false;
         }
 
         @Override
-        void show(TutorialLayout layout, View view, Tutorial tutorial) {
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             setExcludedBox(layout, view);
             layout.dim();
+        }
+    },
+    SEND_WELCOME_WITH_RECORD(R.string.tutorial_hint_send_welcome_with_record) {
+        @Override
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            if (event != TutorialEvent.FRIEND_ADDED || params == null || !params.containsKey(Tutorial.FRIEND_KEY)) {
+                return false;
+            }
+            Friend friend = FriendFactory.getFactoryInstance().find(params.getString(Tutorial.FRIEND_KEY));
+            return (prefs.getBoolean(RECORD.getPrefName(), true) || !friend.hasApp()) && SEND_WELCOME.shouldShow(event, current, prefs, params);
+        }
+
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            SEND_WELCOME.show(layout, view, tutorial, prefs);
         }
     },
     RECORD(R.string.tutorial_hint_record) {
         @Override
-        boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
-            int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
-            return hasOneFriend() && unviewedCount == 0 && firstInSession && current != HintType.PLAY && prefs.getBoolean(getPrefName(), true);
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            switch (event) {
+                case LAUNCH:
+                case FRIEND_ADDED:
+                case VIDEO_VIEWED:
+                    boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
+                    int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
+                    return hasOneFriend() && unviewedCount == 0 && firstInSession && current == null && prefs.getBoolean(getPrefName(), true);
+            }
+            return false;
         }
 
         @Override
-        void show(TutorialLayout layout, View view, Tutorial tutorial) {
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            NineViewGroup nineViewGroup = getNineViewGroup(view);
+            if (nineViewGroup != null) {
+                view = nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT);
+            }
             setExcludedBox(layout, view);
             layout.dim();
-        }
-    },
-    SENT(R.string.tutorial_hint_sent) {
-        @Override
-        boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            return hasOneFriend() && current == null && prefs.getBoolean(getPrefName(), true);
-        }
-
-        @Override
-        void show(TutorialLayout layout, View view, Tutorial tutorial) {
-            View indicator = view.findViewById(R.id.img_viewed); // we use viewed due to animation of uploading indicator at this moment
-            layout.clear();
-            layout.setArrowAnchorRect(getViewRect(indicator));
-            layout.setExcludedRect(getViewRect(view));
-            layout.dim();
-            delayedDismiss(layout, this, tutorial);
-        }
-    },
-    VIEWED(R.string.tutorial_hint_viewed) {
-        @Override
-        boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            return hasOneFriend() && current == null && prefs.getBoolean(getPrefName(), true);
-        }
-
-        @Override
-        void show(TutorialLayout layout, View view, Tutorial tutorial) {
-            View indicator = view.findViewById(R.id.img_viewed);
-            layout.clear();
-            layout.setArrowAnchorRect(getViewRect(indicator));
-            layout.setExcludedRect(getViewRect(view));
-            layout.dim();
-            delayedDismiss(layout, this, tutorial);
+            markHintAsShowedForSession(prefs);
         }
     },
     SEND_WELCOME(R.string.tutorial_hint_send_welcome) {
         @Override
-        boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            return current == null;
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            return event == TutorialEvent.FRIEND_ADDED && current == null;
         }
 
         @Override
-        void show(TutorialLayout layout, View view, Tutorial tutorial) {
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             layout.clear();
             layout.hideButton();
             layout.setExcludedRect(getViewRect(view));
             layout.dim();
         }
     },
-    SEND_WELCOME_WITH_RECORD(R.string.tutorial_hint_send_welcome_with_record) {
+    SENT(R.string.tutorial_hint_sent) {
         @Override
-        boolean shouldShow(HintType current, PreferencesHelper prefs) {
-            return prefs.getBoolean(RECORD.getPrefName(), true) && SEND_WELCOME.shouldShow(current, prefs);
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            return event == TutorialEvent.SENT_INDICATOR_SHOWED && hasOneFriend() && current == null && prefs.getBoolean(getPrefName(), true);
         }
 
         @Override
-        void show(TutorialLayout layout, View view, Tutorial tutorial) {
-            SEND_WELCOME.show(layout, view, tutorial);
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            View indicator = view.findViewById(R.id.img_viewed); // we use viewed due to animation of uploading indicator at this moment
+            layout.clear();
+            layout.setArrowAnchorRect(getViewRect(indicator));
+            layout.setExcludedRect(getViewRect(view));
+            layout.dim();
+            delayedDismiss(layout, this, tutorial);
+            markHintAsShowed(prefs);
         }
     },
-    //FEATURE_SWITCH_CAMERA_HINT() {
-    //
-    //},
-    //FEATURE_ABORT_RECORDING_HINT() {
-    //
-    //},
-    //FEATURE_DELETE_FRIEND_HINT() {
-    //
-    //},
-    //FEATURE_EARPIECE_HINT() {
-    //
-    //},
-    //FEATURE_CAROUSEL_HINT() {
-    //
-    //},
+    VIEWED(R.string.tutorial_hint_viewed) {
+        @Override
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            return event == TutorialEvent.VIEWED_INDICATOR_SHOWED && hasOneFriend() && current == null && prefs.getBoolean(getPrefName(), true);
+        }
+
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            View indicator = view.findViewById(R.id.img_viewed);
+            layout.clear();
+            layout.setArrowAnchorRect(getViewRect(indicator));
+            layout.setExcludedRect(getViewRect(view));
+            layout.dim();
+            delayedDismiss(layout, this, tutorial);
+            markHintAsShowed(prefs);
+        }
+    },
+    INVITE_2(R.string.tutorial_hint_invite_2) {
+        @Override
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            switch (event) {
+                case HINT_DISMISSED:
+                    if (params != null && params.containsKey(Tutorial.HINT_TYPE_KEY)) {
+                        if (params.getInt(Tutorial.HINT_TYPE_KEY) != SENT.ordinal()) {
+                            break;
+                        }
+                    }
+                case MESSAGE_SENT:
+                    boolean allViewed = IncomingVideoFactory.getFactoryInstance().allNotViewedCount() == 0;
+                    boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
+                    return hasOneFriend() && firstInSession && allViewed && current == null;
+            }
+            return false;
+        }
+
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            NineViewGroup nineViewGroup = getNineViewGroup(view);
+            if (nineViewGroup != null) {
+                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.TOP_RIGHT)));
+                markHintAsShowedForSession(prefs);
+            }
+        }
+    },
     ;
+
+    private static NineViewGroup getNineViewGroup(View view) {
+        NineViewGroup nineViewGroup = null;
+        ViewParent parentView = view.getParent();
+        while (nineViewGroup == null && parentView != null) {
+            if (parentView instanceof NineViewGroup) {
+                nineViewGroup = (NineViewGroup) parentView;
+            } else {
+                parentView = parentView.getParent();
+            }
+        }
+        if (nineViewGroup == null && parentView == null) {
+            nineViewGroup = ButterKnife.findById(view, R.id.grid_view);
+        }
+        return nineViewGroup;
+    }
 
     private static final String SESSION = "_session";
 
     private String prefName;
     private int hintTextId;
-
+    private Features.Feature feature;
     HintType(int id) {
         prefName = "pref_hint_" + name().toLowerCase();
         hintTextId = id;
+    }
+
+    HintType(int id, Features.Feature feature) {
+        this(id);
+        this.feature = feature;
     }
 
     public String getPrefName() {
@@ -173,6 +254,10 @@ public enum HintType {
         return prefName + SESSION;
     }
 
+    boolean isFeatureHint() {
+        return feature != null;
+    }
+
     String getHint(Context context) {
         return context.getString(hintTextId);
     }
@@ -181,9 +266,14 @@ public enum HintType {
         return context.getString(hintTextId, vars);
     }
 
-    abstract boolean shouldShow(HintType current, PreferencesHelper prefs);
+    boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+        if (isFeatureHint() && event == TutorialEvent.FEATURE_AWARD_DISMISSED && params != null) {
+            return params.getInt(Tutorial.FEATURE_KEY, -1) == feature.ordinal();
+        }
+        return false;
+    }
 
-    abstract void show(TutorialLayout layout, View view, Tutorial tutorial);
+    abstract void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs);
 
     static RectF getViewRect(View view) {
         int[] location = new int[2];
@@ -213,6 +303,27 @@ public enum HintType {
         circleData[1] = location[1] + view.getHeight() / 2;
         circleData[2] = (int) (Math.max(view.getWidth(), view.getHeight()) * 0.8);
         return circleData;
+    }
+
+    public static HintType shouldShowHintByPriority(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+        for (HintType hint : values()) {
+            if (hint.shouldShow(event, current, prefs, params)) {
+                return hint;
+            }
+        }
+        return null;
+    }
+
+    public void markHintAsShowed(PreferencesHelper preferences) {
+        if (preferences.getBoolean(getPrefName(), true)) {
+            preferences.putBoolean(getPrefName(), false);
+        }
+    }
+
+    public void markHintAsShowedForSession(PreferencesHelper preferences) {
+        if (preferences.getBoolean(getPrefSessionName(), true)) {
+            preferences.putBoolean(getPrefSessionName(), false);
+        }
     }
 
     private static void setExcludedBox(TutorialLayout layout, View view) {

@@ -7,5 +7,5 @@
                     android:valueType="floatType"
                     android:valueFrom="@dimen/feature_unlock_another_height"
                     android:valueTo="0.0"
-                    android:duration="250"/>
+                    android:duration="@android:integer/config_mediumAnimTime"/>
 </set>

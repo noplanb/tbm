@@ -3,7 +3,6 @@ package com.zazoapp.client.ui.dialogs;
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
 import android.app.DialogFragment;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +12,7 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import com.zazoapp.client.R;
 import com.zazoapp.client.features.Features;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 
 /**
  * Created by skamenkovych@codeminders.com on 7/22/2015.
@@ -43,7 +43,7 @@ public class FeatureAwardDialogFragment extends DialogFragment implements View.O
         View v = inflater.inflate(R.layout.feature_unlock_reward_dialog, container, false);
         feature = Features.Feature.values()[getArguments().getInt(FEATURE, 0)];
         TextView textView = ButterKnife.findById(v, R.id.hint_message);
-        textView.setText(feature.getHint(getActivity()));
+        textView.setText(feature.getAction(getActivity()));
         v.findViewById(R.id.btn_show_me).setOnClickListener(this);
         v.findViewById(R.id.feature_unlock_body).setOnClickListener(this);
         v.setOnClickListener(this);
@@ -102,12 +102,13 @@ public class FeatureAwardDialogFragment extends DialogFragment implements View.O
             public void onAnimationEnd(Animator animation) {
                 if (nextAnim == R.animator.fade_out) {
                     dismissAllowingStateLoss();
-                    if (showAction) {
-                        FragmentTransaction tr = getFragmentManager().beginTransaction();
-                        tr.setCustomAnimations(R.animator.slide_up, R.animator.slide_down);
-                        tr.replace(R.id.feature_frame, new NextFeatureDialogFragment(), "featureFrame");
-                        tr.commitAllowingStateLoss();
+                    ZazoManagerProvider managers = (ZazoManagerProvider) getActivity();
+                    if (managers != null) {
+                        managers.getTutorial().onFeatureAwardDialogHidden();
                     }
+//                    if (showAction) {
+//
+//                    }
                 }
             }
 
@@ -127,4 +128,5 @@ public class FeatureAwardDialogFragment extends DialogFragment implements View.O
     public boolean isShown() {
         return resumed;
     }
+
 }

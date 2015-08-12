@@ -43,7 +43,7 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
             public void run() {
                 dismissAnimated();
             }
-        }, 3000);
+        }, 5000);
     }
 
     @Override

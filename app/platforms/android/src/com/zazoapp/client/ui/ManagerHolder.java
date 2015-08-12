@@ -44,7 +44,7 @@ public class ManagerHolder {
         if (proximitySensor == null) {
             Log.i(TAG, "Proximity sensor not found");
         }
-        tutorial = new Tutorial((TutorialLayout) activity.findViewById(R.id.tutorial_layout), activity);
+        tutorial = new Tutorial(activity, activity);
         features = new Features(activity);
     }
 

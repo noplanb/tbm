@@ -15,15 +15,8 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.multimedia.CameraException;
-import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
-import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment;
-import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
+import com.zazoapp.client.ui.dialogs.*;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
-import com.zazoapp.client.ui.dialogs.FeatureAwardDialogFragment;
-import com.zazoapp.client.ui.dialogs.InfoDialogFragment;
-import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
-import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
-import com.zazoapp.client.ui.dialogs.VersionDialogFragment;
 
 /**
  * This utility class combines all popups which are showed to user
@@ -146,5 +139,16 @@ public class DialogShower {
             }
         }
         return false;
+    }
+
+    public static void showNextFeatureDialog(Activity activity) {
+        Fragment fragment = activity.getFragmentManager().findFragmentByTag(FEATURE_FRAME);
+        if (fragment != null) {
+            activity.getFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
+        }
+        FragmentTransaction tr = activity.getFragmentManager().beginTransaction();
+        tr.setCustomAnimations(R.animator.slide_up, R.animator.slide_down);
+        tr.replace(R.id.feature_frame, new NextFeatureDialogFragment(), FEATURE_FRAME);
+        tr.commitAllowingStateLoss();
     }
 }

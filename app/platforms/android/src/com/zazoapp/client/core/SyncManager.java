@@ -31,8 +31,7 @@ public class SyncManager {
      * @param managers if not null will try to unlock features silently on sync finish
      */
     public static void syncWelcomedFriends(@Nullable ZazoManagerProvider managers) {
-        Log.d(TAG, "syncWelcomedFriends");
-        new SyncWelcomedFriends(managers);
+        new SyncWelcomedFriends(managers, true);
     }
 
     private static class SyncFriendGetter extends FriendGetter {
@@ -59,7 +58,7 @@ public class SyncManager {
             if (isJustUpgraded) {
                 applyWelcomedFriends(true, managers);
             } else {
-                syncWelcomedFriends(managers);
+                new SyncWelcomedFriends(managers, false);
             }
         }
     }
@@ -82,9 +81,12 @@ public class SyncManager {
 
     private static class SyncWelcomedFriends extends RemoteStorageHandler.GetWelcomedFriends {
         private ZazoManagerProvider managers;
+        private boolean forceSync;
 
-        SyncWelcomedFriends(ZazoManagerProvider m) {
+        SyncWelcomedFriends(ZazoManagerProvider m, boolean force) {
+            Log.d(TAG, "syncWelcomedFriends");
             managers = m;
+            forceSync = force;
         }
 
         @Override
@@ -104,7 +106,7 @@ public class SyncManager {
                     }
                 }
             }
-            applyWelcomedFriends(notSynced, managers);
+            applyWelcomedFriends(notSynced || forceSync, managers);
         }
 
         @Override

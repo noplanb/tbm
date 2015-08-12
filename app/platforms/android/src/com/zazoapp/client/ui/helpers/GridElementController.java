@@ -285,7 +285,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                                 } else {
                                     managerProvider.getTutorial().onNewMessage(gridElementView);
                                 }
-                                managerProvider.getTutorial().onMessageSent(gridElement.getFriend());
+                                managerProvider.getTutorial().onMessageSent(gridElementView, gridElement.getFriend());
                             }
                         });
                         break;

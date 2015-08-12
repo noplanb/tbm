@@ -1,9 +1,13 @@
 package com.zazoapp.client.tutorial;
 
+import android.app.Activity;
 import android.graphics.RectF;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import butterknife.ButterKnife;
+import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.SyncManager;
 import com.zazoapp.client.core.TbmApplication;
@@ -18,16 +22,21 @@ import com.zazoapp.client.ui.ZazoManagerProvider;
  */
 public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.OnTouchListener {
     private static final String TAG = Tutorial.class.getSimpleName();
+    public static final String HINT_TYPE_KEY = "hint_type";
+    public static final String FEATURE_KEY = "feature";
+    public static final String FRIEND_KEY = "just_invited_friend";
 
     private TutorialLayout tutorialLayout;
+    private Activity activity;
     private ZazoManagerProvider managers;
     private PreferencesHelper preferences;
     private HintType current;
     private Runnable onNewMessageAction;
     private Runnable onNextHintAction;
 
-    public Tutorial(TutorialLayout layout, ZazoManagerProvider managerProvider) {
-        tutorialLayout = layout;
+    public Tutorial(Activity activity, ZazoManagerProvider managerProvider) {
+        this.activity = activity;
+        tutorialLayout = ButterKnife.findById(activity, R.id.tutorial_layout);
         managers = managerProvider;
         preferences = new PreferencesHelper(TbmApplication.getInstance());
         tutorialLayout.setOnTouchListener(this);
@@ -51,128 +60,128 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         int unviewedMessages = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
         Log.i(TAG, "onLaunch: friends " + friendsCount + " unviewed " + unviewedMessages);
 
-        if (shouldShow(HintType.INVITE_1)) {
-            showHint(HintType.INVITE_1, view);
-        }
-        if (!shouldShow(HintType.PLAY) && shouldShow(HintType.RECORD)) {
-            showHint(HintType.RECORD, view);
-            markHintAsShowedForSession(HintType.RECORD);
-        } else if (managers.getFeatures().shouldShowAwardDialog()) {
+        if (managers.getFeatures().shouldShowAwardDialog()) {
             managers.getFeatures().showFeatureAwardDialog(managers, managers.getFeatures().lastUnlockedFeature());
-        } else if (shouldShow(HintType.PLAY)) {
-            // FIX for https://zazo.fogbugz.com/f/cases/443/ caused by long view layout
-            // Do not show this hint at all if it is still not loaded after some time
-            onNewMessageAction = new Runnable() {
-                @Override
-                public void run() {
-                    if (shouldShow(HintType.PLAY) && view.getWidth() != 0) {
-                        showHint(HintType.PLAY, view);
-                    }
+        } else {
+            HintType hint = getHintToShow(TutorialEvent.LAUNCH, null);
+            if (hint != null) {
+                if (hint == HintType.PLAY) {
+                    // FIX for https://zazo.fogbugz.com/f/cases/443/ caused by long view layout
+                    // Do not show this hint at all if it is still not loaded after some time
+                    onNewMessageAction = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (shouldShow(TutorialEvent.LAUNCH, HintType.PLAY, null) && view.getWidth() != 0) {
+                                showHint(HintType.PLAY, view);
+                            }
+                        }
+                    };
+                    tutorialLayout.postDelayed(onNewMessageAction, 2000);
+                } else {
+                    showHint(hint, view);
                 }
-            };
-            tutorialLayout.postDelayed(onNewMessageAction, 2000);
+            }
         }
     }
 
     public void onNewMessage(final View view) {
         Log.i(TAG, "onNewMessage");
-        if (shouldShow(HintType.PLAY)) {
-            showHint(HintType.PLAY, view);
-        } else if (current != null) {
-            tutorialLayout.dismiss();
-            onNextHintAction = new Runnable() {
-                @Override
-                public void run() {
-                    onNewMessage(view);
-                }
-            };
+        HintType hint = getHintToShow(TutorialEvent.NEW_MESSAGE, null);
+        if (hint != null) {
+            showHint(hint, view);
         }
     }
 
     public void onVideoViewed(View view) {
         Log.i(TAG, "onVideoViewed");
-        if (shouldShow(HintType.RECORD)) {
-            showHint(HintType.RECORD, view);
-            markHintAsShowedForSession(HintType.RECORD);
+        HintType hint = getHintToShow(TutorialEvent.VIDEO_VIEWED, null);
+        if (hint != null) {
+            showHint(hint, view);
         }
     }
 
     public void onVideoStartPlayingByUser() {
-        markHintAsShowed(HintType.PLAY);
+        HintType.PLAY.markHintAsShowed(preferences);
     }
 
     public void onFriendModelChanged(View view, Friend friend) {
-        int friendsCount = FriendFactory.getFactoryInstance().count();
-        Log.i(TAG, "onFriendModelChanged: friends " + friendsCount);
-        if (shouldShow(HintType.RECORD)) {
-            showHint(HintType.RECORD, view);
-            markHintAsShowedForSession(HintType.RECORD);
-        } else if (friend != null && friend.equals(managers.getInviteHelper().getLastInvitedFriend()) && shouldShow(HintType.SEND_WELCOME)) {
-            if (shouldShow(HintType.SEND_WELCOME_WITH_RECORD) || !friend.hasApp()) {
-                showHint(HintType.SEND_WELCOME_WITH_RECORD, view, HintType.SEND_WELCOME_WITH_RECORD.getHint(tutorialLayout.getContext(), friend.getFirstName()));
+        Log.i(TAG, "onFriendModelChanged");
+        Bundle params = new Bundle();
+        if (friend != null && friend.equals(managers.getInviteHelper().getLastInvitedFriend())) {
+            params.putString(FRIEND_KEY, friend.getId());
+        }
+        HintType hint = getHintToShow(TutorialEvent.FRIEND_ADDED, params);
+        if (hint != null) {
+            if (hint == HintType.SEND_WELCOME_WITH_RECORD || hint == HintType.SEND_WELCOME) {
+                showHint(hint, view, hint.getHint(tutorialLayout.getContext(), friend.getFirstName()));
+                managers.getInviteHelper().dropLastInvitedFriend();
             } else {
-                showHint(HintType.SEND_WELCOME, view, HintType.SEND_WELCOME.getHint(tutorialLayout.getContext(), friend.getFirstName()));
+                showHint(hint, view);
             }
-            managers.getInviteHelper().dropLastInvitedFriend();
         }
     }
 
     public void onVideoSentIndicatorShowed(final View view) {
         Log.i(TAG, "onVideoSentIndicatorShowed");
-        if (shouldShow(HintType.SENT)) {
-            showHint(HintType.SENT, view);
-            if (shouldShow(HintType.INVITE_2)) {
-                onNextHintAction = new Runnable() {
-                    @Override
-                    public void run() {
-                        showHint(HintType.INVITE_2, view);
-                        markHintAsShowedForSession(HintType.INVITE_2);
-                    }
-                };
-            }
-            markHintAsShowed(HintType.SENT);
-        } else if (shouldShow(HintType.INVITE_2)) {
-            showHint(HintType.INVITE_2, view);
-            markHintAsShowedForSession(HintType.INVITE_2);
+        HintType hint = getHintToShow(TutorialEvent.SENT_INDICATOR_SHOWED, null);
+        if (hint != null) {
+            showHint(hint, view);
         }
     }
 
     public void onVideoRecorded() {
-        markHintAsShowed(HintType.RECORD);
+        HintType.RECORD.markHintAsShowed(preferences);
     }
 
     public void onVideoViewedIndicatorShowed(View view) {
         Log.i(TAG, "onVideoViewedIndicatorShowed");
-        if (shouldShow(HintType.VIEWED)) {
-            showHint(HintType.VIEWED, view);
-            markHintAsShowed(HintType.VIEWED);
+        HintType hint = getHintToShow(TutorialEvent.VIEWED_INDICATOR_SHOWED, null);
+        if (hint != null) {
+            showHint(hint, view);
         }
     }
 
-    public void onMessageSent(Friend friend) {
-        if (friend == null || friend.everSent()) {
-            return;
-        }
-        friend.setEverSent(true);
-        final Features.Feature feature = managers.getFeatures().checkAndUnlock();
-        SyncManager.syncWelcomedFriends(managers);
-        if (feature != null) {
-            if (current != null) {
-                onNextHintAction = new Runnable() {
-                    @Override
-                    public void run() {
-                        managers.getFeatures().showFeatureAwardDialog(managers, feature);
-                    }
-                };
-            } else {
-                managers.getFeatures().showFeatureAwardDialog(managers, feature);
+    public void onMessageSent(View view, Friend friend) {
+        if (friend != null && !friend.everSent()) {
+            friend.setEverSent(true);
+            final Features.Feature feature = managers.getFeatures().checkAndUnlock();
+            SyncManager.syncWelcomedFriends(managers);
+            if (feature != null) {
+                if (current != null) {
+                    onNextHintAction = new Runnable() {
+                        @Override
+                        public void run() {
+                            managers.getFeatures().showFeatureAwardDialog(managers, feature);
+                        }
+                    };
+                } else {
+                    managers.getFeatures().showFeatureAwardDialog(managers, feature);
+                }
+                return;
             }
         }
+        HintType hint = getHintToShow(TutorialEvent.MESSAGE_SENT, null);
+        if (hint != null) {
+            showHint(hint, view);
+        }
     }
 
-    private boolean shouldShow(HintType hint) {
+    private HintType getHintToShow(TutorialEvent event, Bundle params) {
         boolean inProcess = managers.getRecorder().isRecording() || managers.getPlayer().isPlaying();
-        return !inProcess && hint.shouldShow(current, preferences);
+        boolean featureAwardDialogShowed = managers.getFeatures().isAwardDialogShowed();
+        if (!inProcess && !featureAwardDialogShowed) {
+            return HintType.shouldShowHintByPriority(event, current, preferences, params);
+        }
+        return null;
+    }
+
+    private boolean shouldShow(TutorialEvent event, HintType hint, Bundle params) {
+        boolean inProcess = managers.getRecorder().isRecording() || managers.getPlayer().isPlaying();
+        boolean featureAwardDialogShowed = managers.getFeatures().isAwardDialogShowed();
+        if (!inProcess && !featureAwardDialogShowed) {
+            return hint.shouldShow(event, current, preferences, params);
+        }
+        return false;
     }
 
     private void showHint(HintType hint, View view) {
@@ -187,19 +196,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         }
         current = hint;
         tutorialLayout.setHintText(text);
-        hint.show(tutorialLayout, view, this);
-    }
-
-    private void markHintAsShowed(HintType hint) {
-        if (preferences.getBoolean(hint.getPrefName(), true)) {
-            preferences.putBoolean(hint.getPrefName(), false);
-        }
-    }
-
-    private void markHintAsShowedForSession(HintType hint) {
-        if (preferences.getBoolean(hint.getPrefSessionName(), true)) {
-            preferences.putBoolean(hint.getPrefSessionName(), false);
-        }
+        hint.show(tutorialLayout, view, this, preferences);
     }
 
     @Override
@@ -216,10 +213,18 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
 
     @Override
     public void onDismiss() {
+        HintType last = current;
         current = null;
         if (onNextHintAction != null) {
             onNextHintAction.run();
             onNextHintAction = null;
+        } else {
+            Bundle params = new Bundle();
+            params.putInt(HINT_TYPE_KEY, last.ordinal());
+            HintType hint = getHintToShow(TutorialEvent.HINT_DISMISSED, params);
+            if (hint != null) {
+                showHint(hint, activity.findViewById(R.id.grid_view));
+            }
         }
     }
 
@@ -230,5 +235,20 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
 
     public HintType getCurrent() {
         return current;
+    }
+
+    public void onFeatureAwardDialogHidden() {
+        Bundle params = new Bundle();
+        params.putInt(FEATURE_KEY, managers.getFeatures().lastUnlockedFeature().ordinal());
+        HintType hint = getHintToShow(TutorialEvent.FEATURE_AWARD_DISMISSED, params);
+        if (hint != null) {
+            showHint(hint, activity.findViewById(R.id.grid_view));
+            onNextHintAction = new Runnable() {
+                @Override
+                public void run() {
+                    managers.getFeatures().showNextFeatureDialog(managers);
+                }
+            };
+        }
     }
 }

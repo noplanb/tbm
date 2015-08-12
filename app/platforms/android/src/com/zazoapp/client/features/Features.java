@@ -14,7 +14,9 @@ import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by skamenkovych@codeminders.com on 7/22/2015.
@@ -22,14 +24,15 @@ import java.util.List;
 public class Features {
     public enum Feature {
         SWITCH_CAMERA(R.string.feature_switch_camera_action),
-        ABORT_RECORDING(R.string.abort_recording_action),
-        DELETE_FRIEND(R.string.delete_friend_action),
-        EARPIECE(R.string.earpiece_action),
-        CAROUSEL(R.string.carousel_action),
+        ABORT_RECORDING(R.string.feature_abort_recording_action),
+        DELETE_FRIEND(R.string.feature_delete_friend_action),
+        EARPIECE(R.string.feature_earpiece_action),
+        CAROUSEL(R.string.feature_carousel_action),
         ;
 
-        private String prefName;
-        private int actionId;
+        private final String prefName;
+        private final int actionId;
+
         Feature(int action) {
             prefName = "pref_feature_" + name().toLowerCase();
             actionId = action;
@@ -39,7 +42,7 @@ public class Features {
             return prefName;
         }
 
-        public String getHint(Context context) {
+        public String getAction(Context context) {
             return context.getString(actionId);
         }
     }
@@ -47,6 +50,12 @@ public class Features {
     private static final long[] awardVibrationPattern = {50, 300, 90, 100, 90, 100, 90, 330};
     private Activity activity;
     private PreferencesHelper prefs;
+    private Set<FeatureChangedCallback> callbacks = new HashSet<>();
+    private volatile boolean notifyOnChanged = true;
+
+    public interface FeatureChangedCallback {
+        void onFeatureChanged(Feature feature, boolean unlocked);
+    }
 
     public Features(Activity activity) {
         this.activity = activity;
@@ -55,10 +64,12 @@ public class Features {
 
     private void unlock(Feature feature) {
         prefs.putBoolean(feature.getPrefName(), true);
+        notifyCallbacks(feature, true);
     }
 
     public void lock(Feature feature) {
         prefs.remove(feature.getPrefName());
+        notifyCallbacks(feature, false);
     }
 
     public boolean isUnlocked(Feature feature) {
@@ -114,6 +125,12 @@ public class Features {
         }
     }
 
+    public void showNextFeatureDialog(ZazoManagerProvider managers) {
+        if (TbmApplication.getInstance().isForeground() && !isAwardDialogShowed()) {
+            DialogShower.showNextFeatureDialog(activity);
+        }
+    }
+
     public boolean shouldShowAwardDialog() {
         return prefs.getBoolean(PREF_SHOW_LAST_FEATURE, false);
     }
@@ -140,5 +157,21 @@ public class Features {
             }
         }
         return lastUnlocked;
+    }
+
+    public final void addCallback(FeatureChangedCallback callback) {
+        callbacks.add(callback);
+    }
+
+    public final void removeCallback(FeatureChangedCallback callback) {
+        callbacks.remove(callback);
+    }
+
+    protected void notifyCallbacks(Feature feature, boolean unlocked) {
+        if (notifyOnChanged) {
+            for (FeatureChangedCallback callback : callbacks) {
+                callback.onFeatureChanged(feature, unlocked);
+            }
+        }
     }
 }

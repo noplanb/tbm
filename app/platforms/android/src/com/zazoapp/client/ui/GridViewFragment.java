@@ -15,12 +15,7 @@ import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.SyncManager;
 import com.zazoapp.client.features.Features;
-import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.GridElement;
-import com.zazoapp.client.model.GridElementFactory;
-import com.zazoapp.client.model.GridManager;
-import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.model.*;
 import com.zazoapp.client.multimedia.CameraException;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.CameraManager.CameraExceptionHandler;
@@ -37,7 +32,7 @@ import com.zazoapp.client.utilities.Logger;
 
 import java.util.ArrayList;
 
-public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener, NineViewGroup.SpinChangedListener {
+public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener, NineViewGroup.SpinChangedListener, Features.FeatureChangedCallback {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
     private static final String PREF_SPIN_OFFSET = "spin_offset";
@@ -58,6 +53,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             throw new RuntimeException("Activity must inherit ZazoManagerProvider.");
         }
         viewControllers = new ArrayList<>(GridManager.GRID_ELEMENTS_COUNT);
+        getManagerProvider().getFeatures().addCallback(this);
     }
 
     @Override
@@ -75,7 +71,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     public void onResume() {
         super.onResume();
         Logger.i(TAG, "onResume");
-        setupSpinFeature(getActivity()); // FIXME Do it in another way
+        setupSpinFeature(getActivity());
         getManagerProvider().getRecorder().resume();
     }
 
@@ -278,6 +274,13 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         }
     }
 
+    @Override
+    public void onFeatureChanged(Features.Feature feature, boolean unlocked) {
+        if (feature == Features.Feature.CAROUSEL && nineViewGroup != null) {
+            nineViewGroup.enableSpin(unlocked);
+        }
+    }
+
     //------------------------------
     // nineViewGroup Gesture listner
     //------------------------------
@@ -314,8 +317,10 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         @Override
         public boolean onCancelLongpress(int reason) {
             Log.d(TAG, "onCancelLongpress: " + getActivity().getString(reason));
-            DialogShower.showToast(getActivity(), reason);
-            getManagerProvider().getRecorder().cancel();
+            if (getManagerProvider().getRecorder().isRecording()) {
+                DialogShower.showToast(getActivity(), reason);
+                getManagerProvider().getRecorder().cancel();
+            }
             return false;
         }
 

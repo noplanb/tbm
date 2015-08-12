@@ -101,6 +101,7 @@
     <string name="tutorial_hint_send_welcome">Record a welcome Zazo for %1$s.</string>
     <string name="tutorial_hint_send_welcome_with_record">Press and hold to record a welcome Zazo for %1$s.</string>
     <string name="tutorial_got_it">Got It</string>
+    <string name="tutorial_try_it">Got It</string>
     <string name="bench_heading_sms">SMS Contacts</string>
     <string name="bench_heading_all">All Contacts</string>
 
@@ -121,9 +122,14 @@
     <string name="feature_unlock_discover_message">Discover what it is</string>
     <string name="unlock_another_feature">Unlock Another Feature</string>
     <string name="just_zazo_someone_new">Just Zazo someone new!</string>
-    <string name="feature_switch_camera_action">Use your back camera!</string>
-    <string name="abort_recording_action">Drag finger away to abort recording!</string>
-    <string name="delete_friend_action">Move your friend aside to delete!</string>
-    <string name="earpiece_action">Use earpiece now!</string>
-    <string name="carousel_action">Spin your friends over the grid!</string>
+    <string name="feature_switch_camera_action">Use both cameras!</string>
+    <string name="feature_abort_recording_action">Abort a recording!</string>
+    <string name="feature_delete_friend_action">Delete a friend!</string>
+    <string name="feature_earpiece_action">Listen from earpiece!</string>
+    <string name="feature_carousel_action">Spin your friends!</string>
+    <string name="feature_switch_camera_hint">Tap to switch camera</string>
+    <string name="feature_abort_recording_hint">Abort a recording.\nDrag finger away while recording</string>
+    <string name="feature_delete_friend_hint">Delete a friend. Tap menu. And chose Edit</string>
+    <string name="feature_earpiece_hint">Play quietly.\nTap to play. Then hold phone to ear</string>
+    <string name="feature_carousel_hint">Move a friend.\nDrag a friend to any position</string>
 </resources>
