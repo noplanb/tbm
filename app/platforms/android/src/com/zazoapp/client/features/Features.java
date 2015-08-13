@@ -22,6 +22,7 @@ import java.util.Set;
  * Created by skamenkovych@codeminders.com on 7/22/2015.
  */
 public class Features {
+
     public enum Feature {
         SWITCH_CAMERA(R.string.feature_switch_camera_action),
         ABORT_RECORDING(R.string.feature_abort_recording_action),
@@ -126,7 +127,7 @@ public class Features {
     }
 
     public void showNextFeatureDialog(ZazoManagerProvider managers) {
-        if (TbmApplication.getInstance().isForeground() && !isAwardDialogShowed()) {
+        if (TbmApplication.getInstance().isForeground() && !isAwardDialogShowed() && !managers.getBenchViewManager().isBenchShowed()) {
             DialogShower.showNextFeatureDialog(activity);
         }
     }
@@ -147,6 +148,7 @@ public class Features {
         }
         return null;
     }
+
     public Feature lastUnlockedFeature() {
         Feature lastUnlocked = null;
         for (Feature feature : Feature.values()) {
@@ -157,6 +159,15 @@ public class Features {
             }
         }
         return lastUnlocked;
+    }
+
+    public static boolean allFeaturesOpened(PreferencesHelper prefs) {
+        for (Feature feature : Feature.values()) {
+            if (!prefs.getBoolean(feature.getPrefName(), false)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public final void addCallback(FeatureChangedCallback callback) {

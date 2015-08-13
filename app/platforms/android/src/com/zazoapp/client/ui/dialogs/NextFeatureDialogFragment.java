@@ -1,5 +1,7 @@
 package com.zazoapp.client.ui.dialogs;
 
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import com.zazoapp.client.R;
 import com.zazoapp.client.ui.MainActivity;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 
 /**
  * Created by skamenkovych@codeminders.com on 7/22/2015.
@@ -73,5 +76,41 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
     public boolean onTouch(View v, MotionEvent event) {
         dismissAnimated();
         return false;
+    }
+
+    @Override
+    public Animator onCreateAnimator(int transit, boolean enter, final int nextAnim) {
+        if (nextAnim != R.animator.slide_up && nextAnim != R.animator.slide_down) {
+            return super.onCreateAnimator(transit, enter, nextAnim);
+        }
+        Animator anim = AnimatorInflater.loadAnimator(getActivity(), nextAnim);
+        anim.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (nextAnim == R.animator.slide_down) {
+                    dismissAllowingStateLoss();
+                    ZazoManagerProvider managers = (ZazoManagerProvider) getActivity();
+                    if (managers != null) {
+                        managers.getTutorial().onDismiss();
+                    }
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        return anim;
     }
 }

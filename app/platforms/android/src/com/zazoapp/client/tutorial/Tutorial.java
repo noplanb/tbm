@@ -185,8 +185,12 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     }
 
     private void showHint(HintType hint, View view) {
-        // TODO Check if featureaward dialog isn't showed
-        showHint(hint, view, hint.getHint(tutorialLayout.getContext()));
+        if (hint == HintType.NEXT_FEATURE) {
+            managers.getFeatures().showNextFeatureDialog(managers);
+            current = hint;
+        } else {
+            showHint(hint, view, hint.getHint(tutorialLayout.getContext()));
+        }
     }
 
     private void showHint(HintType hint, View view, String text) {
@@ -243,12 +247,6 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         HintType hint = getHintToShow(TutorialEvent.FEATURE_AWARD_DISMISSED, params);
         if (hint != null) {
             showHint(hint, activity.findViewById(R.id.grid_view));
-            onNextHintAction = new Runnable() {
-                @Override
-                public void run() {
-                    managers.getFeatures().showNextFeatureDialog(managers);
-                }
-            };
         }
     }
 }

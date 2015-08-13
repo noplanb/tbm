@@ -81,6 +81,7 @@ public class TbmApplication extends Application {
         PreferencesHelper prefs = new PreferencesHelper(this);
         prefs.putBoolean(VersionHandler.UPDATE_SESSION, true);
         prefs.putBoolean(HintType.RECORD.getPrefSessionName(), true);
+        prefs.putBoolean(HintType.NEXT_FEATURE.getPrefSessionName(), true);
     }
 
     private void setForeground(boolean isForeground){
@@ -89,7 +90,7 @@ public class TbmApplication extends Application {
 		else
 			foreground--;
 	}
-	
+
 	public boolean isForeground(){
 		return foreground>0;
 	}

@@ -32,7 +32,7 @@ public enum HintType {
             }
         }
     },
-    FEATURE_SWITCH_CAMERA_HINT(R.string.feature_switch_camera_hint, Features.Feature.SWITCH_CAMERA) {
+    FEATURE_SWITCH_CAMERA(R.string.feature_switch_camera_hint, Features.Feature.SWITCH_CAMERA) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
@@ -41,7 +41,7 @@ public enum HintType {
             }
         }
     },
-    FEATURE_ABORT_RECORDING_HINT(R.string.feature_abort_recording_hint, Features.Feature.ABORT_RECORDING) {
+    FEATURE_ABORT_RECORDING(R.string.feature_abort_recording_hint, Features.Feature.ABORT_RECORDING) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
@@ -50,7 +50,7 @@ public enum HintType {
             }
         }
     },
-    FEATURE_DELETE_FRIEND_HINT(R.string.feature_delete_friend_hint, Features.Feature.DELETE_FRIEND) {
+    FEATURE_DELETE_FRIEND(R.string.feature_delete_friend_hint, Features.Feature.DELETE_FRIEND) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             View parent = (View) layout.getParent();
@@ -62,7 +62,7 @@ public enum HintType {
             }
         }
     },
-    FEATURE_EARPIECE_HINT(R.string.feature_earpiece_hint, Features.Feature.EARPIECE) {
+    FEATURE_EARPIECE(R.string.feature_earpiece_hint, Features.Feature.EARPIECE) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
@@ -71,7 +71,7 @@ public enum HintType {
             }
         }
     },
-    FEATURE_CAROUSEL_HINT(R.string.feature_carousel_hint, Features.Feature.CAROUSEL) {
+    FEATURE_CAROUSEL(R.string.feature_carousel_hint, Features.Feature.CAROUSEL) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
@@ -141,7 +141,7 @@ public enum HintType {
     SEND_WELCOME(R.string.tutorial_hint_send_welcome) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
-            return event == TutorialEvent.FRIEND_ADDED && current == null;
+            return event == TutorialEvent.FRIEND_ADDED && current == null && params != null && params.containsKey(Tutorial.FRIEND_KEY);
         }
 
         @Override
@@ -211,6 +211,26 @@ public enum HintType {
                 layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.TOP_RIGHT)));
                 markHintAsShowedForSession(prefs);
             }
+        }
+    },
+    NEXT_FEATURE(0) {
+        @Override
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            switch (event) {
+                case HINT_DISMISSED:
+                    if (params != null && params.containsKey(Tutorial.HINT_TYPE_KEY)) {
+                        return HintType.values()[params.getInt(Tutorial.HINT_TYPE_KEY)].isFeatureHint() && !Features.allFeaturesOpened(prefs);
+                    }
+                    break;
+                case MESSAGE_SENT:
+                case VIDEO_VIEWED:
+                    return prefs.getBoolean(getPrefSessionName(), true) && !Features.allFeaturesOpened(prefs);
+            }
+            return false;
+        }
+
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
         }
     },
     ;
