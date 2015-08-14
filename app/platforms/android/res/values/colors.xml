@@ -9,6 +9,7 @@
     
     <color name="orange">#F48A31</color>
     <color name="green">#9ac23b</color>
+    <color name="light_orange">#fff9b672</color>
     <color name="light_green">#c2e179</color>
     <color name="light_grey_new">#2f2e28</color>
     <color name="dlg_inpt_grey">#cfcbc0</color>
@@ -24,7 +25,7 @@
     <color name="bg_unread_msg_count">#dc0505</color>
     
     <color name="actionbar_bg">#1c1c19</color>
-    <color name="actionbar_textcolor">#625f57</color>
+    <color name="actionbar_textcolor">#ffdddad2</color>
     
     <color name="recording_border_color">#dc0505</color>
     

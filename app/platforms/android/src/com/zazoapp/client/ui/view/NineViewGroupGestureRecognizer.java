@@ -83,9 +83,6 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
                     runSurroundingMovingAway(target);
                     return;
                 }
-                if (managerProvider.getFeatures().isUnlocked(Features.Feature.DELETE_FRIEND)) {
-
-                }
 
                 //if (angleInBetween(NineViewGroup.SpinStrategy.normalizedAngle(Math.atan2(offsetY, offsetX) + Math.PI),
                 //        prevAngle, nextAngle)) {

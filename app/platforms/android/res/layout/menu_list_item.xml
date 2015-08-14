@@ -11,6 +11,7 @@
             android:layout_centerVertical="true"
             android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceMediumInverse"
-            android:textColor="@color/dialog_textcolor"
+            android:textColor="@color/dialog_action_text"
+            android:duplicateParentState="true"
             />
 </RelativeLayout>

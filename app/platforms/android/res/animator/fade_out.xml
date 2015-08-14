@@ -6,5 +6,5 @@
                     android:valueType="floatType"
                     android:valueTo="0.0"
                     android:valueFrom="1.0"
-                    android:duration="250"/>
+                    android:duration="@integer/anim_duration"/>
 </set>

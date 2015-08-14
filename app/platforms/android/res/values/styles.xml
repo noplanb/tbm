@@ -28,6 +28,8 @@
 
     <style name="ZazoActionBar" parent="@android:style/Widget.Holo.ActionBar">
         <item name="android:background">@color/actionbar_bg</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">55dp</item>
     </style>
 
     <style name="darkButton">

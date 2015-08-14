@@ -4,8 +4,6 @@
              android:layout_height="match_parent">
     <RelativeLayout
             android:id="@+id/zazo_action_bar"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
             style="@style/ZazoActionBar">
         <ImageView
                 android:id="@+id/action_bar_icon"
@@ -30,7 +28,6 @@
                 android:layout_alignParentRight="true"
                 android:padding="12dp"
                 android:src="@drawable/ic_menu_dots"
-                android:contentDescription="@string/menu_bench"
                 android:background="?android:selectableItemBackground"/>
     </RelativeLayout>
     <android.support.v4.widget.DrawerLayout
@@ -155,6 +152,10 @@
     </com.zazoapp.client.tutorial.TutorialLayout>
     <FrameLayout
             android:id="@+id/feature_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    <FrameLayout
+            android:id="@+id/top_frame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 </RelativeLayout>

@@ -6,8 +6,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import com.zazoapp.client.debug.DebugConfig;
-import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.dispatch.RollbarTracker;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.tutorial.HintType;
@@ -38,8 +36,7 @@ public class TbmApplication extends Application {
         DebugConfig.getInstance(this);
         loadDataModel();
 
-        Dispatch.registerTracker(this, new RollbarTracker());
-        Dispatch.dispatchStored();
+        //Dispatch.registerTracker(this, new RollbarTracker());
 
         initPrefs();
         IntentHandlerService.onApplicationStart();

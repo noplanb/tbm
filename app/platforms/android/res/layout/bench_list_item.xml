@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="?android:attr/listPreferredItemHeight"
-    android:orientation="horizontal" >
+    android:layout_height="?android:attr/listPreferredItemHeight">
 
     <include layout="@layout/contacts_heading"
             android:id="@+id/header"/>
@@ -18,10 +17,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/borderImage"
-        android:layout_alignTop="@+id/thumb"
-        android:layout_alignLeft="@+id/thumb"
-        android:layout_alignBottom="@+id/thumb"
-        android:layout_alignRight="@+id/thumb"
+        android:layout_alignTop="@id/thumb"
+        android:layout_alignLeft="@id/thumb"
+        android:layout_alignBottom="@id/thumb"
+        android:layout_alignRight="@id/thumb"
         android:src="@drawable/ic_no_pic_z_border_only"
         android:visibility="invisible" />
 

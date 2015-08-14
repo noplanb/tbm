@@ -2,6 +2,7 @@ package com.zazoapp.client.ui;
 
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,7 +12,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
 import com.zazoapp.client.R;
 import com.zazoapp.client.bench.BenchViewManager;
 import com.zazoapp.client.bench.InviteHelper;
@@ -42,6 +42,9 @@ import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.ui.view.MainMenuPopup;
 import com.zazoapp.client.utilities.DialogShower;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback, UnexpectedTerminationHelper.TerminationCallback,
         InviteDialogListener, ZazoManagerProvider, SelectPhoneNumberDialog.Callbacks, DoubleActionDialogFragment.DoubleActionDialogListener, MainMenuPopup.MenuItemListener {
@@ -95,7 +98,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 if (getBenchViewManager().isBenchShowed()) {
                     getBenchViewManager().hideBench();
                 }
-                MainMenuPopup popup = new MainMenuPopup(MainActivity.this);
+                List<Integer> disabledItems = new ArrayList<Integer>();
+                if (!getFeatures().isUnlocked(Features.Feature.DELETE_FRIEND)) {
+                    disabledItems.add(R.id.menu_manage_friends);
+                }
+                MainMenuPopup popup = new MainMenuPopup(MainActivity.this, disabledItems);
                 popup.setAnchorView(v);
                 popup.setMenuItemListener(MainActivity.this);
                 popup.show();
@@ -367,9 +374,14 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     public void onMenuItemSelected(int id) {
         switch (id) {
-            case R.id.menu_manage_friends:
-                Toast.makeText(this, "MenuItem Clicked", Toast.LENGTH_LONG).show();
+            case R.id.menu_manage_friends: {
+                FragmentTransaction tr = getFragmentManager().beginTransaction();
+                tr.setCustomAnimations(R.animator.slide_left_fade_in, R.animator.slide_right_fade_out, R.animator.slide_left_fade_in, R.animator.slide_right_fade_out);
+                tr.add(R.id.top_frame, new ManageFriendsFragment());
+                tr.addToBackStack(null);
+                tr.commit();
                 break;
+            }
         }
     }
 }

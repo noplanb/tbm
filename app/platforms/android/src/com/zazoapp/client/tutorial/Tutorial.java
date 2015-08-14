@@ -186,8 +186,10 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
 
     private void showHint(HintType hint, View view) {
         if (hint == HintType.NEXT_FEATURE) {
-            managers.getFeatures().showNextFeatureDialog(managers);
-            current = hint;
+            if (managers.getFeatures().showNextFeatureDialog(managers)) {
+                current = hint;
+                HintType.NEXT_FEATURE.markHintAsShowedForSession(preferences);
+            }
         } else {
             showHint(hint, view, hint.getHint(tutorialLayout.getContext()));
         }

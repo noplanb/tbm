@@ -11,6 +11,8 @@ import butterknife.ButterKnife;
 import com.zazoapp.client.R;
 import com.zazoapp.client.utilities.Convenience;
 
+import java.util.List;
+
 /**
  * Created by skamenkovych@codeminders.com on 8/14/2015.
  */
@@ -19,13 +21,15 @@ public class MainMenuPopup {
     private ListPopupWindow options;
     private Context context;
     private MenuItemListener menuItemListener;
+    private List<Integer> disabledOptions;
 
     public interface MenuItemListener {
         void onMenuItemSelected(int id);
     }
 
-    public MainMenuPopup(Context context) {
+    public MainMenuPopup(Context context, List<Integer> disabledOptions) {
         this.context = context;
+        this.disabledOptions = disabledOptions;
         options = new ListPopupWindow(context);
         options.setAdapter(new MenuAdapter());
         options.setListSelector(context.getResources().getDrawable(R.drawable.options_popup_item_bg));
@@ -76,12 +80,16 @@ public class MainMenuPopup {
         }
 
         @Override
+        public boolean isEnabled(int position) {
+            return !disabledOptions.contains(getItem(position)[0]);
+        }
+
+        @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             Holder holder;
             if (convertView != null) {
                 holder = (Holder) convertView.getTag();
             } else {
-
                 convertView = View.inflate(context, R.layout.menu_list_item, null);
                 holder = new Holder();
                 holder.text = ButterKnife.findById(convertView, R.id.text);
@@ -96,6 +104,7 @@ public class MainMenuPopup {
             if (options.getVerticalOffset() == 0) {
                 options.setVerticalOffset(-(anchor.getHeight() + convertView.getMeasuredHeight()) / 2);
             }
+            convertView.setEnabled(isEnabled(position));
             return convertView;
         }
 

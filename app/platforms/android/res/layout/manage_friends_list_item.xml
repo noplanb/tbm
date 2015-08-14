@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="68dp"
+                android:orientation="horizontal">
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <FrameLayout
+                android:id="@+id/thumb_layout"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp">
+            <ImageView
+                    android:id="@+id/thumb"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_zazo_letter"
+                    android:layout_alignParentTop="true"
+                    android:visibility="visible"/>
+
+            <!--        <ImageView
+                            android:id="@+id/borderImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentTop="true"
+                            android:src="@drawable/ic_no_pic_z_border_only"
+                            android:visibility="visible" />-->
+        </FrameLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/thumb_layout"
+                android:layout_toLeftOf="@+id/delete_btn"
+                android:layout_centerVertical="true"
+                android:orientation="vertical"
+                android:layout_margin="10dp">
+            <TextView
+                    android:id="@+id/name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:text="J.J. Philips Abramson"
+                    android:textSize="@dimen/text_very_large"
+                    android:textColor="@color/dialog_action_text"
+                    android:textStyle="bold"/>
+            <TextView
+                    android:id="@+id/phone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+1 000 0000000"
+                    android:textSize="@dimen/text_normal"
+                    android:textColor="@color/bg_name" />
+        </LinearLayout>
+
+        <View
+                android:id="@+id/deleted_bg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/light_grey"
+                android:alpha="0.3"/>
+
+        <ToggleButton
+                android:id="@+id/delete_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:theme="@android:style/Theme.DeviceDefault.Light"
+                android:textOn="@string/restore"
+                android:textOff="@string/delete"
+                android:textColor="@color/dialog_action_text"
+                android:textSize="@dimen/text_normal"
+                android:textAllCaps="false"
+                android:checked="false"
+                android:background="@drawable/manage_friends_delete_btn_bg"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:layout_margin="10dp"/>
+    </RelativeLayout>
+
+</LinearLayout>

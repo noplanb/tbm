@@ -373,6 +373,23 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 }
             }
         });
+        findViewById(R.id.show_unlocked_features).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Features features = new Features(DebugSettingsActivity.this);
+                StringBuilder text = new StringBuilder();
+
+                for (Features.Feature feature : Features.Feature.values()) {
+                    if (features.isUnlocked(feature)) {
+                        text.append(feature.name());
+                    }
+                    if (feature != features.lastUnlockedFeature()) {
+                        text.append("\n");
+                    }
+                }
+                DialogShower.showToast(DebugSettingsActivity.this, text.toString());
+            }
+        });
     }
 
     @Override
