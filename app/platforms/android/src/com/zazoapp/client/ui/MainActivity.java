@@ -11,14 +11,15 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
-import com.zazoapp.client.core.IntentHandlerService;
-import com.zazoapp.client.core.PreferencesHelper;
+import android.widget.Toast;
 import com.zazoapp.client.R;
-import com.zazoapp.client.core.TbmApplication;
-import com.zazoapp.client.core.VersionHandler;
 import com.zazoapp.client.bench.BenchViewManager;
 import com.zazoapp.client.bench.InviteHelper;
 import com.zazoapp.client.bench.InviteManager.InviteDialogListener;
+import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.core.TbmApplication;
+import com.zazoapp.client.core.VersionHandler;
 import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
@@ -39,10 +40,11 @@ import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
 import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
+import com.zazoapp.client.ui.view.MainMenuPopup;
 import com.zazoapp.client.utilities.DialogShower;
 
 public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback, UnexpectedTerminationHelper.TerminationCallback,
-        InviteDialogListener, ZazoManagerProvider, SelectPhoneNumberDialog.Callbacks, DoubleActionDialogFragment.DoubleActionDialogListener {
+        InviteDialogListener, ZazoManagerProvider, SelectPhoneNumberDialog.Callbacks, DoubleActionDialogFragment.DoubleActionDialogListener, MainMenuPopup.MenuItemListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -81,10 +83,22 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     private void setupActionBar() {
         findViewById(R.id.action_bar_icon).setOnTouchListener(new ZazoGestureListener(this));
-        findViewById(R.id.home_menu).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.friends_menu).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleBench();
+            }
+        });
+        findViewById(R.id.overflow_menu).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                if (getBenchViewManager().isBenchShowed()) {
+                    getBenchViewManager().hideBench();
+                }
+                MainMenuPopup popup = new MainMenuPopup(MainActivity.this);
+                popup.setAnchorView(v);
+                popup.setMenuItemListener(MainActivity.this);
+                popup.show();
             }
         });
     }
@@ -347,6 +361,15 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == InviteIntent.INVITATION_REQUEST_ID) {
             getInviteHelper().finishInvitation();
+        }
+    }
+
+    @Override
+    public void onMenuItemSelected(int id) {
+        switch (id) {
+            case R.id.menu_manage_friends:
+                Toast.makeText(this, "MenuItem Clicked", Toast.LENGTH_LONG).show();
+                break;
         }
     }
 }

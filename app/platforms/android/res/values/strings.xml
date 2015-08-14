@@ -132,4 +132,5 @@
     <string name="feature_delete_friend_hint">Delete a friend. Tap menu. And chose Edit</string>
     <string name="feature_earpiece_hint">Play quietly.\nTap to play. Then hold phone to ear</string>
     <string name="feature_carousel_hint">Move a friend.\nDrag a friend to any position</string>
+    <string name="manage_friends">Manage friends</string>
 </resources>
