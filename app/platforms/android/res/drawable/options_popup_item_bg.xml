@@ -4,23 +4,23 @@
           android:state_last="true"
           android:state_pressed="true">
         <shape android:shape="rectangle">
-            <corners android:radius="5dp"/>
+            <corners android:radius="@dimen/popup_radius"/>
             <solid android:color="@color/black_overlay"/>
         </shape>
     </item>
     <item android:state_first="true"
             android:state_pressed="true">
         <shape android:shape="rectangle">
-            <corners android:topLeftRadius="5dp"
-                     android:topRightRadius="5dp"/>
+            <corners android:topLeftRadius="@dimen/popup_radius"
+                     android:topRightRadius="@dimen/popup_radius"/>
             <solid android:color="@color/black_overlay"/>
         </shape>
     </item>
     <item android:state_last="true"
           android:state_pressed="true">
         <shape android:shape="rectangle">
-            <corners android:bottomLeftRadius="5dp"
-                     android:bottomRightRadius="5dp"/>
+            <corners android:bottomLeftRadius="@dimen/popup_radius"
+                     android:bottomRightRadius="@dimen/popup_radius"/>
             <solid android:color="@color/black_overlay"/>
         </shape>
     </item>
