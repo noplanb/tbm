@@ -1,8 +1,18 @@
 Previous v2.6.7 (83)
-Current v2.7.0 (85)
+Current v2.7.6 (90)
 
 BACKGROUND CHANGES:
-
+Changes in Friend model:
+1. Added CONNECTION CREATOR flag
+2. Added DELETED flag
+Added new gestures detection: moving boxes in and out of rectangle center
+Added debug options for features:
+1. delete welcomed friends from KVstore
+2. Lock all features
+3. "Enable all features" debug option
+4. Show unlocked features
+Sync Welcomed friends
+Implemented event-based architecture for hints
 
 ---------
 Fix Rollbar #817
@@ -29,7 +39,12 @@ Allowed state loss for progress dialog
 ---------
 NEW
 ---------
-Spin the wheel feature
+"Spin the wheel" feature
+"Switch camera" feature
+"Delete A Friend" feature
+"Feature Unlock" feature
+Main menu in ActionBar
+Manage Friends screen
 
 ---------
 Fix Rollbar #834
@@ -39,3 +54,12 @@ java.lang.IllegalStateException
 The content of the adapter has changed but ListView did not receive a notification. Make sure the content of your adapter is not modified from a background thread, but only from the UI thread. Make sure your adapter calls
 SOLUTION:
 Set updated list to adapter in main thread in onPostExecute method
+
+---------
+Fixed bug #560
+---------
+Problem
+Unviewed then spin the boxes cause download animation to repeat
+SOLUTION:
+Animate only if video status is changed.
+Just update content for other cases
