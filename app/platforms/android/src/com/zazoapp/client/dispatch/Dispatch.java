@@ -2,6 +2,7 @@ package com.zazoapp.client.dispatch;
 
 import android.content.Context;
 import android.util.Log;
+import org.json.JSONObject;
 
 /**
  * Created by User on 1/12/2015.
@@ -61,6 +62,19 @@ public class Dispatch {
             public void run() {
                 tracker.setIncludeLogcat(includeLogcat);
                 tracker.trackThrowable(th, ErrorLevel.ERROR);
+            }
+        });
+    }
+
+    public static void dispatch(final JSONObject data, Throwable tr) {
+        if (tr != null) {
+            Log.e(TAG, "dispatch", tr);
+        }
+        ensureTracker(new Runnable() {
+            @Override
+            public void run() {
+                tracker.setIncludeLogcat(includeLogcat);
+                tracker.trackData(data);
             }
         });
     }

@@ -1,6 +1,9 @@
 package com.zazoapp.client.network.aws;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -21,6 +24,8 @@ import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileTransferService.IntentFields;
 import com.zazoapp.client.network.IFileTransferAgent;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 
@@ -200,7 +205,23 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 				Log.e(TAG, serviceExceptionMessage(e));
 			break;
 		case Service:
-			Log.e(TAG, serviceExceptionMessage(e));
+			//Log.e(TAG, serviceExceptionMessage(e));
+            ConnectivityManager connMgr = (ConnectivityManager) fileTransferService.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+            JSONObject connection = new JSONObject();
+            if (networkInfo == null) {
+                try {
+                    connection.put("connection", "No connection");
+                } catch (JSONException e1) {
+                }
+            } else {
+                try {
+                    connection.put("connection", networkInfo.toString());
+                } catch (JSONException e1) {
+                }
+            }
+            Dispatch.dispatch(connection, e);
 			break;
 		case Unknown:
 			Dispatch.dispatch(serviceExceptionMessage(e));
