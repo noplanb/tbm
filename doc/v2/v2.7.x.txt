@@ -13,6 +13,7 @@ Added debug options for features:
 4. Show unlocked features
 Sync Welcomed friends
 Implemented event-based architecture for hints
+Dispatch server exception on S3
 
 ---------
 Fix Rollbar #817

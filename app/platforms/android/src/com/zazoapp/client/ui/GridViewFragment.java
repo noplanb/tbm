@@ -345,6 +345,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         public boolean onCenterClick(View view) {
             if (getManagerProvider().getFeatures().isUnlocked(Features.Feature.SWITCH_CAMERA)) {
                 getManagerProvider().getRecorder().switchCamera();
+            } else {
+                checkAndShowHint();
             }
             return true;
         }
