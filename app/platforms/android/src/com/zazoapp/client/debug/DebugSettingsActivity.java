@@ -382,9 +382,9 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 for (Features.Feature feature : Features.Feature.values()) {
                     if (features.isUnlocked(feature)) {
                         text.append(feature.name());
-                    }
-                    if (feature != features.lastUnlockedFeature()) {
-                        text.append("\n");
+                        if (feature != features.lastUnlockedFeature()) {
+                            text.append("\n");
+                        }
                     }
                 }
                 DialogShower.showToast(DebugSettingsActivity.this, text.toString());

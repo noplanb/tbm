@@ -10,9 +10,13 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import butterknife.ButterKnife;
 import com.zazoapp.client.R;
 import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.ZazoManagerProvider;
+
+import java.util.Random;
 
 /**
  * Created by skamenkovych@codeminders.com on 7/22/2015.
@@ -33,6 +37,10 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
         View v = inflater.inflate(R.layout.feature_unlock_another, container, false);
         v.findViewById(R.id.body).setOnClickListener(this);
         v.setOnTouchListener(this);
+        TextView message = ButterKnife.findById(v, R.id.message);
+        Random random = new Random();
+        String[] messageList = getResources().getStringArray(R.array.unlock_another_feature);
+        message.setText(messageList[Math.abs(random.nextInt(messageList.length))]);
         return v;
     }
 

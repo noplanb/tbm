@@ -6,6 +6,8 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import com.zazoapp.client.debug.DebugConfig;
+import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.dispatch.RollbarTracker;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.tutorial.HintType;
@@ -36,7 +38,8 @@ public class TbmApplication extends Application {
         DebugConfig.getInstance(this);
         loadDataModel();
 
-        //Dispatch.registerTracker(this, new RollbarTracker());
+        Dispatch.registerTracker(this, new RollbarTracker());
+        Dispatch.dispatchStored();
 
         initPrefs();
         IntentHandlerService.onApplicationStart();
@@ -78,7 +81,6 @@ public class TbmApplication extends Application {
         PreferencesHelper prefs = new PreferencesHelper(this);
         prefs.putBoolean(VersionHandler.UPDATE_SESSION, true);
         prefs.putBoolean(HintType.RECORD.getPrefSessionName(), true);
-        prefs.putBoolean(HintType.NEXT_FEATURE.getPrefSessionName(), true);
     }
 
     private void setForeground(boolean isForeground){

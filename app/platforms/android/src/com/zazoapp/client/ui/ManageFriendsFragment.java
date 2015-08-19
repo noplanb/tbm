@@ -17,11 +17,15 @@ import android.widget.ToggleButton;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.model.GridManager;
+import com.zazoapp.client.network.HttpRequest;
+import com.zazoapp.client.utilities.DialogShower;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -122,12 +126,34 @@ public class ManageFriendsFragment extends Fragment {
         }
 
         @Override
-        public void onCheckedChanged(CompoundButton v, boolean isChecked) {
+        public void onCheckedChanged(final CompoundButton v, final boolean isChecked) {
             if (v.getId() == R.id.delete_btn) {
-                Friend friend = getItem((Integer) v.getTag(R.id.id));
-                friend.setDeleted(isChecked);
-                onFriendDeleteStatusChanged(friend);
-                ((Holder)v.getTag()).itemBg.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
+                final Friend friend = getItem((Integer) v.getTag(R.id.id));
+                if (friend.isDeleted() != isChecked) {
+                    ((Holder) v.getTag()).progress.setVisibility(View.VISIBLE);
+                    DeleteFriend.makeRequest(friend, isChecked, new HttpRequest.Callbacks() {
+                        @Override
+                        public void success(String response) {
+                            friend.setDeleted(isChecked);
+                            onFriendDeleteStatusChanged(friend);
+                            finishRequest();
+                        }
+
+                        @Override
+                        public void error(String errorString) {
+                            DialogShower.showToast(TbmApplication.getInstance(), R.string.toast_could_not_sync);
+                            v.setChecked(friend.isDeleted());
+                            finishRequest();
+                        }
+
+                        private void finishRequest() {
+                            Holder h = (Holder) v.getTag();
+                            h.progress.setVisibility(View.INVISIBLE);
+                            h.itemBg.setVisibility(friend.isDeleted() ? View.VISIBLE : View.INVISIBLE);
+                        }
+                    });
+                }
+
             }
         }
 
@@ -137,10 +163,27 @@ public class ManageFriendsFragment extends Fragment {
             @InjectView(R.id.name) TextView name;
             @InjectView(R.id.phone) TextView phone;
             @InjectView(R.id.deleted_bg) View itemBg;
+            @InjectView(R.id.progress_layout) View progress;
 
             Holder(View source) {
                 ButterKnife.inject(this, source);
             }
         }
+    }
+
+    private static class DeleteFriend extends HttpRequest {
+        DeleteFriend(Friend friend, boolean delete, LinkedTreeMap<String, String> params, Callbacks callbacks) {
+            super("connection/set_visibility", params, "POST", callbacks);
+        }
+
+        static void makeRequest(Friend friend, boolean delete, Callbacks callbacks) {
+            LinkedTreeMap<String, String> params = new LinkedTreeMap<>();
+            params.put("friend_mkey", friend.getMkey());
+            params.put("visibility", delete ? VISIBILITY_HIDDEN : VISIBILITY_VISIBLE);
+            new DeleteFriend(friend, delete, params, callbacks);
+        }
+
+        private static final String VISIBILITY_HIDDEN = "hidden";
+        private static final String VISIBILITY_VISIBLE = "visible";
     }
 }

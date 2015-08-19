@@ -27,9 +27,17 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         public static final String HAS_APP = "has_app";
         public static final String CONNECTION_CREATED_ON = "connection_created_on";
         public static final String CONNECTION_CREATOR_MKEY = "connection_creator_mkey";
+        public static final String EMAILS = "emails";
+        public static final String CONNECTION_STATUS = "connection_status";
 
         public static final String HAS_APP_TRUE_VALUE = "true";
         public static final String HAS_APP_FALSE_VALUE = "false";
+
+        public static final String CONNECTION_VOIDED = "voided";
+        public static final String CONNECTION_ESTABLISHED = "established";
+        public static final String CONNECTION_HIDDEN_BY_CREATOR = "hidden_by_creator";
+        public static final String CONNECTION_HIDDEN_BY_TARGET = "hidden_by_target";
+        public static final String CONNECTION_HIDDEN_BY_BOTH = "hidden_by_both";
     }
 
     private static FriendFactory instance = null;
@@ -49,22 +57,50 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
      */
     private Friend updateWithServerParams(Context context, Friend friend, LinkedTreeMap<String, String> params){
         if (friend != null) {
-            setConnectionParams(friend, params);
+            Friend changedFriend = null;
+            if (setConnectionParams(friend, params)) {
+                changedFriend = friend;
+            }
             boolean remoteHasApp = servHasApp(params);
             if (friend.hasApp() ^ remoteHasApp) {
                 friend.setHasApp(remoteHasApp);
                 friend.setLastActionTime();
                 notifyStatusChanged(friend);
-                return friend;
+                changedFriend = friend;
             }
+            return changedFriend;
         }
         return null;
     }
 
-    private void setConnectionParams(Friend friend, LinkedTreeMap<String, String> params) {
+    private boolean setConnectionParams(Friend friend, LinkedTreeMap<String, String> params) {
         if (params.containsKey(ServerParamKeys.CONNECTION_CREATOR_MKEY)) {
             friend.setConnectionCreator(isFriendInviter(params));
+            if (params.containsKey(ServerParamKeys.CONNECTION_STATUS)) {
+                String status = params.get(ServerParamKeys.CONNECTION_STATUS);
+                boolean newDeleteStatus = friend.isDeleted();
+                switch (status) {
+                    case ServerParamKeys.CONNECTION_VOIDED:
+                    case ServerParamKeys.CONNECTION_ESTABLISHED:
+                        newDeleteStatus = false;
+                        break;
+                    case ServerParamKeys.CONNECTION_HIDDEN_BY_CREATOR:
+                        newDeleteStatus = !friend.isConnectionCreator();
+                        break;
+                    case ServerParamKeys.CONNECTION_HIDDEN_BY_TARGET:
+                        newDeleteStatus = friend.isConnectionCreator();
+                        break;
+                    case ServerParamKeys.CONNECTION_HIDDEN_BY_BOTH:
+                        newDeleteStatus = true;
+                        break;
+                }
+                if (newDeleteStatus != friend.isDeleted()) {
+                    friend.setDeleted(newDeleteStatus);
+                    return true;
+                }
+            }
         }
+        return false;
     }
 
     private boolean isFriendInviter(LinkedTreeMap<String, String> params) {
@@ -119,7 +155,14 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
             }
             // if friend was updated or created then move him to grid
             if (f != null) {
-                GridManager.getInstance().moveFriendToGrid(f);
+                if (f.isDeleted()) {
+                    GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(f.getId());
+                    if (ge != null) {
+                        GridManager.getInstance().moveNextFriendTo(ge);
+                    }
+                } else {
+                    GridManager.getInstance().moveFriendToGrid(f);
+                }
                 needToNotify = true;
             }
         }

@@ -15,6 +15,8 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import com.zazoapp.client.R;
 
 abstract public class AbstractDialogFragment extends DialogFragment implements TextWatcher {
@@ -24,13 +26,13 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
     private static final String EDITED_MESSAGE = "edited_message";
     private static final String EDITABLE = "editable";
 
-	private Button btnCancel;
-	private Button btnOk;
-	private TextView twTitle;
-	private TextView twMsg;
-    private EditText editMsg;
-	private LinearLayout body;
-	private View btnsDivider;
+    @InjectView(R.id.btn_dialog_cancel) Button btnCancel;
+    @InjectView(R.id.btn_dialog_ok) Button btnOk;
+    @InjectView(R.id.dlg_title) TextView twTitle;
+    @InjectView(R.id.dlg_msg) TextView twMsg;
+    @InjectView(R.id.dlg_edit_msg) EditText editMsg;
+    @InjectView(R.id.dlg_body) LinearLayout body;
+    @InjectView(R.id.divider) View btnsDivider;
     private DialogListener listener;
 
     public interface DialogListener {
@@ -43,35 +45,25 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
         setStyle(DialogFragment.STYLE_NO_TITLE, R.style.base_dialog);
     }
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.dialog_body, container, true);
-		
-		btnsDivider = v.findViewById(R.id.divider);
-		btnCancel = (Button)v.findViewById(R.id.btn_dialog_cancel);
-		btnOk = (Button)v.findViewById(R.id.btn_dialog_ok);
-		
-		twTitle = (TextView)v.findViewById(R.id.dlg_title);
-        twMsg = (TextView) v.findViewById(R.id.dlg_msg);
-        editMsg = (EditText) v.findViewById(R.id.dlg_edit_msg);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.dialog_body, container, true);
+        ButterKnife.inject(this, v);
         editMsg.addTextChangedListener(this);
-
-        body = (LinearLayout) v.findViewById(R.id.dlg_body);
-		
-		btnOk.setOnClickListener(new OnClickListener() {
+        btnOk.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 dismiss();
             }
         });
-		btnCancel.setOnClickListener(new OnClickListener() {
+        btnCancel.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 dismiss();
             }
         });
-		return v;
-	}
+        return v;
+    }
 
     @Override
     public void onAttach(Activity activity) {

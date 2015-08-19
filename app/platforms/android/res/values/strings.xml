@@ -81,6 +81,7 @@
     <string name="toast_gesture_cancelled">Gesture cancelled by controller</string>
     <string name="toast_two_finger_touch">Two Finger Touch</string>
     <string name="toast_could_not_get_audio_focus">Could not get audio focus. Probably you are in call</string>
+    <string name="toast_could_not_sync">Could not sync</string>
 
     <string name="menu_bench">Contacts</string>
 
@@ -118,9 +119,13 @@
     <string name="notification_from">From %1$s!</string>
     <string name="action_show_me">Show Me</string>
     <string name="hurray_message">Hurray,</string>
+
     <string name="feature_unlock_message">You unlocked a new feature!</string>
     <string name="feature_unlock_discover_message">Discover what it is</string>
-    <string name="unlock_another_feature">Unlock Another Feature</string>
+    <string-array name="unlock_another_feature">
+        <item>New gift is waiting</item>
+        <item>Win another Surprise</item>
+    </string-array>
     <string name="just_zazo_someone_new">Just Zazo someone new!</string>
     <string name="feature_switch_camera_action">Use both cameras!</string>
     <string name="feature_abort_recording_action">Abort a recording!</string>

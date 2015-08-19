@@ -45,6 +45,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
 
     public void registerCallbacks() {
         preferences.putBoolean(HintType.INVITE_2.getPrefSessionName(), true);
+        preferences.putBoolean(HintType.NEXT_FEATURE.getPrefSessionName(), true);
     }
 
     public void unregisterCallbacks() {
