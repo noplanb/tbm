@@ -203,6 +203,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         }
         current = hint;
         tutorialLayout.setHintText(text);
+        tutorialLayout.setButtonText(hint.getButtonText(activity));
         hint.show(tutorialLayout, view, this, preferences);
     }
 

@@ -18,7 +18,7 @@ import com.zazoapp.client.ui.view.NineViewGroup;
  * Created by skamenkovych@codeminders.com on 5/13/2015.
  */
 public enum HintType {
-    INVITE_1(R.string.tutorial_hint_invite_1) {
+    INVITE_1(R.string.tutorial_hint_invite_1, 0) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             return event == TutorialEvent.LAUNCH && FriendFactory.getFactoryInstance().count() == 0;
@@ -32,7 +32,7 @@ public enum HintType {
             }
         }
     },
-    FEATURE_SWITCH_CAMERA(R.string.feature_switch_camera_hint, Features.Feature.SWITCH_CAMERA) {
+    FEATURE_SWITCH_CAMERA(R.string.feature_switch_camera_hint, 0, Features.Feature.SWITCH_CAMERA) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
@@ -41,7 +41,7 @@ public enum HintType {
             }
         }
     },
-    FEATURE_ABORT_RECORDING(R.string.feature_abort_recording_hint, Features.Feature.ABORT_RECORDING) {
+    FEATURE_ABORT_RECORDING(R.string.feature_abort_recording_hint, R.string.tutorial_try_it, Features.Feature.ABORT_RECORDING) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
@@ -50,7 +50,7 @@ public enum HintType {
             }
         }
     },
-    FEATURE_DELETE_FRIEND(R.string.feature_delete_friend_hint, Features.Feature.DELETE_FRIEND) {
+    FEATURE_DELETE_FRIEND(R.string.feature_delete_friend_hint, R.string.tutorial_got_it, Features.Feature.DELETE_FRIEND) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             View parent = (View) layout.getParent();
@@ -62,7 +62,7 @@ public enum HintType {
             }
         }
     },
-    FEATURE_EARPIECE(R.string.feature_earpiece_hint, Features.Feature.EARPIECE) {
+    FEATURE_EARPIECE(R.string.feature_earpiece_hint, R.string.tutorial_try_it, Features.Feature.EARPIECE) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
@@ -71,7 +71,7 @@ public enum HintType {
             }
         }
     },
-    FEATURE_CAROUSEL(R.string.feature_carousel_hint, Features.Feature.CAROUSEL) {
+    FEATURE_CAROUSEL(R.string.feature_carousel_hint, R.string.tutorial_try_it, Features.Feature.CAROUSEL) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
@@ -80,7 +80,28 @@ public enum HintType {
             }
         }
     },
-    PLAY(R.string.tutorial_hint_play) {
+    PLAY_RECORD(R.string.tutorial_hint_play_record, 0) {
+        @Override
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            return event == TutorialEvent.NEW_MESSAGE && current == RECORD && PLAY.shouldShow(event, null, prefs, params);
+        }
+
+        @Override
+        void show(final TutorialLayout layout, final View view, final Tutorial tutorial, final PreferencesHelper prefs) {
+            layout.dismissSoftly(new TutorialLayout.OnTutorialEventListener() {
+                @Override
+                public void onDismiss() {
+                    setExcludedBox(layout, view);
+                    layout.dim();
+                }
+
+                @Override
+                public void onDimmed() {
+                }
+            });
+        }
+    },
+    PLAY(R.string.tutorial_hint_play, 0) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             switch (event) {
@@ -98,7 +119,7 @@ public enum HintType {
             layout.dim();
         }
     },
-    SEND_WELCOME_WITH_RECORD(R.string.tutorial_hint_send_welcome_with_record) {
+    SEND_WELCOME_WITH_RECORD(R.string.tutorial_hint_send_welcome_with_record, 0) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             if (event != TutorialEvent.FRIEND_ADDED || params == null || !params.containsKey(Tutorial.FRIEND_KEY)) {
@@ -113,7 +134,7 @@ public enum HintType {
             SEND_WELCOME.show(layout, view, tutorial, prefs);
         }
     },
-    RECORD(R.string.tutorial_hint_record) {
+    RECORD(R.string.tutorial_hint_record, 0) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             switch (event) {
@@ -138,7 +159,7 @@ public enum HintType {
             markHintAsShowedForSession(prefs);
         }
     },
-    SEND_WELCOME(R.string.tutorial_hint_send_welcome) {
+    SEND_WELCOME(R.string.tutorial_hint_send_welcome, 0) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             return event == TutorialEvent.FRIEND_ADDED && current == null && params != null && params.containsKey(Tutorial.FRIEND_KEY);
@@ -146,13 +167,10 @@ public enum HintType {
 
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
-            layout.clear();
-            layout.hideButton();
-            layout.setExcludedRect(getViewRect(view));
-            layout.dim();
+            layout.dimExceptForRect(getViewRect(view));
         }
     },
-    SENT(R.string.tutorial_hint_sent) {
+    SENT(R.string.tutorial_hint_sent, R.string.tutorial_got_it) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             return event == TutorialEvent.SENT_INDICATOR_SHOWED && hasOneFriend() && current == null && prefs.getBoolean(getPrefName(), true);
@@ -169,7 +187,7 @@ public enum HintType {
             markHintAsShowed(prefs);
         }
     },
-    VIEWED(R.string.tutorial_hint_viewed) {
+    VIEWED(R.string.tutorial_hint_viewed, R.string.tutorial_got_it) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             return event == TutorialEvent.VIEWED_INDICATOR_SHOWED && hasOneFriend() && current == null && prefs.getBoolean(getPrefName(), true);
@@ -186,7 +204,7 @@ public enum HintType {
             markHintAsShowed(prefs);
         }
     },
-    INVITE_2(R.string.tutorial_hint_invite_2) {
+    INVITE_2(R.string.tutorial_hint_invite_2, 0) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             switch (event) {
@@ -213,7 +231,7 @@ public enum HintType {
             }
         }
     },
-    NEXT_FEATURE(0) {
+    NEXT_FEATURE(0, 0) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             switch (event) {
@@ -255,14 +273,16 @@ public enum HintType {
 
     private String prefName;
     private int hintTextId;
+    private int buttonTextId;
     private Features.Feature feature;
-    HintType(int id) {
+    HintType(int id, int buttonTextId) {
         prefName = "pref_hint_" + name().toLowerCase();
         hintTextId = id;
+        this.buttonTextId = buttonTextId;
     }
 
-    HintType(int id, Features.Feature feature) {
-        this(id);
+    HintType(int id, int buttonTextId, Features.Feature feature) {
+        this(id, buttonTextId);
         this.feature = feature;
     }
 
@@ -284,6 +304,14 @@ public enum HintType {
 
     String getHint(Context context, String... vars) {
         return context.getString(hintTextId, vars);
+    }
+
+    String getButtonText(Context context) {
+        if (buttonTextId == 0) {
+            return null;
+        } else {
+            return context.getString(buttonTextId);
+        }
     }
 
     boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {

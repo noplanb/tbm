@@ -108,7 +108,7 @@ public class Features {
         }
         // If we are invitee than unlock activatedInviteeCount + (activatedNonInviteeCount > 0) ? 1 : 0 features;
         // If not just unlock activatedInviteeCount features
-        return activatedInviteeCount + ((activatedNonInviteeCount > 0 && UserFactory.current_user().isInvitee()) ? 1 : 0);
+        return Math.max(0, activatedInviteeCount + ((activatedNonInviteeCount > 0 && UserFactory.current_user().isInvitee()) ? 1 : 0) - 1);
     }
 
     public void showFeatureAwardDialog(ZazoManagerProvider managers, Feature feature) {

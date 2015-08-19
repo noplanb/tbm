@@ -44,9 +44,12 @@ public class TutorialLayout extends FrameLayout {
     private int dimExcludedCircleRadius;
 
     private String hintText;
+    private String buttonText;
     private OnTutorialEventListener onTutorialEventListener;
 
     private ImageView arrowView;
+    private TextView tutorialHintView;
+    private Button gotItButton;
 
     public TutorialLayout(Context context) {
         super(context);
@@ -73,10 +76,8 @@ public class TutorialLayout extends FrameLayout {
     public void dim() {
         dimmed = true;
         arrowView = (ImageView) findViewById(R.id.tutorial_arrow);
-        final TextView hint = (TextView) findViewById(R.id.tutorial_hint);
-        setUpHintText(hint);
-        final Button button = (Button) findViewById(R.id.tutorial_btn);
-        button.setTypeface(hint.getTypeface());
+        setUpHintText();
+        setUpGotItButton();
         setVisibility(VISIBLE);
         dimAnimator = ValueAnimator.ofInt(0, MAX_DIM);
         dimPaint.setColor(getContext().getResources().getColor(R.color.light_grey_new));
@@ -114,26 +115,27 @@ public class TutorialLayout extends FrameLayout {
         dimAnimator.start();
     }
 
-    private void setUpHintText(TextView hint) {
-        hint.setText(hintText);
+    private void setUpHintText() {
+        tutorialHintView = (TextView) findViewById(R.id.tutorial_hint);
+        tutorialHintView.setText(hintText);
         Typeface tf = getTypeface();
-        hint.setTypeface(tf);
+        tutorialHintView.setTypeface(tf);
         if (arrowAnchorRect == null) {
             arrowAnchorRect = dimExcludedRect;
         }
         ArrowPosition arrowPosition;
         if (dimExcludedRect.intersects(0, 0, getRight(), getHeight() / 3)) {
             // TOP part, place just below
-            LayoutParams p = (LayoutParams) hint.getLayoutParams();
+            LayoutParams p = (LayoutParams) tutorialHintView.getLayoutParams();
             p.setMargins(0, (int) dimExcludedRect.bottom, 0, 0);
-            hint.setLayoutParams(p);
-            hint.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+            tutorialHintView.setLayoutParams(p);
+            tutorialHintView.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
             arrowPosition = ArrowPosition.TOP_CENTER;
         } else {
-            LayoutParams p = (LayoutParams) hint.getLayoutParams();
+            LayoutParams p = (LayoutParams) tutorialHintView.getLayoutParams();
             p.setMargins(0, 0, 0, (int) (getHeight() - dimExcludedRect.top));
-            hint.setLayoutParams(p);
-            hint.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+            tutorialHintView.setLayoutParams(p);
+            tutorialHintView.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
             arrowPosition = ArrowPosition.BOTTOM_CENTER;
         }
         if (dimExcludedRect.right < getWidth() / 2) {
@@ -141,7 +143,17 @@ public class TutorialLayout extends FrameLayout {
         } else if (dimExcludedRect.left > getWidth() / 2) {
             arrowPosition = arrowPosition.right();
         }
-        ArrowPosition.setUpArrowView(arrowView, hint, arrowAnchorRect, arrowPosition, getWidth(), getHeight());
+        ArrowPosition.setUpArrowView(arrowView, tutorialHintView, arrowAnchorRect, arrowPosition, getWidth(), getHeight());
+    }
+
+    private void setUpGotItButton() {
+        gotItButton = (Button) findViewById(R.id.tutorial_btn);
+        gotItButton.setTypeface(tutorialHintView.getTypeface());
+        if (buttonText == null) {
+            gotItButton.setVisibility(INVISIBLE);
+        } else {
+            gotItButton.setText(buttonText);
+        }
     }
 
     private Typeface getTypeface() {
@@ -213,6 +225,36 @@ public class TutorialLayout extends FrameLayout {
         postInvalidate();
     }
 
+    public void dismissSoftly(final OnTutorialEventListener customListener) {
+        if (customListener != null && dimAnimator != null && dimmed) {
+            dimAnimator.cancel();
+            dimAnimator.setIntValues(dimValue, 0);
+            dimAnimator.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    reset();
+                    dimAnimator.removeAllUpdateListeners();
+                    dimAnimator.removeAllListeners();
+                    customListener.onDismiss();
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            dimAnimator.start();
+        }
+    }
+
     @Override
     protected void dispatchDraw(Canvas canvas) {
         dimPaint.setAlpha(dimValue);
@@ -264,6 +306,10 @@ public class TutorialLayout extends FrameLayout {
 
     public void hideButton() {
         findViewById(R.id.tutorial_btn).setVisibility(INVISIBLE);
+    }
+
+    public void setButtonText(String gotItText) {
+        buttonText = gotItText;
     }
 
     private void reset() {
