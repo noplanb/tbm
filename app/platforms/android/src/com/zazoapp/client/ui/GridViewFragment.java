@@ -53,7 +53,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             throw new RuntimeException("Activity must inherit ZazoManagerProvider.");
         }
         viewControllers = new ArrayList<>(GridManager.GRID_ELEMENTS_COUNT);
-        getManagerProvider().getFeatures().addCallback(this);
     }
 
     @Override
@@ -65,6 +64,12 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         setupVideoPlayer(v);
         setupNineViewGroup(v);
         return v;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getManagerProvider().getFeatures().addCallback(this);
     }
 
     @Override
