@@ -242,7 +242,7 @@ public enum HintType {
                     break;
                 case MESSAGE_SENT:
                 case VIDEO_VIEWED:
-                    return prefs.getBoolean(getPrefSessionName(), true) && !Features.allFeaturesOpened(prefs);
+                    return current == null && prefs.getBoolean(getPrefSessionName(), true) && !Features.allFeaturesOpened(prefs);
             }
             return false;
         }
