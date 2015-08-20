@@ -3,4 +3,5 @@
     <item type="id" name="box_id"/>
     <item type="id" name="id"/>
     <item type="id" name="menu_manage_friends"/>
+    <item type="id" name="menu_send_feedback"/>
 </resources>

@@ -382,6 +382,19 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 tr.commit();
                 break;
             }
+            case R.id.menu_send_feedback: {
+                Bundle bundle = new Bundle();
+                bundle.putString(InviteIntent.EMAIL_KEY, "feedback@zazoapp.com");
+                bundle.putString(InviteIntent.SUBJECT_KEY, getString(R.string.feedback_subject));
+                bundle.putString(InviteIntent.MESSAGE_KEY, "");
+                Intent feedback = InviteIntent.EMAIL.getIntent(bundle);
+                try {
+                    startActivity(feedback);
+                } catch (ActivityNotFoundException e) {
+                    DialogShower.showToast(this, R.string.feedback_send_fails);
+                }
+                break;
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ import butterknife.ButterKnife;
 import com.zazoapp.client.R;
 import com.zazoapp.client.utilities.Convenience;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,29 +61,40 @@ public class MainMenuPopup {
     }
 
     private class MenuAdapter extends BaseAdapter {
-        private int[][] menuItems = {
+        private final int[][] allMenuItems = {
                 {R.id.menu_manage_friends, R.string.manage_friends},
+                {R.id.menu_send_feedback, R.string.send_feedback},
         };
+
+        private List<int[]> menuItems = new ArrayList<>();
+
+        MenuAdapter() {
+            for (int[] item : allMenuItems) {
+                if (!disabledOptions.contains(item[0])) {
+                    menuItems.add(item);
+                }
+            }
+        }
 
         @Override
         public int getCount() {
-            return menuItems.length;
+            return menuItems.size();
         }
 
         @Override
         public int[] getItem(int position) {
-            return menuItems[position];
+            return menuItems.get(position);
         }
 
         @Override
         public long getItemId(int position) {
-            return menuItems[position][0];
+            return getItem(position)[0];
         }
 
-        @Override
-        public boolean isEnabled(int position) {
-            return !disabledOptions.contains(getItem(position)[0]);
-        }
+        //@Override
+        //public boolean isEnabled(int position) {
+        //    return !disabledOptions.contains(getItem(position)[0]);
+        //}
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {

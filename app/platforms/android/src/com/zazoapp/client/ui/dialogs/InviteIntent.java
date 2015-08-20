@@ -10,6 +10,11 @@ import org.apache.http.protocol.HTTP;
  */
 public enum InviteIntent {
     SMS {
+        /**
+         * Returns an intent to send SMS.<br>
+         * Pass data with {@link InviteIntent#PHONE_NUMBER_KEY} with recipient's phone number
+         * and {@link InviteIntent#MESSAGE_KEY} with message body
+         */
         @Override
         public Intent getIntent(Bundle bundle) {
             Intent i = new Intent(Intent.ACTION_SENDTO);
@@ -20,6 +25,12 @@ public enum InviteIntent {
         }
     },
     EMAIL {
+        /**
+         * Returns an intent to send an Email.<br>
+         * Pass data with {@link InviteIntent#EMAIL_KEY} with recipient's email address,
+         * {@link InviteIntent#SUBJECT_KEY} with email subject
+         * and {@link InviteIntent#MESSAGE_KEY} with message body
+         */
         @Override
         public Intent getIntent(Bundle bundle) {
             Intent i = new Intent(Intent.ACTION_SENDTO);
@@ -31,6 +42,12 @@ public enum InviteIntent {
         }
     },
     TEXT {
+        /**
+         * Returns an intent to send plain text.<br>
+         * Pass data with {@link InviteIntent#EMAIL_KEY} with recipient's email address,
+         * {@link InviteIntent#SUBJECT_KEY} with email subject
+         * and {@link InviteIntent#MESSAGE_KEY} with message body
+         */
         @Override
         public Intent getIntent(Bundle bundle) {
             Intent i = new Intent(Intent.ACTION_SEND);
