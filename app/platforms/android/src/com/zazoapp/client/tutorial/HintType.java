@@ -231,7 +231,7 @@ public enum HintType {
             }
         }
     },
-    NEXT_FEATURE(0, 0) {
+    NEXT_FEATURE_AFTER_UNLOCK(0, 0) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             switch (event) {
@@ -240,6 +240,18 @@ public enum HintType {
                         return HintType.values()[params.getInt(Tutorial.HINT_TYPE_KEY)].isFeatureHint() && !Features.allFeaturesOpened(prefs);
                     }
                     break;
+            }
+            return false;
+        }
+
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+        }
+    },
+    NEXT_FEATURE(0, 0) {
+        @Override
+        boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
+            switch (event) {
                 case MESSAGE_SENT:
                 case VIDEO_VIEWED:
                     return current == null && prefs.getBoolean(getPrefSessionName(), true) && !Features.allFeaturesOpened(prefs);

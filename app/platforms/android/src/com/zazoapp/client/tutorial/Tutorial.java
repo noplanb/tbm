@@ -186,8 +186,8 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     }
 
     private void showHint(HintType hint, View view) {
-        if (hint == HintType.NEXT_FEATURE) {
-            if (managers.getFeatures().showNextFeatureDialog(managers)) {
+        if (hint == HintType.NEXT_FEATURE || hint == HintType.NEXT_FEATURE_AFTER_UNLOCK) {
+            if (managers.getFeatures().showNextFeatureDialog(managers, hint == HintType.NEXT_FEATURE_AFTER_UNLOCK)) {
                 current = hint;
                 HintType.NEXT_FEATURE.markHintAsShowedForSession(preferences);
             }

@@ -14,6 +14,8 @@ public class UserFactory extends ActiveModelFactory<User> {
         public static final String DEVICE_PLATFORM = "device_platform";
         public static final String VERIFICATION_VIA = "via";
         public static final String VERIFICATION_CODE = "verification_code";
+        public static final String VERIFICATION_FORCE_SMS = "force_sms";
+        public static final String VERIFICATION_FORCE_CALL = "force_call";
     }
 
     public static class VerificationCodeVia {

@@ -124,10 +124,12 @@
     <string name="feature_unlock_message">You unlocked a new feature!</string>
     <string name="feature_unlock_discover_message">Discover what it is</string>
     <string-array name="unlock_another_feature">
-        <item>Unlock a secret feature</item>
-        <item>A gift is waiting</item>
-        <item>Win a surprise</item>
-        <item>Surprise feature waiting</item>
+        <item>Unlock another feature!</item>
+        <item>Unlock a secret feature!</item>
+        <item>A gift is waiting!</item>
+        <item>Win a surprise!</item>
+        <item>Surprise feature waiting!</item>
+        <item>Get a surprise!</item>
     </string-array>
     <string name="just_zazo_someone_new">Just Zazo someone new!</string>
     <string name="feature_switch_camera_action">Use both cameras!</string>

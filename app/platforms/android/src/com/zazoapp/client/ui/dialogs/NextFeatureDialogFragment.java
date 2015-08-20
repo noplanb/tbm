@@ -25,6 +25,16 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
 
     private boolean resumed;
 
+    private static final String AFTER_FEATURE_UNLOCK = "after_feature_unlock";
+
+    public static NextFeatureDialogFragment getInstance(boolean justAfterFeatureUnlock) {
+        NextFeatureDialogFragment d = new NextFeatureDialogFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(AFTER_FEATURE_UNLOCK, justAfterFeatureUnlock);
+        d.setArguments(args);
+        return d;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,9 +48,13 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
         v.findViewById(R.id.body).setOnClickListener(this);
         v.setOnTouchListener(this);
         TextView message = ButterKnife.findById(v, R.id.message);
-        Random random = new Random();
         String[] messageList = getResources().getStringArray(R.array.unlock_another_feature);
-        message.setText(messageList[Math.abs(random.nextInt(messageList.length))]);
+        if (getArguments() != null && getArguments().getBoolean(AFTER_FEATURE_UNLOCK, false)) {
+            message.setText(messageList[0]);
+        } else {
+            Random random = new Random();
+            message.setText(messageList[Math.abs(random.nextInt(messageList.length))]);
+        }
         return v;
     }
 

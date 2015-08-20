@@ -141,14 +141,14 @@ public class DialogShower {
         return false;
     }
 
-    public static void showNextFeatureDialog(Activity activity) {
+    public static void showNextFeatureDialog(Activity activity, boolean justUnlockedFeature) {
         Fragment fragment = activity.getFragmentManager().findFragmentByTag(FEATURE_FRAME);
         if (fragment != null) {
             activity.getFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
         }
         FragmentTransaction tr = activity.getFragmentManager().beginTransaction();
         tr.setCustomAnimations(R.animator.slide_up, R.animator.slide_down);
-        tr.replace(R.id.feature_frame, new NextFeatureDialogFragment(), FEATURE_FRAME);
+        tr.replace(R.id.feature_frame, NextFeatureDialogFragment.getInstance(justUnlockedFeature), FEATURE_FRAME);
         tr.commitAllowingStateLoss();
     }
 }

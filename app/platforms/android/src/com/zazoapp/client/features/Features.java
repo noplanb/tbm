@@ -126,9 +126,9 @@ public class Features {
         }
     }
 
-    public boolean showNextFeatureDialog(ZazoManagerProvider managers) {
+    public boolean showNextFeatureDialog(ZazoManagerProvider managers, boolean justUnlockedFeature) {
         if (TbmApplication.getInstance().isForeground() && !isAwardDialogShowed() && !managers.getBenchViewManager().isBenchShowed()) {
-            DialogShower.showNextFeatureDialog(activity);
+            DialogShower.showNextFeatureDialog(activity, justUnlockedFeature);
             return true;
         }
         return false;
