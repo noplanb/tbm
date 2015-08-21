@@ -14,6 +14,8 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.ui.view.NineViewGroup;
 
+import java.util.Random;
+
 /**
  * Created by skamenkovych@codeminders.com on 5/13/2015.
  */
@@ -204,7 +206,7 @@ public enum HintType {
             markHintAsShowed(prefs);
         }
     },
-    INVITE_2(R.string.tutorial_hint_invite_2, 0) {
+    INVITE_2(0, 0) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
             switch (event) {
@@ -226,9 +228,19 @@ public enum HintType {
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
             if (nineViewGroup != null) {
-                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.TOP_RIGHT)));
+                layout.clear();
+                layout.setExcludedRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.TOP_RIGHT)));
+                layout.setIcon(R.drawable.ic_feature_gift);
+                layout.dim();
                 markHintAsShowedForSession(prefs);
             }
+        }
+
+        @Override
+        String getHint(Context context) {
+            String[] array = context.getResources().getStringArray(R.array.tutorial_hint_invite_2);
+            Random random = new Random();
+            return array[Math.abs(random.nextInt(array.length))];
         }
     },
     NEXT_FEATURE_AFTER_UNLOCK(0, 0) {

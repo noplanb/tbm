@@ -312,9 +312,19 @@ public class TutorialLayout extends FrameLayout {
         buttonText = gotItText;
     }
 
+    public void setIcon(int id) {
+        ImageView icon = (ImageView) findViewById(R.id.tutorial_icon);
+        if (id > 0) {
+            icon.setImageResource(id);
+        } else {
+            icon.setImageBitmap(null);
+        }
+    }
+
     private void reset() {
         setVisibility(INVISIBLE);
         findViewById(R.id.tutorial_btn).setVisibility(VISIBLE);
+        setIcon(0);
         dimmed = false;
         dimValue = 0;
         dimExcludedCircleX = 0;
