@@ -1,5 +1,5 @@
 Previous v2.6.7 (83)
-Current v2.7.6 (90)
+Current v2.7.9 (93)
 
 BACKGROUND CHANGES:
 Changes in Friend model:
@@ -14,6 +14,8 @@ Added debug options for features:
 Sync Welcomed friends
 Implemented event-based architecture for hints
 Dispatch server exception on S3
+Added support for forcing SMS sending on staging server during registration
+Added debug options groups
 
 ---------
 Fix Rollbar #817
@@ -45,7 +47,8 @@ NEW
 "Delete A Friend" feature
 "Feature Unlock" feature
 Main menu in ActionBar
-Manage Friends screen
+Edit Friends screen
+Added Send feedback option
 
 ---------
 Fix Rollbar #834
@@ -64,3 +67,19 @@ Unviewed then spin the boxes cause download animation to repeat
 SOLUTION:
 Animate only if video status is changed.
 Just update content for other cases
+
+---------
+Fixed Rollbar #880
+---------
+Exception
+https://rollbar.com/zazo/zazo-android/items/880/
+PROBLEM:
+Caused by changed feature unlock count calculation
+SOLUTION:
+Added check for NextFeature dialog that current hint == null
+
+---------
+Small fixes
+---------
+Changed color and text of contacts search hint in bench
+
