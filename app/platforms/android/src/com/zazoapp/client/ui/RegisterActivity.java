@@ -28,6 +28,7 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.FriendGetter;
 import com.zazoapp.client.core.RemoteStorageHandler;
+import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.debug.DebugSettingsActivity;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.ActiveModelsHandler;
@@ -205,6 +206,12 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         ub.appendPath("reg").appendPath("reg");
         LinkedTreeMap<String, String> r = userParams();
         r.put(UserFactory.ServerParamKeys.VERIFICATION_VIA, UserFactory.VerificationCodeVia.SMS);
+        DebugConfig config = DebugConfig.getInstance(this);
+        if (config.shouldForceConfirmationSms()) {
+            r.put(UserFactory.ServerParamKeys.VERIFICATION_FORCE_SMS, "true");
+        } else if (config.shouldForceConfirmationCall()) {
+            r.put(UserFactory.ServerParamKeys.VERIFICATION_FORCE_CALL, "true");
+        }
         new Register(ub.build().toString(), r);
     }
 

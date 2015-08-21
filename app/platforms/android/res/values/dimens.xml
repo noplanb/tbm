@@ -18,5 +18,5 @@
     <dimen name="popup_radius">2dp</dimen>
     <dimen name="button_radius">3dp</dimen>
     <dimen name="button_padding">5dp</dimen>
-
+    <dimen name="debug_options_margin">10dp</dimen>
 </resources>

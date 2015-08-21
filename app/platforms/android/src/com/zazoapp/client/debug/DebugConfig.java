@@ -22,6 +22,8 @@ public class DebugConfig {
     private static final String KEY_DISABLE_GCM_NOTIFICATIONS = "disable_gcm_notifications";
     private static final String KEY_ENABLE_ALL_FEATURES = "enable_all_features";
     private static final String KEY_FEATURE_OPTIONS_OPENED = "feature_options_opened";
+    private static final String KEY_FORCE_CONFIRMATION_SMS = "force_confirmation_sms";
+    private static final String KEY_FORCE_CONFIRMATION_CALL = "force_confirmation_call";
 
     public static final boolean DEBUG_LOG = false;
 
@@ -49,6 +51,8 @@ public class DebugConfig {
     private boolean disableGcmNotifications;
     private boolean enableAllFeatures;
     private boolean featureOptionsOpened;
+    private boolean forceConfirmationSms;
+    private boolean forceConfirmationCall;
 
     private DebugConfig() {
     }
@@ -90,6 +94,8 @@ public class DebugConfig {
         disableGcmNotifications = prefs.getBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, false);
         enableAllFeatures = prefs.getBoolean(KEY_ENABLE_ALL_FEATURES, false);
         featureOptionsOpened = prefs.getBoolean(KEY_FEATURE_OPTIONS_OPENED, false);
+        forceConfirmationSms = prefs.getBoolean(KEY_FORCE_CONFIRMATION_SMS, false);
+        forceConfirmationCall = prefs.getBoolean(KEY_FORCE_CONFIRMATION_CALL, false);
     }
 
     public boolean isDebugEnabled() {
@@ -130,6 +136,14 @@ public class DebugConfig {
 
     public boolean isFeatureOptionsOpened() {
         return featureOptionsOpened;
+    }
+
+    public boolean shouldForceConfirmationSms() {
+        return forceConfirmationSms;
+    }
+
+    public boolean shouldForceConfirmationCall() {
+        return forceConfirmationCall;
     }
 
     public void enableSendSms(boolean sendSms) {
@@ -192,6 +206,18 @@ public class DebugConfig {
         notifyChanges();
     }
 
+    public void setForceConfirmationSms(boolean value) {
+        forceConfirmationSms = value;
+        prefs.putBoolean(KEY_FORCE_CONFIRMATION_SMS, value);
+        notifyChanges();
+    }
+
+    public void setForceConfirmationCall(boolean value) {
+        forceConfirmationCall = value;
+        prefs.putBoolean(KEY_FORCE_CONFIRMATION_CALL, value);
+        notifyChanges();
+    }
+
     public void savePrefs() {
         prefs.putInt(KEY_MODE, mode);
         prefs.putBoolean(KEY_SEND_SMS, shouldSendSms);
@@ -203,6 +229,8 @@ public class DebugConfig {
         prefs.putBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, disableGcmNotifications);
         prefs.putBoolean(KEY_ENABLE_ALL_FEATURES, enableAllFeatures);
         prefs.putBoolean(KEY_FEATURE_OPTIONS_OPENED, featureOptionsOpened);
+        prefs.putBoolean(KEY_FORCE_CONFIRMATION_SMS, forceConfirmationSms);
+        prefs.putBoolean(KEY_FORCE_CONFIRMATION_CALL, forceConfirmationCall);
     }
 
     public void reloadPrefs() {
@@ -216,6 +244,8 @@ public class DebugConfig {
         disableGcmNotifications = prefs.getBoolean(KEY_DISABLE_GCM_NOTIFICATIONS, false);
         enableAllFeatures = prefs.getBoolean(KEY_ENABLE_ALL_FEATURES, false);
         featureOptionsOpened = prefs.getBoolean(KEY_FEATURE_OPTIONS_OPENED, false);
+        forceConfirmationSms = prefs.getBoolean(KEY_FORCE_CONFIRMATION_SMS, false);
+        forceConfirmationCall = prefs.getBoolean(KEY_FORCE_CONFIRMATION_CALL, false);
     }
 
     public void addCallback(DebugConfigChangesCallback callback) {

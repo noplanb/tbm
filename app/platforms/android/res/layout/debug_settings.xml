@@ -94,6 +94,10 @@
             </TableRow>
         </TableLayout>
 
+        <LinearLayout style="@style/DevDivider.Layout">
+            <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Debug options"/><View style="@style/DevDivider.Line"/>
+        </LinearLayout>
+
         <Switch
                 android:id="@+id/debug_mode"
                 android:layout_width="match_parent"
@@ -143,13 +147,16 @@
                         android:textColor="@android:color/white"/>
             </LinearLayout>
         </LinearLayout>
+        <LinearLayout style="@style/DevDivider.Layout">
+            <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Customization"/><View style="@style/DevDivider.Line"/>
+        </LinearLayout>
         <Switch
                 android:id="@+id/send_sms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Send real sms"
                 android:textColor="@android:color/white"
-                android:layout_marginTop="5dp"/>
+                android:layout_marginTop="@dimen/debug_options_margin"/>
 
         <Switch
                 android:id="@+id/use_rear_camera"
@@ -157,17 +164,52 @@
                 android:layout_height="wrap_content"
                 android:text="Use rear camera"
                 android:textColor="@android:color/white"
+                android:layout_marginTop="@dimen/debug_options_margin"/>
+
+        <Switch
+                android:id="@+id/send_broken_video"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Send broken video"
+                android:textColor="@android:color/white"
                 android:layout_marginTop="5dp"/>
 
+        <Switch
+                android:id="@+id/disable_gcm_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Disable GCM notifications"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="5dp"/>
+
+        <LinearLayout style="@style/DevDivider.Layout">
+            <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Registration options"/><View style="@style/DevDivider.Line"/>
+        </LinearLayout>
         <Switch
                 android:id="@+id/custom_server"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Use custom server"
                 android:textColor="@android:color/white"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="@dimen/debug_options_margin"
                 android:enabled="false"/>
 
+        <Switch
+                android:id="@+id/server_force_sms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Force SMS during registration"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="@dimen/debug_options_margin"
+                android:enabled="false"/>
+        <Switch
+                android:id="@+id/server_force_call"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Force Call during registration"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="@dimen/debug_options_margin"
+                android:enabled="false"/>
         <LinearLayout
                 android:id="@+id/server_host_layout"
                 android:layout_width="match_parent"
@@ -178,7 +220,6 @@
                     android:id="@+id/server_host_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-
                     android:text="Server host: "
                     android:textColor="@android:color/white"/>
 
@@ -213,13 +254,9 @@
                     android:textColor="@android:color/white"/>
         </LinearLayout>
 
-        <Switch
-                android:id="@+id/send_broken_video"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Send broken video"
-                android:textColor="@android:color/white"
-                android:layout_marginTop="5dp"/>
+        <LinearLayout style="@style/DevDivider.Layout">
+            <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Tutorial"/><View style="@style/DevDivider.Line"/>
+        </LinearLayout>
 
         <LinearLayout
                 android:layout_width="match_parent"
@@ -239,13 +276,6 @@
                     android:text="Reset"
                     android:textColor="@android:color/white"/>
         </LinearLayout>
-        <Switch
-                android:id="@+id/disable_gcm_notifications"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Disable GCM notifications"
-                android:textColor="@android:color/white"
-                android:layout_marginTop="5dp"/>
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -275,28 +305,28 @@
                     android:layout_height="wrap_content"
                     android:text="Enable all features"
                     android:textColor="@android:color/white"
-                    android:layout_marginTop="5dp"/>
+                    android:layout_marginTop="@dimen/debug_options_margin"/>
             <Button
                     android:id="@+id/delete_welcomed_friends"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Delete welcomed friends"
                     android:textColor="@android:color/white"
-                    android:layout_marginTop="5dp"/>
+                    android:layout_marginTop="@dimen/debug_options_margin"/>
             <Button
                     android:id="@+id/lock_all_features"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Lock all features"
                     android:textColor="@android:color/white"
-                    android:layout_marginTop="5dp"/>
+                    android:layout_marginTop="@dimen/debug_options_margin"/>
             <Button
                 android:id="@+id/show_unlocked_features"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Show unlocked features"
                 android:textColor="@android:color/white"
-                android:layout_marginTop="5dp"/>
+                android:layout_marginTop="@dimen/debug_options_margin"/>
         </LinearLayout>
 
     </LinearLayout>

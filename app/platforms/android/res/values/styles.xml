@@ -86,4 +86,27 @@
         <item name="android:textSize">@dimen/text_very_large</item>
     </style>
 
+    <style name="DevDivider"/>
+    <style name="DevDivider.Layout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+    <style name="DevDivider.View">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textColor">@color/light_grey</item>
+        <item name="android:textSize">@dimen/text_normal</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center_vertical</item>
+    </style>
+    <style name="DevDivider.Line">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:layout_weight">3</item>
+        <item name="android:background">@drawable/dev_divider</item>
+        <item name="android:layout_margin">@dimen/debug_options_margin</item>
+    </style>
 </resources>

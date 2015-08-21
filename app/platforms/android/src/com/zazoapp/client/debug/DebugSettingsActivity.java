@@ -125,10 +125,14 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     private void setUpServer() {
         final LinearLayout serverHostLayout = (LinearLayout) findViewById(R.id.server_host_layout);
         final LinearLayout serverUriLayout = (LinearLayout) findViewById(R.id.server_uri_layout);
+        final Switch forceSms = (Switch) findViewById(R.id.server_force_sms);
+        final Switch forceCall = (Switch) findViewById(R.id.server_force_call);
         boolean serverOptionEnabled = getIntent().getBooleanExtra(EXTRA_FROM_REGISTER_SCREEN, false);
         boolean isEnabled = config.shouldUseCustomServer() && serverOptionEnabled;
         serverHostLayout.setEnabled(isEnabled);
         serverUriLayout.setEnabled(isEnabled);
+        forceSms.setEnabled(isEnabled);
+        forceCall.setEnabled(isEnabled);
         serverHostLayout.setVisibility(config.shouldUseCustomServer() ? View.VISIBLE : View.GONE);
         serverUriLayout.setVisibility(config.shouldUseCustomServer() ? View.VISIBLE : View.GONE);
 
@@ -165,6 +169,10 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 config.useCustomServer(isChecked);
                 serverHost.setEnabled(isChecked);
                 serverUri.setEnabled(isChecked);
+                forceSms.setEnabled(isChecked);
+                forceCall.setEnabled(isChecked);
+                forceSms.setChecked(false);
+                forceCall.setChecked(false);
                 serverHostLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
                 serverUriLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
 
@@ -175,6 +183,34 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 }
             }
         });
+
+        forceSms.setChecked(config.shouldForceConfirmationSms());
+        forceCall.setChecked(config.shouldForceConfirmationCall());
+        final CompoundButton.OnCheckedChangeListener onForceSwitchListener = new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                switch (buttonView.getId()) {
+                    case R.id.server_force_sms:
+                        if (config.shouldForceConfirmationSms() != isChecked) {
+                            config.setForceConfirmationSms(isChecked);
+                            config.setForceConfirmationCall(false);
+                            forceCall.setEnabled(!isChecked && config.shouldUseCustomServer());
+                        }
+                        break;
+                    case R.id.server_force_call:
+                        if (config.shouldForceConfirmationCall() != isChecked) {
+                            config.setForceConfirmationSms(false);
+                            config.setForceConfirmationCall(isChecked);
+                            forceSms.setEnabled(!isChecked && config.shouldUseCustomServer());
+                        }
+                        break;
+                }
+                forceSms.setChecked(config.shouldForceConfirmationSms());
+                forceCall.setChecked(config.shouldForceConfirmationCall());
+            }
+        };
+        forceSms.setOnCheckedChangeListener(onForceSwitchListener);
+        forceCall.setOnCheckedChangeListener(onForceSwitchListener);
     }
 
     private void setUpUserInfo() {
