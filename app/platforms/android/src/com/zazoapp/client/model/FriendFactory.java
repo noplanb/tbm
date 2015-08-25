@@ -258,6 +258,15 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         public int compare(LinkedTreeMap<String, String> lhs, LinkedTreeMap<String, String> rhs) {
             Date ld = StringUtils.parseTime(lhs.get(ServerParamKeys.CONNECTION_CREATED_ON));
             Date rd = StringUtils.parseTime(rhs.get(ServerParamKeys.CONNECTION_CREATED_ON));
+            if (ld == null && rd == null) {
+                return 0;
+            }
+            if (ld == null && rd != null) {
+                return -1;
+            }
+            if (ld != null && rd == null) {
+                return 1;
+            }
             return ld.compareTo(rd);
         }
     }
