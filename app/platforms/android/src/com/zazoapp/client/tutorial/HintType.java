@@ -192,7 +192,12 @@ public enum HintType {
     VIEWED(R.string.tutorial_hint_viewed, R.string.tutorial_got_it) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
-            return event == TutorialEvent.VIEWED_INDICATOR_SHOWED && hasOneFriend() && current == null && prefs.getBoolean(getPrefName(), true);
+            if (params != null && params.containsKey(Tutorial.BOX_KEY)) {
+                if (params.getInt(Tutorial.BOX_KEY, -1) == NineViewGroup.Box.CENTER_RIGHT.ordinal()) {
+                    return event == TutorialEvent.VIEWED_INDICATOR_SHOWED && current == null && prefs.getBoolean(getPrefName(), true);
+                }
+            }
+            return false;
         }
 
         @Override

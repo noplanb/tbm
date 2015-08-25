@@ -16,6 +16,8 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.ui.ZazoManagerProvider;
+import com.zazoapp.client.ui.view.GridElementView;
+import com.zazoapp.client.ui.view.NineViewGroup;
 
 /**
  * Created by skamenkovych@codeminders.com on 5/7/2015.
@@ -25,6 +27,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     public static final String HINT_TYPE_KEY = "hint_type";
     public static final String FEATURE_KEY = "feature";
     public static final String FRIEND_KEY = "just_invited_friend";
+    public static final String BOX_KEY = "view_id";
 
     private TutorialLayout tutorialLayout;
     private Activity activity;
@@ -136,7 +139,12 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
 
     public void onVideoViewedIndicatorShowed(View view) {
         Log.i(TAG, "onVideoViewedIndicatorShowed");
-        HintType hint = getHintToShow(TutorialEvent.VIEWED_INDICATOR_SHOWED, null);
+        Bundle params = new Bundle();
+        if (view instanceof GridElementView) {
+            NineViewGroup.Box box = NineViewGroup.Box.values()[((View) view.getParent()).getId()];
+            params.putInt(Tutorial.BOX_KEY, box.ordinal());
+        }
+        HintType hint = getHintToShow(TutorialEvent.VIEWED_INDICATOR_SHOWED, params);
         if (hint != null) {
             showHint(hint, view);
         }
