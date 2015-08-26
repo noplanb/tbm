@@ -139,6 +139,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/ic_tutorial_btn"
                 android:layout_gravity="center_horizontal|bottom"
+                android:textColor="@color/color_name"
                 android:textSize="@dimen/tutorial_text_size"
                 android:text="@string/tutorial_got_it"
                 android:textAllCaps="false"
