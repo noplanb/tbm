@@ -235,11 +235,13 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
             onNextHintAction.run();
             onNextHintAction = null;
         } else {
-            Bundle params = new Bundle();
-            params.putInt(HINT_TYPE_KEY, last.ordinal());
-            HintType hint = getHintToShow(TutorialEvent.HINT_DISMISSED, params);
-            if (hint != null) {
-                showHint(hint, activity.findViewById(R.id.grid_view));
+            if (last != null) { // for the case it was unregistered before completely dismissed last can be null
+                Bundle params = new Bundle();
+                params.putInt(HINT_TYPE_KEY, last.ordinal());
+                HintType hint = getHintToShow(TutorialEvent.HINT_DISMISSED, params);
+                if (hint != null) {
+                    showHint(hint, activity.findViewById(R.id.grid_view));
+                }
             }
         }
     }
