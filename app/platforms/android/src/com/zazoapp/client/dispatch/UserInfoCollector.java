@@ -2,10 +2,12 @@ package com.zazoapp.client.dispatch;
 
 import android.content.Context;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.network.NetworkConfig;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -24,7 +26,7 @@ public class UserInfoCollector {
         ArrayList<IncomingVideo> incomingVideos = IncomingVideoFactory.getFactoryInstance().all();
         if (friends.size() > 0) {
             addRow(info, "Friends");
-            addRow(info, "Name", "ID", "Has app", "IV !v count", "OV ID", "OV status", "Last event", "Has thumb", "Downloading");
+            addRow(info, "Name", "ID", "Has app", "IV !v count", "OV ID", "OV status", "Last event", "Thumb", "Downloading", "Deleted", "ConnCreat", "Ever sent");
         } else {
             addRow(info, "Friends", "NO FRIENDS");
         }
@@ -32,13 +34,16 @@ public class UserInfoCollector {
             List<String> list = new ArrayList<>();
             list.add(friend.getFullName());
             list.add(friend.getId());
-            list.add(String.valueOf(friend.hasApp()));
+            list.add(friend.hasApp() ? "+" : "No app");
             list.add(String.valueOf(friend.incomingVideoNotViewedCount()));
             list.add(friend.getOutgoingVideoId());
             list.add(String.valueOf(friend.getOutgoingVideoStatus()));
             list.add((friend.getLastEventType() == Friend.VideoStatusEventType.OUTGOING) ? "OUT" : "IN");
-            list.add(String.valueOf(friend.thumbExists()));
-            list.add(String.valueOf(friend.hasDownloadingVideo()));
+            list.add(friend.thumbExists() ? "+" : "No thumb");
+            list.add(friend.hasDownloadingVideo() ? "Downloading" : "");
+            list.add(friend.isDeleted() ? "Deleted" : "");
+            list.add(friend.isConnectionCreator() ? "Creator" : "Target");
+            list.add(friend.everSent() ? "Welcomed" : "");
             addRow(info, list.toArray(new String[list.size()]));
         }
         info.append("\n");
@@ -72,12 +77,19 @@ public class UserInfoCollector {
                 addRow(info, f.getName());
             }
         }
+        info.append("\n");
+        info.append("\nUnlocked features\n");
+        info.append(Features.retrieveFeaturesStatus(context));
+
+        info.append("\n");
+        info.append("\nConnection status\n");
+        info.append(NetworkConfig.getConnectionStatus(context));
         return info.toString();
     }
 
     private static void addRow(StringBuilder out, String... data) {
         StringBuilder dataBuilder = new StringBuilder();
-        int maxLength = 80 / data.length;
+        int maxLength = Math.max(80 / data.length, 12);
         for (int i = 0; i < data.length; i++) {
             dataBuilder.append("| %-").append(maxLength).append("s ");
             if (data[i].length() > maxLength) {
@@ -85,7 +97,8 @@ public class UserInfoCollector {
             }
         }
         dataBuilder.append("|\n");
-        out.append(String.format(dataBuilder.toString(), data));
+        String formattedString = String.format(dataBuilder.toString(), data);
+        out.append(formattedString.replaceAll(" ", "\u00A0"));
     }
 
     // for testing purposes

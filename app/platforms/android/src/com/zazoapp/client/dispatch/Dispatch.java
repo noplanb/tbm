@@ -56,7 +56,9 @@ public class Dispatch {
     }
 
     public static void dispatch(final Throwable th, String message) {
-        Log.e(TAG, message);
+        if (message != null) {
+            Log.e(TAG, message);
+        }
         ensureTracker(new Runnable() {
             @Override
             public void run() {

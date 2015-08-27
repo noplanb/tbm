@@ -7,6 +7,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.rollbar.android.Rollbar;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import org.json.JSONException;
@@ -98,10 +99,11 @@ public class RollbarTracker implements ErrorTracker {
                 person.put("username", user.getFullName());
                 person.put("phone_number", phoneNumber);
                 person.put("host", Config.getServerHost());
+                person.put("user_data", UserInfoCollector.collect(TbmApplication.getInstance()));
+                Rollbar.setPersonData(person);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            Rollbar.setPersonData(person);
         } else {
             Rollbar.setPersonData("", "", "");
         }

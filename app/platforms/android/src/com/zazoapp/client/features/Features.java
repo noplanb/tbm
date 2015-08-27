@@ -172,6 +172,21 @@ public class Features {
         return true;
     }
 
+    public static String retrieveFeaturesStatus(Context context) {
+        PreferencesHelper prefs = new PreferencesHelper(context);
+        StringBuilder status = new StringBuilder();
+        for (Feature feature : Feature.values()) {
+            status.append(feature.name());
+            if (prefs.getBoolean(feature.getPrefName(), false)) {
+                status.append(" \u2713");
+            }
+            if (feature.ordinal() != Feature.values().length - 1) {
+                status.append("\n");
+            }
+        }
+        return status.toString();
+    }
+
     public final void addCallback(FeatureChangedCallback callback) {
         callbacks.add(callback);
     }
