@@ -143,6 +143,7 @@ public class CameraManager {
 
         //Check that 15 frame rate value is available in camera. Will use this parameter to
         //set frame rate in a VideoRecorder
+        is15FramesAvailable = false;
         if(camera!=null) {
             List<Integer> supportedPreviewFrameRates = camera.getParameters().getSupportedPreviewFrameRates();
             for (int i = 0; i < supportedPreviewFrameRates.size(); i++) {
