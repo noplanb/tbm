@@ -1,5 +1,5 @@
 Previous v2.6.7 (83)
-Current v2.7.11 (95)
+Current v2.7.12 (96)
 
 BACKGROUND CHANGES:
 Changes in Friend model:
@@ -83,3 +83,16 @@ Small fixes
 ---------
 Changed color and text of contacts search hint in bench
 
+---------
+Fixed #588
+---------
+"Unable to start recording" after camera switch rear and front again on Nexus 6
+PROBLEM:
+Field of 15 frames support for camera is never reinited if was set to true
+SOLUTION:
+Init field with false value
+
+---------
+NEW #591 Send app state with each dispatch to rollbar
+---------
+Improved sending dispatch information and gathering info of app state
