@@ -63,6 +63,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
             Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
             f.setAndNotifyOutgoingVideoStatus(f.getOutgoingVideoId(), OutgoingVideo.Status.NEW);
             f.uploadVideo(f.getOutgoingVideoId());
+            managerProvider.getTutorial().onVideoRecorded();
         }
     }
 

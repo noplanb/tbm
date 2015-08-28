@@ -275,7 +275,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                 switch (status) {
                     case OutgoingVideo.Status.QUEUED:
                         updateContent(true);
-                        managerProvider.getTutorial().onVideoRecorded();
                         gridElementView.animateUploading(new Runnable() {
                             @Override
                             public void run() {
