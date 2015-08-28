@@ -117,18 +117,20 @@ public class ManageFriendsFragment extends Fragment {
             }
             h.name.setText(f.getFullName());
             h.phone.setText(f.get(Friend.Attributes.MOBILE_NUMBER));
-            h.button.setChecked(f.isDeleted());
             h.button.setTag(h);
             h.button.setTag(R.id.id, position);
+            h.button.setChecked(f.isDeleted());
             h.button.setOnCheckedChangeListener(this);
             h.itemBg.setVisibility(f.isDeleted() ? View.VISIBLE : View.INVISIBLE);
+            h.progress.setVisibility(View.INVISIBLE);
             return convertView;
         }
 
         @Override
         public void onCheckedChanged(final CompoundButton v, final boolean isChecked) {
             if (v.getId() == R.id.delete_btn) {
-                final Friend friend = getItem((Integer) v.getTag(R.id.id));
+                final int position = (Integer) v.getTag(R.id.id);
+                final Friend friend = getItem(position);
                 if (friend.isDeleted() != isChecked) {
                     ((Holder) v.getTag()).progress.setVisibility(View.VISIBLE);
                     DeleteFriend.makeRequest(friend, isChecked, new HttpRequest.Callbacks() {
@@ -147,9 +149,11 @@ public class ManageFriendsFragment extends Fragment {
                         }
 
                         private void finishRequest() {
-                            Holder h = (Holder) v.getTag();
-                            h.progress.setVisibility(View.INVISIBLE);
-                            h.itemBg.setVisibility(friend.isDeleted() ? View.VISIBLE : View.INVISIBLE);
+                            if (position == (Integer) v.getTag(R.id.id)) {
+                                Holder h = (Holder) v.getTag();
+                                h.progress.setVisibility(View.INVISIBLE);
+                                h.itemBg.setVisibility(friend.isDeleted() ? View.VISIBLE : View.INVISIBLE);
+                            }
                         }
                     });
                 }
@@ -172,7 +176,7 @@ public class ManageFriendsFragment extends Fragment {
     }
 
     private static class DeleteFriend extends HttpRequest {
-        DeleteFriend(Friend friend, boolean delete, LinkedTreeMap<String, String> params, Callbacks callbacks) {
+        DeleteFriend(LinkedTreeMap<String, String> params, Callbacks callbacks) {
             super("connection/set_visibility", params, "POST", callbacks);
         }
 
@@ -180,7 +184,7 @@ public class ManageFriendsFragment extends Fragment {
             LinkedTreeMap<String, String> params = new LinkedTreeMap<>();
             params.put("friend_mkey", friend.getMkey());
             params.put("visibility", delete ? VISIBILITY_HIDDEN : VISIBILITY_VISIBLE);
-            new DeleteFriend(friend, delete, params, callbacks);
+            new DeleteFriend(params, callbacks);
         }
 
         private static final String VISIBILITY_HIDDEN = "hidden";
