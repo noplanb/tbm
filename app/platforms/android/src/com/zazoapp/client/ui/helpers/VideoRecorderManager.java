@@ -1,6 +1,8 @@
 package com.zazoapp.client.ui.helpers;
 
 import android.content.Context;
+import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.ViewGroup;
 import com.zazoapp.client.R;
@@ -14,6 +16,7 @@ import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoRecorder;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.view.PreviewTextureFrame;
+import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.DialogShower;
 
 /**
@@ -26,6 +29,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     private final VideoRecorder videoRecorder;
     private final Context context;
     private final ZazoManagerProvider managerProvider;
+    private long lastCameraSwitch;
 
     public VideoRecorderManager(Context context, ZazoManagerProvider managerProvider) {
         this.context = context;
@@ -120,9 +124,24 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
 
     @Override
     public void switchCamera() {
-        videoRecorder.release(false);
-        CameraManager.switchCamera(context);
-        videoRecorder.onResume();
+        long currentTime = SystemClock.uptimeMillis();
+        if (currentTime > lastCameraSwitch) {
+            lastCameraSwitch = Long.MAX_VALUE;
+            AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    videoRecorder.release(false);
+                    CameraManager.switchCamera(context);
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    videoRecorder.onResume();
+                    lastCameraSwitch = SystemClock.uptimeMillis();
+                }
+            });
+        }
     }
 
     @Override

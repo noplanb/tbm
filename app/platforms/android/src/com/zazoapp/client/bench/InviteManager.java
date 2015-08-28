@@ -184,6 +184,7 @@ public class InviteManager implements InviteHelper {
         params.put(FriendFactory.ServerParamKeys.MOBILE_NUMBER, benchObject.mobileNumber);
         params.put(FriendFactory.ServerParamKeys.FIRST_NAME, benchObject.firstName);
         params.put(FriendFactory.ServerParamKeys.LAST_NAME, benchObject.lastName);
+        // TODO add emails  ContactsManager.getEmailsForPhone()
         new InviteFriendRequest(uri, params);
     }
 
