@@ -38,6 +38,14 @@ public class ManageFriendsFragment extends Fragment {
 
     @InjectView(R.id.friends_list) ListView listView;
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (!(getActivity() instanceof ZazoManagerProvider)) {
+            throw new RuntimeException("Activity must inherit ZazoManagerProvider.");
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -60,6 +68,8 @@ public class ManageFriendsFragment extends Fragment {
         if (friend.isDeleted()) {
             if (GridElementFactory.getFactoryInstance().friendIsOnGrid(friend)) {
                 GridManager.getInstance().moveNextFriendTo(GridElementFactory.getFactoryInstance().findWithFriendId(friend.getId()));
+            } else {
+                ((ZazoManagerProvider)getActivity()).getBenchViewManager().updateBench();
             }
         } else {
             GridManager.getInstance().moveFriendToGrid(friend);
