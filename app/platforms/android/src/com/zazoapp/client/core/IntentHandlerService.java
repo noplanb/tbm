@@ -26,9 +26,11 @@ import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.model.OutgoingVideoFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.Video;
+import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileUploadService;
+import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
@@ -306,9 +308,22 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 SyncManager.getAndPollAllFriends(getApplicationContext(), null);
                 return;
             }
+            if (friend.isDeleted()) {
+                DeleteFriendRequest.makeRequest(friend, false, new HttpRequest.Callbacks() {
+                    @Override
+                    public void success(String response) {
+                        friend.setDeleted(false);
+                        SyncManager.getAndPollAllFriends(getApplicationContext(), null);
+                    }
+
+                    @Override public void error(String errorString) {}
+                });
+                return;
+            }
 
             friend.setLastActionTime();
             friend.setHasApp();
+
             // Create and download the video if this was a videoReceived intent.
             if (status == IncomingVideo.Status.NEW) {
 

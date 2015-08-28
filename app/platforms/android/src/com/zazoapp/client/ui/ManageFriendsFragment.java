@@ -17,13 +17,13 @@ import android.widget.ToggleButton;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
-import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.model.GridManager;
+import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -133,7 +133,7 @@ public class ManageFriendsFragment extends Fragment {
                 final Friend friend = getItem(position);
                 if (friend.isDeleted() != isChecked) {
                     ((Holder) v.getTag()).progress.setVisibility(View.VISIBLE);
-                    DeleteFriend.makeRequest(friend, isChecked, new HttpRequest.Callbacks() {
+                    DeleteFriendRequest.makeRequest(friend, isChecked, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
                             friend.setDeleted(isChecked);
@@ -175,19 +175,4 @@ public class ManageFriendsFragment extends Fragment {
         }
     }
 
-    private static class DeleteFriend extends HttpRequest {
-        DeleteFriend(LinkedTreeMap<String, String> params, Callbacks callbacks) {
-            super("connection/set_visibility", params, "POST", callbacks);
-        }
-
-        static void makeRequest(Friend friend, boolean delete, Callbacks callbacks) {
-            LinkedTreeMap<String, String> params = new LinkedTreeMap<>();
-            params.put("friend_mkey", friend.getMkey());
-            params.put("visibility", delete ? VISIBILITY_HIDDEN : VISIBILITY_VISIBLE);
-            new DeleteFriend(params, callbacks);
-        }
-
-        private static final String VISIBILITY_HIDDEN = "hidden";
-        private static final String VISIBILITY_VISIBLE = "visible";
-    }
 }
