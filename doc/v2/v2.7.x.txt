@@ -1,5 +1,5 @@
 Previous v2.6.7 (83)
-Current v2.7.12 (96)
+Current v2.7.14 (98)
 
 BACKGROUND CHANGES:
 Changes in Friend model:
