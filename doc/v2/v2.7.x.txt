@@ -1,5 +1,5 @@
 Previous v2.6.7 (83)
-Current v2.7.14 (98)
+Current v2.7.15 (99)
 
 BACKGROUND CHANGES:
 Changes in Friend model:
@@ -16,6 +16,7 @@ Implemented event-based architecture for hints
 Dispatch server exception on S3
 Added support for forcing SMS sending on staging server during registration
 Added debug options groups
+Provide array of invitees emails in invitation/invite call
 
 ---------
 Fix Rollbar #817
