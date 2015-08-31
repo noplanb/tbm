@@ -278,6 +278,20 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 Dispatch.dispatch(msg.toString());
                 return;
             }
+            if (friend.isDeleted()) {
+                DeleteFriendRequest.makeRequest(friend, false, new HttpRequest.Callbacks() {
+                    @Override
+                    public void success(String response) {
+                        friend.setDeleted(false);
+                        handleUploadIntent();
+                    }
+
+                    @Override
+                    public void error(String errorString) {
+                    }
+                });
+                return;
+            }
             updateStatus();
             if (status == OutgoingVideo.Status.UPLOADED) {
                 // Set remote videoIdKV
@@ -313,10 +327,12 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     @Override
                     public void success(String response) {
                         friend.setDeleted(false);
-                        SyncManager.getAndPollAllFriends(getApplicationContext(), null);
+                        handleDownloadIntent();
                     }
 
-                    @Override public void error(String errorString) {}
+                    @Override
+                    public void error(String errorString) {
+                    }
                 });
                 return;
             }
