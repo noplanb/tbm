@@ -228,12 +228,16 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			   e.getErrorMessage() + ": " + e.getErrorCode();
 	}
 
-	private boolean notRetryableServiceException(AmazonServiceException e){
-		switch(e.getErrorType()){
-		case Client: return true;
-		case Service: return false;
-		case Unknown: return true;
-		default: return true;
-		}
-	}
+    private boolean notRetryableServiceException(AmazonServiceException e) {
+        switch (e.getErrorType()) {
+            case Client:
+                return true/*e.getStatusCode() != 403*/;
+            case Service:
+                return false;
+            case Unknown:
+                return true;
+            default:
+                return true;
+        }
+    }
 }
