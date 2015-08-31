@@ -18,6 +18,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
     private static final String TAG = FriendFactory.class.getSimpleName();
 
     public static class ServerParamKeys{
+        private static final String ARRAY_SUFFIX = "[]";
         public static final String ID = "id";
         public static final String FIRST_NAME = "first_name";
         public static final String LAST_NAME = "last_name";
@@ -28,6 +29,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         public static final String CONNECTION_CREATED_ON = "connection_created_on";
         public static final String CONNECTION_CREATOR_MKEY = "connection_creator_mkey";
         public static final String EMAILS = "emails";
+        public static final String EMAILS_ARRAY = EMAILS + ARRAY_SUFFIX;
         public static final String CONNECTION_STATUS = "connection_status";
 
         public static final String HAS_APP_TRUE_VALUE = "true";

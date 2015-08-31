@@ -28,6 +28,8 @@ import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.Logger;
 import com.zazoapp.client.utilities.StringUtils;
 
+import java.util.Set;
+
 public class InviteManager implements InviteHelper {
 
     public static final String SMS = "SMS";
@@ -184,7 +186,10 @@ public class InviteManager implements InviteHelper {
         params.put(FriendFactory.ServerParamKeys.MOBILE_NUMBER, benchObject.mobileNumber);
         params.put(FriendFactory.ServerParamKeys.FIRST_NAME, benchObject.firstName);
         params.put(FriendFactory.ServerParamKeys.LAST_NAME, benchObject.lastName);
-        // TODO add emails  ContactsManager.getEmailsForPhone()
+        Set<String> emails = ContactsManager.getEmailsForPhone(context, benchObject.mobileNumber);
+        for (String email : emails) {
+            params.put(FriendFactory.ServerParamKeys.EMAILS_ARRAY, email);
+        }
         new InviteFriendRequest(uri, params);
     }
 
