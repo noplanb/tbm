@@ -147,7 +147,7 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
         data.putString(InviteIntent.MESSAGE_KEY, getEditedMessage());
         data.putString(InviteIntent.EMAIL_KEY, "");
         if (phoneNumber != null) {
-            emails = ContactsManager.getEmailsForPhone(getActivity(), phoneNumber);
+            emails = ContactsManager.getEmailsForPhone(getActivity(), phoneNumber, null);
             if (!emails.isEmpty()) {
                 data.putString(InviteIntent.EMAIL_KEY, emails.iterator().next());
             }

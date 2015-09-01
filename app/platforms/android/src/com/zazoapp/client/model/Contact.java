@@ -16,6 +16,7 @@ public class Contact implements Parcelable{
         public static final String FIRST_NAME = "firstName";
         public static final String LAST_NAME = "lastName";
         public static final String DISPLAY_NAME = "displayName";
+        public static final String ID = "id";
     }
 
 	public static class PhoneNumberKeys{
@@ -47,6 +48,10 @@ public class Contact implements Parcelable{
 	public String getLastName() {
 		return contact.get(ContactKeys.LAST_NAME);
 	}
+
+    public String getId() {
+        return contact.get(ContactKeys.ID);
+    }
 
 	public String toString(){
 		String c = "none";

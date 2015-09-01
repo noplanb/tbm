@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -209,7 +210,7 @@ public class InviteManager implements InviteHelper {
                     gotFriend(response);
                     listener.onDismissProgressDialog();
                     if (friend != null) {
-                        UpdateInviteeInfoRequest.updateInviteeInfo(context, friend);
+                        UpdateInviteeInfoRequest.updateInviteeInfo(context, friend, benchObject.contactId);
                     }
                 }
                 @Override
@@ -230,11 +231,11 @@ public class InviteManager implements InviteHelper {
             super("invitation/update_friend", json, "POST", null);
         }
 
-        static void updateInviteeInfo(Context context, Friend invitee) {
+        static void updateInviteeInfo(Context context, Friend invitee, @Nullable String contactId) {
             JSONObject json = new JSONObject();
             try {
                 json.put(FriendFactory.ServerParamKeys.MKEY, invitee.getMkey());
-                Set<String> emails = ContactsManager.getEmailsForPhone(context, invitee.get(Friend.Attributes.MOBILE_NUMBER));
+                Set<String> emails = ContactsManager.getEmailsForPhone(context, invitee.get(Friend.Attributes.MOBILE_NUMBER), contactId);
                 JSONArray jsonEmails = new JSONArray(emails);
                 json.put(FriendFactory.ServerParamKeys.EMAILS, jsonEmails);
                 new UpdateInviteeInfoRequest(json);

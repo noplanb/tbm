@@ -6,13 +6,13 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.PhoneLookup;
 import android.provider.ContactsContract.Profile;
 import android.provider.ContactsContract.RawContacts;
+import android.support.annotation.Nullable;
 import android.text.method.TextKeyListener;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -180,7 +180,7 @@ public class ContactsManager implements OnItemClickListener {
 			result.put(Contact.ContactKeys.FIRST_NAME,
 					c.getString(c.getColumnIndex(CommonDataKinds.StructuredName.GIVEN_NAME)));
 			result.put(Contact.ContactKeys.LAST_NAME,
-					c.getString(c.getColumnIndex(CommonDataKinds.StructuredName.FAMILY_NAME)));
+                    c.getString(c.getColumnIndex(CommonDataKinds.StructuredName.FAMILY_NAME)));
 			result.put(Contact.ContactKeys.DISPLAY_NAME,
 					c.getString(c.getColumnIndex(CommonDataKinds.StructuredName.DISPLAY_NAME)));
 		}
@@ -250,6 +250,7 @@ public class ContactsManager implements OnItemClickListener {
             throw new NullPointerException("contact must have id and display name");
         }
         LinkedTreeMap<String, String> c = getFirstLastWithDisplayName(displayName);
+        c.put(Contact.ContactKeys.ID, id);
         ArrayList<LinkedTreeMap<String, String>> vpos = validPhoneObjectsWithContactIds(id);
         return new Contact(c, vpos);
     }
@@ -396,7 +397,7 @@ public class ContactsManager implements OnItemClickListener {
 		return pn;
 	}
 
-    public static Set<String> getEmailsForPhone(Context context, String phone) {
+    public static Set<String> getEmailsForPhone(Context context, String phone, @Nullable String contactId) {
         ContentResolver cr = context.getContentResolver();
         Uri uri = Uri.withAppendedPath(android.provider.ContactsContract.Contacts.CONTENT_FILTER_URI,
                                        Uri.encode(phone));
@@ -405,29 +406,35 @@ public class ContactsManager implements OnItemClickListener {
         if (phoneCursor != null && phoneCursor.moveToFirst()) {
             do {
                 String id = phoneCursor.getString(phoneCursor.getColumnIndex(PhoneLookup._ID));
-                Cursor emailCursor = context.getContentResolver().query(
-                        ContactsContract.CommonDataKinds.Email.CONTENT_URI, null,
-                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
-                        new String[] {id}, null);
-                if (emailCursor != null && emailCursor.moveToFirst()) {
-                    do {
-                        String email = emailCursor.getString(emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-                        emails.add(email);
-                    } while (emailCursor.moveToNext());
-                }
-                if (emailCursor != null) {
-                    emailCursor.close();
-                }
+                addEmailsById(context, emails, id);
             } while (phoneCursor.moveToNext());
-
         }
         if (phoneCursor != null) {
             phoneCursor.close();
         }
+        if (contactId != null) {
+            addEmailsById(context, emails, contactId);
+        }
         return emails;
     }
 
-	// We want to be able to do this:
+    private static void addEmailsById(Context context, Set<String> emails, String id) {
+        Cursor emailCursor = context.getContentResolver().query(
+                CommonDataKinds.Email.CONTENT_URI, null,
+                CommonDataKinds.Email.CONTACT_ID + " = ?",
+                new String[] {id}, null);
+        if (emailCursor != null && emailCursor.moveToFirst()) {
+            do {
+                String email = emailCursor.getString(emailCursor.getColumnIndex(CommonDataKinds.Email.DATA));
+                emails.add(email);
+            } while (emailCursor.moveToNext());
+        }
+        if (emailCursor != null) {
+            emailCursor.close();
+        }
+    }
+
+    // We want to be able to do this:
 	// cursor = database.query(contentUri, projection, "columnName IN(?)", new
 	// String[] {" 'value1' , 'value2' "}, sortOrder);
 	// so I convert String[]{"value1", "value2"}

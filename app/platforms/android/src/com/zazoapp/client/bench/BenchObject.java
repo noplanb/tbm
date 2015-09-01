@@ -11,6 +11,7 @@ public class BenchObject {
         boParams.put(Keys.FIRST_NAME, contact.getFirstName());
         boParams.put(Keys.LAST_NAME, contact.getLastName());
         boParams.put(Keys.MOBILE_NUMBER, mobileNumber.get(Contact.PhoneNumberKeys.E164));
+        boParams.put(Keys.CONTACT_ID, contact.getId());
         return new BenchObject(boParams);
     }
 
