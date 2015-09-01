@@ -245,7 +245,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             if (!(NotificationAlertManager.screenIsLocked(activity) ||
                                     NotificationAlertManager.screenIsOff(activity))) {
                                 if (!managerProvider.getRecorder().isRecording()) {
-                                    NotificationAlertManager.playTone();
+                                    NotificationAlertManager.playTone(NotificationAlertManager.Tone.BEEP, 0.3f);
                                 }
                             }
                             updateContent(true);

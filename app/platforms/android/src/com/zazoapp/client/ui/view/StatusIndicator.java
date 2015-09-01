@@ -18,6 +18,7 @@ import com.zazoapp.client.R;
 public class StatusIndicator extends ImageView {
 
     private static final double PARENT_WIDTH_RATIO = 0.15f;
+    private double childToParentRatio = PARENT_WIDTH_RATIO;
 
     public StatusIndicator(Context context) {
         super(context);
@@ -47,9 +48,13 @@ public class StatusIndicator extends ImageView {
     private int getSize(int parentSize) {
         int maxSize = getResources().getDimensionPixelSize(R.dimen.video_status_indicator_maximum_width);
         if (maxSize < parentSize) {
-            return (parentSize * PARENT_WIDTH_RATIO > maxSize) ? maxSize : (int) (parentSize * PARENT_WIDTH_RATIO);
+            return (parentSize * childToParentRatio > maxSize) ? maxSize : (int) (parentSize * childToParentRatio);
         } else {
             return parentSize; // already calculated, just pass
         }
+    }
+
+    public void setRatio(double ratio) {
+        childToParentRatio = ratio;
     }
 }

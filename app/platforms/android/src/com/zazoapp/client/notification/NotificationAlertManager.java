@@ -34,6 +34,23 @@ import java.util.Set;
 
 public class NotificationAlertManager {
 
+    public enum Tone {
+        BEEP,
+        FEATURE_UNLOCK,
+        ;
+
+        int get() {
+            switch (this) {
+                case BEEP:
+                    return beepTone;
+                case FEATURE_UNLOCK:
+                    return featureUnlockTone;
+                default:
+                    return 0;
+            }
+        }
+    }
+
     private static final String TAG = NotificationAlertManager.class.getSimpleName();
 
     // ----------------------------
@@ -48,6 +65,7 @@ public class NotificationAlertManager {
 
     private static SoundPool soundPool;
     private static int beepTone;
+    private static int featureUnlockTone;
 
     private static Bitmap largeImage(Friend friend){
 		return friend.sqThumbBitmap();
@@ -128,6 +146,7 @@ public class NotificationAlertManager {
             soundPool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
         }
         beepTone = soundPool.load(context, R.raw.beep, 1);
+        featureUnlockTone = soundPool.load(context, R.raw.feature_unlock, 1);
 
         cancelNativeAlerts(context);
     }
@@ -139,9 +158,14 @@ public class NotificationAlertManager {
         }
     }
 
-    public static void playTone() {
+    public static void playTone(Tone tone, float velocity) {
         if (soundPool != null)
-            soundPool.play(beepTone, 0.3f, 0.3f, 0, 0, 1);
+            soundPool.play(tone.get(), velocity, velocity, 0, 0, 1);
+    }
+
+    public static float getVelocity(Context context, int stream) {
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        return audioManager.getStreamVolume(stream);
     }
 
 	// Private 

@@ -7,6 +7,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.res.Resources;
+import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
@@ -15,6 +16,7 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.multimedia.CameraException;
+import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.ui.dialogs.*;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
 
@@ -123,6 +125,7 @@ public class DialogShower {
         if (fragment != null) {
             activity.getFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
         }
+        NotificationAlertManager.playTone(NotificationAlertManager.Tone.FEATURE_UNLOCK, NotificationAlertManager.getVelocity(activity, AudioManager.STREAM_NOTIFICATION));
         DialogFragment d = FeatureAwardDialogFragment.getInstance(feature);
         FragmentTransaction tr = activity.getFragmentManager().beginTransaction();
         tr.setCustomAnimations(R.animator.fade_in, R.animator.fade_out);
