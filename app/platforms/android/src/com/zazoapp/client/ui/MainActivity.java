@@ -89,6 +89,9 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         findViewById(R.id.friends_menu).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (getPlayer().isPlaying()) {
+                    getPlayer().stop();
+                }
                 toggleBench();
             }
         });
@@ -97,6 +100,9 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
             public void onClick(final View v) {
                 if (getBenchViewManager().isBenchShowed()) {
                     getBenchViewManager().hideBench();
+                }
+                if (getPlayer().isPlaying()) {
+                    getPlayer().stop();
                 }
                 List<Integer> disabledItems = new ArrayList<Integer>();
                 if (!getFeatures().isUnlocked(Features.Feature.DELETE_FRIEND)) {
