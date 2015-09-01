@@ -168,8 +168,6 @@ public class Friend extends ActiveModel{
         return pn;
     }
 
-    
-    
     //================
     // Incoming Videos
     //================

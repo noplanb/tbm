@@ -27,6 +27,11 @@ import com.zazoapp.client.ui.dialogs.InviteIntent;
 import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.Logger;
 import com.zazoapp.client.utilities.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Set;
 
 public class InviteManager implements InviteHelper {
 
@@ -203,6 +208,9 @@ public class InviteManager implements InviteHelper {
                     Log.i(TAG, "Success: " + response);
                     gotFriend(response);
                     listener.onDismissProgressDialog();
+                    if (friend != null) {
+                        UpdateInviteeInfoRequest.updateInviteeInfo(context, friend);
+                    }
                 }
                 @Override
                 public void error(String errorString) {
@@ -213,6 +221,25 @@ public class InviteManager implements InviteHelper {
             });
             Logger.d(TAG, "Invitation: " + uri + " " + params);
             listener.onShowProgressDialog(context.getString(R.string.dialog_checking_title), null);
+        }
+    }
+
+    private static class UpdateInviteeInfoRequest extends HttpRequest {
+
+        public UpdateInviteeInfoRequest(JSONObject json) {
+            super("invitation/update_friend", json, "POST", null);
+        }
+
+        static void updateInviteeInfo(Context context, Friend invitee) {
+            JSONObject json = new JSONObject();
+            try {
+                json.put(FriendFactory.ServerParamKeys.MKEY, invitee.getMkey());
+                Set<String> emails = ContactsManager.getEmailsForPhone(context, invitee.get(Friend.Attributes.MOBILE_NUMBER));
+                JSONArray jsonEmails = new JSONArray(emails);
+                json.put(FriendFactory.ServerParamKeys.EMAILS, jsonEmails);
+                new UpdateInviteeInfoRequest(json);
+            } catch (JSONException e) {
+            }
         }
     }
 

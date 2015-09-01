@@ -3,13 +3,12 @@ package com.zazoapp.client.network;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
-
+import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.utilities.AsyncTaskManager;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
@@ -19,9 +18,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.protocol.HTTP;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,6 +47,7 @@ public class HttpRequest {
     private String login;
     private String uri;
     private LinkedTreeMap<String, String> sParams;
+    private JSONObject jsonParams;
     private Callbacks callbacks;
     
     //------------------------------------------------------------------
@@ -121,6 +124,14 @@ public class HttpRequest {
         AsyncTaskManager.executeAsyncTask(true, new BgHttpReq(), new Void[]{});
     }
 
+    public HttpRequest(String uri, JSONObject json, String method, Callbacks callbacks) {
+        this.uri = uri;
+        this.method = method;
+        this.jsonParams = json;
+        this.callbacks = callbacks;
+        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq(), new Void[]{});
+    }
+
     //-----
     // Http
     //-----
@@ -164,15 +175,21 @@ public class HttpRequest {
         );
 
         HttpUriRequest request;
-        if(isPost()){
+        if (isPost()) {
             request = new HttpPost(sUrl);
-            List<NameValuePair> nameValuePairs = new LinkedList<NameValuePair>();
-            for (String s : sParams.keySet()) {
-                nameValuePairs.add(new BasicNameValuePair(s, sParams.get(s)));
+            if (jsonParams != null) {
+                Gson gson = new Gson();
+                StringEntity entity = new StringEntity(jsonParams.toString());
+                request.addHeader(HTTP.CONTENT_TYPE, "application/json");
+                ((HttpPost)request).setEntity(entity);
+            } else {
+                List<NameValuePair> nameValuePairs = new LinkedList<NameValuePair>();
+                for (String s : sParams.keySet()) {
+                    nameValuePairs.add(new BasicNameValuePair(s, sParams.get(s)));
+                }
+                ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
             }
-            ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-        }else{
+        } else {
             if (sParams != null && sParams.size() > 0){
                 sUrl+="?";
                 List<NameValuePair> params = new LinkedList<NameValuePair>();

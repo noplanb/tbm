@@ -396,16 +396,6 @@ public class ContactsManager implements OnItemClickListener {
 		return pn;
 	}
 
-/*    Intent i = new Intent(Intent.ACTION_SEND);
-    i.setType("text/plain");
-    i.putExtra(Intent.EXTRA_TEXT, "Some text");
-    i.putExtra(Intent.EXTRA_SUBJECT, "Invitation to Zazo");
-    i.putExtra(Intent.EXTRA_EMAIL, "some@email.com");
-    try {
-        activity.startActivity(Intent.createChooser(i, "Send invite..."));
-    } catch (ActivityNotFoundException e) {
-        DialogShower.showToast(activity, "No appropriate application found");
-    }*/
     public static Set<String> getEmailsForPhone(Context context, String phone) {
         ContentResolver cr = context.getContentResolver();
         Uri uri = Uri.withAppendedPath(android.provider.ContactsContract.Contacts.CONTENT_FILTER_URI,
