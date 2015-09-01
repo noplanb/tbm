@@ -46,7 +46,13 @@ public class Features {
         public String getAction(Context context) {
             return context.getString(actionId);
         }
+
+        public boolean isUnlocked(Context context) {
+            PreferencesHelper prefs = new PreferencesHelper(context);
+            return prefs.getBoolean(getPrefName(), false) || DebugConfig.getInstance(context).isAllFeaturesEnabled();
+        }
     }
+
     private static final String PREF_SHOW_LAST_FEATURE = "pref_show_last_feature";
     private static final long[] awardVibrationPattern = {50, 300, 90, 100, 90, 100, 90, 330};
     private Activity activity;
@@ -114,6 +120,7 @@ public class Features {
     public void showFeatureAwardDialog(ZazoManagerProvider managers, Feature feature) {
         if (TbmApplication.getInstance().isForeground() && !managers.getPlayer().isPlaying() && !managers.getRecorder().isRecording()) {
             DialogShower.showFeatureAwardDialog(activity, feature);
+            managers.getRecorder().stop(); // called to update recording indicators state
             prefs.putBoolean(PREF_SHOW_LAST_FEATURE, false);
         } else {
             prefs.putBoolean(PREF_SHOW_LAST_FEATURE, true);

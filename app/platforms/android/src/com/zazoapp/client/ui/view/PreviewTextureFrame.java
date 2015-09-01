@@ -9,12 +9,15 @@ import android.graphics.Paint.FontMetrics;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.utilities.Convenience;
 
 public class PreviewTextureFrame extends FrameLayout {
@@ -22,6 +25,7 @@ public class PreviewTextureFrame extends FrameLayout {
     private static final String TAG = "PreviewTextureFrame";
     private TextureView textureView;
     private View recordBorder;
+    private ImageView switchCameraIcon;
 	private boolean isRecording;
 
 	public PreviewTextureFrame(Context context, AttributeSet attrs, int defStyle) {
@@ -46,6 +50,14 @@ public class PreviewTextureFrame extends FrameLayout {
         recordBorder.setBackgroundResource(R.drawable.record_frame_border);
         recordBorder.setVisibility(GONE);
         addView(recordBorder, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        switchCameraIcon = new ImageView(getContext());
+        switchCameraIcon.setImageResource(R.drawable.ic_camera_switch);
+        switchCameraIcon.setVisibility(Features.Feature.SWITCH_CAMERA.isUnlocked(getContext()) ? VISIBLE : INVISIBLE);
+        LayoutParams switchCameraIconParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        switchCameraIconParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+        //int switchCameraIconMargin = getResources().getDimensionPixelSize(R.dimen.nine_view_marging);
+        //switchCameraIconParams.setMargins(0, 0, switchCameraIconMargin, switchCameraIconMargin);
+        addView(switchCameraIcon, switchCameraIconParams);
         setClipToPadding(true);
 	}
 
@@ -56,6 +68,7 @@ public class PreviewTextureFrame extends FrameLayout {
 	public void setRecording(boolean isRecording) {
 		this.isRecording = isRecording;
         recordBorder.setVisibility(isRecording ? VISIBLE : GONE);
+        switchCameraIcon.setVisibility((!isRecording && Features.Feature.SWITCH_CAMERA.isUnlocked(getContext())) ? VISIBLE : INVISIBLE);
 		invalidate();
 	}
 
