@@ -40,6 +40,7 @@ import com.zazoapp.client.utilities.AsyncTaskManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,7 @@ public class ContactsManager implements OnItemClickListener {
 		AsyncTaskManager.executeAsyncTask(false, new SetupAutoCompleteAsync(view), new Void[] {});
 	}
 
-	public class SetupAutoCompleteAsync extends AsyncTask<Void, Void, List<String>> {
+	public class SetupAutoCompleteAsync extends AsyncTask<Void, Void, Map<String, String>> {
 
 		private AutoCompleteTextView view;
 
@@ -82,18 +83,17 @@ public class ContactsManager implements OnItemClickListener {
 		}
 
 		@Override
-		protected List<String> doInBackground(Void... params) {
+		protected Map<String, String> doInBackground(Void... params) {
 			return setAutoCompleteNames();
 		}
 
 		@Override
-		protected void onPostExecute(List<String> params) {
-			super.onPostExecute(params);
+		protected void onPostExecute(Map<String, String> params) {
 			setupContactsAutoCompleteView(view, params);
 		}
 
-		private List<String> setAutoCompleteNames() {
-			String[] projection = new String[] { Contacts.DISPLAY_NAME };
+		private Map<String, String> setAutoCompleteNames() {
+			String[] projection = new String[] { Contacts.DISPLAY_NAME, Contacts._ID };
 			// Show all contacts so user can enter the number in his contact
 			// list if it isnt there.
 			// String selection = Contacts.HAS_PHONE_NUMBER + "=1";
@@ -105,21 +105,20 @@ public class ContactsManager implements OnItemClickListener {
 				return null;
 			}
 
-			Set<String> uniq = new HashSet<String>();
+			Map<String, String> uniq = new LinkedHashMap<>();
 			int di = c.getColumnIndex(Contacts.DISPLAY_NAME);
+            int ii = c.getColumnIndex(Contacts._ID);
 			c.moveToFirst();
 			do {
-				uniq.add(c.getString(di));
+				uniq.put(c.getString(di), c.getString(ii));
 			} while (c.moveToNext());
 			c.close();
-			ArrayList<String> autoCompleteNames = new ArrayList<String>();
-			autoCompleteNames.addAll(uniq);
-			Log.i(TAG, "count = " + autoCompleteNames.size());
+			Log.i(TAG, "count = " + uniq.size());
 			// printAllPhoneNumberObjectForNames(autoCompleteNames);
-			return autoCompleteNames;
+			return uniq;
 		}
 
-		private void setupContactsAutoCompleteView(AutoCompleteTextView atv, List<String> autoCompleteNames) {
+		private void setupContactsAutoCompleteView(AutoCompleteTextView atv, Map<String, String> autoCompleteNames) {
 			autoCompleteTextView = atv;
 			AutocompleteBaseAdapter autoCompleteAdapter = new AutocompleteBaseAdapter(context, autoCompleteNames);
 			autoCompleteTextView.setAdapter(autoCompleteAdapter);
@@ -134,7 +133,8 @@ public class ContactsManager implements OnItemClickListener {
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		String displayName = autoCompleteTextView.getText().toString();
 		Contact contact = contactWithDisplayName(displayName);
-
+        String contactId = ((AutocompleteBaseAdapter) autoCompleteTextView.getAdapter()).getIdForItem(displayName);
+        contact.contact.put(Contact.ContactKeys.ID, contactId);
 		hideKeyboard();
 		notifyContactSelected(contact);
 		resetViews();
@@ -550,13 +550,15 @@ public class ContactsManager implements OnItemClickListener {
 
 		private Context context;
 		private List<String> names;
+		private Map<String, String> namesIdMap;
 		public List<String> originalNames;
 		private SearchFilter filter;
 		public Object mLock = new Object();
 		
-		public AutocompleteBaseAdapter(Context context, List<String> names) {
+		public AutocompleteBaseAdapter(Context context, Map<String, String> names) {
 			this.context = context;
-			this.names = names;
+			this.names = new ArrayList<>(names.keySet());
+            this.namesIdMap = names;
 		}
 		
 		@Override
@@ -565,7 +567,7 @@ public class ContactsManager implements OnItemClickListener {
 		}
 
 		@Override
-		public Object getItem(int position) {
+		public String getItem(int position) {
 			return names.get(position);
 		}
 
@@ -573,6 +575,10 @@ public class ContactsManager implements OnItemClickListener {
 		public long getItemId(int position) {
 			return position;
 		}
+
+        public String getIdForItem(String item) {
+            return namesIdMap.get(item);
+        }
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
