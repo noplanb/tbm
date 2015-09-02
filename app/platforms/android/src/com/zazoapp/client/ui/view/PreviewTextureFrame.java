@@ -50,13 +50,14 @@ public class PreviewTextureFrame extends FrameLayout {
         recordBorder.setVisibility(GONE);
         addView(recordBorder, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         switchCameraIcon = new StatusIndicator(getContext());
-        switchCameraIcon.setRatio(0.20f);
+        switchCameraIcon.setRatio(0.3f);
         switchCameraIcon.setImageResource(R.drawable.ic_camera_switch);
         switchCameraIcon.setVisibility(Features.Feature.SWITCH_CAMERA.isUnlocked(getContext()) ? VISIBLE : INVISIBLE);
         LayoutParams switchCameraIconParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        switchCameraIconParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-        //int switchCameraIconMargin = getResources().getDimensionPixelSize(R.dimen.nine_view_marging);
-        //switchCameraIconParams.setMargins(0, 0, switchCameraIconMargin, switchCameraIconMargin);
+        switchCameraIconParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+        int switchCameraIconMargin = getResources().getDimensionPixelSize(R.dimen.nine_view_padding);
+        switchCameraIcon.setPadding(0, 0, 0, switchCameraIconMargin);
+        switchCameraIcon.setAlpha(0.7f);
         addView(switchCameraIcon, switchCameraIconParams);
         setClipToPadding(true);
 	}
