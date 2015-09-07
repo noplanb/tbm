@@ -31,7 +31,17 @@ public class MyActivity extends Activity implements View.OnClickListener {
         mIntentFilter.addAction(ManagerService.ACTION_ON_STOP);
         mIntentFilter.addAction(ManagerService.ACTION_ON_FINISHED);
         mStopButton.setOnClickListener(this);
-        startService(ManagerService.ACTION_START);
+        handleIntent(getIntent());
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent != null) {
+            if (ManagerService.ACTION_STOP.equals(intent.getAction())) {
+                startService(ManagerService.ACTION_STOP);
+            } else {
+                startService(ManagerService.ACTION_START);
+            }
+        }
     }
 
     @Override
@@ -71,8 +81,10 @@ public class MyActivity extends Activity implements View.OnClickListener {
             String action = intent.getAction();
             if (ManagerService.ACTION_ON_START.equals(action)) {
                 mStatus.setText("Started");
+                mStopButton.setText("Stop");
             } else if (ManagerService.ACTION_ON_STOP.equals(action)) {
                 mStatus.setText("Stopped");
+                mStopButton.setText("Start");
             } else if (ManagerService.ACTION_ON_FINISHED.equals(action)) {
                 if (intent.hasExtra(ManagerService.EXTRA_FILES_LIST)) {
                     ArrayList<String> list = intent.getStringArrayListExtra(ManagerService.EXTRA_FILES_LIST);
@@ -91,5 +103,11 @@ public class MyActivity extends Activity implements View.OnClickListener {
         Intent managerIntent = new Intent(this, ManagerService.class);
         managerIntent.setAction(action);
         startService(managerIntent);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
     }
 }

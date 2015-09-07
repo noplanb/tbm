@@ -18,7 +18,7 @@ public class RollbarTracker implements ErrorTracker {
     @Override
     public void init(Context context) {
         this.context = context;
-        Rollbar.init(context, "1fc7c2e85dfe4c9aa194d6f8e1e88a81", "networkTest", true);
+        Rollbar.init(context, "acec6cd91e9948b090802a0a705ded6e", "s3_NetworkTest", true);
     }
 
     @Override

@@ -4,19 +4,16 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.os.Environment;
 import android.os.IBinder;
+import com.zazoapp.s3networktest.dispatch.Dispatch;
+import com.zazoapp.s3networktest.dispatch.RollbarTracker;
 import com.zazoapp.s3networktest.network.FileDeleteService;
 import com.zazoapp.s3networktest.network.FileDownloadService;
 import com.zazoapp.s3networktest.network.FileTransferService;
 import com.zazoapp.s3networktest.network.FileUploadService;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Serhii on 13.12.2014.
@@ -66,11 +63,17 @@ public class ManagerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Dispatch.registerTracker(this, new RollbarTracker());
+
         Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentText("Zazo S3 network test is running");
-        builder.setSubText("Tap to manage");
+        builder.setContentText("Running. Tap to manage");
+        builder.setContentTitle("Zazo S3 network test");
+        builder.setSmallIcon(R.drawable.ic_launcher);
+        builder.setSubText("");
         Intent intent = new Intent(this, MyActivity.class);
         intent.setAction(ACTION_STOP);
+        builder.addAction(android.R.drawable.ic_delete, "Cancel", PendingIntent.getActivity(this, 0, intent, 0));
+        intent = new Intent(this, MyActivity.class);
         builder.setContentIntent(PendingIntent.getActivity(this, 0, intent, 0));
         startForeground(1, builder.build());
         mExecutor = Executors.newScheduledThreadPool(THREADS_NUMBER);
@@ -125,35 +128,17 @@ public class ManagerService extends Service {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (checkStorageAvailability()) {
-                        File dcim = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-                        ArrayList<String> list = new ArrayList<String>();
-                        listFolder(dcim, list);
-                        sendBroadcast(new Intent(ACTION_ON_FINISHED).putStringArrayListExtra(EXTRA_FILES_LIST, list));
-                    }
-                    mExecutor.schedule(this, 10, TimeUnit.SECONDS);
+                    //if (checkStorageAvailability()) {
+                    //    File dcim = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                    //    ArrayList<String> list = new ArrayList<String>();
+                    //    listFolder(dcim, list);
+                    //    sendBroadcast(new Intent(ACTION_ON_FINISHED).putStringArrayListExtra(EXTRA_FILES_LIST, list));
+                    //}
+                    //mExecutor.schedule(this, 10, TimeUnit.SECONDS);
                 }
             };
             mExecutor.execute(runnable);
         }
     }
 
-    private boolean checkStorageAvailability() {
-        return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
-    }
-
-    private static void listFolder(File folder, List<String> list) {
-        File[] fileList = folder.listFiles();
-        if (fileList != null) {
-            for (File file : fileList) {
-                if (file.isDirectory()) {
-                    if (!file.isHidden()) {
-                        listFolder(file, list);
-                    }
-                } else {
-                    list.add(file.getPath());
-                }
-            }
-        }
-    }
 }
