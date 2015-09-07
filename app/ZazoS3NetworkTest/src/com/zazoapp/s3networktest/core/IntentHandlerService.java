@@ -49,8 +49,7 @@ public class IntentHandlerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        friend = new Friend();
-        friend.init(this);
+        friend = Friend.getInstance(this);
 
         HandlerThread thread = new HandlerThread("IntentService[" + TAG + "]");
         thread.start();

@@ -18,6 +18,7 @@ public class MyActivity extends Activity implements View.OnClickListener {
     private Button mStopButton;
     private BroadcastReceiver mReceiver;
     private IntentFilter mIntentFilter;
+    private boolean isServiceStarted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +31,7 @@ public class MyActivity extends Activity implements View.OnClickListener {
         mIntentFilter = new IntentFilter(ManagerService.ACTION_ON_START);
         mIntentFilter.addAction(ManagerService.ACTION_ON_STOP);
         mIntentFilter.addAction(ManagerService.ACTION_ON_FINISHED);
+        mIntentFilter.addAction(ManagerService.ACTION_ON_INFO_UPDATED);
         mStopButton.setOnClickListener(this);
         handleIntent(getIntent());
     }
@@ -80,20 +82,22 @@ public class MyActivity extends Activity implements View.OnClickListener {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (ManagerService.ACTION_ON_START.equals(action)) {
-                mStatus.setText("Started");
+                isServiceStarted = true;
                 mStopButton.setText("Stop");
+                startService(ManagerService.ACTION_UPDATE_INFO);
             } else if (ManagerService.ACTION_ON_STOP.equals(action)) {
-                mStatus.setText("Stopped");
+                isServiceStarted = false;
                 mStopButton.setText("Start");
             } else if (ManagerService.ACTION_ON_FINISHED.equals(action)) {
                 if (intent.hasExtra(ManagerService.EXTRA_FILES_LIST)) {
                     ArrayList<String> list = intent.getStringArrayListExtra(ManagerService.EXTRA_FILES_LIST);
                     StringBuilder builder = new StringBuilder();
-                    for (String s : list) {
-                        builder.append(s);
-                        builder.append('\n');
-                    }
                     mTestLog.setText(builder.toString());
+                }
+            } else if (ManagerService.ACTION_ON_INFO_UPDATED.equals(action)) {
+                if (intent.hasExtra(ManagerService.EXTRA_INFO)) {
+                    ManagerService.TestInfo info = intent.getParcelableExtra(ManagerService.EXTRA_INFO);
+                    mStatus.setText((isServiceStarted ? "Started" : "Stopped") + "\n" + info.toString());
                 }
             }
         }

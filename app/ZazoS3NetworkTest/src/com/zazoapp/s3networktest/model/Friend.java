@@ -20,6 +20,16 @@ public class Friend extends ActiveModel {
     private static final String MP4 = ".mp4";
     private static final String PNG = ".png";
 
+    private static Friend friend;
+
+    public static Friend getInstance(Context context) {
+        if (friend == null) {
+            friend = new Friend();
+            friend.init(context);
+        }
+        return friend;
+    }
+
     public interface VideoStatusChangedCallback {
         void onVideoStatusChanged(Friend friend);
     }
