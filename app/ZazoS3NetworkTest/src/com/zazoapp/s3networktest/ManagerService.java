@@ -1,8 +1,10 @@
 package com.zazoapp.s3networktest;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.Parcel;
@@ -134,6 +136,12 @@ public class ManagerService extends Service {
             return builder.toString();
         }
 
+        public String toShortString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(tries).append(" ↑").append(uploaded).append(" ↓").append(downloaded);
+            return builder.toString();
+        }
+
         public void save(PreferencesHelper data) {
             if (data != null) {
                 data.putString("tries", String.valueOf(tries));
@@ -168,21 +176,25 @@ public class ManagerService extends Service {
             stopSelf();
             return;
         }
+        startForeground(1, getNotification());
+        mExecutor = Executors.newScheduledThreadPool(THREADS_NUMBER);
+        friend = Friend.getInstance(this);
+        data = new PreferencesHelper(this);
+        info.load(data);
+    }
+
+    private Notification getNotification() {
         Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentText("Running. Tap to manage");
+        builder.setContentText(info.toShortString() + "\nRunning. Tap to manage");
         builder.setContentTitle("Zazo S3 network test");
         builder.setSmallIcon(R.drawable.ic_launcher);
         builder.setSubText("");
         Intent intent = new Intent(this, MyActivity.class);
         intent.setAction(ACTION_STOP);
-        builder.addAction(android.R.drawable.ic_delete, "Cancel", PendingIntent.getActivity(this, 0, intent, 0));
+        builder.addAction(android.R.drawable.ic_delete, "Stop", PendingIntent.getActivity(this, 0, intent, 0));
         intent = new Intent(this, MyActivity.class);
         builder.setContentIntent(PendingIntent.getActivity(this, 0, intent, 0));
-        startForeground(1, builder.build());
-        mExecutor = Executors.newScheduledThreadPool(THREADS_NUMBER);
-        friend = Friend.getInstance(this);
-        data = new PreferencesHelper(this);
-        info.load(data);
+        return builder.build();
     }
 
     @Override
@@ -255,6 +267,8 @@ public class ManagerService extends Service {
     private void updateInfo() {
         sendBroadcast(new Intent(ACTION_ON_INFO_UPDATED).putExtra(EXTRA_INFO, info));
         info.save(data);
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(1, getNotification());
     }
 
     @Override
@@ -274,7 +288,7 @@ public class ManagerService extends Service {
         if (!isStarted) {
             isStarted = true;
         }
-        if (!isStopped) {
+        if (!isStopped && mExecutor != null) {
             if (startImmediately) {
                 mExecutor.schedule(task, 2, TimeUnit.SECONDS);
             } else {
