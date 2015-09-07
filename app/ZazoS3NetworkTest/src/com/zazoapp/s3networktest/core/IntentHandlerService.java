@@ -165,6 +165,8 @@ public class IntentHandlerService extends Service {
                 handleUploadIntent();
             } else if (isStoringIntent()) {
                 handleStoringIntent();
+            } else {
+                updateStatus();
             }
         }
 
@@ -272,7 +274,7 @@ public class IntentHandlerService extends Service {
                 friend.setAndNotifyIncomingVideoStatus(videoId, status);
             } else if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD)) {
                 friend.setAndNotifyOutgoingVideoStatus(videoId, status);
-            } else {
+            } else if (!FileTransferService.IntentFields.TRANSFER_TYPE_DELETE.equals(transferType)){
                 Dispatch.dispatch("ERROR: updateStatus: unknown TransferType passed in intent. This should never happen.");
                 throw new RuntimeException();
             }

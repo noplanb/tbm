@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
+import com.zazoapp.s3networktest.core.PreferencesHelper;
 import com.zazoapp.s3networktest.dispatch.Dispatch;
 import com.zazoapp.s3networktest.dispatch.RollbarTracker;
 import com.zazoapp.s3networktest.model.Friend;
@@ -18,11 +19,13 @@ import com.zazoapp.s3networktest.network.FileUploadService;
 import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Serhii on 13.12.2014.
  */
 public class ManagerService extends Service {
+    private static final String TAG = ManagerService.class.getSimpleName();
     private static final String CLASS_NAME = ManagerService.class.getCanonicalName();
 
     public static final String ACTION_START = CLASS_NAME + ".ACTION_START";
@@ -45,6 +48,7 @@ public class ManagerService extends Service {
 
     private static final int THREADS_NUMBER = 1;
     public static final String EXTRA_INFO = "info";
+    public static final String VIDEO_ID = "1011";
     private ScheduledExecutorService mExecutor;
     private boolean isStarted = false;
 
@@ -52,7 +56,12 @@ public class ManagerService extends Service {
 
     private Friend friend;
 
+    public static boolean isStopped;
+
+    private PreferencesHelper data;
+
     public static class TestInfo implements Parcelable {
+        long tries;
         long uploaded;
         long downloaded;
         long deleted;
@@ -67,6 +76,7 @@ public class ManagerService extends Service {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
+            dest.writeLong(tries);
             dest.writeLong(uploaded);
             dest.writeLong(downloaded);
             dest.writeLong(deleted);
@@ -87,6 +97,7 @@ public class ManagerService extends Service {
         };
 
         private TestInfo(Parcel in) {
+            tries = in.readLong();
             uploaded = in.readLong();
             downloaded = in.readLong();
             deleted = in.readLong();
@@ -102,8 +113,9 @@ public class ManagerService extends Service {
         @Override
         public String toString() {
             StringBuilder builder = new StringBuilder();
-            builder.append("\u2191").append(uploaded).append(" \u2193").append(downloaded).append(" d ").append(deleted);
-            builder.append("\nCurrent: ").append(currentTask).append("\n");
+            builder.append("Tries: ").append(tries).append("\n");
+            builder.append("\u2191").append(uploaded).append(" \u2193").append(downloaded).append(" d ").append(deleted);
+            builder.append("\ncurrent: \t").append(currentTask).append("\nstatus: \t");
             switch (currentStatus) {
                 case FileTransferService.Transfer.NEW:
                     builder.append("new");
@@ -118,8 +130,26 @@ public class ManagerService extends Service {
                     builder.append("finished");
                     break;
             }
-            builder.append("\nretry: ").append(retryCount);
+            builder.append("\nretry: \t").append(retryCount);
             return builder.toString();
+        }
+
+        public void save(PreferencesHelper data) {
+            if (data != null) {
+                data.putString("tries", String.valueOf(tries));
+                data.putString("uploaded", String.valueOf(uploaded));
+                data.putString("downloaded", String.valueOf(downloaded));
+                data.putString("deleted", String.valueOf(deleted));
+            }
+        }
+
+        public void load(PreferencesHelper data) {
+            if (data != null) {
+                tries = Long.parseLong(data.getString("tries", "0"));
+                uploaded = Long.parseLong(data.getString("uploaded", "0"));
+                downloaded = Long.parseLong(data.getString("downloaded", "0"));
+                deleted = Long.parseLong(data.getString("deleted", "0"));
+            }
         }
     }
 
@@ -134,7 +164,10 @@ public class ManagerService extends Service {
     public void onCreate() {
         super.onCreate();
         Dispatch.registerTracker(this, new RollbarTracker());
-
+        if (isStopped) {
+            stopSelf();
+            return;
+        }
         Notification.Builder builder = new Notification.Builder(this);
         builder.setContentText("Running. Tap to manage");
         builder.setContentTitle("Zazo S3 network test");
@@ -148,6 +181,8 @@ public class ManagerService extends Service {
         startForeground(1, builder.build());
         mExecutor = Executors.newScheduledThreadPool(THREADS_NUMBER);
         friend = Friend.getInstance(this);
+        data = new PreferencesHelper(this);
+        info.load(data);
     }
 
     @Override
@@ -157,18 +192,20 @@ public class ManagerService extends Service {
         }
         final String action = intent.getAction();
         if (ACTION_START.equals(action)) {
+            isStopped = false;
             sendBroadcast(new Intent(ACTION_ON_START));
-            doWork();
+            doWork(getUploadTask(), true);
         } else if (ACTION_STOP.equals(action)) {
             stopSelf(startId);
             stopService(new Intent(getApplicationContext(), FileDownloadService.class));
             stopService(new Intent(getApplicationContext(), FileUploadService.class));
             stopService(new Intent(getApplicationContext(), FileDeleteService.class));
+            isStopped = true;
             return START_NOT_STICKY;
         } else if (ACTION_RESET.equals(action)) {
             FileTransferService.reset(this, FileDownloadService.class);
             FileTransferService.reset(this, FileUploadService.class);
-        } else if (ACTION_UPDATE_INFO.equals(action)) {
+        } else if (ACTION_UPDATE_INFO.equals(action) && !isStopped) {
             if (intent.hasExtra(STATUS_KEY)) {
                 info.currentStatus = intent.getIntExtra(STATUS_KEY, -1);
                 info.retryCount = intent.getIntExtra(RETRY_COUNT_KEY, -1);
@@ -177,6 +214,37 @@ public class ManagerService extends Service {
                     info.currentTask = TransferTask.DOWNLOADING;
                 } else if (FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD.equals(type)) {
                     info.currentTask = TransferTask.UPLOADING;
+                } else if (FileTransferService.IntentFields.TRANSFER_TYPE_DELETE.equals(type)) {
+                    info.currentTask = TransferTask.DELETING;
+                } else {
+                    info.currentTask = TransferTask.WAITING;
+                }
+                switch (info.currentTask) {
+                    case UPLOADING:
+                        if (info.currentStatus == FileTransferService.Transfer.FINISHED) {
+                            info.uploaded++;
+                            doWork(getDownloadTask(), true);
+                        } else if (info.currentStatus == FileTransferService.Transfer.FAILED) {
+                            doWork(getUploadTask(), false);
+                        }
+                        break;
+                    case DOWNLOADING:
+                        if (info.currentStatus == FileTransferService.Transfer.FINISHED) {
+                            info.downloaded++;
+                            doWork(getDeleteTask(), true);
+                        } else if (info.currentStatus == FileTransferService.Transfer.FAILED) {
+                            doWork(getDeleteTask(), true);
+                        }
+                        break;
+                    case DELETING:
+                        if (info.currentStatus == FileTransferService.Transfer.FINISHED) {
+                            info.deleted++;
+                            doWork(getUploadTask(), true);
+                        } else if (info.currentStatus == FileTransferService.Transfer.FAILED) {
+                            doWork(getUploadTask(), false);
+                        }
+                        break;
+
                 }
             }
             updateInfo();
@@ -186,12 +254,14 @@ public class ManagerService extends Service {
 
     private void updateInfo() {
         sendBroadcast(new Intent(ACTION_ON_INFO_UPDATED).putExtra(EXTRA_INFO, info));
+        info.save(data);
     }
 
     @Override
     public void onDestroy() {
         sendBroadcast(new Intent(ACTION_ON_STOP));
-        mExecutor.shutdown();
+        if (mExecutor != null)
+            mExecutor.shutdown();
         super.onDestroy();
     }
 
@@ -200,29 +270,56 @@ public class ManagerService extends Service {
         return null;
     }
 
-    private void doWork() {
+    private void doWork(Runnable task, boolean startImmediately) {
         if (!isStarted) {
             isStarted = true;
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    String videoId = "1011";
-                    File ed = friend.videoToFile(videoId);
-                    File ing = Config.recordingFile(ManagerService.this);
-                    ing.renameTo(ed);
-                    friend.setNewOutgoingVideoId(videoId);
-                    friend.uploadVideo(videoId);
-                    //if (checkStorageAvailability()) {
-                    //    File dcim = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-                    //    ArrayList<String> list = new ArrayList<String>();
-                    //    listFolder(dcim, list);
-                    //    sendBroadcast(new Intent(ACTION_ON_FINISHED).putStringArrayListExtra(EXTRA_FILES_LIST, list));
-                    //}
-                    //mExecutor.schedule(this, 10, TimeUnit.SECONDS);
-                }
-            };
-            mExecutor.execute(runnable);
         }
+        if (!isStopped) {
+            if (startImmediately) {
+                mExecutor.schedule(task, 2, TimeUnit.SECONDS);
+            } else {
+                mExecutor.schedule(task, 5, TimeUnit.SECONDS);
+            }
+        }
+
     }
 
+    private Runnable getUploadTask() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                if (isStopped) return;
+                info.tries++;
+                String videoId = VIDEO_ID;
+                File ed = friend.videoToFile(videoId);
+                File ing = Config.recordingFile(ManagerService.this);
+                ing.renameTo(ed);
+                friend.setNewOutgoingVideoId(videoId);
+                friend.uploadVideo(videoId);
+            }
+        };
+    }
+
+    private Runnable getDownloadTask() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                if (isStopped) return;
+                String videoId = VIDEO_ID;
+                friend.downloadVideo(videoId);
+            }
+        };
+    }
+
+    private Runnable getDeleteTask() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                if (isStopped) return;
+                String videoId = VIDEO_ID;
+                friend.videoToFile(videoId).delete();
+                friend.videoFromFile(videoId).delete();
+            }
+        };
+    }
 }

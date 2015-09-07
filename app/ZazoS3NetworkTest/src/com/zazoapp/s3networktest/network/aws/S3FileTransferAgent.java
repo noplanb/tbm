@@ -122,14 +122,16 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	public boolean delete() throws InterruptedException{
 		try {
             DeleteObjectRequest _deleteObjectRequest = new DeleteObjectRequest(s3Bucket, filename);
-			tm.getAmazonS3Client().deleteObject(_deleteObjectRequest );
+			tm.getAmazonS3Client().deleteObject(_deleteObjectRequest);
 		} catch (AmazonServiceException e) {
 			handleServiceException(e);
 			return notRetryableServiceException(e);
 		} catch (AmazonClientException e) {
 			handleClientException(e);
 			return notRetryableClientException(e);
-		}
+		} finally {
+            fileTransferService.reportStatus(intent, FileTransferService.Transfer.FINISHED);
+        }
 		return true;
 	}
 	
@@ -143,7 +145,10 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	private boolean isDownload(){
 		return intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY).equalsIgnoreCase(IntentFields.TRANSFER_TYPE_DOWNLOAD);
 	}
-	
+
+    private boolean isDelete() {
+        return intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY).equalsIgnoreCase(IntentFields.TRANSFER_TYPE_DELETE);
+    }
 	//-------------------------
 	// Client Exception helpers
 	//-------------------------
@@ -154,16 +159,13 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	private void logClientException(AmazonClientException e) {
 		Log.e(TAG, "ERROR in transfer type: " + intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY) + " AmazonClientException: " + e.toString());
+        Dispatch.dispatch(e, null);
         return;
 	}
 	
 	private void reportClientException(AmazonClientException e) {
 		if (notRetryableClientException(e)){
-			if (isDownload()){
-	            fileTransferService.reportStatus(intent, FileTransferService.Transfer.FAILED);
-			} else if (isUpload()) {
-	            fileTransferService.reportStatus(intent, FileTransferService.Transfer.FAILED);
-			}
+            fileTransferService.reportStatus(intent, FileTransferService.Transfer.FAILED);
 		}
 	}
 	
@@ -184,11 +186,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	private void reportServiceException(AmazonServiceException e){
 		if (notRetryableServiceException(e)){
-			if (isDownload()){
-	            fileTransferService.reportStatus(intent, FileTransferService.Transfer.FAILED);
-			} else if (isUpload()) {
-	            fileTransferService.reportStatus(intent, FileTransferService.Transfer.FAILED);
-			}
+            fileTransferService.reportStatus(intent, FileTransferService.Transfer.FAILED);
 		}
 	}
 	
