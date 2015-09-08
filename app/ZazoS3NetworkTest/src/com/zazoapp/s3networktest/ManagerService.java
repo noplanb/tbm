@@ -51,6 +51,7 @@ public class ManagerService extends Service {
     private static final int THREADS_NUMBER = 1;
     public static final String EXTRA_INFO = "info";
     public static final String VIDEO_ID = "1011";
+    public static final String ACTION_DOWNLOAD = CLASS_NAME + ".ACTION_DOWNLOAD";
     private ScheduledExecutorService mExecutor;
     private boolean isStarted = false;
 
@@ -243,9 +244,9 @@ public class ManagerService extends Service {
                     case DOWNLOADING:
                         if (info.currentStatus == FileTransferService.Transfer.FINISHED) {
                             info.downloaded++;
-                            doWork(getDeleteTask(), true);
+                            getDeleteTask().run();
                         } else if (info.currentStatus == FileTransferService.Transfer.FAILED) {
-                            doWork(getDeleteTask(), true);
+                            getDeleteTask().run();
                         }
                         break;
                     case DELETING:
@@ -260,6 +261,8 @@ public class ManagerService extends Service {
                 }
             }
             updateInfo();
+        } else if (ACTION_DOWNLOAD.equals(action)) {
+            doWork(getDownloadTask(), true);
         }
         return START_STICKY;
     }

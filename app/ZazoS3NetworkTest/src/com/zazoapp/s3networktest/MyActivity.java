@@ -16,6 +16,7 @@ public class MyActivity extends Activity implements View.OnClickListener {
     private TextView mStatus;
     private TextView mTestLog;
     private Button mStopButton;
+    private Button mDownloadButton;
     private BroadcastReceiver mReceiver;
     private IntentFilter mIntentFilter;
     private boolean isServiceStarted;
@@ -27,12 +28,14 @@ public class MyActivity extends Activity implements View.OnClickListener {
         mStatus = (TextView) findViewById(R.id.status);
         mTestLog = (TextView) findViewById(R.id.test_log);
         mStopButton = (Button) findViewById(R.id.stop_service);
+        mDownloadButton = (Button) findViewById(R.id.download);
         mReceiver = new ManagerServiceReceiver();
         mIntentFilter = new IntentFilter(ManagerService.ACTION_ON_START);
         mIntentFilter.addAction(ManagerService.ACTION_ON_STOP);
         mIntentFilter.addAction(ManagerService.ACTION_ON_FINISHED);
         mIntentFilter.addAction(ManagerService.ACTION_ON_INFO_UPDATED);
         mStopButton.setOnClickListener(this);
+        mDownloadButton.setOnClickListener(this);
         handleIntent(getIntent());
     }
 
@@ -72,6 +75,9 @@ public class MyActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.reset_service:
                 startService(ManagerService.ACTION_RESET);
+                break;
+            case R.id.download:
+                startService(ManagerService.ACTION_DOWNLOAD);
                 break;
         }
     }
