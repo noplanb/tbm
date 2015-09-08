@@ -17,6 +17,7 @@ public class MyActivity extends Activity implements View.OnClickListener {
     private TextView mTestLog;
     private Button mStopButton;
     private Button mDownloadButton;
+    private Button mResetRecordsButton;
     private BroadcastReceiver mReceiver;
     private IntentFilter mIntentFilter;
     private boolean isServiceStarted;
@@ -29,6 +30,7 @@ public class MyActivity extends Activity implements View.OnClickListener {
         mTestLog = (TextView) findViewById(R.id.test_log);
         mStopButton = (Button) findViewById(R.id.stop_service);
         mDownloadButton = (Button) findViewById(R.id.download);
+        mResetRecordsButton = (Button) findViewById(R.id.reset_stats);
         mReceiver = new ManagerServiceReceiver();
         mIntentFilter = new IntentFilter(ManagerService.ACTION_ON_START);
         mIntentFilter.addAction(ManagerService.ACTION_ON_STOP);
@@ -36,6 +38,7 @@ public class MyActivity extends Activity implements View.OnClickListener {
         mIntentFilter.addAction(ManagerService.ACTION_ON_INFO_UPDATED);
         mStopButton.setOnClickListener(this);
         mDownloadButton.setOnClickListener(this);
+        mResetRecordsButton.setOnClickListener(this);
         handleIntent(getIntent());
     }
 
@@ -68,9 +71,11 @@ public class MyActivity extends Activity implements View.OnClickListener {
                 if (mStopButton.getText().toString().equals("Stop")) {
                     startService(ManagerService.ACTION_STOP);
                     mStopButton.setText("Start");
+                    mResetRecordsButton.setEnabled(true);
                 } else {
                     startService(ManagerService.ACTION_START);
                     mStopButton.setText("Stop");
+                    mResetRecordsButton.setEnabled(false);
                 }
                 break;
             case R.id.reset_service:
@@ -78,6 +83,9 @@ public class MyActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.download:
                 startService(ManagerService.ACTION_DOWNLOAD);
+                break;
+            case R.id.reset_stats:
+                startService(ManagerService.ACTION_RESET_STATS);
                 break;
         }
     }
@@ -90,10 +98,12 @@ public class MyActivity extends Activity implements View.OnClickListener {
             if (ManagerService.ACTION_ON_START.equals(action)) {
                 isServiceStarted = true;
                 mStopButton.setText("Stop");
+                mResetRecordsButton.setEnabled(false);
                 startService(ManagerService.ACTION_UPDATE_INFO);
             } else if (ManagerService.ACTION_ON_STOP.equals(action)) {
                 isServiceStarted = false;
                 mStopButton.setText("Start");
+                mResetRecordsButton.setEnabled(true);
             } else if (ManagerService.ACTION_ON_FINISHED.equals(action)) {
                 if (intent.hasExtra(ManagerService.EXTRA_FILES_LIST)) {
                     ArrayList<String> list = intent.getStringArrayListExtra(ManagerService.EXTRA_FILES_LIST);
@@ -102,7 +112,7 @@ public class MyActivity extends Activity implements View.OnClickListener {
                 }
             } else if (ManagerService.ACTION_ON_INFO_UPDATED.equals(action)) {
                 if (intent.hasExtra(ManagerService.EXTRA_INFO)) {
-                    ManagerService.TestInfo info = intent.getParcelableExtra(ManagerService.EXTRA_INFO);
+                    TestInfo info = intent.getParcelableExtra(ManagerService.EXTRA_INFO);
                     mStatus.setText((isServiceStarted ? "Started" : "Stopped") + "\n" + info.toString());
                 }
             }

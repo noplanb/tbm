@@ -7,8 +7,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.util.Log;
 import com.zazoapp.s3networktest.core.PreferencesHelper;
 import com.zazoapp.s3networktest.dispatch.Dispatch;
 import com.zazoapp.s3networktest.dispatch.RollbarTracker;
@@ -34,24 +33,25 @@ public class ManagerService extends Service {
     public static final String ACTION_STOP = CLASS_NAME + ".ACTION_STOP";
     public static final String ACTION_RESET = CLASS_NAME + ".ACTION_RESET";
     public static final String ACTION_UPDATE_INFO = CLASS_NAME + ".ACTION_UPDATE_INFO";
+    public static final String ACTION_DOWNLOAD = CLASS_NAME + ".ACTION_DOWNLOAD";
+    public static final String ACTION_RESET_STATS = CLASS_NAME + ".ACTION_RESET_STATS";
 
     public static final String ACTION_ON_START = CLASS_NAME + ".ACTION_ON_START";
     public static final String ACTION_ON_STOP = CLASS_NAME + ".ACTION_ON_STOP";
     public static final String ACTION_ON_FINISHED = CLASS_NAME + ".ACTION_ON_FINISHED";
+
+
     public static final String ACTION_ON_INFO_UPDATED = CLASS_NAME + ".ACTION_ON_INFO_UPDATED";
 
-
     public static final String EXTRA_FILES_LIST = "files_list";
-
     public static final String VIDEO_ID_KEY = "video_id";
     public static final String TRANSFER_TYPE_KEY = "transfer_type";
     public static final String STATUS_KEY = "status_key";
-    public static final String RETRY_COUNT_KEY = "retry_count";
 
+    public static final String RETRY_COUNT_KEY = "retry_count";
     private static final int THREADS_NUMBER = 1;
     public static final String EXTRA_INFO = "info";
     public static final String VIDEO_ID = "1011";
-    public static final String ACTION_DOWNLOAD = CLASS_NAME + ".ACTION_DOWNLOAD";
     private ScheduledExecutorService mExecutor;
     private boolean isStarted = false;
 
@@ -63,110 +63,20 @@ public class ManagerService extends Service {
 
     private PreferencesHelper data;
 
-    public static class TestInfo implements Parcelable {
-        long tries;
-        long uploaded;
-        long downloaded;
-        long deleted;
-        TransferTask currentTask;
-        int currentStatus;
-        int retryCount;
+    enum TransferTask {
+        WAITING('⌚'),
+        UPLOADING('↑'),
+        DOWNLOADING('↓'),
+        DELETING('⊗');
 
-        @Override
-        public int describeContents() {
-            return 0;
+
+        public char getChar() {
+            return ch;
         }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeLong(tries);
-            dest.writeLong(uploaded);
-            dest.writeLong(downloaded);
-            dest.writeLong(deleted);
-            dest.writeInt(currentTask.ordinal());
-            dest.writeInt(currentStatus);
-            dest.writeInt(retryCount);
+        private char ch;
+        TransferTask(char c) {
+            ch = c;
         }
-
-        public static final Parcelable.Creator<TestInfo> CREATOR
-                = new Parcelable.Creator<TestInfo>() {
-            public TestInfo createFromParcel(Parcel in) {
-                return new TestInfo(in);
-            }
-
-            public TestInfo[] newArray(int size) {
-                return new TestInfo[size];
-            }
-        };
-
-        private TestInfo(Parcel in) {
-            tries = in.readLong();
-            uploaded = in.readLong();
-            downloaded = in.readLong();
-            deleted = in.readLong();
-            currentTask = TransferTask.values()[in.readInt()];
-            currentStatus = in.readInt();
-            retryCount = in.readInt();
-        }
-
-        private TestInfo() {
-            currentTask = TransferTask.WAITING;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Tries: ").append(tries).append("\n");
-            builder.append("\u2191").append(uploaded).append(" \u2193").append(downloaded).append(" d ").append(deleted);
-            builder.append("\ncurrent: \t").append(currentTask).append("\nstatus: \t");
-            switch (currentStatus) {
-                case FileTransferService.Transfer.NEW:
-                    builder.append("new");
-                    break;
-                case FileTransferService.Transfer.IN_PROGRESS:
-                    builder.append("progress");
-                    break;
-                case FileTransferService.Transfer.FAILED:
-                    builder.append("failed");
-                    break;
-                case FileTransferService.Transfer.FINISHED:
-                    builder.append("finished");
-                    break;
-            }
-            builder.append("\nretry: \t").append(retryCount);
-            return builder.toString();
-        }
-
-        public String toShortString() {
-            StringBuilder builder = new StringBuilder();
-            builder.append(tries).append(" ↑").append(uploaded).append(" ↓").append(downloaded);
-            return builder.toString();
-        }
-
-        public void save(PreferencesHelper data) {
-            if (data != null) {
-                data.putString("tries", String.valueOf(tries));
-                data.putString("uploaded", String.valueOf(uploaded));
-                data.putString("downloaded", String.valueOf(downloaded));
-                data.putString("deleted", String.valueOf(deleted));
-            }
-        }
-
-        public void load(PreferencesHelper data) {
-            if (data != null) {
-                tries = Long.parseLong(data.getString("tries", "0"));
-                uploaded = Long.parseLong(data.getString("uploaded", "0"));
-                downloaded = Long.parseLong(data.getString("downloaded", "0"));
-                deleted = Long.parseLong(data.getString("deleted", "0"));
-            }
-        }
-    }
-
-    private enum TransferTask {
-        WAITING,
-        UPLOADING,
-        DOWNLOADING,
-        DELETING;
     }
 
     @Override
@@ -238,6 +148,7 @@ public class ManagerService extends Service {
                             info.uploaded++;
                             doWork(getDownloadTask(), true);
                         } else if (info.currentStatus == FileTransferService.Transfer.FAILED) {
+                            info.uploadedFailed++;
                             doWork(getUploadTask(), false);
                         }
                         break;
@@ -246,6 +157,7 @@ public class ManagerService extends Service {
                             info.downloaded++;
                             getDeleteTask().run();
                         } else if (info.currentStatus == FileTransferService.Transfer.FAILED) {
+                            info.downloadedFailed++;
                             getDeleteTask().run();
                         }
                         break;
@@ -263,11 +175,16 @@ public class ManagerService extends Service {
             updateInfo();
         } else if (ACTION_DOWNLOAD.equals(action)) {
             doWork(getDownloadTask(), true);
+        } else if (ACTION_RESET_STATS.equals(action)) {
+            info.clear();
+            info.save(new PreferencesHelper(this));
+            sendBroadcast(new Intent(ACTION_ON_INFO_UPDATED).putExtra(EXTRA_INFO, info));
         }
         return START_STICKY;
     }
 
     private void updateInfo() {
+        Log.i(TAG, "updateInfo: " + info.toShortString());
         sendBroadcast(new Intent(ACTION_ON_INFO_UPDATED).putExtra(EXTRA_INFO, info));
         info.save(data);
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -293,7 +210,7 @@ public class ManagerService extends Service {
         }
         if (!isStopped && mExecutor != null) {
             if (startImmediately) {
-                mExecutor.schedule(task, 2, TimeUnit.SECONDS);
+                mExecutor.schedule(task, 500, TimeUnit.MILLISECONDS);
             } else {
                 mExecutor.schedule(task, 5, TimeUnit.SECONDS);
             }
@@ -306,6 +223,7 @@ public class ManagerService extends Service {
             @Override
             public void run() {
                 if (isStopped) return;
+                Log.i(TAG, "UploadTask: " + info.toShortString());
                 info.tries++;
                 String videoId = VIDEO_ID;
                 File ed = friend.videoToFile(videoId);
@@ -322,7 +240,9 @@ public class ManagerService extends Service {
             @Override
             public void run() {
                 if (isStopped) return;
+                Log.i(TAG, "DownloadTask: " + info.toShortString());
                 String videoId = VIDEO_ID;
+                friend.videoToFile(videoId).delete();
                 friend.downloadVideo(videoId);
             }
         };
@@ -333,8 +253,8 @@ public class ManagerService extends Service {
             @Override
             public void run() {
                 if (isStopped) return;
+                Log.i(TAG, "DeleteTask: " + info.toShortString());
                 String videoId = VIDEO_ID;
-                friend.videoToFile(videoId).delete();
                 friend.videoFromFile(videoId).delete();
             }
         };

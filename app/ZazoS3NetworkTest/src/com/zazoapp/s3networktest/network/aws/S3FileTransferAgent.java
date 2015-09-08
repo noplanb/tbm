@@ -159,12 +159,15 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	private void logClientException(AmazonClientException e) {
 		Log.e(TAG, "ERROR in transfer type: " + intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY) + " AmazonClientException: " + e.toString());
-        Dispatch.dispatch(e, null);
         return;
 	}
 	
 	private void reportClientException(AmazonClientException e) {
 		if (notRetryableClientException(e)){
+            if (intent.getExtras() != null) {
+                Log.i(TAG, intent.getExtras().toString());
+            }
+            Dispatch.dispatch(e, "notRetryableClientException");
             fileTransferService.reportStatus(intent, FileTransferService.Transfer.FAILED);
 		}
 	}
@@ -186,6 +189,10 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
 	private void reportServiceException(AmazonServiceException e){
 		if (notRetryableServiceException(e)){
+            if (intent.getExtras() != null) {
+                Log.i(TAG, intent.getExtras().toString());
+            }
+            Dispatch.dispatch(e, "notRetryableServiceException");
             fileTransferService.reportStatus(intent, FileTransferService.Transfer.FAILED);
 		}
 	}
