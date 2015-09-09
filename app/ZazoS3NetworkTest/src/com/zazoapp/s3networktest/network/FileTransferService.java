@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class FileTransferService extends IntentService {
     private static final String TAG = FileTransferService.class.getSimpleName();
-    private final String OTAG = getClass().getSimpleName() + ": ";
+    private final String OTAG = getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + ": ";
     public static final String RESET_ACTION = "reset";
     private final static Integer MAX_RETRIES = 100;
 
@@ -114,9 +114,10 @@ public abstract class FileTransferService extends IntentService {
 
     public void reportStatus(Intent intent, int status) {
         Log.i(TAG, OTAG + "reportStatus: " + status);
-        intent.setClass(getApplicationContext(), IntentHandlerService.class);
-        intent.putExtra(IntentFields.STATUS_KEY, status);
-        getApplicationContext().startService(intent);
+        Intent newIntent = new Intent(intent);
+        newIntent.setClass(getApplicationContext(), IntentHandlerService.class);
+        newIntent.putExtra(IntentFields.STATUS_KEY, status);
+        getApplicationContext().startService(newIntent);
     }
 
     private void retrySleep(Intent intent) throws InterruptedException {
