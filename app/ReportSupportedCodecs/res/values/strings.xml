@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SupportedCodecs</string>
+    <string name="send">Send</string>
+    <string name="zazo_number">Enter Zazo registration number</string>
+    <string name="enter_number_first">Enter number first</string>
+</resources>

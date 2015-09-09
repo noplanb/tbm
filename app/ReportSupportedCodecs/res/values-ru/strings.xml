@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SupportedCodecs</string>
+    <string name="send">Отправить</string>
+    <string name="zazo_number">Номер мобильного (в Zazo)</string>
+    <string name="enter_number_first">Введите номер телефона</string>
+</resources>
