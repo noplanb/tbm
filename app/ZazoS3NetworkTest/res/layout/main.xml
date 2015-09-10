@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Stop"/>
+                android:text="Start"/>
 
         <Button
                 android:id="@+id/reset_service"

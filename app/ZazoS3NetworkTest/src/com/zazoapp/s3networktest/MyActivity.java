@@ -20,7 +20,6 @@ public class MyActivity extends Activity implements View.OnClickListener {
     private Button mResetRecordsButton;
     private BroadcastReceiver mReceiver;
     private IntentFilter mIntentFilter;
-    private boolean isServiceStarted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +45,6 @@ public class MyActivity extends Activity implements View.OnClickListener {
         if (intent != null) {
             if (ManagerService.ACTION_STOP.equals(intent.getAction())) {
                 startService(ManagerService.ACTION_STOP);
-            } else {
-                startService(ManagerService.ACTION_START);
             }
         }
     }
@@ -70,12 +67,9 @@ public class MyActivity extends Activity implements View.OnClickListener {
             case R.id.stop_service:
                 if (mStopButton.getText().toString().equals("Stop")) {
                     startService(ManagerService.ACTION_STOP);
-                    mStopButton.setText("Start");
-                    mResetRecordsButton.setEnabled(true);
                 } else {
+                    ManagerService.isStopped = false;
                     startService(ManagerService.ACTION_START);
-                    mStopButton.setText("Stop");
-                    mResetRecordsButton.setEnabled(false);
                 }
                 break;
             case R.id.reset_service:
@@ -96,12 +90,10 @@ public class MyActivity extends Activity implements View.OnClickListener {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (ManagerService.ACTION_ON_START.equals(action)) {
-                isServiceStarted = true;
                 mStopButton.setText("Stop");
                 mResetRecordsButton.setEnabled(false);
                 startService(ManagerService.ACTION_UPDATE_INFO);
             } else if (ManagerService.ACTION_ON_STOP.equals(action)) {
-                isServiceStarted = false;
                 mStopButton.setText("Start");
                 mResetRecordsButton.setEnabled(true);
             } else if (ManagerService.ACTION_ON_FINISHED.equals(action)) {
@@ -113,7 +105,12 @@ public class MyActivity extends Activity implements View.OnClickListener {
             } else if (ManagerService.ACTION_ON_INFO_UPDATED.equals(action)) {
                 if (intent.hasExtra(ManagerService.EXTRA_INFO)) {
                     TestInfo info = intent.getParcelableExtra(ManagerService.EXTRA_INFO);
-                    mStatus.setText((isServiceStarted ? "Started" : "Stopped") + "\n" + info.toString());
+                    mStatus.setText((!ManagerService.isStopped ? "Started" : "Stopped") + "\n" + info.toString());
+                    mStopButton.setText(ManagerService.isStopped ? "Start" : "Stop");
+                    mResetRecordsButton.setEnabled(ManagerService.isStopped);
+                }
+                if (intent.hasExtra("services")) {
+                    mTestLog.setText(intent.getStringExtra("services"));
                 }
             }
         }

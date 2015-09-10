@@ -6,9 +6,12 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
+import com.zazoapp.s3networktest.ManagerService;
 import com.zazoapp.s3networktest.core.IntentHandlerService;
 import com.zazoapp.s3networktest.network.aws.S3FileTransferAgent;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -27,6 +30,7 @@ public abstract class FileTransferService extends IntentService {
         public static final int FAILED = 3;
     }
 
+    private static final Set<String> services = new HashSet<>();
     protected String id;
 
     protected IFileTransferAgent fileTransferAgent;
@@ -63,6 +67,10 @@ public abstract class FileTransferService extends IntentService {
     public void onCreate() {
         super.onCreate();
         fileTransferAgent = new S3FileTransferAgent(this);
+        synchronized (TAG) {
+            services.add(OTAG);
+            Log.i(TAG, OTAG + "OnCreate");
+        }
     }
 
     @Override
@@ -117,7 +125,17 @@ public abstract class FileTransferService extends IntentService {
         Intent newIntent = new Intent(intent);
         newIntent.setClass(getApplicationContext(), IntentHandlerService.class);
         newIntent.putExtra(IntentFields.STATUS_KEY, status);
+        StringBuilder builder = new StringBuilder();
+        synchronized (TAG) {
+            for (String service : services) {
+                builder.append(service).append("\n");
+            }
+            if (status == Transfer.FINISHED || status == Transfer.FAILED) {
+                services.remove(OTAG);
+            }
+        }
         getApplicationContext().startService(newIntent);
+        sendBroadcast(new Intent(ManagerService.ACTION_ON_INFO_UPDATED).putExtra("services", builder.toString()));
     }
 
     private void retrySleep(Intent intent) throws InterruptedException {
@@ -149,5 +167,13 @@ public abstract class FileTransferService extends IntentService {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        synchronized (TAG) {
+            services.remove(OTAG);
+        }
     }
 }

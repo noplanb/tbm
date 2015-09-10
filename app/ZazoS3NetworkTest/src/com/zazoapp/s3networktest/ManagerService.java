@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import com.zazoapp.s3networktest.core.PreferencesHelper;
@@ -51,7 +52,7 @@ public class ManagerService extends Service {
     public static final String RETRY_COUNT_KEY = "retry_count";
     private static final int THREADS_NUMBER = 1;
     public static final String EXTRA_INFO = "info";
-    public static final String VIDEO_ID = "1011";
+    public static String VIDEO_ID = "1011";
     private ScheduledExecutorService mExecutor;
     private boolean isStarted = false;
 
@@ -64,11 +65,10 @@ public class ManagerService extends Service {
     private PreferencesHelper data;
 
     enum TransferTask {
-        WAITING('⌚'),
+        WAITING('\u231A'),
         UPLOADING('↑'),
         DOWNLOADING('↓'),
         DELETING('⊗');
-
 
         public char getChar() {
             return ch;
@@ -82,6 +82,9 @@ public class ManagerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        data = new PreferencesHelper(this);
+        VIDEO_ID = data.getString("deviceVideoId", "_1_" + Build.SERIAL + "_" + System.currentTimeMillis());
+        data.putString("deviceVideoId", VIDEO_ID);
         Dispatch.registerTracker(this, new RollbarTracker());
         if (isStopped) {
             stopSelf();
@@ -90,13 +93,12 @@ public class ManagerService extends Service {
         startForeground(1, getNotification());
         mExecutor = Executors.newScheduledThreadPool(THREADS_NUMBER);
         friend = Friend.getInstance(this);
-        data = new PreferencesHelper(this);
         info.load(data);
     }
 
     private Notification getNotification() {
         Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentText(info.toShortString() + "\nRunning. Tap to manage");
+        builder.setContentText(info.toShortString() + ".\n Tap to manage");
         builder.setContentTitle("Zazo S3 network test");
         builder.setSmallIcon(R.drawable.ic_launcher);
         builder.setSubText("");
@@ -210,7 +212,8 @@ public class ManagerService extends Service {
         }
         if (!isStopped && mExecutor != null) {
             if (startImmediately) {
-                mExecutor.schedule(task, 500, TimeUnit.MILLISECONDS);
+                mExecutor.execute(task);
+                //mExecutor.schedule(task, 500, TimeUnit.MILLISECONDS);
             } else {
                 mExecutor.schedule(task, 5, TimeUnit.SECONDS);
             }
