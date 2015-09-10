@@ -39,7 +39,6 @@ import com.zazoapp.client.utilities.AsyncTaskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -89,7 +88,9 @@ public class ContactsManager implements OnItemClickListener {
 
 		@Override
 		protected void onPostExecute(Map<String, String> params) {
-			setupContactsAutoCompleteView(view, params);
+            if (params != null) {
+                setupContactsAutoCompleteView(view, params);
+            }
 		}
 
 		private Map<String, String> setAutoCompleteNames() {
