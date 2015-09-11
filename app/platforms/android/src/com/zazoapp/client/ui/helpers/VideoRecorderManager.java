@@ -9,7 +9,6 @@ import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.GridElementFactory;
-import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoRecorder;
@@ -64,8 +63,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         if (videoRecorder.stopRecording()) {
             Friend f = videoRecorder.getCurrentFriend();
             Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
-            f.setAndNotifyOutgoingVideoStatus(f.getOutgoingVideoId(), OutgoingVideo.Status.NEW);
-            f.uploadVideo(f.getOutgoingVideoId());
+            f.requestUpload(f.getOutgoingVideoId());
             managerProvider.getTutorial().onVideoRecorded();
         }
     }

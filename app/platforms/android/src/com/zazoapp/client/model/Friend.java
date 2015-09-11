@@ -107,7 +107,7 @@ public class Friend extends ActiveModel{
     public void setHasApp(){
         set(Attributes.HAS_APP, TRUE);
     }
-    
+
     public void setHasApp(boolean value){
         set(Attributes.HAS_APP, value ? TRUE : FALSE);
     }
@@ -538,10 +538,17 @@ public class Friend extends ActiveModel{
         intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingVideo.Status.NEW);
         intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         intent.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, getId());
-
         getContext().startService(intent);
     }
 
+    public void requestUpload(String videoId) {
+        Intent intent = new Intent(getContext(), IntentHandlerService.class);
+        intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
+        intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingVideo.Status.NEW);
+        intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        intent.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, getId());
+        getContext().startService(intent);
+    }
     //=============
     // Video Status
     //=============

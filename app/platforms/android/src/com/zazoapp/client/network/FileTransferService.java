@@ -17,6 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class FileTransferService extends IntentService {
     private static final String TAG = FileTransferService.class.getSimpleName();
+    private final String OTAG = getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + ": ";
     public static final String RESET_ACTION = "reset";
     private final static Integer MAX_RETRIES = 100;
 
@@ -65,7 +66,7 @@ public abstract class FileTransferService extends IntentService {
     @Override
     public void onStart(Intent intent, int startId) {
         if (RESET_ACTION.equals(intent.getAction())) {
-            Log.i(TAG, "Reset retries");
+            Log.i(TAG, OTAG + "Reset retries");
             retryCount.set(0);
             if (lock.tryLock()) {
                 try {
@@ -82,7 +83,7 @@ public abstract class FileTransferService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         lock.lock();
         try {
-            Log.i(TAG, "onHandleIntent");
+            Log.i(TAG, OTAG + "onHandleIntent");
             if (RESET_ACTION.equals(intent.getAction())) {
                 return;
             }
@@ -110,19 +111,20 @@ public abstract class FileTransferService extends IntentService {
     }
 
     public void reportStatus(Intent intent, int status) {
-        Log.i(TAG, "reportStatus");
-        intent.setClass(getApplicationContext(), IntentHandlerService.class);
-        intent.putExtra(IntentFields.STATUS_KEY, status);
-        getApplicationContext().startService(intent);
+        Log.i(TAG, OTAG + "reportStatus: " + status);
+        Intent newIntent = new Intent(intent);
+        newIntent.setClass(getApplicationContext(), IntentHandlerService.class);
+        newIntent.putExtra(IntentFields.STATUS_KEY, status);
+        getApplicationContext().startService(newIntent);
     }
 
     private void retrySleep(Intent intent) throws InterruptedException {
         intent.putExtra(IntentFields.RETRY_COUNT_KEY, retryCount.incrementAndGet());
-        Log.i(TAG, "retry: " + retryCount.get());
+        Log.i(TAG, OTAG + "retry: " + retryCount.get());
 
         long sleepTime = (DebugConfig.getInstance(this).isDebugEnabled()) ? 1000L : sleepTime(retryCount.get());
 
-        Log.i(TAG, "Sleeping for: " + sleepTime + "ms");
+        Log.i(TAG, OTAG + "Sleeping for: " + sleepTime + "ms");
         if (reset.await(sleepTime, TimeUnit.MILLISECONDS)) {
             intent.putExtra(IntentFields.RETRY_COUNT_KEY, retryCount.get());
         }

@@ -47,7 +47,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
     private volatile ServiceHandler mServiceHandler;
 
     private ShutdownReceiver shutdownReceiver;
-    private TransferTasksHolder transferTasks;
+    private static final TransferTasksHolder transferTasks = new TransferTasksHolder();
 
     // The BroadcastReceiver that tracks network connectivity changes.
     private NetworkReceiver networkReceiver;
@@ -83,8 +83,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         networkReceiver = new NetworkReceiver();
         IntentFilter networkIntentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(networkReceiver, networkIntentFilter);
-
-        transferTasks = new TransferTasksHolder();
         restoreTransferring();
     }
 
@@ -174,7 +172,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     if (friend != null) {
                         String videoId = video.getId();
                         if (friend.videoToFile(videoId).exists()) {
-                            friend.uploadVideo(videoId);
+                            friend.requestUpload(videoId);
                         } else {
                             friend.setAndNotifyOutgoingVideoStatus(videoId, OutgoingVideo.Status.UPLOADED);
                         }
@@ -185,6 +183,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
     }
 
     public static void onApplicationStart() {
+        transferTasks.clearAll();
         ArrayList<IncomingVideo> incomingVideos = IncomingVideoFactory.getFactoryInstance().all();
         for (IncomingVideo video : incomingVideos) {
             switch (video.getVideoStatus()) {
@@ -292,6 +291,13 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 });
                 return;
             }
+            if (status == OutgoingVideo.Status.NEW) {
+                if (!transferTasks.addUploadId(videoId)) {
+                    Log.w(TAG, "handleUploadIntent: Ignoring upload intent for video id that is currently in process.");
+                    return;
+                }
+                friend.uploadVideo(videoId);
+            }
             updateStatus();
             if (status == OutgoingVideo.Status.UPLOADED) {
                 // Set remote videoIdKV
@@ -299,6 +305,9 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
                 // Send outgoing notification
                 NotificationHandler.sendForVideoReceived(friend, videoId);
+            }
+            if (status == OutgoingVideo.Status.UPLOADED || status == OutgoingVideo.Status.FAILED_PERMANENTLY) {
+                transferTasks.removeUploadId(videoId);
             }
         }
 
@@ -344,7 +353,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             if (status == IncomingVideo.Status.NEW) {
 
                 if (!transferTasks.addDownloadId(videoId)) {
-                    Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that that is currently in process.");
+                    Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that is currently in process.");
                     return;
                 }
 
@@ -380,6 +389,11 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 Log.i(TAG, "deleteRemoteVideoAndKV for a video that failed permanently");
                 deleteRemoteVideoAndKV();
                 transferTasks.removeDownloadId(videoId);
+                IncomingVideo video = IncomingVideoFactory.getFactoryInstance().find(videoId);
+                if (video != null && video.isDownloaded()) {
+                    // Do not update status as this video has been already downloaded
+                    return;
+                }
             }
 
             if (status == IncomingVideo.Status.DOWNLOADING) {

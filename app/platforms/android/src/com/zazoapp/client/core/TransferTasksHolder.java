@@ -25,4 +25,9 @@ public class TransferTasksHolder {
     public boolean addUploadId(String id) {
         return uploadingIds.add(id);
     }
+
+    public void clearAll() {
+        downloadingIds.clear();
+        uploadingIds.clear();
+    }
 }

@@ -124,7 +124,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	public boolean delete() throws InterruptedException{
 		try {
             DeleteObjectRequest _deleteObjectRequest = new DeleteObjectRequest(s3Bucket, filename);
-			tm.getAmazonS3Client().deleteObject(_deleteObjectRequest );
+			tm.getAmazonS3Client().deleteObject(_deleteObjectRequest);
 		} catch (AmazonServiceException e) {
 			handleServiceException(e);
 			return notRetryableServiceException(e);
@@ -145,7 +145,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	private boolean isDownload(){
 		return intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY).equalsIgnoreCase(IntentFields.TRANSFER_TYPE_DOWNLOAD);
 	}
-	
+
 	//-------------------------
 	// Client Exception helpers
 	//-------------------------
@@ -166,6 +166,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			} else if (isUpload()) {
 	            fileTransferService.reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
 			}
+            Dispatch.dispatch(e, "notRetryableClientException");
 		}
 	}
 	
@@ -191,6 +192,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			} else if (isUpload()) {
 	            fileTransferService.reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
 			}
+            Dispatch.dispatch(e, "notRetryableServiceException");
 		}
 	}
 	
