@@ -381,7 +381,7 @@ public abstract class ViewGroupGestureRecognizer {
     private boolean isMoving(MotionEvent event) {
         double a2 = Math.pow(downPosition[0] - (double) event.getX(), 2D);
         double b2 = Math.pow(downPosition[1] - (double) event.getY(), 2D);
-        double limit = Math.pow(activity.getResources().getDimension(R.dimen.nine_view_min_bounce), 2D);
+        double limit = Math.pow(activity.getResources().getDimension(R.dimen.nine_view_sliding_min_bounce), 2D);
         if (a2 + b2 > limit) {
             return true;
         } else {
