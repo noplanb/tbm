@@ -62,6 +62,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     private GridViewFragment mainFragment;
     private DialogFragment pd;
     private ManagerHolder managerHolder;
+    private boolean isStopped = true;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,6 +130,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     protected void onStart() {
         super.onStart();
+        isStopped = false;
         versionHandler.checkVersionCompatibility();
         checkPlayServices();
         NotificationAlertManager.init(this);
@@ -137,6 +139,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     protected void onStop() {
         super.onStop();
+        isStopped = true;
         NotificationAlertManager.cleanUp();
     }
 
@@ -241,22 +244,30 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public void onShowInfoDialog(String title, String msg) {
-        DialogShower.showInfoDialog(this, title, msg);
+        if (!isStopped) {
+            DialogShower.showInfoDialog(this, title, msg);
+        }
     }
 
     @Override
     public void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, boolean editable, int actionId) {
-        DialogShower.showActionInfoDialog(this, title, msg, actionTitle, isNeedCancel, editable, actionId, this);
+        if (!isStopped) {
+            DialogShower.showActionInfoDialog(this, title, msg, actionTitle, isNeedCancel, editable, actionId, this);
+        }
     }
 
     @Override
     public void onShowDoubleActionDialog(String title, String msg, String posText, String negText, int id, boolean editable) {
-        DialogShower.showDoubleActionDialog(this, title, msg, posText, negText, id, editable, this);
+        if (!isStopped) {
+            DialogShower.showDoubleActionDialog(this, title, msg, posText, negText, id, editable, this);
+        }
     }
 
     @Override
     public void onShowSendLinkDialog(int id, String phone, String msg) {
-        DialogShower.showSendLinkDialog(this, id, phone, msg, this);
+        if (!isStopped) {
+            DialogShower.showSendLinkDialog(this, id, phone, msg, this);
+        }
     }
 
     @Override
@@ -283,7 +294,9 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public void showVersionHandlerDialog(String message, boolean negativeButton) {
-        DialogShower.showVersionHandlerDialog(this, message, negativeButton);
+        if (!isStopped) {
+            DialogShower.showVersionHandlerDialog(this, message, negativeButton);
+        }
     }
 
     private void startRegisterActivity() {
