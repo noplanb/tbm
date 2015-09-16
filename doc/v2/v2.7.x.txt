@@ -1,5 +1,5 @@
 Previous v2.6.7 (83)
-Current v2.7.19 (103)
+Current v2.7.10 (104)
 
 BACKGROUND CHANGES:
 Changes in Friend model:
@@ -121,3 +121,18 @@ Activity has been destroyed
 Fixed #614 
 ---------
 Increased threshold bounce for spin start
+
+-----------
+Fixed #617
+-----------
+Download error after phone power cycle
+Solution:
+Fixed receiving Shutdown broadcast
+Save Incoming video models as soon as video is downloaded
+
+-----------
+Fixed #619
+-----------
+Only one notification out of many comes to lock-screen notification after power cycle 
+Solution
+Ignored LockScreen activity as foreground one

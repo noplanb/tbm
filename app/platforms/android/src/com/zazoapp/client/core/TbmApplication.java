@@ -10,7 +10,7 @@ import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.dispatch.RollbarTracker;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.GridManager;
-import com.zazoapp.client.tutorial.HintType;
+import com.zazoapp.client.ui.LockScreenAlertActivity;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
 public class TbmApplication extends Application {
@@ -46,12 +46,16 @@ public class TbmApplication extends Application {
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityStopped(Activity activity) {
-                setForeground(false);
+                if (!(activity instanceof LockScreenAlertActivity)) {
+                    setForeground(false);
+                }
             }
 
             @Override
             public void onActivityStarted(Activity activity) {
-                setForeground(true);
+                if (!(activity instanceof LockScreenAlertActivity)) {
+                    setForeground(true);
+                }
             }
 
             @Override
