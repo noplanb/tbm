@@ -99,3 +99,25 @@ Init field with false value
 NEW #591 Send app state with each dispatch to rollbar
 ---------
 Improved sending dispatch information and gathering info of app state
+
+---------
+Fixed Rollbar #975
+---------
+java.lang.NullPointerException: 
+Attempt to invoke interface method 'java.util.Set java.util.Map.keySet()' on a null object reference
+
+---------
+Fixed
+---------
+Fixed possible double uploads and downloads
+
+---------
+Fixed Rollbar #993
+---------
+java.lang.IllegalStateException:
+Activity has been destroyed
+
+---------
+Fixed #614 
+---------
+Increased threshold bounce for spin start
