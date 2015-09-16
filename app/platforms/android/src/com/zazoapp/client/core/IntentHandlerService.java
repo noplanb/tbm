@@ -46,7 +46,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
     private volatile Looper mServiceLooper;
     private volatile ServiceHandler mServiceHandler;
 
-    private ShutdownReceiver shutdownReceiver;
     private static final TransferTasksHolder transferTasks = new TransferTasksHolder();
 
     // The BroadcastReceiver that tracks network connectivity changes.
@@ -74,10 +73,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
-
-        shutdownReceiver = new ShutdownReceiver();
-        IntentFilter shutDownIntentFilter = new IntentFilter(Intent.ACTION_SHUTDOWN);
-        registerReceiver(shutdownReceiver, shutDownIntentFilter);
 
         // Register BroadcastReceiver to track connection changes.
         networkReceiver = new NetworkReceiver();
@@ -131,12 +126,14 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         releaseResources();
     }
 
-    private class ShutdownReceiver extends BroadcastReceiver {
+    public static class ShutdownReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("ShutdownReceiver", "onReceive");
-            releaseResources();
+            if (intent.getAction().equals(Intent.ACTION_SHUTDOWN)) {
+                ActiveModelsHandler.getInstance(context).onTerminate();
+            }
         }
 
     }
@@ -147,7 +144,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
     @Override
     public void onTerminate() {
-        unregisterReceiver(shutdownReceiver);
         unregisterReceiver(networkReceiver);
     }
 
@@ -402,6 +398,10 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
             // Update the status and notify based on the intent if we have not exited for another reason above.
             updateStatus();
+            if (status == IncomingVideo.Status.DOWNLOADED) {
+                // Save Incoming video as soon as it is downloaded
+                ActiveModelsHandler.getInstance(IntentHandlerService.this).save(IncomingVideoFactory.getFactoryInstance());
+            }
         }
 
         private void handleStoringIntent() {

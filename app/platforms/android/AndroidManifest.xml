@@ -107,6 +107,11 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".core.IntentHandlerService$ShutdownReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
+            </intent-filter>
+        </receiver>
         <!-- For tests -->
         <!--<activity android:name=".tests.TestActivity" android:screenOrientation="portrait" android:launchMode="singleTask"/>-->
         <!--<service android:name=".tests.FileDownloadServiceTest"/>-->
