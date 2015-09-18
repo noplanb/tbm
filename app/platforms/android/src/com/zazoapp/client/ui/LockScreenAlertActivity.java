@@ -22,6 +22,7 @@ public class LockScreenAlertActivity extends Activity {
 
 	private static final String TAG = LockScreenAlertActivity.class.getSimpleName();
 
+    private boolean isStopped = true;
 	//-------------------
 	// Activity lifecycle
 	//-------------------
@@ -44,9 +45,13 @@ public class LockScreenAlertActivity extends Activity {
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		Log.i(TAG, "onNewIntent");
-		setupViews(intent);
         setIntent(intent);
-	}
+        if (isStopped) {
+            recreate();
+        } else {
+            setupViews(intent);
+        }
+    }
 
 	@Override
 	protected void onPause() {
@@ -54,22 +59,24 @@ public class LockScreenAlertActivity extends Activity {
 		super.onPause();
 	}
 
-	@Override
-	protected void onStop() {
-		super.onStop();
-		Log.i(TAG, "onStop");
-	}
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i(TAG, "onStop");
+        isStopped = true;
+    }
 
 	@Override
 	protected void onDestroy() {
-		super.onDestroy();
-		Log.i(TAG, "onDestroy");
+        super.onDestroy();
+        Log.i(TAG, "onDestroy");
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
-		Log.i(TAG, "onStart");
+        isStopped = false;
+        Log.i(TAG, "onStart");
 		setupListeners();
 	}
 
