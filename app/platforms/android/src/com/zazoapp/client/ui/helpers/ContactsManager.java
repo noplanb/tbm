@@ -49,7 +49,7 @@ public class ContactsManager implements OnItemClickListener {
 
 	private final static String TAG = ContactsManager.class.getSimpleName();
 
-	public static interface ContactSelected {
+    public static interface ContactSelected {
 		public void contactSelected(Contact contact);
 	}
 
@@ -521,6 +521,19 @@ public class ContactsManager implements OnItemClickListener {
 		} while (c.moveToNext());
 		c.close();
 	}
+
+    public static String getValidE164ForNumber(String phone) {
+        PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
+        String r = null;
+        try {
+            PhoneNumber pn = pu.parse(phone, UserFactory.current_user().getRegion());
+            if (pu.isValidNumber(pn))
+                r = pu.format(pn, PhoneNumberFormat.E164);
+        } catch (NumberParseException e) {
+            //Log.e(TAG, "ERROR: found sms number not valid. Not expected to ever happen.");
+        }
+        return r;
+    }
 
 //	private void printAutoCompleteNames() {
 //		for (String n : autoCompleteNames) {

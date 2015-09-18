@@ -9,14 +9,10 @@ import android.provider.ContactsContract;
 import android.provider.Telephony;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
-import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Logger;
 
@@ -168,7 +164,7 @@ public class BenchDataHandler {
         do {
             String mobileNumber = cursor.getString(addrCol);
             String count = cursor.getString(countCol);
-            mobileNumber = getValidE164ForNumber(mobileNumber);
+            mobileNumber = ContactsManager.getValidE164ForNumber(mobileNumber);
             // Ignore if not valid number. Should always be a valid number though since it has received sms.
             if (mobileNumber == null)
                 continue;
@@ -216,19 +212,6 @@ public class BenchDataHandler {
         cursor.close();
         return contactsPhoneData;
     }
-
-	private String getValidE164ForNumber(String phone){
-		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
-		String r = null;
-		try {
-			PhoneNumber pn = pu.parse(phone, UserFactory.current_user().getRegion());
-			if (pu.isValidNumber(pn))
-				r = pu.format(pn, PhoneNumberUtil.PhoneNumberFormat.E164);
-		} catch (NumberParseException e) {
-            //Log.e(TAG, "ERROR: found sms number not valid. Not expected to ever happen.");
-		}
-		return r;
-	}
 
     /**
      *
