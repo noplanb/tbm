@@ -1,5 +1,5 @@
 Previous v2.6.7 (83)
-Current v2.7.21 (105)
+Current v2.7.22 (106)
 
 BACKGROUND CHANGES:
 Changes in Friend model:
@@ -136,3 +136,16 @@ Fixed #619
 Only one notification out of many comes to lock-screen notification after power cycle 
 Solution
 Ignored LockScreen activity as foreground one
+
+-----------
+Fixed
+-----------
+Issue with lock screen appearing when screen is off with not dismissed activity
+Testcase: 2535
+
+-----------
+Fixed Rollbar #1088
+-----------
+Additional fix for AmazonS3Exception: Forbidden 403
+When GCM new video request comes after polling
+
