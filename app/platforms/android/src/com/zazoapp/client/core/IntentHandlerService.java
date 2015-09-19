@@ -347,8 +347,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
             // Create and download the video if this was a videoReceived intent.
             if (status == IncomingVideo.Status.NEW) {
-
-                if (!transferTasks.addDownloadId(videoId)) {
+                IncomingVideoFactory incomingVideos = IncomingVideoFactory.getFactoryInstance();
+                if (incomingVideos.existsWithId(videoId) || !transferTasks.addDownloadId(videoId)) {
                     Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that is currently in process.");
                     return;
                 }
