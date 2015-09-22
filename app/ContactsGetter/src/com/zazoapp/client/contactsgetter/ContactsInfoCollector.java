@@ -14,6 +14,7 @@ import com.zazoapp.client.contactsgetter.vectors.ContactVector;
 import com.zazoapp.client.contactsgetter.vectors.EmailVector;
 import com.zazoapp.client.contactsgetter.vectors.MobileVector;
 import com.zazoapp.client.contactsgetter.vectors.SNVectorFactory;
+import org.json.JSONArray;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,16 +26,13 @@ public class ContactsInfoCollector {
     private static final String TAG = ContactsInfoCollector.class.getSimpleName();
 
     public interface ContactsInfoCollectedCallback {
-        void onInfoCollected(LinkedTreeMap<Integer, ContactInfo> contacts);
+        void onInfoCollected(JSONArray contacts);
     }
 
     public static void collectContacts(@NonNull final ContentResolver cr, @NonNull final ContactsInfoCollectedCallback callback) {
-        if (cr == null || callback == null) {
-            return;
-        }
-        AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, LinkedTreeMap<Integer, ContactInfo>>() {
+        AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, JSONArray>() {
             @Override
-            protected LinkedTreeMap<Integer, ContactInfo> doInBackground(Void... params) {
+            protected JSONArray doInBackground(Void... params) {
                 LinkedTreeMap<Integer, ContactInfo> contacts = new LinkedTreeMap<>();
                 String[] projection = new String[] {
                         ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID, ContactsContract.Contacts.STARRED};
@@ -80,7 +78,7 @@ public class ContactsInfoCollector {
                         ContactsContract.CommonDataKinds.Email.CONTACT_ID,
                         ContactsContract.CommonDataKinds.Email.ADDRESS,
                         ContactsContract.CommonDataKinds.Email.TIMES_CONTACTED};
-                c = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null, null, null, null);
+                c = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, projection, null, null, null);
                 if (c != null && c.getCount() > 0) {
                     while (c.moveToNext()) {
                         int contactIndex = c.getColumnIndex(ContactsContract.CommonDataKinds.Email.CONTACT_ID);
@@ -109,13 +107,17 @@ public class ContactsInfoCollector {
                         int contactIndex = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID);
                         int numberIndex = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
                         if (c.getString(numberIndex) != null) {
-                            int contact = c.getInt(contactIndex);
+                            int contactId = c.getInt(contactIndex);
                             String number = c.getString(numberIndex);
                             number = ContactsManager.getValidE164ForNumber(number);
                             if (number != null) {
-                                ContactVector phoneVector = new MobileVector(number);
-                                if (phoneSmsInfo.containsKey(number)) {
-                                    phoneVector.addParam(MobileVector.ADDS_SMS_SENT, phoneSmsInfo.get(number));
+                                ContactInfo contact = contacts.get(contactId);
+                                if (contact != null) {
+                                    ContactVector phoneVector = new MobileVector(number);
+                                    if (phoneSmsInfo.containsKey(number)) {
+                                        phoneVector.addParam(MobileVector.ADDS_SMS_SENT, phoneSmsInfo.get(number));
+                                    }
+                                    contact.addVector(phoneVector);
                                 }
                             }
                         }
@@ -124,15 +126,19 @@ public class ContactsInfoCollector {
                 if (c != null) {
                     c.close();
                 }
-                return contacts;
+                JSONArray array = new JSONArray();
+                for (ContactInfo info : contacts.values()) {
+                    if (info.hasPhoneNumber()) {
+                        array.put(info.toJson());
+                    }
+                }
+                return array;
             }
 
             @Override
-            protected void onPostExecute(LinkedTreeMap<Integer, ContactInfo> s) {
-                super.onPostExecute(s);
-                for (ContactInfo info : s.values()) {
-                    Log.i(TAG, info.toJson());
-                }
+            protected void onPostExecute(JSONArray contactsArray) {
+                callback.onInfoCollected(contactsArray);
+                Log.i(TAG, contactsArray.toString());
             }
         });
     }

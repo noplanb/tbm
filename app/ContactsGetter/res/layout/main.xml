@@ -8,11 +8,12 @@
             android:id="@+id/text"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Hello World, MyActivity"
+            android:text="Press button to send contacts"
             />
-    <ListView
-            android:id="@+id/list"
+    <Button
+            android:id="@+id/send"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"
+            android:text="Send"/>
 </LinearLayout>
 

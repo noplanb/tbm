@@ -7,6 +7,8 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.contactsgetter.vectors.ContactVector;
 import com.zazoapp.client.contactsgetter.vectors.EmailVector;
 import com.zazoapp.client.contactsgetter.vectors.MobileVector;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,6 +34,10 @@ public class ContactInfo {
         jsonContactInfo.addParam(ADDS_FAVORITE, favorite);
     }
 
+    public boolean hasPhoneNumber() {
+        return hasPhoneNumber;
+    }
+
     public boolean addVector(ContactVector vec) {
         if (vec == null) {
             throw new NullPointerException("Vector can't be null");
@@ -43,7 +49,11 @@ public class ContactInfo {
             throw new IllegalArgumentException("Vector value must be specified");
         }
         String normalizedValue = vec.normaliseValue();
-        return !TextUtils.isEmpty(normalizedValue) && jsonContactInfo.addVector(vec);
+        boolean result = !TextUtils.isEmpty(normalizedValue) && jsonContactInfo.addVector(vec);
+        if (result && vec instanceof MobileVector) {
+            hasPhoneNumber = true;
+        }
+        return result;
     }
 
     private static class JSONContactInfo {
@@ -73,9 +83,14 @@ public class ContactInfo {
         }
     }
 
-    public String toJson() {
+    public JSONObject toJson() {
         Gson gson = new Gson();
-        return gson.toJson(jsonContactInfo);
+        JSONObject object = null;
+        try {
+            object = new JSONObject(gson.toJson(jsonContactInfo));
+        } catch (JSONException e) {
+        }
+        return object;
     }
 
     private static void main(String[] args) {
