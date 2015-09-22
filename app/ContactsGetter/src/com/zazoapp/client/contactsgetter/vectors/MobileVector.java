@@ -1,6 +1,6 @@
 package com.zazoapp.client.contactsgetter.vectors;
 
-import com.zazoapp.client.ui.helpers.ContactsManager;
+import com.zazoapp.client.contactsgetter.ContactsManager;
 
 /**
  * Created by skamenkovych@codeminders.com on 9/17/2015.
@@ -27,9 +27,9 @@ public class MobileVector extends ContactVector {
 
     @Override
     public String normaliseValue() {
-        //if (value != null) {
-        //    value = value.replaceAll("[^[0-9]+]", "");
-        //}
+        if (value != null) {
+            value = value.replaceAll("[^0-9+]", "");
+        }
         value = ContactsManager.getValidE164ForNumber(value);
         return value;
     }

@@ -7,7 +7,6 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.contactsgetter.vectors.ContactVector;
 import com.zazoapp.client.contactsgetter.vectors.EmailVector;
 import com.zazoapp.client.contactsgetter.vectors.MobileVector;
-import com.zazoapp.client.model.UserFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -44,7 +43,7 @@ public class ContactInfo {
             throw new IllegalArgumentException("Vector value must be specified");
         }
         String normalizedValue = vec.normaliseValue();
-        return normalizedValue != null && jsonContactInfo.addVector(vec);
+        return !TextUtils.isEmpty(normalizedValue) && jsonContactInfo.addVector(vec);
     }
 
     private static class JSONContactInfo {
@@ -80,7 +79,7 @@ public class ContactInfo {
     }
 
     private static void main(String[] args) {
-        UserFactory.getFactoryInstance().makeInstance(null);
+        //UserFactory.getFactoryInstance().makeInstance(null);
         ContactInfo local = new ContactInfo(1, "Sani");
         ContactVector vec2 = new EmailVector("test@test.com");
         vec2.addParam(EmailVector.ADDS_EMAIL_SENT, 11);
