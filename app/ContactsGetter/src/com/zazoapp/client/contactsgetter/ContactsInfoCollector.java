@@ -138,7 +138,6 @@ public class ContactsInfoCollector {
             @Override
             protected void onPostExecute(JSONArray contactsArray) {
                 callback.onInfoCollected(contactsArray);
-                Log.i(TAG, contactsArray.toString());
             }
         });
     }
