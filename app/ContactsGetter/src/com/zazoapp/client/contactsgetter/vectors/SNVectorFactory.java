@@ -15,8 +15,8 @@ public final class SNVectorFactory {
         WHATSAPP("whatsapp", "com.whatsapp", ContactsContract.RawContacts.SYNC1),
         KATE("vk", "com.perm.kate.account", ContactsContract.RawContacts.SOURCE_ID),
         VKONTAKTE("vk", "com.vkontakte.account", ContactsContract.RawContacts.SYNC1),
-        GOOGLE_PLUS("google+", "com.google/plus", ContactsContract.RawContacts.SOURCE_ID), // account_type_and_data_set: com.google/plus | sourceid: g:107073129092125082676
-        VIBER("viber", "com.viber.voip", ContactsContract.RawContacts.SYNC1), // account_type: com.viber.voip | sync1: 113.1752882236
+        GOOGLE_PLUS("gplus", "com.google/plus", ContactsContract.RawContacts.SOURCE_ID),
+        VIBER("viber", "com.viber.voip", ContactsContract.RawContacts.SYNC1),
         TELEGRAM("telegram", "org.telegram.messenger", ContactsContract.RawContacts.SYNC1),
         ;
 
