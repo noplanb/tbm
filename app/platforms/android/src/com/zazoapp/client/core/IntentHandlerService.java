@@ -158,6 +158,11 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                         friend.requestDownload(video.getId());
                     }
                     break;
+                case IncomingVideo.Status.VIEWED:
+                case IncomingVideo.Status.FAILED_PERMANENTLY:
+                case IncomingVideo.Status.MARKED_FOR_DELETION:
+                    video.handleRemoteDeletion();
+                    break;
             }
         }
         ArrayList<OutgoingVideo> outgoingVideos = OutgoingVideoFactory.getFactoryInstance().all();
@@ -418,12 +423,10 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         // Helpers
         //--------
         private void deleteRemoteVideoAndKV() {
-            // Note it is ok if deleting the file fails as s3 will clean itself up after a few days.
-            // Delete remote video.
-            friend.deleteRemoteVideo(videoId);
-
-            // Delete kv for video.
-            RemoteStorageHandler.deleteRemoteIncomingVideoId(friend, videoId);
+            IncomingVideo video = IncomingVideoFactory.getFactoryInstance().find(videoId);
+            if (video != null) {
+                video.deleteFromRemote();
+            }
         }
 
         public void updateStatus() {

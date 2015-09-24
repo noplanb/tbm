@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -64,7 +65,7 @@ public class Friend extends ActiveModel{
     }
 
     @Override
-    public String[] attributeList() {
+    public List<String> attributeList() {
         final String[] a = {
                 Attributes.ID,
                 Attributes.MKEY,
@@ -81,7 +82,7 @@ public class Friend extends ActiveModel{
                 Attributes.CONNECTION_CREATOR,
                 Attributes.DELETED,
                 Attributes.EVER_SENT};
-        return a;
+        return Arrays.asList(a);
     }
 
     @Override
@@ -193,10 +194,19 @@ public class Friend extends ActiveModel{
     }
 
     public void deleteAllViewedVideos(){
-        for (IncomingVideo v : getIncomingVideos()){
-            if (v.getVideoStatus() == IncomingVideo.Status.VIEWED ||
-                    v.getVideoStatus() == IncomingVideo.Status.FAILED_PERMANENTLY)
-                deleteVideo(v.getId());
+        for (IncomingVideo v : getIncomingVideos()) {
+            switch (v.getVideoStatus()) {
+                case IncomingVideo.Status.VIEWED:
+                case IncomingVideo.Status.FAILED_PERMANENTLY:
+                    videoFromFile(v.getId()).delete();
+                    v.markForDeletion();
+                case IncomingVideo.Status.MARKED_FOR_DELETION:
+                    v.deleteFromRemote();
+                    if (v.isRemoteDeleted()) {
+                        deleteVideo(v.getId());
+                    }
+                    break;
+            }
         }
     }
 

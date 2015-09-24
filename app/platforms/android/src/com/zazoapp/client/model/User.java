@@ -5,6 +5,9 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class User extends ActiveModel{
 
     public static class Attributes {
@@ -19,7 +22,7 @@ public class User extends ActiveModel{
     }
 
     @Override
-    public String[] attributeList() {
+    public List<String> attributeList() {
         final String[] a = {
                 Attributes.ID,
                 Attributes.AUTH,
@@ -30,7 +33,7 @@ public class User extends ActiveModel{
                 Attributes.MOBILE_NUMBER,
                 Attributes.INVITEE
         };
-        return a;
+        return Arrays.asList(a);
     }
 
     public static boolean isRegistered(Context context) {

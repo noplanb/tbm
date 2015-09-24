@@ -2,7 +2,9 @@ package com.zazoapp.client.model;
 
 import com.zazoapp.client.multimedia.VideoIdUtils;
 
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Created by skamenkovych@codeminders.com on 5/29/2015.
@@ -24,14 +26,14 @@ public abstract class Video extends ActiveModel {
     }
 
     @Override
-    public String[] attributeList() {
+    public List<String> attributeList() {
         final String[] a = {
                 Attributes.ID,
                 Attributes.FRIEND_ID,
                 Attributes.STATUS,
                 Attributes.RETRY_COUNT
         };
-        return a;
+        return Arrays.asList(a);
     }
 
     // Video status

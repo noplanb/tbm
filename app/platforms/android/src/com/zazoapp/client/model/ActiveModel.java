@@ -6,6 +6,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.dispatch.Dispatch;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public abstract class ActiveModel {
@@ -29,7 +30,7 @@ public abstract class ActiveModel {
 	}
 
 	// Must be overridden in subclass.	
-	public abstract String[] attributeList();
+	public abstract List<String> attributeList();
 
     //--------------------
     // Getters and setters

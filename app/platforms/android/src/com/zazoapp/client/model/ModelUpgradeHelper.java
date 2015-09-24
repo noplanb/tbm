@@ -55,6 +55,15 @@ public final class ModelUpgradeHelper {
         }
     }
 
+    /**
+     * Changes in IncomingVideo model
+     * 1. Added attribute REMOTE_STATUS, default value EXIST
+     * 2. Added 7th state MARKED_FOR_DELETION
+     */
+    public static void upgradeTo4(ActiveModelsHandler handler, Context context) {
+        ensureAll(handler);
+    }
+
     private static void ensureAll(ActiveModelsHandler handler) {
         handler.ensureUser();
         handler.ensure(FriendFactory.getFactoryInstance());

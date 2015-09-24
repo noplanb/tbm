@@ -75,9 +75,8 @@ public class ThumbnailRetriever {
     private void verifyAndRelease() throws ThumbnailBrokenException {
         nativeRetriever.release();
         if (!nativeWorks) {
-            StringBuilder message = new StringBuilder();
-            message.append("Thumbnail has not been retrieved\n").append(errorMessage);
-            throw new ThumbnailBrokenException(message.toString());
+            Log.e(TAG, errorMessage);
+            throw new ThumbnailBrokenException("Thumbnail has not been retrieved");
         } else {
             Log.i(TAG, "Thumbnail retrieved successfully");
         }

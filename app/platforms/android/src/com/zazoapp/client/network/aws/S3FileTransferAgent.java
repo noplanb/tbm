@@ -134,19 +134,23 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		}
 		return true;
 	}
-	
-	//------------
-	// Convenience
-	//------------
-	private boolean isUpload(){
-		return intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY).equalsIgnoreCase(IntentFields.TRANSFER_TYPE_UPLOAD);
-	}
-	
-	private boolean isDownload(){
-		return intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY).equalsIgnoreCase(IntentFields.TRANSFER_TYPE_DOWNLOAD);
-	}
 
-	//-------------------------
+    //------------
+    // Convenience
+    //------------
+    private boolean isUpload() {
+        return IntentFields.TRANSFER_TYPE_UPLOAD.equalsIgnoreCase(intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY));
+    }
+
+    private boolean isDownload() {
+        return IntentFields.TRANSFER_TYPE_DOWNLOAD.equalsIgnoreCase(intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY));
+    }
+
+    private boolean isDelete() {
+        return IntentFields.TRANSFER_TYPE_DELETE.equalsIgnoreCase(intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY));
+    }
+
+    //-------------------------
 	// Client Exception helpers
 	//-------------------------
 	private void handleClientException(AmazonClientException e){
@@ -158,19 +162,23 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		Log.e(TAG, "ERROR in transfer type: " + intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY) + " AmazonClientException: " + e.toString());
         return;
 	}
-	
-	private void reportClientException(AmazonClientException e) {
-		if (notRetryableClientException(e)){
-			if (isDownload()){
-	            fileTransferService.reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
-			} else if (isUpload()) {
-	            fileTransferService.reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
-			}
-            Dispatch.dispatch(e, "notRetryableClientException");
-		}
-	}
-	
-	private boolean notRetryableClientException(AmazonClientException e){
+
+    private void reportClientException(AmazonClientException e) {
+        if (notRetryableClientException(e)) {
+            if (isDownload()) {
+                fileTransferService.reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
+            } else if (isUpload()) {
+                fileTransferService.reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
+            }
+            if (!isDelete()) {
+                Dispatch.dispatch(
+                        new AmazonClientException("Not Retryable Client Exception; Message=" + e.getMessage(), e),
+                        "notRetryableClientException");
+            }
+        }
+    }
+
+    private boolean notRetryableClientException(AmazonClientException e){
 		// The only client exception that is not retryable occurs if we have tried to access without credentials 
 		// this returns a client error with message "Unable to calculate a request signature"
 		return !credentialsOk;
@@ -185,18 +193,22 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		refreshCredentialsIfNecessary(e);
 	}
 
-	private void reportServiceException(AmazonServiceException e){
-		if (notRetryableServiceException(e)){
-			if (isDownload()){
-	            fileTransferService.reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
-			} else if (isUpload()) {
-	            fileTransferService.reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
-			}
-            Dispatch.dispatch(e, "notRetryableServiceException");
-		}
-	}
-	
-	private void dispatchServiceException(AmazonServiceException e) {
+    private void reportServiceException(AmazonServiceException e) {
+        if (notRetryableServiceException(e)) {
+            if (isDownload()) {
+                fileTransferService.reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
+            } else if (isUpload()) {
+                fileTransferService.reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
+            }
+            if (!isDelete()) {
+                Dispatch.dispatch(
+                        new AmazonServiceException("Not Retryable Service Exception; Code=" + e.getStatusCode(), e),
+                        "notRetryableServiceException");
+            }
+        }
+    }
+
+    private void dispatchServiceException(AmazonServiceException e) {
 		switch(e.getErrorType()){
 		case Client:
 			if (e.getStatusCode() / 100 == 3)

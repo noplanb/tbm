@@ -1,5 +1,8 @@
 package com.zazoapp.client.model;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class GridElement extends ActiveModel {
 
     static class Attributes {
@@ -7,11 +10,11 @@ public class GridElement extends ActiveModel {
     }
 
     @Override
-    public String[] attributeList() {
+    public List<String> attributeList() {
         final String[] a = {
                 Attributes.FRIEND_ID,
         };
-        return a;
+        return Arrays.asList(a);
     }
 
     public Friend getFriend() {
