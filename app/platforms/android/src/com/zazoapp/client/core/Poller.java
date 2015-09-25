@@ -44,7 +44,7 @@ public class Poller {
             if (video == null) {
                 friend.requestDownload(videoId);
             } else if (video.isDownloaded() || video.isFailed()) {
-                RemoteStorageHandler.deleteRemoteIncomingVideoId(friend, videoId);
+                video.deleteFromRemote();
             }
         }
     }

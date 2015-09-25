@@ -7,6 +7,7 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.network.NetworkConfig;
 
 import java.io.File;
@@ -25,8 +26,8 @@ public class UserInfoCollector {
         ArrayList<Friend> friends = FriendFactory.getFactoryInstance().all();
         ArrayList<IncomingVideo> incomingVideos = IncomingVideoFactory.getFactoryInstance().all();
         if (friends.size() > 0) {
-            addRow(info, "Friends");
-            addRow(info, "Name", "ID", "Has app", "IV !v count", "OV ID", "OV status", "Last event", "Thumb", "Downloading", "Deleted", "ConnCreat", "Ever sent");
+            addRow(info, "Friends", "", "", "", "", "", "", "", "", "", "", "");
+            addRow(info, "Name", "ID", "Has app", "IV !v #", "OV ID", "OV status", "Last event", "Thumb", "Dwnlding", "Deleted", "Connect.", "EverSent");
         } else {
             addRow(info, "Friends", "NO FRIENDS");
         }
@@ -37,10 +38,10 @@ public class UserInfoCollector {
             list.add(friend.hasApp() ? "+" : "No app");
             list.add(String.valueOf(friend.incomingVideoNotViewedCount()));
             list.add(friend.getOutgoingVideoId());
-            list.add(String.valueOf(friend.getOutgoingVideoStatus()));
+            list.add(OutgoingVideo.Status.toShortString(friend.getOutgoingVideoStatus()));
             list.add((friend.getLastEventType() == Friend.VideoStatusEventType.OUTGOING) ? "OUT" : "IN");
             list.add(friend.thumbExists() ? "+" : "No thumb");
-            list.add(friend.hasDownloadingVideo() ? "Downloading" : "");
+            list.add(friend.hasDownloadingVideo() ? "+" : "");
             list.add(friend.isDeleted() ? "Deleted" : "");
             list.add(friend.isConnectionCreator() ? "Creator" : "Target");
             list.add(friend.everSent() ? "Welcomed" : "");
@@ -48,16 +49,17 @@ public class UserInfoCollector {
         }
         info.append("\n");
         if (incomingVideos.size() > 0) {
-            addRow(info, "Videos");
-            addRow(info, "ID", "IV status", "Exists", "Size");
+            addRow(info, "Videos", "", "", "", "");
+            addRow(info, "ID", "IV status", "Remote", "Exists", "Size");
         }
         for (Friend friend : friends) {
             incomingVideos = friend.getIncomingVideos();
-            addRow(info, friend.getFullName());
+            addRow(info, friend.getFullName(), "", "", "", "");
             for (IncomingVideo video : incomingVideos) {
                 List<String> list = new ArrayList<>();
                 list.add(video.getId());
-                list.add(String.valueOf(video.getVideoStatus()));
+                list.add(IncomingVideo.Status.toShortString(video.getVideoStatus()));
+                list.add(String.valueOf(video.get(IncomingVideo.Attributes.REMOTE_STATUS)));
                 File file = friend.videoFromFile(video.getId());
                 list.add(String.valueOf(file.exists()));
                 list.add(file.exists() ? String.valueOf(file.length()) : "");
@@ -89,11 +91,16 @@ public class UserInfoCollector {
 
     private static void addRow(StringBuilder out, String... data) {
         StringBuilder dataBuilder = new StringBuilder();
-        int maxLength = Math.max(80 / data.length, 12);
+        int maxLength = Math.max(80 / data.length, 8);
+        int maxFirstLength = Math.max(80 / data.length, 15);
+        int length = maxFirstLength;
         for (int i = 0; i < data.length; i++) {
-            dataBuilder.append("| %-").append(maxLength).append("s ");
-            if (data[i].length() > maxLength) {
-                data[i] = data[i].substring(0, maxLength);
+            if (i != 0) {
+                length = maxLength;
+            }
+            dataBuilder.append("| %-").append(length).append("s ");
+            if (data[i].length() > length) {
+                data[i] = data[i].substring(0, length);
             }
         }
         dataBuilder.append("|\n");
@@ -112,6 +119,7 @@ public class UserInfoCollector {
                 {"234523463", "Y", "Y"},
                 {"Very long string with many symbols and even more"},
                 {"Another long string with many symbols and two columns", ""},
+                {"First Name Last Name", "Param", "Param", "Param", "Param", "Param", "Param", "Param"}
         };
         StringBuilder builder = new StringBuilder();
         for (String[] strings : arr) {

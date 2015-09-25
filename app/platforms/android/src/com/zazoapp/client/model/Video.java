@@ -2,6 +2,7 @@ package com.zazoapp.client.model;
 
 import com.zazoapp.client.multimedia.VideoIdUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -33,7 +34,7 @@ public abstract class Video extends ActiveModel {
                 Attributes.STATUS,
                 Attributes.RETRY_COUNT
         };
-        return Arrays.asList(a);
+        return new ArrayList<>(Arrays.asList(a));
     }
 
     // Video status
@@ -57,4 +58,5 @@ public abstract class Video extends ActiveModel {
     public String getFriendId() {
         return get(Attributes.FRIEND_ID);
     }
+
 }

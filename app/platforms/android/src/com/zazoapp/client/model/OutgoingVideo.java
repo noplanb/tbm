@@ -22,6 +22,20 @@ public class OutgoingVideo extends Video {
         public static boolean isSent(int status) {
             return status == UPLOADED || status == DOWNLOADED || status == VIEWED;
         }
+
+        public static String toShortString(int status) {
+            switch (status) {
+                case NONE: return "o0";
+                case NEW: return "on";
+                case QUEUED: return "oq";
+                case UPLOADING: return "oug";
+                case UPLOADED: return "ou";
+                case DOWNLOADED: return "od";
+                case VIEWED: return "ov";
+                case FAILED_PERMANENTLY: return "of";
+                default: return "";
+            }
+        }
     }
 
     @Override

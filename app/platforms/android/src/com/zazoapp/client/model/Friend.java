@@ -82,7 +82,7 @@ public class Friend extends ActiveModel{
                 Attributes.CONNECTION_CREATOR,
                 Attributes.DELETED,
                 Attributes.EVER_SENT};
-        return Arrays.asList(a);
+        return new ArrayList<>(Arrays.asList(a));
     }
 
     @Override

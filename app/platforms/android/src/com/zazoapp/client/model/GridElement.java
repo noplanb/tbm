@@ -1,5 +1,6 @@
 package com.zazoapp.client.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class GridElement extends ActiveModel {
         final String[] a = {
                 Attributes.FRIEND_ID,
         };
-        return Arrays.asList(a);
+        return new ArrayList<>(Arrays.asList(a));
     }
 
     public Friend getFriend() {

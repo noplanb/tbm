@@ -20,6 +20,20 @@ public class IncomingVideo extends Video {
         public static final int VIEWED = 5;
         public static final int FAILED_PERMANENTLY = 6;
         public static final int MARKED_FOR_DELETION = 7;
+
+        public static String toShortString(int status) {
+            switch (status) {
+                case NONE: return "i0";
+                case NEW: return "in";
+                case QUEUED: return "iq";
+                case DOWNLOADING: return "idg";
+                case DOWNLOADED: return "id";
+                case VIEWED: return "iv";
+                case FAILED_PERMANENTLY: return "if";
+                case MARKED_FOR_DELETION: return "im";
+                default: return "";
+            }
+        }
     }
 
     public static class Attributes extends Video.Attributes {
@@ -78,7 +92,7 @@ public class IncomingVideo extends Video {
                     @Override
                     public void success(String response) {
                         setRemoteStatus(RemoteStatus.KV_DELETED);
-                        deleteFromRemote();
+                        handleRemoteDeletion();
                     }
 
                     @Override

@@ -5,6 +5,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class User extends ActiveModel{
                 Attributes.MOBILE_NUMBER,
                 Attributes.INVITEE
         };
-        return Arrays.asList(a);
+        return new ArrayList<>(Arrays.asList(a));
     }
 
     public static boolean isRegistered(Context context) {
