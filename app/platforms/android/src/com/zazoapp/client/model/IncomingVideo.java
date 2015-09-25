@@ -42,7 +42,7 @@ public class IncomingVideo extends Video {
 
     private static class RemoteStatus {
         static final String EXISTS = "exists";
-        static final String MARKED_FOR_DELETE = "marked_for_delete";
+        static final String DELETE_KV = "delete_kv";
         static final String KV_DELETED = "kv_deleted";
         static final String DELETED = "deleted";
     }
@@ -73,20 +73,20 @@ public class IncomingVideo extends Video {
     public void markForDeletion() {
         setVideoStatus(Status.MARKED_FOR_DELETION);
         if (RemoteStatus.EXISTS.equals(get(Attributes.REMOTE_STATUS))) {
-            setRemoteStatus(RemoteStatus.MARKED_FOR_DELETE);
+            setRemoteStatus(RemoteStatus.DELETE_KV);
         }
     }
 
     public void deleteFromRemote() {
         if (RemoteStatus.EXISTS.equals(get(Attributes.REMOTE_STATUS))) {
-            setRemoteStatus(RemoteStatus.MARKED_FOR_DELETE);
+            setRemoteStatus(RemoteStatus.DELETE_KV);
         }
         handleRemoteDeletion();
     }
 
     public void handleRemoteDeletion() {
         switch (get(Attributes.REMOTE_STATUS)) {
-            case RemoteStatus.MARKED_FOR_DELETE: {
+            case RemoteStatus.DELETE_KV: {
                 Friend friend = FriendFactory.getFactoryInstance().find(getFriendId());
                 RemoteStorageHandler.deleteRemoteIncomingVideoId(friend, getId(), new HttpRequest.Callbacks() {
                     @Override

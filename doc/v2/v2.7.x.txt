@@ -1,5 +1,5 @@
 Previous v2.6.7 (83)
-Current v2.7.22 (106)
+Current v2.7.23 (107)
 
 BACKGROUND CHANGES:
 Changes in Friend model:
@@ -17,6 +17,17 @@ Dispatch server exception on S3
 Added support for forcing SMS sending on staging server during registration
 Added debug options groups
 Send invitee emails to the server
+Added new REMOTE_STATUS to IncomingVideo model which describes states of file on remote:
+1. EXISTS - video has never been tried to be deleted (it was not downloaded or failed)
+2. DELETE_KV - state, when remote video is requested to be deleted and KV delete request should be sent
+3. KV_DELETED - state, when video is deleted from KV store and delete request to S3 should be sent
+4. DELETED - state, when video has been deleted from KV store and delete request to S3 has been sent.
+Added MARKED_FOR_DELETION status to Incoming video (along with DOWNLOADING, DOWNLOADED etc.) to support state,
+when IncomingVideo should be removed from model only when it is deleted from KV store successfully.
+SO now IncomingVideo could be removed from model only if it has STATUS = MARKED_FOR_DELETION and REMOTE_STATUS = DELETED.
+Request to delete video from remote is sent when video is DOWNLOADED or FAILED_PERMANENTLY or, 
+if it wasn't removed yet, when video goes to MARKED_FOR_DELETION state.
+IncomingVideo goes to MARKED_FOR_DELETION state when video was FAILED_PERMANENTLY or VIEWED and we just downloaded a new one for the same user (removeAllViewed).
 
 ---------
 Fix Rollbar #817
