@@ -136,10 +136,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     @Override
     public void onVideoPlaybackError(String friendId, String videoId) {
         if (isForMe(friendId)) {
-            Friend friend = gridElement.getFriend();
-            if (!friend.hasIncomingPlayableVideos()) {
-                DialogShower.showToast(activity, R.string.video_is_not_playable);
-            }
+            DialogShower.showToast(activity, R.string.video_is_not_playable);
         }
     }
 
