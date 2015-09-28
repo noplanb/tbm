@@ -1,5 +1,5 @@
 Previous v2.6.7 (83)
-Current v2.7.23 (107)
+Current v2.7.24 (108)
 
 BACKGROUND CHANGES:
 Changes in Friend model:
@@ -159,4 +159,11 @@ Fixed Rollbar #1088
 -----------
 Additional fix for AmazonS3Exception: Forbidden 403
 When GCM new video request comes after polling
-
+Support of the case:
+1. Receive video V1 from friend F1.
+2. V1 isn't deleted from Remote for some reasons but deleted from S3.
+3. View V1.
+4. Receive V2 from F1.
+5. V1 gets deleted from model.
+6. Poll
+7. V1 tries to be downloaded again and fails
