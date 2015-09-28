@@ -8,6 +8,7 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.model.OutgoingVideoFactory;
 import com.zazoapp.client.network.NetworkConfig;
 
 import java.io.File;
@@ -66,13 +67,32 @@ public class UserInfoCollector {
                 addRow(info, list.toArray(new String[list.size()]));
             }
         }
+        if (OutgoingVideoFactory.getFactoryInstance().count() > 0) {
+            info.append("\n");
+            addRow(info, "Outgoing Videos", "", "", "");
+            addRow(info, "ID", "Status", "Exists", "Size");
+            ArrayList<OutgoingVideo> videos;
+            for (Friend friend : friends) {
+                videos = OutgoingVideoFactory.getFactoryInstance().allWhere(OutgoingVideo.Attributes.FRIEND_ID, friend.getId());
+                addRow(info, friend.getFullName(), "", "", "");
+                for (OutgoingVideo video : videos) {
+                    List<String> list = new ArrayList<>();
+                    list.add(video.getId());
+                    list.add(OutgoingVideo.Status.toShortString(video.getVideoStatus()));
+                    File file = friend.videoToFile(video.getId());
+                    list.add(String.valueOf(file.exists()));
+                    list.add(file.exists() ? String.valueOf(file.length()) : "");
+                    addRow(info, list.toArray(new String[list.size()]));
+                }
+            }
+        }
         info.append("\n");
         File file = new File(Config.homeDirPath(context));
         if (file.isDirectory()) {
             File[] list = file.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String filename) {
-                    return filename.startsWith("vid_from");
+                    return filename.startsWith("vid_from") || filename.startsWith("vid_to");
                 }
             });
             for (File f : list) {

@@ -201,8 +201,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
                 fileTransferService.reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
             }
             if (!isDelete()) {
+                Log.e(TAG, e.toString());
                 Dispatch.dispatch(
-                        new AmazonServiceException("Not Retryable Service Exception; Code=" + e.getStatusCode(), e),
+                        new AmazonServiceException("Not Retryable Service Exception; Code=" + e.getStatusCode()),
                         "notRetryableServiceException");
             }
         }
