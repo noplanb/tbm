@@ -168,6 +168,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         ArrayList<OutgoingVideo> outgoingVideos = OutgoingVideoFactory.getFactoryInstance().all();
         for (OutgoingVideo video : outgoingVideos) {
             switch (video.getVideoStatus()) {
+                case OutgoingVideo.Status.NONE:
                 case OutgoingVideo.Status.NEW:
                     Friend friend = friendFactory.find(video.get(Video.Attributes.FRIEND_ID));
                     if (friend != null) {
@@ -353,7 +354,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             // Create and download the video if this was a videoReceived intent.
             if (status == IncomingVideo.Status.NEW) {
                 IncomingVideoFactory incomingVideos = IncomingVideoFactory.getFactoryInstance();
-                if (incomingVideos.existsWithId(videoId) || !transferTasks.addDownloadId(videoId)) {
+                IncomingVideo video = incomingVideos.find(videoId);
+                if (video != null && video.getVideoStatus() != IncomingVideo.Status.NEW || !transferTasks.addDownloadId(videoId)) {
                     Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that is currently in process.");
                     return;
                 }
