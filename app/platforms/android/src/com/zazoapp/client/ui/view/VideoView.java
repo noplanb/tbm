@@ -101,6 +101,7 @@ public class VideoView extends SurfaceView
     private boolean     mCanPause;
     private boolean     mCanSeekBack;
     private boolean     mCanSeekForward;
+    private boolean     speakerPhoneOn = true;
 
     public VideoView(Context context) {
         super(context);
@@ -292,7 +293,7 @@ public class VideoView extends SurfaceView
             mCurrentBufferPercentage = 0;
             mMediaPlayer.setDataSource(mContext, mUri, mHeaders);
             mMediaPlayer.setDisplay(mSurfaceHolder);
-            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mMediaPlayer.setAudioStreamType(speakerPhoneOn ? AudioManager.STREAM_MUSIC : AudioManager.STREAM_VOICE_CALL);
             mMediaPlayer.setScreenOnWhilePlaying(true);
             mMediaPlayer.prepareAsync();
 
@@ -742,6 +743,14 @@ public class VideoView extends SurfaceView
     public void setVolume(float volume) {
         if (isInPlaybackState()) {
             mMediaPlayer.setVolume(volume, volume);
+        }
+    }
+
+    public void changeAudioStream(boolean speakerPhoneOn) {
+        this.speakerPhoneOn = speakerPhoneOn;
+        if (isPlaying()) {
+            mSeekWhenPrepared = mMediaPlayer.getCurrentPosition();
+            openVideo();
         }
     }
 }

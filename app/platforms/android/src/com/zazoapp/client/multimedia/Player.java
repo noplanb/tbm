@@ -23,6 +23,7 @@ public interface Player {
     boolean isPlaying();
     void rewind(int msec);
     void restartAfter(int delay);
+    void changeAudioStream();
 
     interface StatusCallbacks {
         void onVideoPlaying(String friendId, String videoId);

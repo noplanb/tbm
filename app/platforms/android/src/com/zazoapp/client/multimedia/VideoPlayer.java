@@ -10,13 +10,13 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import com.zazoapp.client.R;
+import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.ui.ZazoManagerProvider;
-import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.ui.view.VideoView;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -280,6 +280,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 videoView.start();
             }
         }, delay);
+    }
+
+    @Override
+    public void changeAudioStream() {
+        videoView.changeAudioStream(managerProvider.getAudioController().isSpeakerPhoneOn());
     }
 
     private boolean videoIsPlayable(){
