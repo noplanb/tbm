@@ -109,4 +109,23 @@
         <item name="android:background">@drawable/dev_divider</item>
         <item name="android:layout_margin">@dimen/debug_options_margin</item>
     </style>
+    <style name="DevButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center|right</item>
+        <item name="android:textColor">@color/dev_color</item>
+        <item name="android:background">@drawable/dev_btn_bg</item>
+        <item name="android:minWidth">100dp</item>
+    </style>
+    <style name="DevText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/dev_color</item>
+    </style>
+    <style name="DevSwitch">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/dev_color</item>
+        <item name="android:layout_marginTop">@dimen/debug_options_margin</item>
+    </style>
 </resources>
