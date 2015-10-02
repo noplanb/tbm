@@ -62,7 +62,9 @@ public class FriendGetter {
                     failure();
                     return null;
                 }
-                Collections.sort(list, new FriendFactory.ConnectionComparator());
+                if (list != null) {
+                    Collections.sort(list, new FriendFactory.ConnectionComparator());
+                }
                 return list;
             }
 

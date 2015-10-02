@@ -75,7 +75,9 @@ public class RemoteStorageHandler {
                     ArrayList<LinkedTreeMap<String, Object>> kvs = null;
                     try {
                         kvs = g.fromJson(response, ArrayList.class);
-                        gotRemoteKVs(kvs);
+                        if (kvs != null) {
+                            gotRemoteKVs(kvs);
+                        }
                     } catch (JsonSyntaxException e) {
                         error("JsonSyntaxException");
                     }

@@ -375,10 +375,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
                 friend.createThumb(videoId);
 
-                // TODO: create a new state for local videos called marked_for_remote_deletion.
-                // do not show videos in that state during play
-                // only after we have successfully deleted the remote_kv for the video do we
-                // actually delete the video object locally.
                 friend.deleteAllViewedVideos();
 
                 // if application is in foreground, alert is decided by GridElementController and connected to animation start
