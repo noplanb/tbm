@@ -155,12 +155,12 @@ public class HttpRequest {
         http.getParams().setParameter("Accept-Charset", "UTF-8");
 
         if(login==null || pass == null){
-                login = "GBAHb0482YxlJ0kYwbIS";
-                pass = "O4VXCozKuyQNjnWPh400";
+                login = "ZcAK4dM9S4m0IFui6ok6";
+                pass = "N4Yv70FPWlaxOS9M3wvS";
         }
 
         http.getCredentialsProvider().setCredentials(
-                new AuthScope(Config.getServerHost(), AuthScope.ANY_PORT, "Zazo Friend Finder"),
+                new AuthScope(Config.getServerHost(), AuthScope.ANY_PORT, "zazo.com"),
                 new UsernamePasswordCredentials(login, pass)
         );
 

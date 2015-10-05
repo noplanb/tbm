@@ -61,5 +61,11 @@ public class MyActivity extends Activity {
                 });
             }
         });
+        findViewById(R.id.runtest).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RetrofitTestRequests.testRun();
+            }
+        });
     }
 }

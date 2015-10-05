@@ -13,10 +13,10 @@ public class Config {
 //    public static final int SERVER_PORT = 3000;
 //    public static final String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;
 
-    //private static final String STAGE_HOST = "staging.zazoapp.com";
-    //private static final String STAGE_URI = "http://" + STAGE_HOST;
-    private static final String SERVER_HOST = "128.75.163.107";
-    private static final String SERVER_URI = "http://" + SERVER_HOST + ":9000";
+    private static final String STAGE_HOST = "staging.zazoapp.com";
+    private static final String STAGE_URI = "http://" + STAGE_HOST;
+    //private static final String SERVER_HOST = "128.75.163.107";
+    //private static final String SERVER_URI = "http://" + SERVER_HOST + ":9000";
 
     public static final String appName = "Zazo";
     public static final String landingPageUrl = "zazoapp.com/l/";
@@ -97,7 +97,7 @@ public class Config {
         //        return config.getCustomHost();
         //    }
         //}
-        return SERVER_HOST;
+        return STAGE_HOST;
     }
 
     public static String getServerUri() {
@@ -109,7 +109,7 @@ public class Config {
         //        return config.getCustomUri();
         //    }
         //}
-        return SERVER_URI;
+        return STAGE_URI;
     }
 
 
