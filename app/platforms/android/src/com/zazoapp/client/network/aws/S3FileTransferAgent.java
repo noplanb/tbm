@@ -87,6 +87,11 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	public boolean upload() throws InterruptedException {
 		try {
             PutObjectRequest _putObjectRequest = new PutObjectRequest(s3Bucket, filename, file);
+/*            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(file.length());
+            metadata.setContentType("video/mp4");
+            metadata.addUserMetadata(IntentFields.VIDEO_ID_KEY, intent.getStringExtra(IntentFields.VIDEO_ID_KEY));
+            _putObjectRequest.setMetadata(metadata);*/
 			Upload upload = tm.upload(_putObjectRequest);
 			upload.waitForUploadResult();
 		} catch (AmazonServiceException e) {

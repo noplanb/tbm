@@ -41,10 +41,11 @@ public class AudioManager implements SensorEventListener, AudioController {
                 Player player = managerProvider.getPlayer();
                 switch (focusChange) {
                     case android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                        player.stop();
-                        break;
                     case android.media.AudioManager.AUDIOFOCUS_LOSS:
                         player.stop();
+                        if (managerProvider.getRecorder().isRecording()) {
+                            managerProvider.getRecorder().cancel();
+                        }
                         break;
                     case android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                         player.setVolume(0.1f);
@@ -54,9 +55,6 @@ public class AudioManager implements SensorEventListener, AudioController {
                         break;
                 }
                 hasFocus = focusChange == android.media.AudioManager.AUDIOFOCUS_GAIN;
-                if (!hasFocus && managerProvider.getRecorder().isRecording()) {
-                    managerProvider.getRecorder().cancel();
-                }
             }
         };
     }
@@ -91,6 +89,17 @@ public class AudioManager implements SensorEventListener, AudioController {
         Log.i(TAG, "Proximity is close " + isProximityClose);
         if (managerProvider.getFeatures().isUnlocked(Features.Feature.EARPIECE)) {
             setSpeakerPhoneOn(managerProvider.getPlayer().isPlaying());
+        }
+    }
+
+    @Override
+    public void setExclusive(boolean exclusive) {
+        int[] streams = new int[] {
+                android.media.AudioManager.STREAM_MUSIC, android.media.AudioManager.STREAM_SYSTEM
+        };
+
+        for (int stream : streams) {
+            audioManager.setStreamMute(stream, exclusive);
         }
     }
 

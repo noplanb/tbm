@@ -3,7 +3,6 @@ package com.zazoapp.client.multimedia;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.util.Log;
 import android.view.TextureView.SurfaceTextureListener;
@@ -48,6 +47,7 @@ public class VideoRecorder implements SurfaceTextureListener {
     private MediaRecorder mediaRecorder;
     private Friend currentFriend;
     private PreviewTextureFrame preview;
+    private AudioController audioController;
 
     // Allow registration of a single delegate to handle exceptions.
     private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
@@ -76,15 +76,10 @@ public class VideoRecorder implements SurfaceTextureListener {
         Log.i(TAG, "startRecording");
 
         currentFriend = f;
-
         if (mediaRecorder == null) {
             prepareMediaRecorder();
         }
-
-        // stop playback
-        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        am.setStreamMute(AudioManager.STREAM_MUSIC, true);
-
+        setExclusiveAudioMode(true);
         try {
             mediaRecorder.start();
         } catch (IllegalStateException e) {
@@ -111,11 +106,6 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     public boolean stopRecording() {
         Log.i(TAG, "stopRecording");
-
-        // restore playback if needed
-        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        am.setStreamMute(AudioManager.STREAM_MUSIC, false);
-
         boolean rval = false;
         hideRecordingIndicator(); // It should be safe to call this even if the
         // sufraces have already been destroyed.
@@ -275,6 +265,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             mediaRecorder.release(); // release the recorder object
             mediaRecorder = null;
         }
+        setExclusiveAudioMode(false);
     }
 
     // -------------------
@@ -360,5 +351,15 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     public boolean isRecording() {
         return preview != null && preview.isRecording();
+    }
+
+    private void setExclusiveAudioMode(boolean mode) {
+        if (audioController != null) {
+            audioController.setExclusive(mode);
+        }
+    }
+
+    public void setAudioController(AudioController ac) {
+        audioController = ac;
     }
 }

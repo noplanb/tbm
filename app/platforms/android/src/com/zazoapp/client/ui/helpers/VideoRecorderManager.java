@@ -33,6 +33,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         this.context = context;
         videoRecorder = new VideoRecorder(context);
         videoRecorder.addExceptionHandlerDelegate(this);
+        videoRecorder.setAudioController(managerProvider.getAudioController());
         this.managerProvider = managerProvider;
     }
 

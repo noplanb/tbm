@@ -22,6 +22,12 @@ public interface AudioController {
     boolean hasFocus();
 
     /**
+     * Set up exclusive audio settings to mute unnecessary sounds
+     * @param exclusive true to mute audio streams, false to restore
+     */
+    void setExclusive(boolean exclusive);
+
+    /**
      *
      * @return true if audio system currently playing not through phone earpiece
      */
