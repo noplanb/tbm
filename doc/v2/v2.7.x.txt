@@ -1,5 +1,5 @@
 Previous v2.6.7 (83)
-Current v2.7.24 (108)
+Current v2.7.25 (110)
 
 BACKGROUND CHANGES:
 Changes in Friend model:
@@ -167,3 +167,14 @@ Support of the case:
 5. V1 gets deleted from model.
 6. Poll
 7. V1 tries to be downloaded again and fails
+
+
+-----------
+Fixed #163, 680
+-----------
+Recording should not record the ding.
+Audio from background apps should not cause abort of recording.
+SOLUTION:
+Set exclusive audio mode to avoid recording "ding" sound and notifications.
+Even if it ducks audio recording isn't canceled
+
