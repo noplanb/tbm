@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -22,8 +21,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.utilities.Convenience;
-
-import java.util.Locale;
 
 /**
  * Created by skamenkovych@codeminders.com on 5/6/2015.
@@ -118,7 +115,7 @@ public class TutorialLayout extends FrameLayout {
     private void setUpHintText() {
         tutorialHintView = (TextView) findViewById(R.id.tutorial_hint);
         tutorialHintView.setText(hintText);
-        Typeface tf = getTypeface();
+        Typeface tf = Convenience.getTypeface(getContext());
         tutorialHintView.setTypeface(tf);
         if (arrowAnchorRect == null) {
             arrowAnchorRect = dimExcludedRect;
@@ -154,20 +151,6 @@ public class TutorialLayout extends FrameLayout {
         } else {
             gotItButton.setText(buttonText);
         }
-    }
-
-    private Typeface getTypeface() {
-        boolean isLanguageSupported = Convenience.isLanguageSupported(getContext());
-        AssetManager am = getContext().getAssets();
-        Typeface tf = null;
-        if (isLanguageSupported) {
-            try {
-                tf = Typeface.createFromAsset(am, "fonts/tutorial-" + Locale.getDefault().getLanguage() + ".ttf");
-            } catch (RuntimeException e) {}
-        } else {
-            tf = Typeface.createFromAsset(am, "fonts/tutorial-en.ttf");
-        }
-        return tf;
     }
 
     public void dimExceptForRect(RectF rect) {

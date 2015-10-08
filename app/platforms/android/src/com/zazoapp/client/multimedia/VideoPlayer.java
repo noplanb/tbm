@@ -17,6 +17,7 @@ import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.ui.ZazoManagerProvider;
+import com.zazoapp.client.ui.view.TouchBlockScreen;
 import com.zazoapp.client.ui.view.VideoView;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -36,6 +37,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 	private Friend friend;
 	private VideoView videoView;
 	private ViewGroup videoBody;
+    private TouchBlockScreen blockScreen;
 	private boolean videosAreDownloading;
     private ZazoManagerProvider managerProvider;
     private Timer timer = new Timer();
@@ -43,9 +45,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
 	private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
 
-    public VideoPlayer(Activity activity, ZazoManagerProvider managerProvider) {
+    public VideoPlayer(Activity activity, ZazoManagerProvider managerProvider, TouchBlockScreen blockScreen) {
         this.activity = activity;
         this.managerProvider = managerProvider;
+        this.blockScreen = blockScreen;
     }
 
     @Override
@@ -54,6 +57,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         this.videoView = videoView;
         this.videoView.setOnCompletionListener(this);
         this.videoView.setOnPreparedListener(this);
+        blockScreen.setUnlockListener(new TouchBlockScreen.UnlockListener() {
+            @Override
+            public void onUnlockGesture() {
+                blockScreen.unlock(false);
+            }
+        });
     }
 
     @Override
@@ -120,6 +129,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         videoView.stopPlayback();
         videoView.setVideoURI(null);
         videoView.suspend();
+        blockScreen.unlock(true);
         managerProvider.getAudioController().setSpeakerPhoneOn(false);
         cancelWaitingForStart();
         notifyStopPlaying();
@@ -284,6 +294,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     @Override
     public void changeAudioStream() {
+        if (isPlaying() && !managerProvider.getAudioController().isSpeakerPhoneOn()) {
+            blockScreen.lock();
+        } else if (blockScreen.isLocked()) {
+            blockScreen.unlock(true);
+        }
         videoView.changeAudioStream(managerProvider.getAudioController().isSpeakerPhoneOn());
     }
 

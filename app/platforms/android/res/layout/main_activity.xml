@@ -169,4 +169,20 @@
             android:id="@+id/top_frame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
+    <com.zazoapp.client.ui.view.TouchBlockScreen
+            android:id="@+id/block_screen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible"
+            android:clickable="true">
+        <TextView
+                android:id="@+id/block_screen_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color_name"
+                android:textSize="@dimen/tutorial_text_size"
+                android:layout_centerInParent="true"
+                android:clickable="false"
+                android:text="@string/block_screen_unlock_message"/>
+    </com.zazoapp.client.ui.view.TouchBlockScreen>
 </RelativeLayout>

@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -317,5 +318,19 @@ public class Convenience {
             return null;
         }
         return json;
+    }
+
+    public static Typeface getTypeface(Context context) {
+        boolean isLanguageSupported = isLanguageSupported(context);
+        AssetManager am = context.getAssets();
+        Typeface tf = null;
+        if (isLanguageSupported) {
+            try {
+                tf = Typeface.createFromAsset(am, "fonts/tutorial-" + Locale.getDefault().getLanguage() + ".ttf");
+            } catch (RuntimeException e) {}
+        } else {
+            tf = Typeface.createFromAsset(am, "fonts/tutorial-en.ttf");
+        }
+        return tf;
     }
 }

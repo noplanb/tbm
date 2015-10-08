@@ -14,8 +14,8 @@ import com.zazoapp.client.multimedia.Player;
 import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.tutorial.Tutorial;
-import com.zazoapp.client.tutorial.TutorialLayout;
 import com.zazoapp.client.ui.helpers.VideoRecorderManager;
+import com.zazoapp.client.ui.view.TouchBlockScreen;
 
 /**
  * Created by skamenkovych@codeminders.com on 5/6/2015.
@@ -38,7 +38,7 @@ public class ManagerHolder {
         benchController = new BenchController(activity, activity);
         audioManager = new AudioManager(activity, activity);
         videoRecorder = new VideoRecorderManager(activity, activity);
-        videoPlayer = new VideoPlayer(activity, activity);
+        videoPlayer = new VideoPlayer(activity, activity, (TouchBlockScreen) activity.findViewById(R.id.block_screen));
         sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         if (proximitySensor == null) {
