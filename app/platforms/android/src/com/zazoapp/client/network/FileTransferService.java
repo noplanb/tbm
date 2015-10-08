@@ -5,8 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.network.aws.S3FileTransferAgent;
 
@@ -30,7 +33,7 @@ public abstract class FileTransferService extends IntentService {
     private final Condition reset = lock.newCondition();
     private final AtomicInteger retryCount = new AtomicInteger();
 
-    public class IntentFields {
+    public static class IntentFields {
         public static final String ID_KEY = "id";
         public static final String TRANSFER_TYPE_KEY = "transferType";
         public static final String RETRY_COUNT_KEY = "retryCount";
@@ -39,10 +42,37 @@ public abstract class FileTransferService extends IntentService {
         public static final String PARAMS_KEY = "params";
         public static final String STATUS_KEY = "status";
         public static final String VIDEO_ID_KEY = "videoIdKey";
+        public static final String METADATA = "metadata";
 
         public static final String TRANSFER_TYPE_UPLOAD = "upload";
         public static final String TRANSFER_TYPE_DOWNLOAD = "download";
         public static final String TRANSFER_TYPE_DELETE = "delete";
+    }
+
+    public static class MetaData {
+        private static final String FIELD_VIDEO_ID = "video_id";
+        private static final String FIELD_SENDER_MKEY = "sender_mkey";
+        private static final String FIELD_RECEIVER_MKEY = "receiver_mkey";
+        private static final String FIELD_CLIENT_VERSION = "client_version";
+        private static final String FIELD_CLIENT_PLATFORM = "client_platform";
+
+        private static final String PLATFORM = "android";
+        /**
+         * Returns bundle with metadata for video based on params
+         * @param videoId video ID
+         * @param sender sender MKEY
+         * @param receiver receiver MKEY
+         * @return metadata
+         */
+        public static Bundle getMetadata(@NonNull String videoId, @NonNull String sender, @NonNull String receiver) {
+            Bundle metadata = new Bundle();
+            metadata.putString(FIELD_VIDEO_ID, videoId);
+            metadata.putString(FIELD_SENDER_MKEY, sender);
+            metadata.putString(FIELD_RECEIVER_MKEY, receiver);
+            metadata.putString(FIELD_CLIENT_VERSION, TbmApplication.getVersionNumber());
+            metadata.putString(FIELD_CLIENT_PLATFORM, PLATFORM);
+            return metadata;
+        }
     }
 
     protected abstract void maxRetriesReached(Intent intent) throws InterruptedException;

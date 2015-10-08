@@ -1,6 +1,7 @@
 package com.zazoapp.client.network.aws;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -14,6 +15,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.IncomingVideo;
@@ -87,11 +89,14 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	public boolean upload() throws InterruptedException {
 		try {
             PutObjectRequest _putObjectRequest = new PutObjectRequest(s3Bucket, filename, file);
-/*            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(file.length());
-            metadata.setContentType("video/mp4");
-            metadata.addUserMetadata(IntentFields.VIDEO_ID_KEY, intent.getStringExtra(IntentFields.VIDEO_ID_KEY));
-            _putObjectRequest.setMetadata(metadata);*/
+            if (intent.hasExtra(IntentFields.METADATA)) {
+                Bundle data = intent.getBundleExtra(IntentFields.METADATA);
+                ObjectMetadata metadata = new ObjectMetadata();
+                for (String s : data.keySet()) {
+                    metadata.addUserMetadata(s, data.getString(s));
+                }
+                _putObjectRequest.setMetadata(metadata);
+            }
 			Upload upload = tm.upload(_putObjectRequest);
 			upload.waitForUploadResult();
 		} catch (AmazonServiceException e) {

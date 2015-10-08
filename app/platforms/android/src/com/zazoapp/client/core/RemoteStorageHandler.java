@@ -6,7 +6,6 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.utilities.StringUtils;
@@ -219,14 +218,14 @@ public class RemoteStorageHandler {
     public static String buildIncomingVideoFilenameKey(Friend friend, String videoId) {
         StringBuilder builder = new StringBuilder();
         builder.append(friend.getMkey()).append("-");
-        builder.append(UserFactory.current_user().get(User.Attributes.MKEY)).append("-");
+        builder.append(UserFactory.getCurrentUserMkey()).append("-");
         builder.append(md5(friend.get(Friend.Attributes.CKEY) + videoId));
         return builder.toString();
     }
 
     public static String buildOutgoingVideoFilenameKey(Friend friend, String videoId) {
         StringBuilder builder = new StringBuilder();
-        builder.append(UserFactory.current_user().get(User.Attributes.MKEY)).append("-");
+        builder.append(UserFactory.getCurrentUserMkey()).append("-");
         builder.append(friend.getMkey()).append("-");
         builder.append(md5(friend.get(Friend.Attributes.CKEY) + videoId));
         return builder.toString();
@@ -235,7 +234,7 @@ public class RemoteStorageHandler {
     public static String buildIncomingKvKey(Friend friend, String suffix) {
         StringBuilder builder = new StringBuilder();
         String sender = friend.getMkey();
-        String receiver = UserFactory.current_user().get(User.Attributes.MKEY);
+        String receiver = UserFactory.getCurrentUserMkey();
         String ckey = friend.get(Friend.Attributes.CKEY);
         builder.append(sender).append("-").append(receiver).append("-");
         builder.append(md5(sender + receiver + ckey));
@@ -245,7 +244,7 @@ public class RemoteStorageHandler {
 
     public static String buildOutgoingKvKey(Friend friend, String suffix) {
         StringBuilder builder = new StringBuilder();
-        String sender = UserFactory.current_user().get(User.Attributes.MKEY);
+        String sender = UserFactory.getCurrentUserMkey();
         String receiver = friend.getMkey();
         String ckey = friend.get(Friend.Attributes.CKEY);
         builder.append(sender).append("-").append(receiver).append("-");
@@ -255,7 +254,7 @@ public class RemoteStorageHandler {
     }
 
     private static String buildWelcomedFriendsKvKey() {
-        return UserFactory.current_user().get(User.Attributes.MKEY) + WELCOMED_FRIENDS_KV_KEY;
+        return UserFactory.getCurrentUserMkey() + WELCOMED_FRIENDS_KV_KEY;
     }
     //--------------------------
     // Set Get and Delete Remote

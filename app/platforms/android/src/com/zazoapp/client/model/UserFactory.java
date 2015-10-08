@@ -53,4 +53,15 @@ public class UserFactory extends ActiveModelFactory<User> {
             return null;
         }
     }
+
+    public static String getCurrentUserMkey() {
+        User currentUser = current_user();
+        if (currentUser != null) {
+            String userMkey = currentUser.getMkey();
+            if (userMkey != null) {
+                return userMkey;
+            }
+        }
+        return "";
+    }
 }

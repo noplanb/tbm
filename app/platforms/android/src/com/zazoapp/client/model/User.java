@@ -116,5 +116,8 @@ public class User extends ActiveModel{
     		return "";
     	}
     }
-    
+
+    public String getMkey() {
+        return get(Attributes.MKEY);
+    }
 }

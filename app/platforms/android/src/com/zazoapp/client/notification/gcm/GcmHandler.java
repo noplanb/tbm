@@ -9,15 +9,13 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.gson.internal.LinkedTreeMap;
-import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 
 import java.io.IOException;
@@ -162,7 +160,7 @@ public class GcmHandler {
 	
 	private void sendRegistrationIdToBackend() {
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();
-		params.put("mkey", UserFactory.current_user().get(User.Attributes.MKEY));
+		params.put("mkey", UserFactory.getCurrentUserMkey());
 		params.put("push_token", regid);
 		params.put("device_platform", "android");
 	    new GCMPostPushToken("notification/set_push_token", params, "POST");
