@@ -39,6 +39,7 @@ import com.zazoapp.client.utilities.AsyncTaskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -358,24 +359,29 @@ public class ContactsManager implements OnItemClickListener {
 		return r;
 	}
 
-	private ArrayList<LinkedTreeMap<String, String>> validPhoneNumberObjectsWithPhoneNumbers(
-			ArrayList<LinkedTreeMap<String, String>> phoneNumbers) {
-		PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
-		ArrayList<LinkedTreeMap<String, String>> r = new ArrayList<LinkedTreeMap<String, String>>();
-		for (LinkedTreeMap<String, String> phoneHash : phoneNumbers) {
-			String ps = phoneHash.get(Contact.PhoneNumberKeys.PHONE_NUMBER);
-			PhoneNumber pn = getPhoneObject(ps, UserFactory.current_user().getRegion(), UserFactory.current_user()
-					.getAreaCode());
-			if (pn != null && pu.isValidNumber(pn)) {
-				phoneHash.put(Contact.PhoneNumberKeys.INTERNATIONAL, pu.format(pn, PhoneNumberFormat.INTERNATIONAL));
-				phoneHash.put(Contact.PhoneNumberKeys.NATIONAL, pu.format(pn, PhoneNumberFormat.NATIONAL));
-				phoneHash.put(Contact.PhoneNumberKeys.E164, pu.format(pn, PhoneNumberFormat.E164));
-				phoneHash.put(Contact.PhoneNumberKeys.COUNTRY_CODE, pn.getCountryCode() + "");
-				r.add(phoneHash);
-			}
-		}
-		return r;
-	}
+    private ArrayList<LinkedTreeMap<String, String>> validPhoneNumberObjectsWithPhoneNumbers(
+            ArrayList<LinkedTreeMap<String, String>> phoneNumbers) {
+        PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
+        ArrayList<LinkedTreeMap<String, String>> r = new ArrayList<LinkedTreeMap<String, String>>();
+        Set<String> uniquePhones = new HashSet<>();
+        for (LinkedTreeMap<String, String> phoneHash : phoneNumbers) {
+            String ps = phoneHash.get(Contact.PhoneNumberKeys.PHONE_NUMBER);
+            PhoneNumber pn = getPhoneObject(ps, UserFactory.current_user().getRegion(), UserFactory.current_user()
+                    .getAreaCode());
+            if (pn != null && pu.isValidNumber(pn)) {
+                String e164 = pu.format(pn, PhoneNumberFormat.E164);
+                if (!uniquePhones.contains(e164)) {
+                    phoneHash.put(Contact.PhoneNumberKeys.INTERNATIONAL, pu.format(pn, PhoneNumberFormat.INTERNATIONAL));
+                    phoneHash.put(Contact.PhoneNumberKeys.NATIONAL, pu.format(pn, PhoneNumberFormat.NATIONAL));
+                    phoneHash.put(Contact.PhoneNumberKeys.E164, e164);
+                    phoneHash.put(Contact.PhoneNumberKeys.COUNTRY_CODE, pn.getCountryCode() + "");
+                    r.add(phoneHash);
+                    uniquePhones.add(e164);
+                }
+            }
+        }
+        return r;
+    }
 
 	// Tries to prepend a default AreaCode in order to make a valid number.
 	private static PhoneNumber getPhoneObject(String phone, String defaultRegion, String defaultAreaCode) {
