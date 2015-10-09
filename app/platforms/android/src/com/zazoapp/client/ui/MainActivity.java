@@ -10,7 +10,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MotionEvent;
 import android.view.View;
 import com.zazoapp.client.R;
 import com.zazoapp.client.bench.BenchViewManager;
@@ -361,15 +360,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 releaseManagers();
             }
         });
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        //TODO eliminate blocking touches for 2.3.x release
-        //if (audioManager.isSpeakerPhoneOn()) {
-            return super.dispatchTouchEvent(ev);
-        //}
-        //return true;
     }
 
     private void toggleBench() {
