@@ -302,11 +302,11 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             }
             updateStatus();
             if (status == OutgoingVideo.Status.UPLOADED) {
-                // Set remote videoIdKV
-                RemoteStorageHandler.addRemoteOutgoingVideoId(friend, videoId);
-
-                // Send outgoing notification
-                NotificationHandler.sendForVideoReceived(friend, videoId);
+                //// Set remote videoIdKV
+                //RemoteStorageHandler.addRemoteOutgoingVideoId(friend, videoId);
+                //
+                //// Send outgoing notification
+                //NotificationHandler.sendForVideoReceived(friend, videoId);
             }
             if (status == OutgoingVideo.Status.UPLOADED || status == OutgoingVideo.Status.FAILED_PERMANENTLY) {
                 transferTasks.removeUploadId(videoId);

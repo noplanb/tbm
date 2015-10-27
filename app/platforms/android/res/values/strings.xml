@@ -156,4 +156,6 @@
     <string name="feedback_subject">Feedback</string>
     <string name="feedback_send_fails">Impossible to send feedback</string>
     <string name="block_screen_unlock_message">Double tap to unlock</string>
+    <string name="dev_previous"><![CDATA[<]]></string>
+    <string name="dev_next"><![CDATA[>]]></string>
 </resources>

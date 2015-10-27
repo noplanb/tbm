@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -44,6 +45,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     private EditText serverHost;
     private EditText serverUri;
     private DebugConfig config;
+    private VoiceRecognitionTestManager voiceRecognitionTestManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +83,9 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         super.onPause();
         config.setCustomServerHost(serverHost.getText().toString().replace(" ", ""));
         config.setCustomServerUri(serverUri.getText().toString().replace(" ", ""));
+        if (voiceRecognitionTestManager != null) {
+            voiceRecognitionTestManager.saveTranscriptions();
+        }
     }
 
     private void setUpVersion() {
@@ -426,6 +431,10 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 DialogShower.showToast(DebugSettingsActivity.this, text.toString());
             }
         });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            View voiceRecognitionRoot = findViewById(R.id.lollipop_specific_features).findViewById(R.id.voice_recognition_layout);
+            voiceRecognitionTestManager = new VoiceRecognitionTestManager(voiceRecognitionRoot);
+        }
     }
 
     @Override

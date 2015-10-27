@@ -50,11 +50,11 @@ public abstract class FileTransferService extends IntentService {
     }
 
     public static class MetaData {
-        private static final String FIELD_VIDEO_ID = "video_id";
-        private static final String FIELD_SENDER_MKEY = "sender_mkey";
-        private static final String FIELD_RECEIVER_MKEY = "receiver_mkey";
-        private static final String FIELD_CLIENT_VERSION = "client_version";
-        private static final String FIELD_CLIENT_PLATFORM = "client_platform";
+        private static final String FIELD_VIDEO_ID = "video-id";
+        private static final String FIELD_SENDER_MKEY = "sender-mkey";
+        private static final String FIELD_RECEIVER_MKEY = "receiver-mkey";
+        private static final String FIELD_CLIENT_VERSION = "client-version";
+        private static final String FIELD_CLIENT_PLATFORM = "client-platform";
 
         private static final String PLATFORM = "android";
         /**

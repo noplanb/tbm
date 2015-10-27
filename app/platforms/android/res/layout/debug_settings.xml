@@ -257,7 +257,9 @@
                 android:layout_width="match_parent"
                 android:text="Show unlocked features"
                 android:layout_marginTop="@dimen/debug_options_margin"/>
-        </LinearLayout>
 
+            <include layout="@layout/lollipop_specific_features"
+                    android:id="@+id/lollipop_specific_features"/>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
