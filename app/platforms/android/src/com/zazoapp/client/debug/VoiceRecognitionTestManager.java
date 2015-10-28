@@ -1,11 +1,20 @@
 package com.zazoapp.client.debug;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.VideoView;
 import butterknife.ButterKnife;
@@ -24,10 +33,15 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.model.Video;
+import com.zazoapp.client.multimedia.ThumbnailRetriever;
 import com.zazoapp.client.utilities.Convenience;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Map;
 
 /**
  * Created by skamenkovych@codeminders.com on 10/23/2015.
@@ -40,6 +54,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
 
     @InjectView(R.id.video_view_layout) FrameLayout videoViewLayout;
     @InjectView(R.id.video_view) VideoView videoView;
+    @InjectView(R.id.thumb) ImageView imThumb;
     @InjectView(R.id.previous) Button btnPrevious;
     @InjectView(R.id.next) Button btnNext;
     @InjectView(R.id.name) TextView tvName;
@@ -51,12 +66,14 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
     @InjectView(R.id.nuance) Button btnNuance;
     @InjectView(R.id.nuance_progress) ProgressBar pbNuance;
     @InjectView(R.id.nuance_transcription) TextView tvNuance;
+    @InjectView(R.id.friends_selector) Spinner friendsSpinner;
 
     private ArrayList<IncomingVideo> videos;
     private LinkedTreeMap<String, String> transcriptions = new LinkedTreeMap<>();
-    private int position = -1;
+    private int videoIndex = -1;
     private String transcriptionsPath;
     private boolean isVideoPrepared = false;
+    private Friend selectedFriend;
 
     public VoiceRecognitionTestManager(View root) {
         ButterKnife.inject(this, root);
@@ -66,8 +83,44 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
     private void init() {
         videos = IncomingVideoFactory.getFactoryInstance().all();
         if (!videos.isEmpty()) {
-            position = 0;
+            videoIndex = 0;
         }
+        Collections.sort(videos, new Video.VideoTimestampReverseComparator<IncomingVideo>());
+        loadTranscriptions();
+        loadFriends();
+        setVideo();
+    }
+
+    private void loadFriends() {
+        friendsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                int friendId = (int) parent.getAdapter().getItemId(position);
+                if (friendId <= 0) {
+                    selectedFriend = null;
+                    videos = IncomingVideoFactory.getFactoryInstance().all();
+                } else {
+                    selectedFriend = FriendFactory.getFactoryInstance().find(String.valueOf(friendId));
+                    videos = selectedFriend.getIncomingPlayableVideos();
+                }
+                Collections.sort(videos, new Video.VideoTimestampReverseComparator<IncomingVideo>());
+                videoIndex = 0;
+                setVideo();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                selectedFriend = null;
+                videos = IncomingVideoFactory.getFactoryInstance().all();
+                videoIndex = 0;
+                setVideo();
+            }
+        });
+        friendsSpinner.setAdapter(new FriendsSpinnerAdapter());
+
+    }
+
+    private void loadTranscriptions() {
         String json = Convenience.getJsonFromFile(getPath());
         if (json != null) {
             Gson g = new Gson();
@@ -83,15 +136,14 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
                 transcriptions = all;
             }
         }
-        setVideo();
     }
 
     private void setVideo() {
-        if (position < 0 || position >= videos.size()) {
+        if (videoIndex < 0 || videoIndex >= videos.size()) {
             setNoVideos();
             return;
         }
-        IncomingVideo video = videos.get(position);
+        IncomingVideo video = videos.get(videoIndex);
         Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
         File videoFile = friend.videoFromFile(video.getId());
         int counter = 0;
@@ -102,8 +154,8 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
                 return;
             }
             counter++;
-            position = (position + 1) % videos.size();
-            video = videos.get(position);
+            videoIndex = (videoIndex + 1) % videos.size();
+            video = videos.get(videoIndex);
             friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
             videoFile = friend.videoFromFile(video.getId());
         }
@@ -112,6 +164,15 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
         tvFrom.setText(friend.getFullName() + " (" + friend.get(Friend.Attributes.MOBILE_NUMBER) + ")");
         tvGoogle.setText(getTranscription(video.getId(), PROVIDER_GOOGLE));
         tvNuance.setText(getTranscription(video.getId(), PROVIDER_NUANCE));
+        btnGoogle.setEnabled(true);
+        btnNuance.setEnabled(true);
+        ThumbnailRetriever retriever = new ThumbnailRetriever();
+        try {
+            Bitmap thumb = retriever.getThumbnail(friend.videoFromPath(video.getId()));
+            imThumb.setImageBitmap(thumb);
+        } catch (ThumbnailRetriever.ThumbnailBrokenException e) {
+            imThumb.setImageResource(R.drawable.ic_no_pic_z);
+        }
         isVideoPrepared = false;
         if (videoView.isPlaying()) {
             videoView.stopPlayback();
@@ -127,13 +188,13 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
         if (videos.isEmpty()) {
             return;
         }
-        position = ((v.getId() == R.id.previous) ? (position - 1) : (position + 1)) % videos.size();
+        videoIndex = ((v.getId() == R.id.previous) ? (videoIndex - 1) : (videoIndex + 1)) % videos.size();
         setVideo();
     }
 
     @OnClick({R.id.google, R.id.nuance})
     public void onRequest(View v) {
-        if (position < 0 || position >= videos.size()) {
+        if (videoIndex < 0 || videoIndex >= videos.size()) {
             return;
         }
         float limit;
@@ -158,7 +219,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
                 trProgressView = pbNuance;
                 break;
         }
-        final IncomingVideo video = videos.get(position);
+        final IncomingVideo video = videos.get(videoIndex);
         if (transcriptions.containsKey(video.getId())) {
             Transcription transcription = Transcription.fromJson(transcriptions.get(video.getId()));
             if (transcription.get(provider) != null) {
@@ -212,10 +273,56 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
             if (videoView.isPlaying()) {
                 videoView.stopPlayback();
                 videoView.resume();
+                imThumb.setVisibility(View.VISIBLE);
             } else {
                 videoView.start();
+                imThumb.setVisibility(View.INVISIBLE);
             }
         }
+    }
+
+    @OnClick(R.id.all_transcriptions)
+    public void onShowAllClick(final View v) {
+        final ArrayList<Transcription> list = new ArrayList<>(transcriptions.size());
+        final ArrayList<String> videoIds = new ArrayList<>(transcriptions.size());
+        for (Map.Entry<String, String> entry : transcriptions.entrySet()) {
+            list.add(Transcription.fromJson(entry.getValue()));
+            videoIds.add(entry.getKey());
+        }
+        AlertDialog.Builder trDialog = new AlertDialog.Builder(v.getContext());
+        trDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        trDialog.setAdapter(new TranscriptionsAdapter(list), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Transcription tr = list.get(which);
+                IncomingVideo video = IncomingVideoFactory.getFactoryInstance().find(videoIds.get(which));
+                String strName;
+                if (video != null) {
+                    strName = FriendFactory.getFactoryInstance().find(video.getFriendId()).getDisplayName() + " " + video.getId();
+                } else {
+                    strName = video.getId();
+                }
+                AlertDialog.Builder builderInner = new AlertDialog.Builder(v.getContext(), android.R.style.Theme_Material_Light_Dialog_Alert);
+                builderInner.setMessage("Google:\n" + tr.get(PROVIDER_GOOGLE) + "\n\nNuance:\n" + tr.get(PROVIDER_NUANCE));
+                builderInner.setTitle(strName);
+                builderInner.setPositiveButton(
+                        "Ok",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                onShowAllClick(v);
+                            }
+                        });
+                builderInner.show();
+            }
+        });
+        trDialog.show();
     }
 
     public void saveTranscriptions() {
@@ -242,11 +349,13 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
     public void onCompletion(MediaPlayer mp) {
         videoView.stopPlayback();
         videoView.resume();
+        imThumb.setVisibility(View.VISIBLE);
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         videoView.stopPlayback();
+        imThumb.setVisibility(View.GONE);
         return true;
     }
 
@@ -259,8 +368,13 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
 
     private void setNoVideos() {
         tvName.setText("No videos");
+        tvDuration.setText("");
+        tvFrom.setText("");
+        tvGoogle.setText("");
+        tvNuance.setText("");
         btnGoogle.setEnabled(false);
         btnNuance.setEnabled(false);
+        imThumb.setImageResource(R.drawable.ic_no_pic_z);
     }
 
     static class Transcription {
@@ -308,5 +422,132 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
             }
         }
         return "";
+    }
+
+    static class FriendsSpinnerAdapter extends BaseAdapter {
+        ArrayList<Friend> friends = FriendFactory.getFactoryInstance().all();
+
+        FriendsSpinnerAdapter() {
+            friends = FriendFactory.getFactoryInstance().all();
+            Collections.sort(friends, new Comparator<Friend>() {
+                @Override
+                public int compare(Friend lhs, Friend rhs) {
+                    return lhs.getFullName().compareTo(rhs.getFullName());
+                }
+            });
+        }
+
+        @Override
+        public int getCount() {
+            return friends.size() + 1;
+        }
+
+        @Override
+        public Friend getItem(int position) {
+            if (position == 0) {
+                return null;
+            }
+            return friends.get(position - 1);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            if (position == 0) {
+                return -1;
+            }
+            return Integer.parseInt(friends.get(position - 1).getId());
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            Holder h;
+            if (convertView != null) {
+                h = (Holder) convertView.getTag();
+            } else {
+                convertView = View.inflate(parent.getContext(), R.layout.phone_list_item, null);
+                h = new Holder(convertView);
+            }
+            Friend friend = getItem(position);
+            if (friend != null) {
+                h.name.setText(friend.getFullName());
+                h.num.setText("(" + friend.getIncomingPlayableVideos().size() + ")");
+            } else {
+                h.name.setText("All");
+                h.num.setText("(~" + IncomingVideoFactory.getFactoryInstance().count() + ")");
+            }
+
+            return convertView;
+        }
+
+        static class Holder {
+            @InjectView(R.id.left_text) TextView name;
+            @InjectView(R.id.right_text) TextView num;
+
+            Holder(View v) {
+                ButterKnife.inject(this, v);
+                v.setTag(this);
+                name.setTextColor(Color.LTGRAY);
+                num.setTextColor(Color.LTGRAY);
+            }
+        }
+    }
+
+    static class TranscriptionsAdapter extends BaseAdapter {
+        ArrayList<Transcription> transcriptions;
+
+        TranscriptionsAdapter(ArrayList<Transcription> list) {
+            transcriptions = list;
+        }
+
+        @Override
+        public int getCount() {
+            return transcriptions.size();
+        }
+
+        @Override
+        public Transcription getItem(int position) {
+            return transcriptions.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            Holder h;
+            if (convertView != null) {
+                h = (Holder) convertView.getTag();
+            } else {
+                convertView = View.inflate(parent.getContext(), R.layout.transcription_item, null);
+                h = new Holder(convertView);
+            }
+            Transcription transcription = getItem(position);
+            h.setGoogle(transcription.google);
+            h.setNuance(transcription.nuance);
+
+            return convertView;
+        }
+
+        static class Holder {
+            @InjectView(R.id.text1) TextView google;
+            @InjectView(R.id.text2) TextView nuance;
+
+            Holder(View v) {
+                ButterKnife.inject(this, v);
+                v.setTag(this);
+                google.setTextColor(Color.LTGRAY);
+                nuance.setTextColor(Color.LTGRAY);
+            }
+
+            public void setGoogle(String text) {
+                google.setText("G: " + text);
+            }
+
+            public void setNuance(String text) {
+                nuance.setText("N: " + text + " very long text to test how it will be for such guys like Sani with veeeery long Zazo messages");
+            }
+        }
     }
 }

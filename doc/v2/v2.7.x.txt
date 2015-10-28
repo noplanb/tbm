@@ -1,7 +1,9 @@
 Previous v2.6.7 (83)
 Current v2.7.26 (111)
 
+--------
 BACKGROUND CHANGES:
+----------
 Changes in Friend model:
 1. Added CONNECTION CREATOR flag
 2. Added DELETED flag

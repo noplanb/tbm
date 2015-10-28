@@ -1,7 +1,9 @@
 Previous v2.4.11 (71)
 Current v2.5.3 (75)
 
+---------
 BACKGROUND CHANGES:
+--------
 - Added on boot complete receiver and start main service to restore transferring
 - Removed NonStopIntentService. Used IntentService instead.
 - Removed reset transferring on app resume.

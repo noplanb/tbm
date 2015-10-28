@@ -19,6 +19,13 @@ public abstract class Video extends ActiveModel {
         }
     }
 
+    public static class VideoTimestampReverseComparator <T extends Video> implements Comparator<T> {
+        @Override
+        public int compare(T o1, T o2) {
+            return VideoIdUtils.timeStampFromVideoId(o2.getId()).compareTo(VideoIdUtils.timeStampFromVideoId(o1.getId()));
+        }
+    }
+
     public static class Attributes{
         public static final String ID  = "id";
         public static final String FRIEND_ID = "friendId";

@@ -1,7 +1,9 @@
 Previous v2.5.3 (75)
 Current v2.6.8 (84)
 
+--------
 BACKGROUND CHANGES:
+--------
 - New #505 Provide array of invitees emails in invitation#invite call
 - Added debug option to disable GCM notifications
 - Improved modelChanged callbacks for future interactions.
