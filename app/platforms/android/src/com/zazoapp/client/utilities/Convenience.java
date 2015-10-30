@@ -1,5 +1,6 @@
 package com.zazoapp.client.utilities;
 
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.KeyguardManager;
 import android.content.Context;
@@ -14,13 +15,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.PowerManager;
+import android.os.StatFs;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.WindowManager;
+import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
+import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.notification.NotificationAlertManager;
 import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedReader;
@@ -332,5 +337,39 @@ public class Convenience {
             tf = Typeface.createFromAsset(am, "fonts/tutorial-en.ttf");
         }
         return tf;
+    }
+
+    public static float availableRoomSpace(File file) {
+        StatFs stat = new StatFs(file.getPath());
+        long bytesAvailable;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2){
+            bytesAvailable = getAvailableBytes(stat);
+        }
+        else{
+            //noinspection deprecation
+            bytesAvailable = stat.getBlockSize() * stat.getAvailableBlocks();
+        }
+
+        return bytesAvailable / (1024.f * 1024.f);
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private static long getAvailableBytes(StatFs stat) {
+        return stat.getBlockSizeLong() * stat.getAvailableBlocksLong();
+    }
+
+    /**
+     *
+     * @param context
+     * @return true if it is enough space
+     */
+    public static boolean checkAndNotifyNoSpace(Context context) {
+        boolean result = availableRoomSpace(new File(Config.homeDirPath(context))) > DebugConfig.getInstance(context).getMinRoomSpace();
+        if (!result) {
+            String message = "Not enough space";
+            String subText = "Free some space to continue using Zazo";
+            NotificationAlertManager.alert(context, message, subText, null);
+        }
+        return result;
     }
 }

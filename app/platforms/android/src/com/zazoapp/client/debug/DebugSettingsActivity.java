@@ -9,15 +9,20 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
@@ -42,8 +47,9 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
 
     public static final String EXTRA_FROM_REGISTER_SCREEN = "from_register_screen";
 
-    private EditText serverHost;
-    private EditText serverUri;
+    @InjectView(R.id.server_host) EditText serverHost;
+    @InjectView(R.id.server_uri) EditText serverUri;
+    @InjectView(R.id.min_room_space) EditText minRoomSpace;
     private DebugConfig config;
     private VoiceRecognitionTestManager voiceRecognitionTestManager;
 
@@ -51,18 +57,16 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.debug_settings);
+        ButterKnife.inject(this);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         config = DebugConfig.getInstance(this);
         setUpVersion();
         setUpDebugMode();
         setUpUserInfo();
-        setUpSendSms();
         setUpServer();
-        setUpCameraOption();
+        setUpCustomizationOptions();
         setUpCrashButton();
-        setUpSendBrokenVideo();
         setUpTutorialOption();
-        setUpDisableGcmNotificationsOption();
         setUpFeatureOptions();
     }
 
@@ -83,6 +87,8 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         super.onPause();
         config.setCustomServerHost(serverHost.getText().toString().replace(" ", ""));
         config.setCustomServerUri(serverUri.getText().toString().replace(" ", ""));
+        setMinRoomSpace(minRoomSpace.getText());
+        config.setMinRoomSpace(Integer.parseInt(minRoomSpace.getText().toString()));
         if (voiceRecognitionTestManager != null) {
             voiceRecognitionTestManager.saveTranscriptions();
         }
@@ -116,17 +122,6 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         });
     }
 
-    private void setUpSendSms() {
-        Switch debugMode = (Switch) findViewById(R.id.send_sms);
-        debugMode.setChecked(config.shouldSendSms());
-        debugMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.enableSendSms(isChecked);
-            }
-        });
-    }
-
     private void setUpServer() {
         final LinearLayout serverHostLayout = (LinearLayout) findViewById(R.id.server_host_layout);
         final LinearLayout serverUriLayout = (LinearLayout) findViewById(R.id.server_uri_layout);
@@ -141,8 +136,6 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         serverHostLayout.setVisibility(config.shouldUseCustomServer() ? View.VISIBLE : View.GONE);
         serverUriLayout.setVisibility(config.shouldUseCustomServer() ? View.VISIBLE : View.GONE);
 
-        serverHost = (EditText) findViewById(R.id.server_host);
-        serverUri = (EditText) findViewById(R.id.server_uri);
         serverHost.setText(config.getCustomHost());
         serverUri.setText(config.getCustomUri());
         serverHost.setEnabled(isEnabled);
@@ -295,7 +288,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         });
     }
 
-    private void setUpCameraOption() {
+    private void setUpCustomizationOptions() {
         Switch cameraOption = (Switch) findViewById(R.id.use_rear_camera);
         cameraOption.setChecked(config.shouldUseRearCamera());
         cameraOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -304,6 +297,55 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 config.useRearCamera(isChecked);
             }
         });
+
+        Switch sendBrokenVideoOption = (Switch) findViewById(R.id.send_broken_video);
+        sendBrokenVideoOption.setChecked(config.shouldSendBrokenVideo());
+        sendBrokenVideoOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                config.setSendBrokenVideo(isChecked);
+            }
+        });
+
+        Switch debugMode = (Switch) findViewById(R.id.send_sms);
+        debugMode.setChecked(config.shouldSendSms());
+        debugMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                config.enableSendSms(isChecked);
+            }
+        });
+
+        Switch disableGcm = (Switch) findViewById(R.id.disable_gcm_notifications);
+        disableGcm.setChecked(config.isGcmNotificationsDisabled());
+        disableGcm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                config.setDisableGcmNotifications(isChecked);
+            }
+        });
+
+        minRoomSpace.setText(String.valueOf(config.getMinRoomSpace()));
+        minRoomSpace.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    setMinRoomSpace(v.getText());
+                    minRoomSpace.setText(String.valueOf(config.getMinRoomSpace()));
+                }
+                return false;
+            }
+        });
+    }
+
+    private void setMinRoomSpace(CharSequence space) {
+        if (!TextUtils.isEmpty(space)) {
+            try {
+                int value = Integer.parseInt(space.toString());
+                config.setMinRoomSpace(value);
+            } catch (NumberFormatException e) {
+            }
+        }
     }
 
     private void setUpCrashButton() {
@@ -331,17 +373,6 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
         findViewById(R.id.crash_button_layout).setVisibility(config.isDebugEnabled() ? View.VISIBLE : View.GONE);
     }
 
-    private void setUpSendBrokenVideo() {
-        Switch sendBrokenVideoOption = (Switch) findViewById(R.id.send_broken_video);
-        sendBrokenVideoOption.setChecked(config.shouldSendBrokenVideo());
-        sendBrokenVideoOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.setSendBrokenVideo(isChecked);
-            }
-        });
-    }
-
     private void setUpTutorialOption() {
         Button resetTutorial = (Button) findViewById(R.id.reset_tutorial);
         resetTutorial.setOnClickListener(new View.OnClickListener() {
@@ -354,17 +385,6 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
                 p.putBoolean(HintType.SENT.getPrefName(), true);
                 p.putBoolean(HintType.VIEWED.getPrefName(), true);
                 p.putBoolean(HintType.INVITE_2.getPrefSessionName(), true);
-            }
-        });
-    }
-
-    private void setUpDisableGcmNotificationsOption() {
-        Switch disableGcm = (Switch) findViewById(R.id.disable_gcm_notifications);
-        disableGcm.setChecked(config.isGcmNotificationsDisabled());
-        disableGcm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.setDisableGcmNotifications(isChecked);
             }
         });
     }

@@ -139,6 +139,30 @@
                 style="@style/DevSwitch"
                 android:text="Disable GCM notifications"/>
 
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+            <TextView
+                    style="@style/DevText"
+                    android:id="@+id/min_room_space_label"
+                    android:text="Min room space restriction, MB"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"/>
+            <EditText
+                    android:id="@+id/min_room_space"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minEms="3"
+                    android:gravity="center_horizontal"
+                    android:layout_alignBaseline="@id/min_room_space_label"
+                    android:layout_marginLeft="20dp"
+                    android:inputType="number"
+                    android:imeOptions="actionDone"
+                    android:digits="0123456789"
+                    android:textColor="@android:color/white"/>
+        </LinearLayout>
+
         <LinearLayout style="@style/DevDivider.Layout">
             <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Registration options"/><View style="@style/DevDivider.Line"/>
         </LinearLayout>

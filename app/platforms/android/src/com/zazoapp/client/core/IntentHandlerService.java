@@ -359,7 +359,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that is currently in process.");
                     return;
                 }
-
+                Convenience.checkAndNotifyNoSpace(IntentHandlerService.this);
                 friend.createIncomingVideo(getApplicationContext(), videoId);
                 friend.downloadVideo(videoId);
             }

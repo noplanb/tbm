@@ -24,10 +24,13 @@ public class DebugConfig {
     private static final String KEY_FEATURE_OPTIONS_OPENED = "feature_options_opened";
     private static final String KEY_FORCE_CONFIRMATION_SMS = "force_confirmation_sms";
     private static final String KEY_FORCE_CONFIRMATION_CALL = "force_confirmation_call";
+    private static final String KEY_MIN_ROOM_SPACE_RESTRICTION = "min_room_space_restriction";
 
     public static final boolean DEBUG_LOG = false;
 
     private static volatile DebugConfig instance;
+
+    private static final int DEFAULT_MIN_ROOM_SPACE_RESTRICTION = 30;
 
     private static class DeploymentType{
         public static final int DEVELOPMENT = 1;
@@ -53,6 +56,7 @@ public class DebugConfig {
     private boolean featureOptionsOpened;
     private boolean forceConfirmationSms;
     private boolean forceConfirmationCall;
+    private int minRoomSpace;
 
     private DebugConfig() {
     }
@@ -96,6 +100,7 @@ public class DebugConfig {
         featureOptionsOpened = prefs.getBoolean(KEY_FEATURE_OPTIONS_OPENED, false);
         forceConfirmationSms = prefs.getBoolean(KEY_FORCE_CONFIRMATION_SMS, false);
         forceConfirmationCall = prefs.getBoolean(KEY_FORCE_CONFIRMATION_CALL, false);
+        minRoomSpace = prefs.getInt(KEY_MIN_ROOM_SPACE_RESTRICTION, DEFAULT_MIN_ROOM_SPACE_RESTRICTION);
     }
 
     public boolean isDebugEnabled() {
@@ -144,6 +149,10 @@ public class DebugConfig {
 
     public boolean shouldForceConfirmationCall() {
         return forceConfirmationCall;
+    }
+
+    public int getMinRoomSpace() {
+        return minRoomSpace;
     }
 
     public void enableSendSms(boolean sendSms) {
@@ -218,6 +227,15 @@ public class DebugConfig {
         notifyChanges();
     }
 
+    public void setMinRoomSpace(int value) {
+        if (value < DEFAULT_MIN_ROOM_SPACE_RESTRICTION) {
+            value = DEFAULT_MIN_ROOM_SPACE_RESTRICTION;
+        }
+        minRoomSpace = value;
+        prefs.putInt(KEY_MIN_ROOM_SPACE_RESTRICTION, value);
+        notifyChanges();
+    }
+
     public void savePrefs() {
         prefs.putInt(KEY_MODE, mode);
         prefs.putBoolean(KEY_SEND_SMS, shouldSendSms);
@@ -231,6 +249,7 @@ public class DebugConfig {
         prefs.putBoolean(KEY_FEATURE_OPTIONS_OPENED, featureOptionsOpened);
         prefs.putBoolean(KEY_FORCE_CONFIRMATION_SMS, forceConfirmationSms);
         prefs.putBoolean(KEY_FORCE_CONFIRMATION_CALL, forceConfirmationCall);
+        prefs.putInt(KEY_MIN_ROOM_SPACE_RESTRICTION, minRoomSpace);
     }
 
     public void reloadPrefs() {
@@ -246,6 +265,7 @@ public class DebugConfig {
         featureOptionsOpened = prefs.getBoolean(KEY_FEATURE_OPTIONS_OPENED, false);
         forceConfirmationSms = prefs.getBoolean(KEY_FORCE_CONFIRMATION_SMS, false);
         forceConfirmationCall = prefs.getBoolean(KEY_FORCE_CONFIRMATION_CALL, false);
+        minRoomSpace = prefs.getInt(KEY_MIN_ROOM_SPACE_RESTRICTION, DEFAULT_MIN_ROOM_SPACE_RESTRICTION);
     }
 
     public void addCallback(DebugConfigChangesCallback callback) {
