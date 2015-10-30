@@ -24,6 +24,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         public static final String LAST_NAME = "last_name";
         public static final String MKEY = "mkey";
         public static final String CKEY = "ckey";
+        public static final String CID = "cid";
         public static final String MOBILE_NUMBER = "mobile_number";
         public static final String HAS_APP = "has_app";
         public static final String CONNECTION_CREATED_ON = "connection_created_on";
@@ -70,6 +71,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
                 notifyStatusChanged(friend);
                 changedFriend = friend;
             }
+            updateParam(friend, params, ServerParamKeys.CID);
             return changedFriend;
         }
         return null;
@@ -105,6 +107,20 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         return false;
     }
 
+    private void updateParam(Friend friend, LinkedTreeMap<String, String> params, String paramName) {
+        if (params.containsKey(paramName)) {
+            String friendParam;
+            switch (paramName) {
+                case ServerParamKeys.CID:
+                    friendParam = Friend.Attributes.CID;
+                    break;
+                default:
+                    return;
+            }
+            friend.set(friendParam, params.get(paramName));
+        }
+    }
+
     private boolean isFriendInviter(LinkedTreeMap<String, String> params) {
         return params.get(ServerParamKeys.CONNECTION_CREATOR_MKEY).equals(params.get(ServerParamKeys.MKEY));
     }
@@ -129,6 +145,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         f.set(Friend.Attributes.MKEY, params.get(ServerParamKeys.MKEY));
         f.set(Friend.Attributes.MOBILE_NUMBER, params.get(ServerParamKeys.MOBILE_NUMBER));
         f.set(Friend.Attributes.CKEY, params.get(ServerParamKeys.CKEY));
+        f.set(Friend.Attributes.CID, params.get(ServerParamKeys.CID));
         f.setHasApp(servHasApp(params));
         f.setLastActionTime();
         setConnectionParams(f, params);

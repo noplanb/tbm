@@ -363,8 +363,16 @@ public class InviteManager implements InviteHelper {
     }
 
     private String getDefaultInviteMessage() {
-        String id = UserFactory.current_user().getId();
-        return context.getString(R.string.dialog_invite_sms_message, Config.appName, Config.landingPageUrl, id);
+        String landingPage;
+        String id;
+        if (friend != null && !TextUtils.isEmpty(friend.getCid())) {
+            landingPage = Config.landingPageUrl;
+            id = friend.getCid();
+        } else {
+            landingPage = Config.legacyLandingPageUrl;
+            id = UserFactory.current_user().getId();
+        }
+        return context.getString(R.string.dialog_invite_sms_message, Config.appName, landingPage, id);
     }
 
     private boolean sendSms(String body, Activity activity) {

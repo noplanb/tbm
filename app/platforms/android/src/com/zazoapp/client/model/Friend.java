@@ -45,6 +45,7 @@ public class Friend extends ActiveModel{
 		public static final String ID  = "id";
         public static final String MKEY  = "mkey";
         public static final String CKEY  = "ckey";
+        public static final String CID = "cid";
         public static final String FIRST_NAME  = "firstName";
         public static final String LAST_NAME  = "lastName";
         public static final String OUTGOING_VIDEO_ID = "outgoingVideoId";
@@ -81,7 +82,9 @@ public class Friend extends ActiveModel{
                 Attributes.HAS_APP,
                 Attributes.CONNECTION_CREATOR,
                 Attributes.DELETED,
-                Attributes.EVER_SENT};
+                Attributes.EVER_SENT,
+                Attributes.CID
+        };
         return new ArrayList<>(Arrays.asList(a));
     }
 
@@ -167,6 +170,10 @@ public class Friend extends ActiveModel{
             Dispatch.dispatch("ERROR: Could not get phone number object for friends phone this should never happen.");
         }
         return pn;
+    }
+
+    public String getCid() {
+        return get(Attributes.CID);
     }
 
     //================

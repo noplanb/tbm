@@ -22,7 +22,8 @@ public class Config {
     private static final String SERVER_URI = "http://" + SERVER_HOST;
 
     public static final String appName = "Zazo";
-    public static final String landingPageUrl = "zazoapp.com/l/";
+    public static final String legacyLandingPageUrl = "zazoapp.com/l/";
+    public static final String landingPageUrl = "zazoapp.com/c/";
 
     private static File publicDir = null;
 

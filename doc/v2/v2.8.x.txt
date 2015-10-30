@@ -1,0 +1,8 @@
+Previous v2.7.26 (111)
+Current v2.8.2 (113)
+
+--------
+BACKGROUND CHANGES:
+----------
+- Added Zazo recognition on debug screen
+- Disabled upload notifications. Moved to auto-notifications from S3 (added METADATA for files)

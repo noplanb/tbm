@@ -64,6 +64,13 @@ public final class ModelUpgradeHelper {
         ensureAll(handler);
     }
 
+    /**
+     * Added attribute CID to Friend model:
+     */
+    public static void upgradeTo5(ActiveModelsHandler handler, Context context) {
+         ensureAll(handler);
+    }
+
     private static void ensureAll(ActiveModelsHandler handler) {
         handler.ensureUser();
         handler.ensure(FriendFactory.getFactoryInstance());
@@ -71,4 +78,5 @@ public final class ModelUpgradeHelper {
         handler.ensure(GridElementFactory.getFactoryInstance());
         handler.ensure(OutgoingVideoFactory.getFactoryInstance());
     }
+
 }
