@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.KeyguardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -16,6 +17,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.StatFs;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -43,8 +45,9 @@ import java.util.Locale;
 
 public class Convenience {
     public static final String TAG = Convenience.class.getSimpleName();
+    public static final String ON_NOT_ENOUGH_SPACE_ACTION = "on_not_enough_space_action";
 
-	public static float dpToPx(Context context, float dp){
+    public static float dpToPx(Context context, float dp){
 		Resources r = context.getResources();
 		return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
 	}
@@ -366,9 +369,10 @@ public class Convenience {
     public static boolean checkAndNotifyNoSpace(Context context) {
         boolean result = availableRoomSpace(new File(Config.homeDirPath(context))) > DebugConfig.getInstance(context).getMinRoomSpace();
         if (!result) {
-            String message = "Not enough space";
-            String subText = "Free some space to continue using Zazo";
-            NotificationAlertManager.alert(context, message, subText, null);
+            String title = context.getString(R.string.alert_not_enough_space_title);
+            String message = context.getString(R.string.alert_not_enough_space_message);
+            NotificationAlertManager.alert(context, title, message, null, 3);
+            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(ON_NOT_ENOUGH_SPACE_ACTION));
         }
         return result;
     }

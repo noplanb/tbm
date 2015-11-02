@@ -154,4 +154,11 @@ public class DialogShower {
         tr.replace(R.id.feature_frame, NextFeatureDialogFragment.getInstance(justUnlockedFeature), FEATURE_FRAME);
         tr.commitAllowingStateLoss();
     }
+
+    public static void showBlockingDialog(Activity activity, int titleId, int messageId) {
+        String title = activity.getString(titleId);
+        String message = activity.getString(messageId);
+        DialogFragment d = BlockingInfoDialog.getInstance(title, message);
+        showDialog(activity, d, "blocking");
+    }
 }

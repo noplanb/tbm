@@ -50,6 +50,7 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     @InjectView(R.id.server_host) EditText serverHost;
     @InjectView(R.id.server_uri) EditText serverUri;
     @InjectView(R.id.min_room_space) EditText minRoomSpace;
+    @InjectView(R.id.debug_mode) Switch debugMode;
     private DebugConfig config;
     private VoiceRecognitionTestManager voiceRecognitionTestManager;
 
@@ -111,7 +112,6 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
     }
 
     private void setUpDebugMode() {
-        Switch debugMode = (Switch) findViewById(R.id.debug_mode);
         debugMode.setChecked(config.isDebugEnabled());
         debugMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -176,7 +176,6 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
 
                 // Testers request
                 if (isChecked) {
-                    Switch debugMode = (Switch) findViewById(R.id.debug_mode);
                     debugMode.setChecked(true);
                 }
             }
@@ -343,6 +342,9 @@ public class DebugSettingsActivity extends Activity implements DebugConfig.Debug
             try {
                 int value = Integer.parseInt(space.toString());
                 config.setMinRoomSpace(value);
+                if (value != DebugConfig.DEFAULT_MIN_ROOM_SPACE_RESTRICTION) {
+                    debugMode.setChecked(true);
+                }
             } catch (NumberFormatException e) {
             }
         }

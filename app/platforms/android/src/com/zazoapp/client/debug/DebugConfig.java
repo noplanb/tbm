@@ -30,7 +30,7 @@ public class DebugConfig {
 
     private static volatile DebugConfig instance;
 
-    private static final int DEFAULT_MIN_ROOM_SPACE_RESTRICTION = 30;
+    public static final int DEFAULT_MIN_ROOM_SPACE_RESTRICTION = 30;
 
     private static class DeploymentType{
         public static final int DEVELOPMENT = 1;

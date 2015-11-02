@@ -231,7 +231,9 @@ public class VideoRecorder implements SurfaceTextureListener {
         mediaRecorder.setVideoSize(size.width, size.height);
 
         String ofile = Config.recordingFilePath(context);
-        Convenience.checkAndNotifyNoSpace(context);
+        if (!Convenience.checkAndNotifyNoSpace(context)) {
+            return;
+        }
         Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
         mediaRecorder.setOutputFile(ofile);
 

@@ -4,8 +4,12 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -40,6 +44,7 @@ import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
 import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.ui.view.MainMenuPopup;
+import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
 import java.util.ArrayList;
@@ -62,6 +67,8 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     private DialogFragment pd;
     private ManagerHolder managerHolder;
     private boolean isStopped = true;
+
+    private final BroadcastReceiver serviceReceiver = new MainActivityReceiver();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -132,6 +139,10 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         isStopped = false;
         versionHandler.checkVersionCompatibility();
         checkPlayServices();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Convenience.ON_NOT_ENOUGH_SPACE_ACTION);
+        LocalBroadcastManager.getInstance(this).registerReceiver(serviceReceiver, filter);
+        Convenience.checkAndNotifyNoSpace(this);
         NotificationAlertManager.init(this);
     }
 
@@ -140,6 +151,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         super.onStop();
         isStopped = true;
         NotificationAlertManager.cleanUp();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(serviceReceiver);
     }
 
     @Override
@@ -403,6 +415,19 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                     DialogShower.showToast(this, R.string.feedback_send_fails);
                 }
                 break;
+            }
+        }
+    }
+
+    private void showNotEnoughSpaceDialog() {
+        DialogShower.showBlockingDialog(this, R.string.alert_not_enough_space_title, R.string.alert_not_enough_space_message);
+    }
+
+    private class MainActivityReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Convenience.ON_NOT_ENOUGH_SPACE_ACTION.equals(intent.getAction())) {
+                showNotEnoughSpaceDialog();
             }
         }
     }

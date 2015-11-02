@@ -37,7 +37,7 @@ public class VersionDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         boolean negativeButton = getArguments().getBoolean(IS_NEGATIVE_BUTTON, false);
         String message = getArguments().getString(MESSAGE);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_DeviceDefault_Dialog_Alert);
         builder.setTitle(getString(R.string.dialog_update_title))
                 .setMessage(message)
                 .setPositiveButton(getString(R.string.dialog_action_update), new DialogInterface.OnClickListener() {

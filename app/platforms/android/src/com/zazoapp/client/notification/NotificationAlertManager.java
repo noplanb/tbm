@@ -102,8 +102,10 @@ public class NotificationAlertManager {
 		postNativeAlert(context, friend, videoId);
 	}
 
-    public static void alert(Context context, String title, String subTitle, long[] vibratePattern) {
-        final int NOTIFICATION_ID = 2;
+    public static void alert(Context context, String title, String subTitle, long[] vibratePattern, int id) {
+        if (id <= 0) {
+            id = 2;
+        }
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
         PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, intent, 0);
@@ -125,8 +127,8 @@ public class NotificationAlertManager {
                 .setContentIntent(openAppIntent)
                 .setAutoCancel(true);
 
-        notificationManager.cancel(NOTIFICATION_ID);
-        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+        notificationManager.cancel(id);
+        notificationManager.notify(id, mBuilder.build());
     }
 
 	private static void cancelNativeAlerts(Context context){
@@ -134,6 +136,11 @@ public class NotificationAlertManager {
 		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		nm.cancelAll();
 	}
+
+    public static void cancelNativeAlert(Context context, int id) {
+        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.cancel(id);
+    }
 
     @SuppressWarnings("deprecation")
     public static void init(Context context) {
