@@ -6,3 +6,17 @@ BACKGROUND CHANGES:
 ----------
 - Added Zazo recognition on debug screen
 - Disabled upload notifications. Moved to auto-notifications from S3 (added METADATA for files)
+
+------------
+NEW #826
+------------
+Notify user of no room left on the device
+SOLUTION:
+Implemented blocking dialog for showing "Not enough space" dialog
+The dialog is shown on following events when there are less than 30 MB left on the device:
+1. App start
+2. New video is going to be downloaded
+3. User tries to record video
+
+Testcases:
+C2538-C2540
