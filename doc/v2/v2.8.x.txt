@@ -24,22 +24,14 @@ C2538-C2540
 
 v2.8.5
 -----------
-Fixed #843
------------
-Fixed Alert dialogs styling
+Fixed #843 Fixed Alert dialogs styling
+Fixed #844 Toast appears on trying to record message on device with not enough memory
+Fixed #717 Longpress as well as click on + square should open contacts drawer.
+Fixed #432 Does not play recording ding after recording.
 
+v2.8.6
 -----------
-Fixed #844 
------------
-Toast appears on trying to record message on device with not enough memory
-
------------
-Fixed #717  
------------
-Longpress as well as click on + square should open contacts drawer.
-
------------
-Fixed #432   
------------
-Does not play recording ding after recording.
-
+Fixed: ignoring ActionBar buttons clicks during recording
+Fixed: wrong calculation of empty space on pre-JB-MR2 systems
+Fixed: multiple blocking dialogs are possible to be shown
+Fixed: added ding sounds
