@@ -156,9 +156,11 @@ public class DialogShower {
     }
 
     public static void showBlockingDialog(Activity activity, int titleId, int messageId) {
-        String title = activity.getString(titleId);
-        String message = activity.getString(messageId);
-        DialogFragment d = BlockingInfoDialog.getInstance(title, message);
-        showDialog(activity, d, "blocking");
+        if (activity.getFragmentManager().findFragmentByTag("blocking") == null) {
+            String title = activity.getString(titleId);
+            String message = activity.getString(messageId);
+            DialogFragment d = BlockingInfoDialog.getInstance(title, message);
+            showDialog(activity, d, "blocking");
+        }
     }
 }
