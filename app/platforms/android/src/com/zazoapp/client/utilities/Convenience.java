@@ -347,10 +347,9 @@ public class Convenience {
         long bytesAvailable;
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2){
             bytesAvailable = getAvailableBytes(stat);
-        }
-        else{
+        } else {
             //noinspection deprecation
-            bytesAvailable = stat.getBlockSize() * stat.getAvailableBlocks();
+            bytesAvailable = (long) stat.getBlockSize() * (long) stat.getAvailableBlocks();
         }
 
         return bytesAvailable / (1024.f * 1024.f);
