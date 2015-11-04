@@ -10,6 +10,7 @@ import android.view.View;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.ui.CancelableTask;
 import com.zazoapp.client.ui.view.PreviewTextureFrame;
 
 import java.io.File;
@@ -52,6 +53,8 @@ public class VideoRecorder implements SurfaceTextureListener {
     // Allow registration of a single delegate to handle exceptions.
     private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
 
+    private CancelableTask turnOnExclusiveAudioMode;
+
     public VideoRecorder(Context c) {
         context = c;
     }
@@ -79,13 +82,11 @@ public class VideoRecorder implements SurfaceTextureListener {
         if (mediaRecorder == null) {
             prepareMediaRecorder();
         }
-        setExclusiveAudioMode(true);
         try {
             mediaRecorder.start();
         } catch (IllegalStateException e) {
             Dispatch.dispatch("startRecording: called in illegal state.");
             releaseMediaRecorder();
-            setExclusiveAudioMode(false);
             if (videoRecorderExceptionHandler != null)
                 videoRecorderExceptionHandler.illegalStateOnStart();
             return false;
@@ -96,7 +97,6 @@ public class VideoRecorder implements SurfaceTextureListener {
             Dispatch.dispatch("ERROR: RuntimeException: this should never happen according to google. But I have seen it. "
                     + e.toString());
             releaseMediaRecorder();
-            setExclusiveAudioMode(false);
             if (videoRecorderExceptionHandler != null)
                 videoRecorderExceptionHandler.runtimeErrorOnStart();
             return false;
@@ -138,16 +138,6 @@ public class VideoRecorder implements SurfaceTextureListener {
                 rval = false;
             } finally {
                 releaseMediaRecorder();
-                if (preview != null) {
-                    preview.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            setExclusiveAudioMode(false);
-                        }
-                    }, 1000);
-                } else {
-                    setExclusiveAudioMode(false);
-                }
             }
         }
         return rval;
@@ -166,7 +156,6 @@ public class VideoRecorder implements SurfaceTextureListener {
             }
         }
         releaseMediaRecorder();
-        setExclusiveAudioMode(false);
         if (releaseCamera) {
             CameraManager.releaseCamera();
         }
@@ -254,11 +243,11 @@ public class VideoRecorder implements SurfaceTextureListener {
         } catch (IllegalStateException | IOException e) {
             Dispatch.dispatch(TAG + " ERROR: " + e.getClass().getSimpleName() + " preparing MediaRecorder: This should never happen" + e.getMessage());
             releaseMediaRecorder();
-            setExclusiveAudioMode(false);
             notifyUnableToPrepare();
             return;
         }
         Log.i(TAG, "prepareMediaRecorder: Success");
+        setExclusiveAudioMode(true, true);
     }
 
     private void notifyUnableToPrepare() {
@@ -273,6 +262,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             mediaRecorder.release(); // release the recorder object
             mediaRecorder = null;
         }
+        setExclusiveAudioMode(false, false);
     }
 
     // -------------------
@@ -360,9 +350,27 @@ public class VideoRecorder implements SurfaceTextureListener {
         return preview != null && preview.isRecording();
     }
 
-    private void setExclusiveAudioMode(boolean mode) {
-        if (audioController != null) {
-            audioController.setExclusive(mode);
+    /**
+     *
+     * @param mode true to mute system sounds during recording
+     * @param delayed true to make 1 s delay before applying exclusive mode
+     */
+    private void setExclusiveAudioMode(final boolean mode, boolean delayed) {
+        if (turnOnExclusiveAudioMode != null) {
+            turnOnExclusiveAudioMode.cancel();
+        }
+        turnOnExclusiveAudioMode = new CancelableTask() {
+            @Override
+            protected void doTask() {
+                if (audioController != null) {
+                    audioController.setExclusive(mode);
+                }
+            }
+        };
+        if (delayed && preview != null) {
+            preview.postDelayed(turnOnExclusiveAudioMode, 1000);
+        } else {
+            turnOnExclusiveAudioMode.run();
         }
     }
 
