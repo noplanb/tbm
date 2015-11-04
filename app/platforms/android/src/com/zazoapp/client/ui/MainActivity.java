@@ -99,6 +99,9 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 if (getPlayer().isPlaying()) {
                     getPlayer().stop();
                 }
+                if (getRecorder().isRecording()) {
+                    return;
+                }
                 toggleBench();
             }
         });
@@ -110,6 +113,9 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 }
                 if (getPlayer().isPlaying()) {
                     getPlayer().stop();
+                }
+                if (getRecorder().isRecording()) {
+                    return;
                 }
                 List<Integer> disabledItems = new ArrayList<Integer>();
                 if (!getFeatures().isUnlocked(Features.Feature.DELETE_FRIEND)) {
