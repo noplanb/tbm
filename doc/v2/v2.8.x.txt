@@ -1,5 +1,5 @@
 Previous v2.7.26 (111)
-Current v2.8.3 (114)
+Current v2.8.5 (116)
 
 --------
 BACKGROUND CHANGES:
@@ -7,6 +7,7 @@ BACKGROUND CHANGES:
 - Added Zazo recognition on debug screen
 - Disabled upload notifications. Moved to auto-notifications from S3 (added METADATA for files)
 
+v2.8.4
 ------------
 NEW #826
 ------------
@@ -20,3 +21,25 @@ The dialog is shown on following events when there are less than 30 MB left on t
 
 Testcases:
 C2538-C2540
+
+v2.8.5
+-----------
+Fixed #843
+-----------
+Fixed Alert dialogs styling
+
+-----------
+Fixed #844 
+-----------
+Toast appears on trying to record message on device with not enough memory
+
+-----------
+Fixed #717  
+-----------
+Longpress as well as click on + square should open contacts drawer.
+
+-----------
+Fixed #432   
+-----------
+Does not play recording ding after recording.
+
