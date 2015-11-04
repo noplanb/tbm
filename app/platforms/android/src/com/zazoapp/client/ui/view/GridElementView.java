@@ -16,7 +16,7 @@ import android.widget.TextView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.utilities.Convenience;
 
-public class GridElementView extends RelativeLayout implements View.OnClickListener {
+public class GridElementView extends RelativeLayout implements View.OnClickListener, View.OnLongClickListener {
 
     private static final String TAG = "GridElementView";
     private static final int ANIMATION_DELAY_MILLIS = 200;
@@ -90,6 +90,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         twNundge.setOnClickListener(this);
         twRecord.setOnClickListener(this);
         mEmptyView.setOnClickListener(this);
+        mEmptyView.setOnLongClickListener(this);
         imgThumb.setOnClickListener(this);
     }
 
@@ -126,6 +127,16 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             case R.id.img_thumb:
                 mClickListener.onThumbViewClicked();
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        switch (v.getId()) {
+            case R.id.empty_view:
+                mClickListener.onEmptyViewClicked();
+                return true;
+        }
+        return false;
     }
 
 	private void moveUnviewedCountToPosition() {
