@@ -369,6 +369,7 @@ public class Convenience {
     public static boolean checkAndNotifyNoSpace(Context context) {
         boolean result = availableRoomSpace(new File(Config.homeDirPath(context))) > DebugConfig.getInstance(context).getMinRoomSpace();
         if (!result) {
+            Log.d(TAG, "Not enough space");
             String title = context.getString(R.string.alert_not_enough_space_title);
             String message = context.getString(R.string.alert_not_enough_space_message);
             NotificationAlertManager.alert(context, title, message, null, 3);

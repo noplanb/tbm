@@ -15,6 +15,7 @@ import com.zazoapp.client.multimedia.VideoRecorder;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.view.PreviewTextureFrame;
 import com.zazoapp.client.utilities.AsyncTaskManager;
+import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
 /**
@@ -42,7 +43,9 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(friendId);
         if (!ge.hasFriend())
             return;
-
+        if (!Convenience.checkAndNotifyNoSpace(context)) {
+            return;
+        }
         Friend f = ge.getFriend();
         f.setLastActionTime();
         if (videoRecorder.startRecording(f)) {

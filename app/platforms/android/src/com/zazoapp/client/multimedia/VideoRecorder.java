@@ -11,7 +11,6 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.ui.view.PreviewTextureFrame;
-import com.zazoapp.client.utilities.Convenience;
 
 import java.io.File;
 import java.io.IOException;
@@ -231,9 +230,6 @@ public class VideoRecorder implements SurfaceTextureListener {
         mediaRecorder.setVideoSize(size.width, size.height);
 
         String ofile = Config.recordingFilePath(context);
-        if (!Convenience.checkAndNotifyNoSpace(context)) {
-            return;
-        }
         Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
         mediaRecorder.setOutputFile(ofile);
 
