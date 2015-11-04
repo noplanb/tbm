@@ -85,20 +85,21 @@ public class VideoRecorder implements SurfaceTextureListener {
         } catch (IllegalStateException e) {
             Dispatch.dispatch("startRecording: called in illegal state.");
             releaseMediaRecorder();
+            setExclusiveAudioMode(false);
             if (videoRecorderExceptionHandler != null)
                 videoRecorderExceptionHandler.illegalStateOnStart();
             return false;
-
         } catch (RuntimeException e) {
-                // Since this seems to get the media recorder into a wedged state I
-                // will just finish the app here.
-                CameraManager.releaseCamera();
-                Dispatch.dispatch("ERROR: RuntimeException: this should never happen according to google. But I have seen it. "
-                        + e.toString());
-                releaseMediaRecorder();
-                if (videoRecorderExceptionHandler != null)
-                    videoRecorderExceptionHandler.runtimeErrorOnStart();
-                return false;
+            // Since this seems to get the media recorder into a wedged state I
+            // will just finish the app here.
+            CameraManager.releaseCamera();
+            Dispatch.dispatch("ERROR: RuntimeException: this should never happen according to google. But I have seen it. "
+                    + e.toString());
+            releaseMediaRecorder();
+            setExclusiveAudioMode(false);
+            if (videoRecorderExceptionHandler != null)
+                videoRecorderExceptionHandler.runtimeErrorOnStart();
+            return false;
         }
         showRecordingIndicator();
         return true;
@@ -137,6 +138,16 @@ public class VideoRecorder implements SurfaceTextureListener {
                 rval = false;
             } finally {
                 releaseMediaRecorder();
+                if (preview != null) {
+                    preview.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            setExclusiveAudioMode(false);
+                        }
+                    }, 1000);
+                } else {
+                    setExclusiveAudioMode(false);
+                }
             }
         }
         return rval;
@@ -155,6 +166,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             }
         }
         releaseMediaRecorder();
+        setExclusiveAudioMode(false);
         if (releaseCamera) {
             CameraManager.releaseCamera();
         }
@@ -239,14 +251,10 @@ public class VideoRecorder implements SurfaceTextureListener {
         try {
             Log.i(TAG, "prepareMediaRecorder: mediaRecorder.prepare");
             mediaRecorder.prepare();
-        } catch (IllegalStateException e) {
-            Dispatch.dispatch(TAG + " ERROR: IllegalStateException preparing MediaRecorder: This should never happen" + e.getMessage());
+        } catch (IllegalStateException | IOException e) {
+            Dispatch.dispatch(TAG + " ERROR: " + e.getClass().getSimpleName() + " preparing MediaRecorder: This should never happen" + e.getMessage());
             releaseMediaRecorder();
-            notifyUnableToPrepare();
-            return;
-        } catch (IOException e) {
-            Dispatch.dispatch(TAG + " ERROR: IOException preparing MediaRecorder: This should never happen" + e.getMessage());
-            releaseMediaRecorder();
+            setExclusiveAudioMode(false);
             notifyUnableToPrepare();
             return;
         }
@@ -265,7 +273,6 @@ public class VideoRecorder implements SurfaceTextureListener {
             mediaRecorder.release(); // release the recorder object
             mediaRecorder = null;
         }
-        setExclusiveAudioMode(false);
     }
 
     // -------------------
