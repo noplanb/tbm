@@ -149,7 +149,7 @@ public final class DebugUtils {
     }
 
     public static void requestCode(Context context, final InputDialogCallback callback) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, AlertDialog.THEME_DEVICE_DEFAULT_DARK);
         builder.setTitle("Enter code");
         // Set up the input
         final EditText input = new EditText(context);
@@ -176,7 +176,7 @@ public final class DebugUtils {
     }
 
     public static void requestConfirm(Context context, String text, final InputDialogCallback callback) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, AlertDialog.THEME_DEVICE_DEFAULT_DARK);
         builder.setTitle("Confirmation");
         builder.setMessage(text);
         builder.setCancelable(false);

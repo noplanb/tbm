@@ -307,7 +307,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
                 } else {
                     strName = video.getId();
                 }
-                AlertDialog.Builder builderInner = new AlertDialog.Builder(v.getContext(), android.R.style.Theme_Material_Light_Dialog_Alert);
+                AlertDialog.Builder builderInner = new AlertDialog.Builder(v.getContext(), AlertDialog.THEME_DEVICE_DEFAULT_DARK);
                 builderInner.setMessage("Google:\n" + tr.get(PROVIDER_GOOGLE) + "\n\nNuance:\n" + tr.get(PROVIDER_NUANCE));
                 builderInner.setTitle(strName);
                 builderInner.setPositiveButton(

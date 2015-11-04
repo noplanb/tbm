@@ -36,7 +36,7 @@ public class BlockingInfoDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         String title = getArguments().getString(TITLE);
         String message = getArguments().getString(MESSAGE);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_DeviceDefault_Dialog_Alert);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), AlertDialog.THEME_DEVICE_DEFAULT_DARK);
         builder.setTitle(title)
                 .setMessage(message)
                 .setPositiveButton(getString(R.string.dialog_action_ok), new DialogInterface.OnClickListener() {
