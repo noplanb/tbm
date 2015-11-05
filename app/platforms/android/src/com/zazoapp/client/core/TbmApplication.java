@@ -11,6 +11,7 @@ import com.zazoapp.client.dispatch.RollbarTracker;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.ui.LockScreenAlertActivity;
+import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
 public class TbmApplication extends Application {
@@ -24,6 +25,8 @@ public class TbmApplication extends Application {
     private UnexpectedTerminationHelper unexpectedTerminationHelper = new UnexpectedTerminationHelper();
 
     private int foreground;
+
+    private ZazoManagerProvider managerProvider;
 
     public static TbmApplication getInstance() {
         return application;
@@ -128,5 +131,13 @@ public class TbmApplication extends Application {
             }
         }
         return String.valueOf(version);
+    }
+
+    public ZazoManagerProvider getManagerProvider() {
+        return managerProvider;
+    }
+
+    public void initManagerProvider(ZazoManagerProvider provider) {
+        managerProvider = provider;
     }
 }

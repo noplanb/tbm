@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import com.zazoapp.client.R;
-import com.zazoapp.client.ui.MainActivity;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 
 import java.util.Random;
@@ -83,7 +83,7 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
         switch (v.getId()) {
             case R.id.body:
                 dismiss();
-                ((MainActivity) getActivity()).getBenchViewManager().showBench();
+                TbmApplication.getInstance().getManagerProvider().getBenchViewManager().showBench();
                 break;
         }
     }

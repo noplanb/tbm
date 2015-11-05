@@ -20,7 +20,7 @@ import com.zazoapp.client.ui.view.TouchBlockScreen;
 /**
  * Created by skamenkovych@codeminders.com on 5/6/2015.
  */
-public class ManagerHolder {
+public class ManagerHolder implements ZazoManagerProvider {
     private static final String TAG = ManagerHolder.class.getSimpleName();
 
     private BenchController benchController;
@@ -35,16 +35,16 @@ public class ManagerHolder {
 
     public void init(MainActivity activity) {
         inviteManager = new InviteManager(activity, activity);
-        benchController = new BenchController(activity, activity);
-        audioManager = new AudioManager(activity, activity);
-        videoRecorder = new VideoRecorderManager(activity, activity);
-        videoPlayer = new VideoPlayer(activity, activity, (TouchBlockScreen) activity.findViewById(R.id.block_screen));
+        benchController = new BenchController(activity, this);
+        audioManager = new AudioManager(activity, this);
+        videoRecorder = new VideoRecorderManager(activity, this);
+        videoPlayer = new VideoPlayer(activity, this, (TouchBlockScreen) activity.findViewById(R.id.block_screen));
         sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         if (proximitySensor == null) {
             Log.i(TAG, "Proximity sensor not found");
         }
-        tutorial = new Tutorial(activity, activity);
+        tutorial = new Tutorial(activity, this);
         features = new Features(activity);
     }
 
@@ -66,15 +66,18 @@ public class ManagerHolder {
         tutorial.unregisterCallbacks();
     }
 
-    public BenchController getBenchController() {
+    @Override
+    public BenchController getBenchViewManager() {
         return benchController;
     }
 
-    public InviteManager getInviteManager() {
+    @Override
+    public InviteManager getInviteHelper() {
         return inviteManager;
     }
 
-    public AudioManager getAudioManager() {
+    @Override
+    public AudioManager getAudioController() {
         return audioManager;
     }
 
@@ -86,18 +89,22 @@ public class ManagerHolder {
         return proximitySensor;
     }
 
-    public Recorder getVideoRecorder() {
+    @Override
+    public Recorder getRecorder() {
         return videoRecorder;
     }
 
-    public Player getVideoPlayer() {
+    @Override
+    public Player getPlayer() {
         return videoPlayer;
     }
 
+    @Override
     public Tutorial getTutorial() {
         return tutorial;
     }
 
+    @Override
     public Features getFeatures() {
         return features;
     }

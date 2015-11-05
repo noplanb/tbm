@@ -14,6 +14,7 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.SyncManager;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.*;
 import com.zazoapp.client.multimedia.CameraException;
@@ -49,9 +50,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate");
         CameraManager.addExceptionHandlerDelegate(this);
-        if (!(getActivity() instanceof ZazoManagerProvider)) {
-            throw new RuntimeException("Activity must inherit ZazoManagerProvider.");
-        }
         viewControllers = new ArrayList<>(GridManager.GRID_ELEMENTS_COUNT);
     }
 
@@ -120,7 +118,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     private ZazoManagerProvider getManagerProvider() {
-        return (ZazoManagerProvider) getActivity();
+        return TbmApplication.getInstance().getManagerProvider();
     }
 
     private void setupGridElements(){

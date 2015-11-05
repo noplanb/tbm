@@ -16,8 +16,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import com.zazoapp.client.R;
-import com.zazoapp.client.bench.BenchViewManager;
-import com.zazoapp.client.bench.InviteHelper;
 import com.zazoapp.client.bench.InviteManager.InviteDialogListener;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.PreferencesHelper;
@@ -28,13 +26,9 @@ import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
-import com.zazoapp.client.multimedia.AudioController;
-import com.zazoapp.client.multimedia.Player;
-import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
-import com.zazoapp.client.tutorial.Tutorial;
 import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
 import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment.ActionInfoDialogListener;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
@@ -51,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback, UnexpectedTerminationHelper.TerminationCallback,
-        InviteDialogListener, ZazoManagerProvider, SelectPhoneNumberDialog.Callbacks, DoubleActionDialogFragment.DoubleActionDialogListener, MainMenuPopup.MenuItemListener {
+        InviteDialogListener, SelectPhoneNumberDialog.Callbacks, DoubleActionDialogFragment.DoubleActionDialogListener, MainMenuPopup.MenuItemListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -96,10 +90,10 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         findViewById(R.id.friends_menu).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (getPlayer().isPlaying()) {
-                    getPlayer().stop();
+                if (managerHolder.getPlayer().isPlaying()) {
+                    managerHolder.getPlayer().stop();
                 }
-                if (getRecorder().isRecording()) {
+                if (managerHolder.getRecorder().isRecording()) {
                     return;
                 }
                 toggleBench();
@@ -108,17 +102,17 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         findViewById(R.id.overflow_menu).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                if (getBenchViewManager().isBenchShowed()) {
-                    getBenchViewManager().hideBench();
+                if (managerHolder.getBenchViewManager().isBenchShowed()) {
+                    managerHolder.getBenchViewManager().hideBench();
                 }
-                if (getPlayer().isPlaying()) {
-                    getPlayer().stop();
+                if (managerHolder.getPlayer().isPlaying()) {
+                    managerHolder.getPlayer().stop();
                 }
-                if (getRecorder().isRecording()) {
+                if (managerHolder.getRecorder().isRecording()) {
                     return;
                 }
                 List<Integer> disabledItems = new ArrayList<Integer>();
-                if (!getFeatures().isUnlocked(Features.Feature.DELETE_FRIEND)) {
+                if (!managerHolder.getFeatures().isUnlocked(Features.Feature.DELETE_FRIEND)) {
                     disabledItems.add(R.id.menu_manage_friends);
                 }
                 MainMenuPopup popup = new MainMenuPopup(MainActivity.this, disabledItems);
@@ -169,8 +163,8 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     @Override
     protected void onPause() {
         super.onPause();
-        if (getBenchViewManager().isBenchShowed()) {
-            getBenchViewManager().hideBench();
+        if (managerHolder.getBenchViewManager().isBenchShowed()) {
+            managerHolder.getBenchViewManager().hideBench();
         }
         releaseManagers();
     }
@@ -211,16 +205,16 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     public void onActionClicked(int id, Bundle bundle) {
         switch (id) {
             case CONNECTED_DIALOG:
-                getInviteHelper().moveFriendToGrid();
+                managerHolder.getInviteHelper().moveFriendToGrid();
                 break;
             case NUDGE_DIALOG:
-                getInviteHelper().showSmsDialog();
+                managerHolder.getInviteHelper().showSmsDialog();
                 break;
             case SMS_DIALOG:
-                getInviteHelper().inviteNewFriend();
+                managerHolder.getInviteHelper().inviteNewFriend();
                 break;
             case NO_SIM_DIALOG:
-                getInviteHelper().finishInvitation();
+                managerHolder.getInviteHelper().finishInvitation();
                 break;
         }
     }
@@ -232,23 +226,23 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
                 case BUTTON_POSITIVE:
                     if (params != null) {
                         if (params.getBoolean(SendLinkThroughDialog.SEND_SMS_KEY, false)) {
-                            getInviteHelper().sendInvite(AbstractDialogFragment.getEditedMessage(params), this);
+                            managerHolder.getInviteHelper().sendInvite(AbstractDialogFragment.getEditedMessage(params), this);
                         } else {
                             Intent invite = params.getParcelable(SendLinkThroughDialog.INTENT_KEY);
                             String name = params.getString(SendLinkThroughDialog.APP_NAME_KEY);
                             if (invite != null && !TextUtils.isEmpty(name)) {
                                 try {
                                     startActivityForResult(invite, InviteIntent.INVITATION_REQUEST_ID);
-                                    getInviteHelper().notifyInviteVector(name, true);
+                                    managerHolder.getInviteHelper().notifyInviteVector(name, true);
                                 } catch (ActivityNotFoundException e) {
-                                    getInviteHelper().notifyInviteVector(name, false);
+                                    managerHolder.getInviteHelper().notifyInviteVector(name, false);
                                 }
                             }
                         }
                     }
                     break;
                 case BUTTON_NEGATIVE:
-                    getInviteHelper().failureNoSimDialog();
+                    managerHolder.getInviteHelper().failureNoSimDialog();
                     break;
             }
         }
@@ -256,7 +250,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
     @Override
     public void phoneSelected(Contact contact, int phoneIndex) {
-        getInviteHelper().invite(contact, phoneIndex);
+        managerHolder.getInviteHelper().invite(contact, phoneIndex);
     }
 
     @Override
@@ -331,40 +325,6 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
         }
     }
 
-    @Override
-    public BenchViewManager getBenchViewManager() {
-        return managerHolder.getBenchController();
-    }
-
-    @Override
-    public AudioController getAudioController() {
-        return managerHolder.getAudioManager();
-    }
-
-    @Override
-    public Recorder getRecorder() {
-        return managerHolder.getVideoRecorder();
-    }
-
-    @Override
-    public Player getPlayer() {
-        return managerHolder.getVideoPlayer();
-    }
-
-    @Override
-    public InviteHelper getInviteHelper() {
-        return managerHolder.getInviteManager();
-    }
-
-    @Override
-    public Tutorial getTutorial() {
-        return managerHolder.getTutorial();
-    }
-
-    @Override
-    public Features getFeatures() {
-        return managerHolder.getFeatures();
-    }
 
     private void releaseManagers() {
         managerHolder.unregisterManagers();
@@ -381,11 +341,11 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     }
 
     private void toggleBench() {
-        if (getBenchViewManager() != null) {
-            if (getBenchViewManager().isBenchShowed()) {
-                getBenchViewManager().hideBench();
+        if (managerHolder.getBenchViewManager() != null) {
+            if (managerHolder.getBenchViewManager().isBenchShowed()) {
+                managerHolder.getBenchViewManager().hideBench();
             } else {
-                getBenchViewManager().showBench();
+                managerHolder.getBenchViewManager().showBench();
             }
         }
     }
@@ -394,7 +354,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == InviteIntent.INVITATION_REQUEST_ID) {
-            getInviteHelper().finishInvitation();
+            managerHolder.getInviteHelper().finishInvitation();
         }
     }
 
