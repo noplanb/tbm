@@ -1,15 +1,15 @@
 package com.zazoapp.client.utilities;
 
-import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.Gravity;
 import android.widget.Toast;
 import com.zazoapp.client.R;
@@ -17,8 +17,17 @@ import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.multimedia.CameraException;
 import com.zazoapp.client.notification.NotificationAlertManager;
-import com.zazoapp.client.ui.dialogs.*;
+import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
+import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment;
+import com.zazoapp.client.ui.dialogs.BlockingInfoDialog;
+import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
+import com.zazoapp.client.ui.dialogs.FeatureAwardDialogFragment;
+import com.zazoapp.client.ui.dialogs.InfoDialogFragment;
+import com.zazoapp.client.ui.dialogs.NextFeatureDialogFragment;
+import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
+import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
+import com.zazoapp.client.ui.dialogs.VersionDialogFragment;
 
 /**
  * This utility class combines all popups which are showed to user
@@ -46,27 +55,27 @@ public class DialogShower {
         showToast(context, context.getString(id));
     }
 
-    public static void showBadConnection(Activity activity) {
+    public static void showBadConnection(FragmentActivity activity) {
         Resources res = activity.getResources();
         showActionInfoDialog(activity, res.getString(R.string.dialog_bad_connection_title),
                 res.getString(R.string.dialog_bad_connection_message), res.getString(R.string.dialog_action_try_again),
                 false, false, -1, null);
     }
 
-    public static void showActionInfoDialog(Activity activity, String title, String message, String action,
+    public static void showActionInfoDialog(FragmentActivity activity, String title, String message, String action,
                                             boolean needCancel, boolean editable, int actionId, AbstractDialogFragment.DialogListener listener) {
         DialogFragment d = ActionInfoDialogFragment.getInstance(title, message, action, actionId,
                 needCancel, editable, listener);
         showDialog(activity, d, null);
     }
 
-    public static void showDoubleActionDialog(Activity activity, String title, String message, String actionPositive,
+    public static void showDoubleActionDialog(FragmentActivity activity, String title, String message, String actionPositive,
                                               String actionNegative, int dialogId, boolean editable, DoubleActionDialogListener listener) {
         DialogFragment d = DoubleActionDialogFragment.getInstance(dialogId, title, message, actionPositive, actionNegative, editable, listener);
         showDialog(activity, d, null);
     }
 
-    public static void showCameraException(final Activity activity, CameraException cameraException, final DoubleActionDialogListener listener, final int id) {
+    public static void showCameraException(final FragmentActivity activity, CameraException cameraException, final DoubleActionDialogListener listener, final int id) {
         Resources res = activity.getResources();
         final String title = res.getString(cameraException.getTitleId());
         final String message = res.getString(cameraException.getMessageId());
@@ -84,57 +93,57 @@ public class DialogShower {
         });
     }
 
-    public static void showInfoDialog(Activity activity, String title, String message) {
+    public static void showInfoDialog(FragmentActivity activity, String title, String message) {
         DialogFragment d = InfoDialogFragment.getInstance(title, message);
         showDialog(activity, d, null);
     }
 
-    public static void showHintDialog(Activity activity, String title, String message) {
-        if (activity.getFragmentManager().findFragmentByTag("hint") == null) {
+    public static void showHintDialog(FragmentActivity activity, String title, String message) {
+        if (activity.getSupportFragmentManager().findFragmentByTag("hint") == null) {
             DialogFragment d = InfoDialogFragment.getInstance(title, message);
             showDialog(activity, d, "hint");
         }
     }
 
-    public static void showVersionHandlerDialog(Activity activity, String message, boolean negativeButton) {
-        if (activity.getFragmentManager().findFragmentByTag("compatibility") == null) {
+    public static void showVersionHandlerDialog(FragmentActivity activity, String message, boolean negativeButton) {
+        if (activity.getSupportFragmentManager().findFragmentByTag("compatibility") == null) {
             DialogFragment d = VersionDialogFragment.getInstance(message, negativeButton);
             showDialog(activity, d, "compatibility");
         }
     }
 
-    public static void showSelectPhoneNumberDialog(Activity activity, Contact contact, SelectPhoneNumberDialog.Callbacks callbacks) {
+    public static void showSelectPhoneNumberDialog(FragmentActivity activity, Contact contact, SelectPhoneNumberDialog.Callbacks callbacks) {
         DialogFragment d = SelectPhoneNumberDialog.getInstance(contact, callbacks);
         showDialog(activity, d, null);
     }
 
-    public static void showDialog(Activity activity, Fragment dialog, String tag) {
-        FragmentManager manager = activity.getFragmentManager();
+    public static void showDialog(FragmentActivity activity, Fragment dialog, String tag) {
+        FragmentManager manager = activity.getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.add(dialog, tag);
         transaction.commitAllowingStateLoss();
     }
 
-    public static void showSendLinkDialog(Activity activity, int dialogId, String phone, String message, DoubleActionDialogListener callbacks) {
+    public static void showSendLinkDialog(FragmentActivity activity, int dialogId, String phone, String message, DoubleActionDialogListener callbacks) {
         DialogFragment d = SendLinkThroughDialog.getInstance(dialogId, phone, activity, message, callbacks);
         showDialog(activity, d, null);
     }
 
-    public static void showFeatureAwardDialog(Activity activity, Features.Feature feature) {
-        Fragment fragment = activity.getFragmentManager().findFragmentByTag(FEATURE_FRAME);
+    public static void showFeatureAwardDialog(FragmentActivity activity, Features.Feature feature) {
+        Fragment fragment = activity.getSupportFragmentManager().findFragmentByTag(FEATURE_FRAME);
         if (fragment != null) {
-            activity.getFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
+            activity.getSupportFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
         }
         NotificationAlertManager.playTone(NotificationAlertManager.Tone.FEATURE_UNLOCK, NotificationAlertManager.getVelocity(activity, AudioManager.STREAM_NOTIFICATION));
         DialogFragment d = FeatureAwardDialogFragment.getInstance(feature);
-        FragmentTransaction tr = activity.getFragmentManager().beginTransaction();
-        tr.setCustomAnimations(R.animator.fade_in, R.animator.fade_out);
+        FragmentTransaction tr = activity.getSupportFragmentManager().beginTransaction();
+        tr.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
         tr.replace(R.id.feature_frame, d, FEATURE_FRAME);
         tr.commitAllowingStateLoss();
     }
 
-    public static boolean isFeatureAwardDialogShown(Activity activity) {
-        FragmentManager fm = activity.getFragmentManager();
+    public static boolean isFeatureAwardDialogShown(FragmentActivity activity) {
+        FragmentManager fm = activity.getSupportFragmentManager();
         if (fm != null) {
             Fragment fragment = fm.findFragmentByTag(FEATURE_FRAME);
             if (fragment instanceof FeatureAwardDialogFragment) {
@@ -144,18 +153,18 @@ public class DialogShower {
         return false;
     }
 
-    public static void showNextFeatureDialog(Activity activity, boolean justUnlockedFeature) {
-        Fragment fragment = activity.getFragmentManager().findFragmentByTag(FEATURE_FRAME);
+    public static void showNextFeatureDialog(FragmentActivity activity, boolean justUnlockedFeature) {
+        Fragment fragment = activity.getSupportFragmentManager().findFragmentByTag(FEATURE_FRAME);
         if (fragment != null) {
-            activity.getFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
+            activity.getSupportFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
         }
-        FragmentTransaction tr = activity.getFragmentManager().beginTransaction();
-        tr.setCustomAnimations(R.animator.slide_up, R.animator.slide_down);
+        FragmentTransaction tr = activity.getSupportFragmentManager().beginTransaction();
+        tr.setCustomAnimations(R.anim.slide_up, R.anim.slide_down);
         tr.replace(R.id.feature_frame, NextFeatureDialogFragment.getInstance(justUnlockedFeature), FEATURE_FRAME);
         tr.commitAllowingStateLoss();
     }
 
-    public static void showBlockingDialog(Activity activity, int titleId, int messageId) {
+    public static void showBlockingDialog(FragmentActivity activity, int titleId, int messageId) {
         if (activity.getFragmentManager().findFragmentByTag("blocking") == null) {
             String title = activity.getString(titleId);
             String message = activity.getString(messageId);

@@ -1,16 +1,17 @@
 package com.zazoapp.client.ui.dialogs;
 
-import android.animation.Animator;
-import android.animation.AnimatorInflater;
-import android.app.DialogFragment;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 
@@ -68,7 +69,7 @@ public class FeatureAwardDialogFragment extends DialogFragment implements View.O
     private void dismissAnimated() {
         if (!isHidden() && resumed) {
             resumed = false;
-            getFragmentManager().beginTransaction().setCustomAnimations(R.animator.fade_in, R.animator.fade_out).hide(this).commitAllowingStateLoss();
+            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.fade_in, R.anim.fade_out).hide(this).commitAllowingStateLoss();
         }
         Log.i("Feature", "" + System.currentTimeMillis());
     }
@@ -87,22 +88,22 @@ public class FeatureAwardDialogFragment extends DialogFragment implements View.O
     }
 
     @Override
-    public Animator onCreateAnimator(int transit, boolean enter, final int nextAnim) {
-        if (nextAnim != R.animator.fade_in && nextAnim != R.animator.fade_out) {
-            return super.onCreateAnimator(transit, enter, nextAnim);
+    public Animation onCreateAnimation(int transit, boolean enter, final int nextAnim) {
+        if (nextAnim != R.anim.fade_in && nextAnim != R.anim.fade_out) {
+            return super.onCreateAnimation(transit, enter, nextAnim);
         }
-        Animator anim = AnimatorInflater.loadAnimator(getActivity(), nextAnim);
-        anim.addListener(new Animator.AnimatorListener() {
+        Animation anim = AnimationUtils.loadAnimation(getActivity(), nextAnim);
+        anim.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onAnimationStart(Animator animation) {
+            public void onAnimationStart(Animation animation) {
 
             }
 
             @Override
-            public void onAnimationEnd(Animator animation) {
-                if (nextAnim == R.animator.fade_out) {
+            public void onAnimationEnd(Animation animation) {
+                if (nextAnim == R.anim.fade_out) {
                     dismissAllowingStateLoss();
-                    ZazoManagerProvider managers = (ZazoManagerProvider) getActivity();
+                    ZazoManagerProvider managers = TbmApplication.getInstance().getManagerProvider();
                     if (managers != null) {
                         managers.getTutorial().onFeatureAwardDialogHidden();
                     }
@@ -113,12 +114,7 @@ public class FeatureAwardDialogFragment extends DialogFragment implements View.O
             }
 
             @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
+            public void onAnimationRepeat(Animation animation) {
 
             }
         });

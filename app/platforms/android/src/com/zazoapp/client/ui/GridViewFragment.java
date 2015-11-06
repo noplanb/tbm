@@ -1,10 +1,10 @@
 package com.zazoapp.client.ui;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +16,12 @@ import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.SyncManager;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.features.Features;
-import com.zazoapp.client.model.*;
+import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.model.GridElement;
+import com.zazoapp.client.model.GridElementFactory;
+import com.zazoapp.client.model.GridManager;
+import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.multimedia.CameraException;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.CameraManager.CameraExceptionHandler;

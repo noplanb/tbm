@@ -1,13 +1,14 @@
 package com.zazoapp.client.ui;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -25,6 +26,7 @@ import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.HttpRequest;
+import com.zazoapp.client.ui.animations.SlideHorizontalFadeAnimation;
 import com.zazoapp.client.utilities.DialogShower;
 
 import java.util.Collections;
@@ -177,4 +179,11 @@ public class ManageFriendsFragment extends Fragment {
         }
     }
 
+    @Override
+    public Animation onCreateAnimation(int transit, boolean enter, int nextAnim) {
+        if (nextAnim != R.anim.slide_left_fade_in && nextAnim != R.anim.slide_right_fade_out) {
+            return super.onCreateAnimation(transit, enter, nextAnim);
+        }
+        return SlideHorizontalFadeAnimation.get(getActivity(), nextAnim);
+    }
 }

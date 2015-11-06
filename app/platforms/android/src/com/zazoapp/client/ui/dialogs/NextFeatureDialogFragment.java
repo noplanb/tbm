@@ -1,20 +1,20 @@
 package com.zazoapp.client.ui.dialogs;
 
-import android.animation.Animator;
-import android.animation.AnimatorInflater;
-import android.app.DialogFragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.ui.ZazoManagerProvider;
+import com.zazoapp.client.ui.animations.SlideVerticalAnimation;
 
 import java.util.Random;
 
@@ -90,7 +90,7 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
 
     private void dismissAnimated() {
         if (!isHidden() && resumed) {
-            getFragmentManager().beginTransaction().setCustomAnimations(R.animator.slide_up, R.animator.slide_down).hide(this).commitAllowingStateLoss();
+            getFragmentManager().beginTransaction().setCustomAnimations(R.anim.slide_up, R.anim.slide_down).hide(this).commitAllowingStateLoss();
         }
     }
 
@@ -101,22 +101,22 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
     }
 
     @Override
-    public Animator onCreateAnimator(int transit, boolean enter, final int nextAnim) {
-        if (nextAnim != R.animator.slide_up && nextAnim != R.animator.slide_down) {
-            return super.onCreateAnimator(transit, enter, nextAnim);
+    public Animation onCreateAnimation(int transit, boolean enter, final int nextAnim) {
+        if (nextAnim != R.anim.slide_up && nextAnim != R.anim.slide_down) {
+            return super.onCreateAnimation(transit, enter, nextAnim);
         }
-        Animator anim = AnimatorInflater.loadAnimator(getActivity(), nextAnim);
-        anim.addListener(new Animator.AnimatorListener() {
+        Animation anim = SlideVerticalAnimation.get(getActivity(), nextAnim);
+        anim.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onAnimationStart(Animator animation) {
+            public void onAnimationStart(Animation animation) {
 
             }
 
             @Override
-            public void onAnimationEnd(Animator animation) {
-                if (nextAnim == R.animator.slide_down) {
+            public void onAnimationEnd(Animation animation) {
+                if (nextAnim == R.anim.slide_down) {
                     dismissAllowingStateLoss();
-                    ZazoManagerProvider managers = (ZazoManagerProvider) getActivity();
+                    ZazoManagerProvider managers = TbmApplication.getInstance().getManagerProvider();
                     if (managers != null) {
                         managers.getTutorial().onDismiss();
                     }
@@ -124,15 +124,11 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
             }
 
             @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
+            public void onAnimationRepeat(Animation animation) {
 
             }
         });
         return anim;
     }
+
 }

@@ -1,7 +1,7 @@
 package com.zazoapp.client.features;
 
-import android.app.Activity;
 import android.content.Context;
+import android.support.v4.app.FragmentActivity;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.TbmApplication;
@@ -55,7 +55,7 @@ public class Features {
 
     private static final String PREF_SHOW_LAST_FEATURE = "pref_show_last_feature";
     private static final long[] awardVibrationPattern = {50, 300, 90, 100, 90, 100, 90, 330};
-    private Activity activity;
+    private FragmentActivity activity;
     private PreferencesHelper prefs;
     private Set<FeatureChangedCallback> callbacks = new HashSet<>();
     private volatile boolean notifyOnChanged = true;
@@ -64,7 +64,7 @@ public class Features {
         void onFeatureChanged(Feature feature, boolean unlocked);
     }
 
-    public Features(Activity activity) {
+    public Features(FragmentActivity activity) {
         this.activity = activity;
         prefs = new PreferencesHelper(this.activity);
     }

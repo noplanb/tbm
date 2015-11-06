@@ -243,16 +243,16 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
     //----------------------------
     private Set<VideoStatusChangedCallback> videoStatusObservers = new HashSet<>();
 
-    public void addVideoStatusObserver(VideoStatusChangedCallback observer){
+    public synchronized void addVideoStatusObserver(VideoStatusChangedCallback observer){
         videoStatusObservers.add(observer);
         Log.i(TAG, "addVideoStatusObserver for " + observer.toString() + " num=" + videoStatusObservers.size());
     }
 
-    public void removeOnVideoStatusChangedObserver(VideoStatusChangedCallback observer) {
+    public synchronized void removeOnVideoStatusChangedObserver(VideoStatusChangedCallback observer) {
         videoStatusObservers.remove(observer);
     }
 
-    public void notifyStatusChanged(final Friend f){
+    public synchronized void notifyStatusChanged(final Friend f){
         for (final VideoStatusChangedCallback observer : videoStatusObservers){
             observer.onVideoStatusChanged(f);
         }

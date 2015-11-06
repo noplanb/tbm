@@ -1,12 +1,12 @@
 package com.zazoapp.client.ui.dialogs;
 
-import android.app.DialogFragment;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;

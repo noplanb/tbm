@@ -1,9 +1,9 @@
 package com.zazoapp.client.multimedia;
 
-import android.app.Activity;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +31,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
 	private static final String TAG = VideoPlayer.class.getSimpleName();
 
-    private Activity activity;
+    private FragmentActivity activity;
 	private String videoId;
 	private String friendId;
 	private Friend friend;
@@ -45,7 +45,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
 	private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
 
-    public VideoPlayer(Activity activity, ZazoManagerProvider managerProvider, TouchBlockScreen blockScreen) {
+    public VideoPlayer(FragmentActivity activity, ZazoManagerProvider managerProvider, TouchBlockScreen blockScreen) {
         this.activity = activity;
         this.managerProvider = managerProvider;
         this.blockScreen = blockScreen;

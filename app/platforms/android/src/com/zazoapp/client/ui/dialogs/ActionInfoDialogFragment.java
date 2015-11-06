@@ -1,8 +1,8 @@
 package com.zazoapp.client.ui.dialogs;
 
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.view.View;
 import android.view.View.OnClickListener;
 import com.zazoapp.client.R;

@@ -1,6 +1,5 @@
 package com.zazoapp.client.debug;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -8,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -43,7 +43,7 @@ import com.zazoapp.client.utilities.DialogShower;
 /**
  * Created by skamenkovych@codeminders.com on 2/20/2015.
  */
-public class DebugSettingsActivity extends Activity implements DebugConfig.DebugConfigChangesCallback {
+public class DebugSettingsActivity extends FragmentActivity implements DebugConfig.DebugConfigChangesCallback {
 
     public static final String EXTRA_FROM_REGISTER_SCREEN = "from_register_screen";
 

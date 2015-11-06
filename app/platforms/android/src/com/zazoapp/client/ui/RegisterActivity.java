@@ -1,11 +1,11 @@
 package com.zazoapp.client.ui;
 
-import android.app.Activity;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -49,7 +49,7 @@ import com.zazoapp.client.utilities.StringUtils;
 
 import java.util.List;
 
-public class RegisterActivity extends Activity implements EnterCodeDialogFragment.Callbacks{
+public class RegisterActivity extends FragmentActivity implements EnterCodeDialogFragment.Callbacks{
     private static final int DEBUG_SCREEN_CODE = 293;
 	private static final String TAG = RegisterActivity.class.getSimpleName();
     private User user;
@@ -285,12 +285,12 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
 	}
 
 	private void showVerificationDialog() {
-        enterCodeDialog = (DialogFragment) getFragmentManager().findFragmentByTag("enterCdDlg");
+        enterCodeDialog = (DialogFragment) getSupportFragmentManager().findFragmentByTag("enterCdDlg");
         if (enterCodeDialog != null) {
             enterCodeDialog.dismissAllowingStateLoss();
         }
         enterCodeDialog = EnterCodeDialogFragment.getInstance(e164, this); // is need to update dialog
-        enterCodeDialog.show(getFragmentManager(), "enterCdDlg");
+        enterCodeDialog.show(getSupportFragmentManager(), "enterCdDlg");
     }
 
 	@Override
@@ -411,7 +411,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
         public RegFriendGetter(Context c, boolean destroyAll) {
             super(c, destroyAll);
             pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
-            pd.show(getFragmentManager(), null);
+            pd.show(getSupportFragmentManager(), null);
         }
         
         @Override
@@ -567,7 +567,7 @@ public class RegisterActivity extends Activity implements EnterCodeDialogFragmen
             pd.dismissAllowingStateLoss();
         }
         pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
-        pd.show(getFragmentManager(), null);
+        pd.show(getSupportFragmentManager(), null);
     }
 
     private class RegSyncWelcomedFriends extends RemoteStorageHandler.GetWelcomedFriends {

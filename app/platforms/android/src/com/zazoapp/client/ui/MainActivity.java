@@ -1,14 +1,14 @@
 package com.zazoapp.client.ui;
 
-import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -44,7 +44,7 @@ import com.zazoapp.client.utilities.DialogShower;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Activity implements ActionInfoDialogListener, VersionHandler.Callback, UnexpectedTerminationHelper.TerminationCallback,
+public class MainActivity extends FragmentActivity implements ActionInfoDialogListener, VersionHandler.Callback, UnexpectedTerminationHelper.TerminationCallback,
         InviteDialogListener, SelectPhoneNumberDialog.Callbacks, DoubleActionDialogFragment.DoubleActionDialogListener, MainMenuPopup.MenuItemListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -78,6 +78,7 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
 
         managerHolder = new ManagerHolder();
         managerHolder.init(this);
+        TbmApplication.getInstance().initManagerProvider(managerHolder);
         TbmApplication.getInstance().addTerminationCallback(this);
         setupActionBar();
         setupFragment();
@@ -179,10 +180,10 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     }
 
     private void setupFragment() {
-        mainFragment = (GridViewFragment) getFragmentManager().findFragmentByTag("main");
+        mainFragment = (GridViewFragment) getSupportFragmentManager().findFragmentByTag("main");
         if (mainFragment == null) {
             mainFragment = new GridViewFragment();
-            getFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.content_frame, mainFragment, "main").commit();
         }
     }
 
@@ -362,8 +363,8 @@ public class MainActivity extends Activity implements ActionInfoDialogListener, 
     public void onMenuItemSelected(int id) {
         switch (id) {
             case R.id.menu_manage_friends: {
-                FragmentTransaction tr = getFragmentManager().beginTransaction();
-                tr.setCustomAnimations(R.animator.slide_left_fade_in, R.animator.slide_right_fade_out, R.animator.slide_left_fade_in, R.animator.slide_right_fade_out);
+                FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+                tr.setCustomAnimations(R.anim.slide_left_fade_in, R.anim.slide_right_fade_out, R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
                 tr.add(R.id.top_frame, new ManageFriendsFragment());
                 tr.addToBackStack(null);
                 tr.commit();

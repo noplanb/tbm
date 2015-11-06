@@ -1,8 +1,8 @@
 package com.zazoapp.client.ui.helpers;
 
-import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,13 +31,13 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private GridElement gridElement;
     private ViewGroup container;
     private GridElementView gridElementView;
-    private Activity activity;
+    private FragmentActivity activity;
     private ZazoManagerProvider managerProvider;
     private boolean isVideoPlaying = false;
 
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    public GridElementController(Activity activity, GridElement gridElement, ViewGroup container, ZazoManagerProvider managerProvider) {
+    public GridElementController(FragmentActivity activity, GridElement gridElement, ViewGroup container, ZazoManagerProvider managerProvider) {
         Log.i(TAG, "instance with view " + container);
         this.activity = activity;
         this.container = container;
