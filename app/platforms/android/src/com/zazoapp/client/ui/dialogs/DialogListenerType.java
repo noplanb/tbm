@@ -1,7 +1,7 @@
 package com.zazoapp.client.ui.dialogs;
 
 import android.app.Activity;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 
 /**
 * Created by skamenkovych@codeminders.com on 2/12/2015.

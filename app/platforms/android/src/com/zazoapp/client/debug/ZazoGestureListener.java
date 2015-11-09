@@ -80,6 +80,7 @@ public class ZazoGestureListener implements View.OnTouchListener {
                                     phase = GesturePhase.IDLE;
                                     v.setAlpha(1.0f);
                                     Intent intent = new Intent(context, DebugSettingsActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     context.startActivity(intent);
                                 }
                             });

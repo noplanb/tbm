@@ -50,9 +50,9 @@ public class ContactsManager implements OnItemClickListener {
 
 	private final static String TAG = ContactsManager.class.getSimpleName();
 
-    public static interface ContactSelected {
-		public void contactSelected(Contact contact);
-	}
+    public interface ContactSelected {
+        void contactSelected(Contact contact);
+    }
 
 	private Context context;
 	private ContactSelected contactSelectedDelegate;

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <RelativeLayout
+            android:id="@+id/zazo_action_bar"
+            style="@style/ZazoActionBar">
+
+        <ImageView
+                android:id="@+id/action_bar_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:padding="15dp"
+                android:src="@drawable/zazo_type"/>
+
+        <ImageButton
+                android:id="@+id/friends_menu"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_toLeftOf="@+id/overflow_menu"
+                android:padding="12dp"
+                android:src="@drawable/ic_friends"
+                android:contentDescription="@string/menu_bench"
+                android:background="?android:selectableItemBackground"/>
+
+        <ImageButton
+                android:id="@+id/overflow_menu"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:padding="12dp"
+                android:src="@drawable/ic_menu_dots"
+                android:background="?android:selectableItemBackground"/>
+    </RelativeLayout>
+
+    <android.support.v4.widget.DrawerLayout
+            android:id="@+id/drawer_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/zazo_action_bar">
+
+        <!-- The main content view -->
+
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <include layout="@layout/splash_screen"/>
+        </FrameLayout>
+
+        <FrameLayout
+                android:id="@+id/content_frame"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <!--        <ProgressBar
+                        android:id="@+id/progressBar1"
+                        style="?android:attr/progressBarStyleLarge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                         android:layout_gravity="center"
+                        />-->
+
+        </FrameLayout>
+        <!-- The navigation drawer -->
+
+        <RelativeLayout
+                android:id="@+id/bench_frame"
+                style="@style/BenchFrameStyle"
+                android:layout_height="match_parent"
+                android:background="@color/bg_bench"
+                android:padding="5dp"
+                android:layout_gravity="end">
+
+            <com.zazoapp.client.ui.view.ClearableAutoCompleteTextView
+                    android:id="@+id/contacts_auto_complete_text_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:completionThreshold="1"
+                    android:ems="10"
+                    android:padding="10dp"
+                    android:hint="@string/search_all_contacts_hint"
+                    android:textColorHint="@color/dark_grey"
+                    android:background="@drawable/search_border"
+                    android:textColor="@android:color/white"
+                    android:inputType="textNoSuggestions"
+                    android:textCursorDrawable="@null"/>
+
+            <ProgressBar
+                    android:id="@+id/progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:max="10000"
+                    android:indeterminateDrawable="@drawable/progress_spinner"
+                    android:indeterminateOnly="true"/>
+
+            <ListView
+                    android:id="@+id/bench_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentBottom="true"
+                    android:divider="@android:color/black"
+                    android:dividerHeight="1dp"
+                    android:visibility="invisible"
+                    android:layout_below="@id/contacts_auto_complete_text_view"
+                    android:background="@color/bg_bench">
+
+                <requestFocus/>
+            </ListView>
+
+            <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentBottom="true"
+                    android:layout_below="@id/contacts_auto_complete_text_view">
+
+                <include
+                        layout="@layout/contacts_heading"
+                        android:id="@+id/contacts_heading"/>
+
+            </FrameLayout>
+        </RelativeLayout>
+    </android.support.v4.widget.DrawerLayout>
+
+    <com.zazoapp.client.tutorial.TutorialLayout
+            android:id="@+id/tutorial_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible">
+
+        <TextView
+                android:id="@+id/tutorial_hint"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textColor="@color/color_name"
+                android:textSize="@dimen/tutorial_text_size"
+                android:padding="20dp"
+                android:text="hint"
+                android:textStyle="bold"
+        />
+
+        <Button
+                android:id="@+id/tutorial_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_tutorial_btn"
+                android:layout_gravity="center_horizontal|bottom"
+                android:textColor="@color/color_name"
+                android:textSize="@dimen/tutorial_text_size"
+                android:text="@string/tutorial_got_it"
+                android:textAllCaps="false"
+                android:minWidth="140dp"
+                android:minHeight="70dp"
+                android:clickable="false"
+                android:layout_marginBottom="60dp"/>
+
+        <ImageView
+                android:id="@+id/tutorial_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|bottom"
+                android:minWidth="140dp"
+                android:minHeight="70dp"
+                android:clickable="false"
+                android:layout_marginBottom="60dp"/>
+
+        <ImageView
+                android:id="@+id/tutorial_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </com.zazoapp.client.tutorial.TutorialLayout>
+</RelativeLayout>

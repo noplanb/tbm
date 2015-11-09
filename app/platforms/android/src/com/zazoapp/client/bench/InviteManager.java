@@ -24,6 +24,7 @@ import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.MainActivity;
+import com.zazoapp.client.ui.MainFragment;
 import com.zazoapp.client.ui.dialogs.InviteIntent;
 import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.Logger;
@@ -278,7 +279,7 @@ public class InviteManager implements InviteHelper {
         String msg = context.getString(R.string.dialog_already_connected_message, benchObject.firstName, Config.appName, benchObject.firstName);
         String title = context.getString(R.string.dialog_already_connected_title);
         String action = context.getString(R.string.dialog_action_ok);
-        listener.onShowActionInfoDialog(title, msg, action, false, false, MainActivity.CONNECTED_DIALOG);
+        listener.onShowActionInfoDialog(title, msg, action, false, false, MainFragment.CONNECTED_DIALOG);
     }
 
     private void serverError() {
@@ -295,7 +296,7 @@ public class InviteManager implements InviteHelper {
         String msg = context.getString(R.string.dialog_nudge_friend_message, name, Config.appName);
         String title = context.getString(R.string.dialog_nudge_friend_title, name);
         String action = context.getString(R.string.dialog_action_ok);
-        listener.onShowActionInfoDialog(title, msg, action, true, false, MainActivity.NUDGE_DIALOG);
+        listener.onShowActionInfoDialog(title, msg, action, true, false, MainFragment.NUDGE_DIALOG);
     }
 
     private void preSmsDialog() {
@@ -303,7 +304,7 @@ public class InviteManager implements InviteHelper {
         String msg = context.getString(R.string.dialog_invite_friend_message, name, Config.appName);
         String title = context.getString(R.string.dialog_invite_friend_title, name);
         String action = context.getString(R.string.dialog_action_ok);
-        listener.onShowActionInfoDialog(title, msg, action, true, false, MainActivity.SMS_DIALOG);
+        listener.onShowActionInfoDialog(title, msg, action, true, false, MainFragment.SMS_DIALOG);
     }
 
     @Override
@@ -317,12 +318,12 @@ public class InviteManager implements InviteHelper {
         String title = context.getString(R.string.dialog_send_sms_failure_title);
         String message = context.getString(R.string.dialog_send_sms_failure_message, friendName, Config.appName);
         String action = context.getString(R.string.dialog_action_ok);
-        listener.onShowActionInfoDialog(title, message, action, false, false, MainActivity.NO_SIM_DIALOG);
+        listener.onShowActionInfoDialog(title, message, action, false, false, MainFragment.NO_SIM_DIALOG);
     }
 
     @Override
     public void showSmsDialog() {
-        listener.onShowSendLinkDialog(MainActivity.SENDLINK_DIALOG, getMobileNumber(), getDefaultInviteMessage());
+        listener.onShowSendLinkDialog(MainFragment.SENDLINK_DIALOG, getMobileNumber(), getDefaultInviteMessage());
     }
 
     @Override

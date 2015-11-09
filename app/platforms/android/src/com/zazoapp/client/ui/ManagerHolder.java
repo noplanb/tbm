@@ -3,6 +3,7 @@ package com.zazoapp.client.ui;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import com.zazoapp.client.R;
 import com.zazoapp.client.bench.BenchController;
@@ -33,11 +34,11 @@ public class ManagerHolder implements ZazoManagerProvider {
     private Tutorial tutorial;
     private Features features;
 
-    public void init(MainActivity activity) {
-        inviteManager = new InviteManager(activity, activity);
-        benchController = new BenchController(activity, this);
-        audioManager = new AudioManager(activity, this);
-        videoRecorder = new VideoRecorderManager(activity, this);
+    public void init(Context context, MainFragment fragment, FragmentActivity activity) {
+        inviteManager = new InviteManager(context, fragment);
+        benchController = new BenchController(context, this, fragment.getView());
+        audioManager = new AudioManager(context, this);
+        videoRecorder = new VideoRecorderManager(context, this);
         videoPlayer = new VideoPlayer(activity, this, (TouchBlockScreen) activity.findViewById(R.id.block_screen));
         sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);

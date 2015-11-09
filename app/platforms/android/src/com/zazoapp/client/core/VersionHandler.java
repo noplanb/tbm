@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
@@ -29,6 +30,7 @@ public class VersionHandler {
     }
 
     private Context context;
+    private Callback callback;
 
     private static class ParamKeys {
         public static final String RESULT_KEY = "result";
@@ -64,10 +66,9 @@ public class VersionHandler {
         context.startActivity(uninstallIntent);
     }
 
-    public VersionHandler(Context context) {
-        if (!(context instanceof Callback))
-            throw new IllegalStateException("Can't cast to VersionHandler.Callback");
+    public VersionHandler(@NonNull Context context, @NonNull Callback callback) {
         this.context = context;
+        this.callback = callback;
     }
 
     public Integer versionCode() {
@@ -137,7 +138,6 @@ public class VersionHandler {
     }
 
     private void showVersionHandlerDialog(String message, Boolean isNegativeButton) {
-        Callback callback = (Callback) context;
         callback.showVersionHandlerDialog(message, isNegativeButton);
     }
 

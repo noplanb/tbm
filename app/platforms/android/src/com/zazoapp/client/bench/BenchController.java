@@ -1,6 +1,5 @@
 package com.zazoapp.client.bench;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v4.widget.DrawerLayout;
@@ -12,12 +11,12 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import butterknife.ButterKnife;
+import butterknife.InjectView;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.Contact;
@@ -26,6 +25,7 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.helpers.ContactsManager;
+import com.zazoapp.client.ui.view.ClearableAutoCompleteTextView;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 
 import java.util.ArrayList;
@@ -39,38 +39,37 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private static final String TAG = BenchController.class.getSimpleName();
     private final AbsListView.OnScrollListener mScrollListener;
 
-    private Activity activity;
+    private Context context;
     private ZazoManagerProvider managerProvider;
-	private ListView listView;
-    private DrawerLayout drawerLayout;
-    private BenchAdapter adapter;
-	private FriendFactory friendFactory;
-	private BenchDataHandler benchDataHandler;
-	private ArrayList<BenchObject> smsBenchObjects;
-	private ArrayList<BenchObject> contactBenchObjects;
-	private ArrayList<BenchObject> currentAllOnBench;
-	private ContactsManager contactsManager;
-    private final View slidingHeading;
+    @InjectView(R.id.bench_list) ListView listView;
+    @InjectView(R.id.drawer_layout) DrawerLayout drawerLayout;
+    @InjectView(R.id.contacts_heading) View slidingHeading;
+    @InjectView(R.id.contacts_auto_complete_text_view) ClearableAutoCompleteTextView autoCompleteTextView;
     private final TextView slidingTitle;
+    private BenchAdapter adapter;
+    private FriendFactory friendFactory;
+    private BenchDataHandler benchDataHandler;
+    private ArrayList<BenchObject> smsBenchObjects;
+    private ArrayList<BenchObject> contactBenchObjects;
+    private ArrayList<BenchObject> currentAllOnBench;
+    private ContactsManager contactsManager;
 
     // ----------------------
-	// Constructor and setup
-	// ----------------------
-	public BenchController(Activity a, ZazoManagerProvider mp) {
-		activity = a;
+    // Constructor and setup
+    // ----------------------
+    public BenchController(Context c, ZazoManagerProvider mp, View benchView) {
+        context = c;
+        ButterKnife.inject(this, benchView);
         managerProvider = mp;
-        drawerLayout = ButterKnife.findById(activity, R.id.drawer_layout);
         drawerLayout.setDrawerListener(this);
-        adapter = new BenchAdapter(activity);
-        slidingHeading = ButterKnife.findById(activity, R.id.contacts_heading);
+        adapter = new BenchAdapter(context);
         slidingTitle = ButterKnife.findById(slidingHeading, R.id.title);
-        listView = ButterKnife.findById(activity, R.id.bench_list);
         listView.setOnItemClickListener(this);
         mScrollListener = new BenchScrollListener();
         listView.setOnScrollListener(mScrollListener);
 
-		contactsManager = new ContactsManager(activity, this);
-		benchDataHandler = new BenchDataHandler(activity);
+		contactsManager = new ContactsManager(context, this);
+		benchDataHandler = new BenchDataHandler(context);
         benchDataHandler.setListener(this);
 	}
 
@@ -127,7 +126,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     public void hideBench() {
         drawerLayout.closeDrawers();
         //clear contacts_auto_complete_text_view because after resume, "old filtering" word appear
-        ((AutoCompleteTextView) activity.findViewById(R.id.contacts_auto_complete_text_view)).setText("");
+        autoCompleteTextView.setText("");
     }
 
     @Override
@@ -230,15 +229,14 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         return (contactBenchObjects != null) ? contactBenchObjects : new ArrayList<BenchObject>();
     }
 
-	// -------------
-	// Sms Contacts
-	// -------------
-	@Override
-	public void receivePhoneData(ArrayList<LinkedTreeMap<String, String>> phoneData) {
-		populate(phoneData);
-		contactsManager.setupAutoComplete((AutoCompleteTextView) activity
-				.findViewById(R.id.contacts_auto_complete_text_view));
-	}
+    // -------------
+    // Sms Contacts
+    // -------------
+    @Override
+    public void receivePhoneData(ArrayList<LinkedTreeMap<String, String>> phoneData) {
+        populate(phoneData);
+        contactsManager.setupAutoComplete(autoCompleteTextView);
+    }
 
 	private ArrayList<BenchObject> dedupedSmsBenchObjects() {
 		ArrayList<BenchObject> r = new ArrayList<BenchObject>();
