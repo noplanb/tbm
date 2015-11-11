@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
@@ -51,7 +50,7 @@ import java.util.List;
 /**
  * Created by skamenkovych@codeminders.com on 11/6/2015.
  */
-public class MainFragment extends Fragment implements UnexpectedTerminationHelper.TerminationCallback, VersionHandler.Callback,
+public class MainFragment extends ZazoFragment implements UnexpectedTerminationHelper.TerminationCallback, VersionHandler.Callback,
         ActionInfoDialogFragment.ActionInfoDialogListener, InviteManager.InviteDialogListener, SelectPhoneNumberDialog.Callbacks,
         DoubleActionDialogFragment.DoubleActionDialogListener, MainMenuPopup.MenuItemListener {
 
@@ -383,6 +382,13 @@ public class MainFragment extends Fragment implements UnexpectedTerminationHelpe
     public void onWindowFocusChanged(boolean hasFocus) {
         if (gridFragment != null) {
             gridFragment.onWindowFocusChanged(hasFocus);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == InviteIntent.INVITATION_REQUEST_ID) {
+            managerHolder.getInviteHelper().finishInvitation();
         }
     }
 }

@@ -62,11 +62,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.RegisterActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden|screenSize"/>
-        <activity
             android:name=".ui.LockScreenAlertActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
