@@ -8,22 +8,25 @@
 
 
     -->
-    <style name="AppBaseTheme" parent="android:Theme.DeviceDefault.NoActionBar.Fullscreen">
+    <style name="AppBaseTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
             backward-compatibility can go here.
         -->
+        <item name="android:dropDownListViewStyle">@style/DropDownListViewStyle</item>
+        <item name="android:windowBackground">@color/splash_background</item>
+        <item name="android:listViewStyle">@style/ListViewStyle</item>
+        <item name="android:textViewStyle">@style/TextViewStyle</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
     </style>
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
 
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-        <item name="android:dropDownListViewStyle">@style/DropDownListViewStyle</item>
-        <item name="android:windowBackground">@color/splash_background</item>
-        <item name="android:listViewStyle">@style/ListViewStyle</item>
-        <item name="android:textViewStyle">@style/TextViewStyle</item>
     </style>
 
     <style name="ZazoActionBar" parent="@android:style/Widget.Holo.ActionBar">
@@ -128,4 +131,5 @@
         <item name="android:textColor">@color/dev_color</item>
         <item name="android:layout_marginTop">@dimen/debug_options_margin</item>
     </style>
+
 </resources>

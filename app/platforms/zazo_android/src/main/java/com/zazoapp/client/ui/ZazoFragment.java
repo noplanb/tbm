@@ -1,7 +1,5 @@
 package com.zazoapp.client.ui;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -56,11 +54,4 @@ public class ZazoFragment extends Fragment {
         }
     }
 
-    protected Context getContext() {
-        Activity activity = getActivity();
-        if (activity != null) {
-            return activity.getApplicationContext();
-        }
-        return null;
-    }
 }

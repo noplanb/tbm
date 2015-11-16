@@ -24,7 +24,7 @@
     <color name="bg_unread_msg">@color/green</color>
     <color name="bg_unread_msg_count">#dc0505</color>
     
-    <color name="actionbar_bg">#1c1c19</color>
+    <color name="actionbar_bg">@color/primary</color>
     <color name="actionbar_textcolor">#ffdddad2</color>
     
     <color name="recording_border_color">#dc0505</color>
@@ -60,4 +60,8 @@
 
     <color name="feature_unlock_dialog_bg">#CC2f2e28</color>
     <color name="feature_unlock_popup_bg">#CC1c1c19</color>
+
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#195fbc</color>
+    <color name="accent">#F5055A</color>
 </resources>

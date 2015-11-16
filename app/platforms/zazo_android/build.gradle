@@ -58,6 +58,8 @@ dependencies {
     compile 'com.amazonaws:aws-android-sdk-core:2.2.5'
     compile 'com.google.code.gson:gson:2.2.4'
     compile 'com.amazonaws:aws-android-sdk-s3:2.2.5'
+    compile 'com.balysv.materialmenu:material-menu-toolbar:1.5.4'
+    compile 'com.android.support:design:23.1.0'
     androidTestCompile 'junit:junit:4.12'
 }
 

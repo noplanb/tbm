@@ -1,69 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    <RelativeLayout
-            android:id="@+id/zazo_action_bar"
-            style="@style/ZazoActionBar">
-
-        <ImageView
-                android:id="@+id/action_bar_icon"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_alignParentLeft="true"
-                android:padding="15dp"
-                android:src="@drawable/zazo_type"/>
-
-        <ImageButton
-                android:id="@+id/friends_menu"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_toLeftOf="@+id/overflow_menu"
-                android:padding="12dp"
-                android:src="@drawable/ic_friends"
-                android:contentDescription="@string/menu_bench"
-                android:background="?android:selectableItemBackground"/>
-
-        <ImageButton
-                android:id="@+id/overflow_menu"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentRight="true"
-                android:padding="12dp"
-                android:src="@drawable/ic_menu_dots"
-                android:background="?android:selectableItemBackground"/>
-    </RelativeLayout>
+                xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <android.support.v4.widget.DrawerLayout
             android:id="@+id/drawer_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/zazo_action_bar">
+            android:fitsSystemWindows="true"
+    >
 
         <!-- The main content view -->
-
-        <FrameLayout
+        <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
+            <RelativeLayout
+                    android:id="@+id/zazo_action_bar"
+                    style="@style/ZazoActionBar">
 
-            <include layout="@layout/splash_screen"/>
-        </FrameLayout>
-
-        <FrameLayout
-                android:id="@+id/content_frame"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            <!--        <ProgressBar
-                        android:id="@+id/progressBar1"
-                        style="?android:attr/progressBarStyleLarge"
+                <com.balysv.materialmenu.MaterialMenuView
+                        android:id="@+id/menu_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                         android:layout_gravity="center"
-                        />-->
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:paddingLeft="@dimen/actionbar_item_padding"
+                />
 
-        </FrameLayout>
+                <ImageView
+                        android:id="@+id/action_bar_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_toRightOf="@id/menu_view"
+                        android:layout_toEndOf="@id/menu_view"
+                        android:padding="@dimen/actionbar_item_padding"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/zazo_type_white"/>
+
+                <ImageButton
+                        android:id="@+id/friends_menu"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_toLeftOf="@+id/overflow_menu"
+                        android:layout_toStartOf="@+id/overflow_menu"
+                        android:padding="@dimen/actionbar_item_padding"
+                        android:src="@drawable/ic_friends"
+                        android:contentDescription="@string/menu_bench"
+                        android:background="?android:selectableItemBackground"/>
+
+                <ImageButton
+                        android:id="@+id/overflow_menu"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:padding="@dimen/actionbar_item_padding"
+                        android:src="@drawable/ic_menu_dots"
+                        android:background="?android:selectableItemBackground"/>
+            </RelativeLayout>
+            <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_below="@id/zazo_action_bar">
+
+                <include layout="@layout/splash_screen"/>
+            </FrameLayout>
+
+            <FrameLayout
+                    android:id="@+id/content_frame"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_below="@id/zazo_action_bar">
+
+                <!--        <ProgressBar
+                            android:id="@+id/progressBar1"
+                            style="?android:attr/progressBarStyleLarge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                             android:layout_gravity="center"
+                            />-->
+
+            </FrameLayout>
+        </RelativeLayout>
+
+
         <!-- The navigation drawer -->
 
         <RelativeLayout
@@ -124,6 +146,14 @@
 
             </FrameLayout>
         </RelativeLayout>
+        <android.support.design.widget.NavigationView
+            android:id="@+id/navigation_view"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            app:headerLayout="@layout/drawer_header"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark"
+            app:menu="@menu/drawer"/>
     </android.support.v4.widget.DrawerLayout>
 
     <com.zazoapp.client.tutorial.TutorialLayout
