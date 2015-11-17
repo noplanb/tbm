@@ -63,5 +63,6 @@
 
     <color name="primary">#1976D2</color>
     <color name="primary_dark">#195fbc</color>
-    <color name="accent">#F5055A</color>
+    <color name="accent">#ffffff</color>
+    <color name="accent_2">#F5055A</color>
 </resources>

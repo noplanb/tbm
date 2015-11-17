@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
@@ -62,6 +63,9 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public static final int SENDLINK_DIALOG = 3;
     public static final int NO_SIM_DIALOG = 4;
 
+    private static final int TAB_MAIN = 0;
+    private static final int TAB_FRIENDS = 1;
+
     private GcmHandler gcmHandler;
     private VersionHandler versionHandler;
     private ManagerHolder managerHolder;
@@ -73,8 +77,8 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     private GridViewFragment gridFragment;
 
     @InjectView(R.id.action_bar_icon) ImageView actionBarIcon;
-    @InjectView(R.id.friends_menu) ImageButton menuFriends;
     @InjectView(R.id.overflow_menu) ImageButton menuOverflow;
+    @InjectView(R.id.tabs) TabLayout tabsLayout;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -152,18 +156,6 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     private void setupActionBar() {
         actionBarIcon.setOnTouchListener(new ZazoGestureListener(context));
-        menuFriends.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (managerHolder.getPlayer().isPlaying()) {
-                    managerHolder.getPlayer().stop();
-                }
-                if (managerHolder.getRecorder().isRecording()) {
-                    return;
-                }
-                toggleBench();
-            }
-        });
         menuOverflow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
@@ -184,6 +176,36 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                 popup.setAnchorView(v);
                 popup.setMenuItemListener(MainFragment.this);
                 popup.show();
+            }
+        });
+        tabsLayout.addTab(tabsLayout.newTab().setIcon(R.drawable.ic_action_view_as_list), true);
+        tabsLayout.addTab(tabsLayout.newTab().setIcon(R.drawable.ic_friends));
+        tabsLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                switch (tab.getPosition()) {
+                    case TAB_MAIN:
+                        managerHolder.getBenchViewManager().hideBench();
+                        break;
+                    case TAB_FRIENDS:
+                        if (managerHolder.getPlayer().isPlaying()) {
+                            managerHolder.getPlayer().stop();
+                        }
+                        if (managerHolder.getRecorder().isRecording()) {
+                            tabsLayout.getTabAt(0).select();
+                            return;
+                        }
+                        managerHolder.getBenchViewManager().showBench();
+                        break;
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
             }
         });
     }
