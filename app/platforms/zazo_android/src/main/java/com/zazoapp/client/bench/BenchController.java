@@ -34,7 +34,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class BenchController implements BenchDataHandler.BenchDataHandlerCallback, OnItemClickListener,
-        ContactsManager.ContactSelected, BenchViewManager, DrawerLayout.DrawerListener {
+        ContactsManager.ContactSelected, BenchViewManager {
 
     private static final String TAG = BenchController.class.getSimpleName();
     private final AbsListView.OnScrollListener mScrollListener;
@@ -45,6 +45,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @InjectView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @InjectView(R.id.contacts_heading) View slidingHeading;
     @InjectView(R.id.contacts_auto_complete_text_view) ClearableAutoCompleteTextView autoCompleteTextView;
+
     private final TextView slidingTitle;
     private BenchAdapter adapter;
     private FriendFactory friendFactory;
@@ -61,7 +62,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         context = c;
         ButterKnife.inject(this, benchView);
         managerProvider = mp;
-        drawerLayout.setDrawerListener(this);
         adapter = new BenchAdapter(context);
         slidingTitle = ButterKnife.findById(slidingHeading, R.id.title);
         listView.setOnItemClickListener(this);
@@ -266,25 +266,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 		}
 		return false;
 	}
-
-    @Override
-    public void onDrawerSlide(View view, float v) {
-    }
-
-    @Override
-    public void onDrawerOpened(View view) {
-    }
-
-    @Override
-    public void onDrawerClosed(View view) {
-        if (contactsManager != null) {
-            contactsManager.hideKeyboard();
-        }
-    }
-
-    @Override
-    public void onDrawerStateChanged(int i) {
-    }
 
     private class BenchAdapter extends BaseAdapter{
 

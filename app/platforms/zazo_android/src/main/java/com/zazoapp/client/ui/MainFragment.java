@@ -7,12 +7,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +24,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import com.balysv.materialmenu.MaterialMenuDrawable;
+import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.core.IntentHandlerService;
@@ -53,7 +58,7 @@ import java.util.List;
  */
 public class MainFragment extends ZazoFragment implements UnexpectedTerminationHelper.TerminationCallback, VersionHandler.Callback,
         ActionInfoDialogFragment.ActionInfoDialogListener, InviteManager.InviteDialogListener, SelectPhoneNumberDialog.Callbacks,
-        DoubleActionDialogFragment.DoubleActionDialogListener, MainMenuPopup.MenuItemListener {
+        DoubleActionDialogFragment.DoubleActionDialogListener, MainMenuPopup.MenuItemListener, DrawerLayout.DrawerListener {
 
     private static final String TAG = MainFragment.class.getSimpleName();
 
@@ -75,10 +80,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     private DialogFragment pd;
     private GridViewFragment gridFragment;
+    private boolean isNavigationOpened;
 
     @InjectView(R.id.action_bar_icon) ImageView actionBarIcon;
     @InjectView(R.id.overflow_menu) ImageButton menuOverflow;
     @InjectView(R.id.tabs) TabLayout tabsLayout;
+    @InjectView(R.id.navigation_view) NavigationView navigationView;
+    @InjectView(R.id.menu_view) MaterialMenuView menuView;
+    @InjectView(R.id.drawer_layout) DrawerLayout drawerLayout;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -208,6 +217,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
+        menuView.setState(MaterialMenuDrawable.IconState.BURGER);
+        menuView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleNavigationPanel();
+            }
+        });
+        drawerLayout.setDrawerListener(this);
     }
 
     private void releaseManagers() {
@@ -369,13 +386,17 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         }
     }
 
-    private void toggleBench() {
-        if (managerHolder.getBenchViewManager() != null) {
-            if (managerHolder.getBenchViewManager().isBenchShowed()) {
-                managerHolder.getBenchViewManager().hideBench();
-            } else {
-                managerHolder.getBenchViewManager().showBench();
-            }
+    private void toggleNavigationPanel() {
+        if (managerHolder.getPlayer().isPlaying()) {
+            managerHolder.getPlayer().stop();
+        }
+        if (managerHolder.getRecorder().isRecording()) {
+            return;
+        }
+        if (drawerLayout.isDrawerOpen(Gravity.LEFT)) {
+            drawerLayout.closeDrawer(Gravity.LEFT);
+        } else {
+            drawerLayout.openDrawer(Gravity.LEFT);
         }
     }
 
@@ -395,7 +416,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch(keyCode) {
             case KeyEvent.KEYCODE_MENU:
-                toggleBench();
+                toggleNavigationPanel();
                 return true;
         }
         return false;
@@ -411,6 +432,43 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == InviteIntent.INVITATION_REQUEST_ID) {
             managerHolder.getInviteHelper().finishInvitation();
+        }
+    }
+
+    @Override
+    public void onDrawerSlide(View view, float v) {
+        if (view.getId() == R.id.navigation_view) {
+            menuView.getDrawable().setTransformationOffset(MaterialMenuDrawable.AnimationState.BURGER_ARROW,
+                    isNavigationOpened ? 2 - v : v);
+        }
+    }
+
+    @Override
+    public void onDrawerOpened(View view) {
+        if (view.getId() == R.id.navigation_view) {
+            isNavigationOpened = true;
+        }
+    }
+
+    @Override
+    public void onDrawerClosed(View view) {
+        // TODO UI2.0
+        //if (contactsManager != null) {
+        //    contactsManager.hideKeyboard();
+        //}
+        if (view.getId() == R.id.navigation_view) {
+            isNavigationOpened = false;
+        }
+    }
+
+    @Override
+    public void onDrawerStateChanged(int newState) {
+        if (newState == DrawerLayout.STATE_IDLE) {
+            if (isNavigationOpened) {
+                menuView.setState(MaterialMenuDrawable.IconState.ARROW);
+            } else {
+                menuView.setState(MaterialMenuDrawable.IconState.BURGER);
+            }
         }
     }
 }
