@@ -20,5 +20,6 @@
     <dimen name="button_padding">5dp</dimen>
     <dimen name="debug_options_margin">10dp</dimen>
     <dimen name="anim_sliding_fragment_distance">400dp</dimen>
-    <dimen name="actionbar_item_padding">12dp</dimen>
+    <dimen name="actionbar_item_padding">11dp</dimen>
+    <dimen name="actionbar_item_icon_padding">15dp</dimen>
 </resources>

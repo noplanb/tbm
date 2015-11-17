@@ -15,51 +15,59 @@
         <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-            <RelativeLayout
+            <android.support.design.widget.AppBarLayout
                     android:id="@+id/zazo_action_bar"
-                    style="@style/ZazoActionBar">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <RelativeLayout
+                        style="@style/ZazoActionBar">
 
-                <com.balysv.materialmenu.MaterialMenuView
-                        android:id="@+id/menu_view"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_alignParentLeft="true"
-                        android:layout_alignParentStart="true"
-                        android:paddingLeft="@dimen/actionbar_item_padding"
-                />
+                    <com.balysv.materialmenu.MaterialMenuView
+                            android:id="@+id/menu_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:paddingLeft="@dimen/actionbar_item_padding"
+                            android:paddingRight="@dimen/actionbar_item_padding"
+                    />
 
-                <ImageView
-                        android:id="@+id/action_bar_icon"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_toRightOf="@id/menu_view"
-                        android:layout_toEndOf="@id/menu_view"
-                        android:padding="@dimen/actionbar_item_padding"
-                        android:layout_centerVertical="true"
-                        android:src="@drawable/zazo_type_white"/>
+                    <ImageView
+                            android:id="@+id/action_bar_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_toRightOf="@id/menu_view"
+                            android:layout_toEndOf="@id/menu_view"
+                            android:paddingTop="@dimen/actionbar_item_icon_padding"
+                            android:paddingBottom="@dimen/actionbar_item_icon_padding"
+                            android:layout_centerVertical="true"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/zazo_type_white"/>
 
-                <ImageButton
-                        android:id="@+id/friends_menu"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_toLeftOf="@+id/overflow_menu"
-                        android:layout_toStartOf="@+id/overflow_menu"
-                        android:padding="@dimen/actionbar_item_padding"
-                        android:src="@drawable/ic_friends"
-                        android:contentDescription="@string/menu_bench"
-                        android:background="?android:selectableItemBackground"/>
+                    <ImageButton
+                            android:id="@+id/friends_menu"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_toLeftOf="@+id/overflow_menu"
+                            android:layout_toStartOf="@+id/overflow_menu"
+                            android:padding="@dimen/actionbar_item_padding"
+                            android:src="@drawable/ic_friends"
+                            android:contentDescription="@string/menu_bench"
+                            android:background="?android:selectableItemBackground"/>
 
-                <ImageButton
-                        android:id="@+id/overflow_menu"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_alignParentRight="true"
-                        android:layout_alignParentEnd="true"
-                        android:padding="@dimen/actionbar_item_padding"
-                        android:src="@drawable/ic_menu_dots"
-                        android:background="?android:selectableItemBackground"/>
-            </RelativeLayout>
+                    <ImageButton
+                            android:id="@+id/overflow_menu"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentRight="true"
+                            android:layout_alignParentEnd="true"
+                            android:padding="@dimen/actionbar_item_padding"
+                            android:src="@drawable/ic_menu_dots"
+                            android:background="?android:selectableItemBackground"/>
+                </RelativeLayout>
+            </android.support.design.widget.AppBarLayout>
+
             <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
