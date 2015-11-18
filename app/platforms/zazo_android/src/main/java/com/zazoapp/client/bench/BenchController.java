@@ -2,9 +2,7 @@ package com.zazoapp.client.bench;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,16 +35,15 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         ContactsManager.ContactSelected, BenchViewManager {
 
     private static final String TAG = BenchController.class.getSimpleName();
-    private final AbsListView.OnScrollListener mScrollListener;
+    private AbsListView.OnScrollListener mScrollListener;
 
     private Context context;
     private ZazoManagerProvider managerProvider;
     @InjectView(R.id.bench_list) ListView listView;
-    @InjectView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @InjectView(R.id.contacts_heading) View slidingHeading;
     @InjectView(R.id.contacts_auto_complete_text_view) ClearableAutoCompleteTextView autoCompleteTextView;
 
-    private final TextView slidingTitle;
+    private TextView slidingTitle;
     private BenchAdapter adapter;
     private FriendFactory friendFactory;
     private BenchDataHandler benchDataHandler;
@@ -54,19 +51,15 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private ArrayList<BenchObject> contactBenchObjects;
     private ArrayList<BenchObject> currentAllOnBench;
     private ContactsManager contactsManager;
+    private boolean isBenchShown;
 
     // ----------------------
     // Constructor and setup
     // ----------------------
-    public BenchController(Context c, ZazoManagerProvider mp, View benchView) {
+    public BenchController(Context c, ZazoManagerProvider mp) {
         context = c;
-        ButterKnife.inject(this, benchView);
         managerProvider = mp;
         adapter = new BenchAdapter(context);
-        slidingTitle = ButterKnife.findById(slidingHeading, R.id.title);
-        listView.setOnItemClickListener(this);
-        mScrollListener = new BenchScrollListener();
-        listView.setOnScrollListener(mScrollListener);
 
 		contactsManager = new ContactsManager(context, this);
 		benchDataHandler = new BenchDataHandler(context);
@@ -75,7 +68,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
 	public void loadContacts() {
         friendFactory = FriendFactory.getFactoryInstance();
-        listView.setSelection(0); // to scroll list to the first position
 		benchDataHandler.getRankedPhoneData();
 	}
 
@@ -119,14 +111,17 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
     @Override
     public void showBench() {
-        drawerLayout.openDrawer(Gravity.RIGHT);
+        isBenchShown = true;
     }
 
     @Override
     public void hideBench() {
-        drawerLayout.closeDrawers();
-        //clear contacts_auto_complete_text_view because after resume, "old filtering" word appear
-        autoCompleteTextView.setText("");
+        isBenchShown = false;
+        if (isViewAttached()) {
+            //clear contacts_auto_complete_text_view because after resume, "old filtering" word appear
+            autoCompleteTextView.setText("");
+            contactsManager.hideKeyboard();
+        }
     }
 
     @Override
@@ -149,8 +144,29 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     }
 
     @Override
+    public void attachView(View view) {
+        if (!isViewAttached()) {
+            ButterKnife.inject(this, view);
+            listView.setSelection(0); // to scroll list to the first position
+            if (adapter.isDataSetReady()) {
+                listView.setAdapter(adapter);
+                listView.setVisibility(View.VISIBLE);
+            }
+            slidingTitle = ButterKnife.findById(slidingHeading, R.id.title);
+            mScrollListener = new BenchScrollListener();
+            listView.setOnItemClickListener(this);
+            listView.setOnScrollListener(mScrollListener);
+        }
+    }
+
+    @Override
+    public void detachView() {
+        ButterKnife.reset(this);
+    }
+
+    @Override
     public boolean isBenchShowed() {
-        return drawerLayout.isDrawerOpen(Gravity.RIGHT);
+        return isBenchShown;
     }
 
 	// ---------
@@ -185,12 +201,14 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 adapter.setList(list);
-                if (listView.getAdapter() == adapter) {
-                    adapter.notifyDataSetChanged();
-                } else {
-                    listView.setAdapter(adapter);
+                if (isViewAttached()) {
+                    if (listView.getAdapter() == adapter) {
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        listView.setAdapter(adapter);
+                    }
+                    listView.setVisibility(View.VISIBLE);
                 }
-                listView.setVisibility(View.VISIBLE);
             }
         });
 	}
@@ -267,6 +285,10 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 		return false;
 	}
 
+    private boolean isViewAttached() {
+        return listView != null && slidingTitle != null;
+    }
+
     private class BenchAdapter extends BaseAdapter{
 
         private Context context;
@@ -275,6 +297,10 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         public BenchAdapter(Context context) {
             this.context = context;
             this.lists = null;
+        }
+
+        public boolean isDataSetReady() {
+            return lists != null;
         }
 
         public void setList(List<BenchObject>[] lists) {

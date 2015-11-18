@@ -33,18 +33,23 @@ public class ManagerHolder implements ZazoManagerProvider {
     private Player videoPlayer;
     private Tutorial tutorial;
     private Features features;
+    private boolean isInited;
 
     public void init(Context context, MainFragment fragment, FragmentActivity activity) {
-        inviteManager = new InviteManager(context, fragment);
-        benchController = new BenchController(context, this, fragment.getView());
-        audioManager = new AudioManager(context, this);
+        if (!isInited) {
+            inviteManager = new InviteManager(context);
+            benchController = new BenchController(context, this);
+            audioManager = new AudioManager(context, this);
+            sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+            proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+            if (proximitySensor == null) {
+                Log.i(TAG, "Proximity sensor not found");
+            }
+            isInited = true;
+        }
+        inviteManager.setListener(fragment);
         videoRecorder = new VideoRecorderManager(context, this);
         videoPlayer = new VideoPlayer(activity, this, (TouchBlockScreen) activity.findViewById(R.id.block_screen));
-        sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
-        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        if (proximitySensor == null) {
-            Log.i(TAG, "Proximity sensor not found");
-        }
         tutorial = new Tutorial(activity, this);
         features = new Features(activity);
     }

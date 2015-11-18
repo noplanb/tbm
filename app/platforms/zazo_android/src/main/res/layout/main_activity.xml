@@ -11,10 +11,6 @@
             android:id="@+id/feature_frame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
-    <FrameLayout
-            android:id="@+id/top_frame"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
     <com.zazoapp.client.ui.view.TouchBlockScreen
             android:id="@+id/block_screen"
             android:layout_width="match_parent"

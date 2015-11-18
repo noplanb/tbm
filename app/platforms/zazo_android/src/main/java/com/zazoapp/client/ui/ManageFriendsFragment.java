@@ -18,6 +18,8 @@ import android.widget.ToggleButton;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+import com.balysv.materialmenu.MaterialMenuDrawable;
+import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.model.Friend;
@@ -39,6 +41,7 @@ import java.util.List;
 public class ManageFriendsFragment extends Fragment {
 
     @InjectView(R.id.friends_list) ListView listView;
+    @InjectView(R.id.up) MaterialMenuView up;
 
     @Nullable
     @Override
@@ -46,6 +49,7 @@ public class ManageFriendsFragment extends Fragment {
         View v = inflater.inflate(R.layout.manage_friends_layout, null);
         ButterKnife.inject(this, v);
         listView.setAdapter(new FriendsAdapter(getActivity().getApplicationContext()));
+        up.setState(MaterialMenuDrawable.IconState.ARROW);
         return v;
     }
 

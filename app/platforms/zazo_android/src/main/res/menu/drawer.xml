@@ -13,7 +13,7 @@
                 android:title="@string/feature_switch_camera_action" />
         <item
                 android:id="@+id/navigation_item_location"
-                android:icon="@drawable/ic_arrow_back"
+                android:icon="@drawable/zazo_type"
                 android:title="@string/abc_search_hint" />
     </group>
 

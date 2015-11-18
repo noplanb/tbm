@@ -10,8 +10,12 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.util.Log;
@@ -68,6 +72,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public static final int SENDLINK_DIALOG = 3;
     public static final int NO_SIM_DIALOG = 4;
 
+    private static final String TAB = "mf_tab";
     private static final int TAB_MAIN = 0;
     private static final int TAB_FRIENDS = 1;
 
@@ -82,12 +87,15 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     private GridViewFragment gridFragment;
     private boolean isNavigationOpened;
 
+    private ZazoPagerAdapter pagerAdapter;
+
     @InjectView(R.id.action_bar_icon) ImageView actionBarIcon;
     @InjectView(R.id.overflow_menu) ImageButton menuOverflow;
     @InjectView(R.id.tabs) TabLayout tabsLayout;
     @InjectView(R.id.navigation_view) NavigationView navigationView;
     @InjectView(R.id.menu_view) MaterialMenuView menuView;
     @InjectView(R.id.drawer_layout) DrawerLayout drawerLayout;
+    @InjectView(R.id.content_frame) ViewPager contentFrame;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -105,11 +113,9 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     }
 
     private void setupGrid() {
-        gridFragment = (GridViewFragment) getChildFragmentManager().findFragmentByTag("grid");
-        if (gridFragment == null) {
-            gridFragment = new GridViewFragment();
-            getChildFragmentManager().beginTransaction().add(R.id.content_frame, gridFragment, "grid").commit();
-        }
+        pagerAdapter = new ZazoPagerAdapter(getChildFragmentManager());
+        contentFrame.setAdapter(pagerAdapter);
+        showMainTab();
     }
 
     @Override
@@ -117,14 +123,19 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         super.onActivityCreated(savedInstanceState);
         gcmHandler = new GcmHandler(getActivity());
         versionHandler = new VersionHandler(context, this);
-
-        managerHolder = new ManagerHolder();
+        managerHolder = (ManagerHolder) TbmApplication.getInstance().getManagerProvider();
+        if (managerHolder == null) {
+            managerHolder = new ManagerHolder();
+        }
         managerHolder.init(context, this, getActivity());
         TbmApplication.getInstance().initManagerProvider(managerHolder);
         TbmApplication.getInstance().addTerminationCallback(this);
         new S3CredentialsGetter(context);
         context.startService(new Intent(context, IntentHandlerService.class));
         setupGrid();
+        //if (savedInstanceState != null) { TODO discuss
+        //    tabsLayout.getTabAt(savedInstanceState.getInt(TAB, TAB_MAIN)).select();
+        //}
     }
 
     @Override
@@ -163,6 +174,12 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         releaseManagers();
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putInt(TAB, tabsLayout.getSelectedTabPosition());
+        super.onSaveInstanceState(outState);
+    }
+
     private void setupActionBar() {
         actionBarIcon.setOnTouchListener(new ZazoGestureListener(context));
         menuOverflow.setOnClickListener(new View.OnClickListener() {
@@ -197,16 +214,19 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                         managerHolder.getBenchViewManager().hideBench();
                         break;
                     case TAB_FRIENDS:
-                        if (managerHolder.getPlayer().isPlaying()) {
-                            managerHolder.getPlayer().stop();
-                        }
-                        if (managerHolder.getRecorder().isRecording()) {
-                            tabsLayout.getTabAt(0).select();
-                            return;
+                        if (gridFragment != null) {
+                            if (managerHolder.getPlayer().isPlaying()) {
+                                managerHolder.getPlayer().stop();
+                            }
+                            if (managerHolder.getRecorder().isRecording()) {
+                                tabsLayout.getTabAt(0).select();
+                                return;
+                            }
                         }
                         managerHolder.getBenchViewManager().showBench();
                         break;
                 }
+                contentFrame.setCurrentItem(tab.getPosition());
             }
 
             @Override
@@ -217,6 +237,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
+        contentFrame.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabsLayout));
         menuView.setState(MaterialMenuDrawable.IconState.BURGER);
         menuView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -354,6 +375,17 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         dismissProgressDialog();
     }
 
+    @Override
+    public void onFinishInvitation() {
+        showMainTab();
+    }
+
+    private void showMainTab() {
+        if (getActivity() != null) {
+            contentFrame.setCurrentItem(TAB_MAIN, false);
+        }
+    }
+
     private void dismissProgressDialog() {
         if (pd != null)
             pd.dismissAllowingStateLoss();
@@ -452,10 +484,6 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     @Override
     public void onDrawerClosed(View view) {
-        // TODO UI2.0
-        //if (contactsManager != null) {
-        //    contactsManager.hideKeyboard();
-        //}
         if (view.getId() == R.id.navigation_view) {
             isNavigationOpened = false;
         }
@@ -471,4 +499,33 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             }
         }
     }
+
+    public class ZazoPagerAdapter extends FragmentPagerAdapter {
+
+        public ZazoPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case TAB_MAIN:
+                    gridFragment = (GridViewFragment) getChildFragmentManager().findFragmentByTag("grid");
+                    if (gridFragment == null) {
+                        gridFragment = new GridViewFragment();
+                    }
+                    return gridFragment;
+                case TAB_FRIENDS:
+                    Fragment fragment = new ContactsFragment();
+                    return fragment;
+            }
+            return null;
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+    }
+
 }

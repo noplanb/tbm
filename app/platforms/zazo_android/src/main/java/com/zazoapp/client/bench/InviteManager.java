@@ -51,6 +51,7 @@ public class InviteManager implements InviteHelper {
         void onShowProgressDialog(String title, String msg);
         void onShowSelectPhoneNumberDialog(Contact contact);
         void onDismissProgressDialog();
+        void onFinishInvitation();
     }
 
     private static final String TAG = InviteManager.class.getSimpleName();
@@ -61,8 +62,11 @@ public class InviteManager implements InviteHelper {
     private Friend lastInvitedFriend;
     private InviteDialogListener listener;
 
-    public InviteManager(Context context, InviteDialogListener listener) {
+    public InviteManager(Context context) {
         this.context = context;
+    }
+
+    public void setListener(InviteDialogListener listener) {
         this.listener = listener;
     }
 
@@ -271,6 +275,7 @@ public class InviteManager implements InviteHelper {
             Dispatch.dispatch(new NullPointerException(), "Friend is null");
             return;
         }
+        listener.onFinishInvitation();
         lastInvitedFriend = friend;
         moveFriendToGrid();
     }

@@ -5,6 +5,8 @@
     android:background="@android:color/transparent"
     android:orientation="vertical" >
 
+    <include layout="@layout/splash_screen"/>
+
     <com.zazoapp.client.ui.view.NineViewGroup
         android:id="@+id/grid_view"
         android:layout_width="match_parent"
