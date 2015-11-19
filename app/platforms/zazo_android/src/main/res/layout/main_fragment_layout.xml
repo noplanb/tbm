@@ -48,14 +48,6 @@
                                 android:adjustViewBounds="true"
                                 android:src="@drawable/zazo_type_white"/>
 
-                        <ImageButton
-                                android:id="@+id/overflow_menu"
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                android:padding="@dimen/actionbar_item_padding"
-                                android:src="@drawable/ic_menu_dots"
-                                android:background="?android:selectableItemBackground"/>
-
                         <android.support.design.widget.TabLayout
                                 android:id="@+id/tabs"
                                 android:layout_toRightOf="@id/action_bar_icon"
@@ -101,8 +93,13 @@
             android:layout_height="match_parent"
             android:layout_gravity="start"
             app:headerLayout="@layout/drawer_header"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark"
-            app:menu="@menu/drawer"/>
+            android:theme="@style/ThemeOverlay.AppCompat.Light"
+            app:menu="@menu/navigation_menu"
+            app:elevation="4dp"
+            app:itemTextColor="@color/drawer_item_text"
+            app:itemIconTint="@color/drawer_icon"
+            android:background="@android:color/white"
+            />
     </android.support.v4.widget.DrawerLayout>
 
     <com.zazoapp.client.tutorial.TutorialLayout

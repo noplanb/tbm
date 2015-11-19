@@ -48,7 +48,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.google.android.gms:play-services-gcm:8.3.0'
+    compile 'com.google.android.gms:play-services-gcm:7.5.0'
     compile 'cz.msebera.android:httpclient:4.3.3'
     compile 'commons-io:commons-io:2.4'
     compile 'commons-codec:commons-codec:1.5'
@@ -60,6 +60,7 @@ dependencies {
     compile 'com.amazonaws:aws-android-sdk-s3:2.2.5'
     compile 'com.balysv.materialmenu:material-menu-toolbar:1.5.4'
     compile 'com.android.support:design:23.1.0'
+    compile 'de.hdodenhof:circleimageview:2.0.0'
     androidTestCompile 'junit:junit:4.12'
 }
 

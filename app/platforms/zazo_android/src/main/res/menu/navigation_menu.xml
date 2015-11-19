@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:id="@+id/section_invite">
+        <item
+                android:id="@+id/navigation_item_invite_friends"
+                android:icon="@drawable/icons_plus"
+                android:title="@string/navigation_invite_friends"/>
+    </group>
+
+    <group android:id="@+id/section_navigate"><!--android:checkableBehavior="single"-->
+        <item
+                android:id="@+id/navigation_item_edit_friends"
+                android:icon="@drawable/ic_action_view"
+                android:title="@string/navigation_edit_friends" />
+        <item
+                android:id="@+id/navigation_item_new_group"
+                android:icon="@drawable/ic_camera_switch"
+                android:title="@string/navigation_new_group" />
+        <item
+                android:id="@+id/navigation_item_contacts"
+                android:icon="@drawable/zazo_type"
+                android:title="@string/navigation_contacts" />
+    </group>
+
+    <group android:id="@+id/section_help">
+        <item
+                android:id="@+id/navigation_item_settings"
+                android:icon="@drawable/ic_flag_us"
+                android:title="@string/navigation_settings" />
+        <item
+                android:id="@+id/navigation_item_help"
+                android:icon="@drawable/ic_flag_ua"
+                android:title="@string/navigation_help" />
+    </group>
+
+</menu>

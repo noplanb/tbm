@@ -1,30 +1,17 @@
 package com.zazoapp.client.ui;
 
-import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.*;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.view.*;
 import android.widget.ImageView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -42,27 +29,17 @@ import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
-import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
-import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment;
-import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
-import com.zazoapp.client.ui.dialogs.InviteIntent;
-import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
-import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
-import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
+import com.zazoapp.client.ui.dialogs.*;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
-import com.zazoapp.client.ui.view.MainMenuPopup;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by skamenkovych@codeminders.com on 11/6/2015.
  */
 public class MainFragment extends ZazoFragment implements UnexpectedTerminationHelper.TerminationCallback, VersionHandler.Callback,
         ActionInfoDialogFragment.ActionInfoDialogListener, InviteManager.InviteDialogListener, SelectPhoneNumberDialog.Callbacks,
-        DoubleActionDialogFragment.DoubleActionDialogListener, MainMenuPopup.MenuItemListener, DrawerLayout.DrawerListener {
+        DoubleActionDialogFragment.DoubleActionDialogListener, DrawerLayout.DrawerListener, NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainFragment.class.getSimpleName();
 
@@ -90,7 +67,6 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     private ZazoPagerAdapter pagerAdapter;
 
     @InjectView(R.id.action_bar_icon) ImageView actionBarIcon;
-    @InjectView(R.id.overflow_menu) ImageButton menuOverflow;
     @InjectView(R.id.tabs) TabLayout tabsLayout;
     @InjectView(R.id.navigation_view) NavigationView navigationView;
     @InjectView(R.id.menu_view) MaterialMenuView menuView;
@@ -182,28 +158,6 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     private void setupActionBar() {
         actionBarIcon.setOnTouchListener(new ZazoGestureListener(context));
-        menuOverflow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                if (managerHolder.getBenchViewManager().isBenchShowed()) {
-                    managerHolder.getBenchViewManager().hideBench();
-                }
-                if (managerHolder.getPlayer().isPlaying()) {
-                    managerHolder.getPlayer().stop();
-                }
-                if (managerHolder.getRecorder().isRecording()) {
-                    return;
-                }
-                List<Integer> disabledItems = new ArrayList<Integer>();
-                if (!managerHolder.getFeatures().isUnlocked(Features.Feature.DELETE_FRIEND)) {
-                    disabledItems.add(R.id.menu_manage_friends);
-                }
-                MainMenuPopup popup = new MainMenuPopup(context, disabledItems);
-                popup.setAnchorView(v);
-                popup.setMenuItemListener(MainFragment.this);
-                popup.show();
-            }
-        });
         tabsLayout.addTab(tabsLayout.newTab().setIcon(R.drawable.ic_action_view_as_list), true);
         tabsLayout.addTab(tabsLayout.newTab().setIcon(R.drawable.ic_friends));
         tabsLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -246,6 +200,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             }
         });
         drawerLayout.setDrawerListener(this);
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
     private void releaseManagers() {
@@ -391,31 +346,25 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             pd.dismissAllowingStateLoss();
     }
 
-    @Override
-    public void onMenuItemSelected(int id) {
-        switch (id) {
-            case R.id.menu_manage_friends: {
-                FragmentTransaction tr = getFragmentManager().beginTransaction();
-                tr.setCustomAnimations(R.anim.slide_left_fade_in, R.anim.slide_right_fade_out, R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
-                tr.add(R.id.top_frame, new ManageFriendsFragment());
-                tr.addToBackStack(null);
-                tr.commit();
-                break;
-            }
-            case R.id.menu_send_feedback: {
-                Bundle bundle = new Bundle();
-                bundle.putString(InviteIntent.EMAIL_KEY, "feedback@zazoapp.com");
-                bundle.putString(InviteIntent.SUBJECT_KEY, getString(R.string.feedback_subject));
-                bundle.putString(InviteIntent.MESSAGE_KEY, "");
-                Intent feedback = InviteIntent.EMAIL.getIntent(bundle);
-                try {
-                    startActivity(feedback);
-                } catch (ActivityNotFoundException e) {
-                    DialogShower.showToast(context, R.string.feedback_send_fails);
-                }
-                break;
-            }
+    private void sendFeedback() {
+        Bundle bundle = new Bundle();
+        bundle.putString(InviteIntent.EMAIL_KEY, "feedback@zazoapp.com");
+        bundle.putString(InviteIntent.SUBJECT_KEY, getString(R.string.feedback_subject));
+        bundle.putString(InviteIntent.MESSAGE_KEY, "");
+        Intent feedback = InviteIntent.EMAIL.getIntent(bundle);
+        try {
+            startActivity(feedback);
+        } catch (ActivityNotFoundException e) {
+            DialogShower.showToast(context, R.string.feedback_send_fails);
         }
+    }
+
+    private void showEditFriends() {
+        FragmentTransaction tr = getFragmentManager().beginTransaction();
+        tr.setCustomAnimations(R.anim.slide_left_fade_in, R.anim.slide_right_fade_out, R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
+        tr.add(R.id.top_frame, new ManageFriendsFragment());
+        tr.addToBackStack(null);
+        tr.commit();
     }
 
     private void toggleNavigationPanel() {
@@ -434,6 +383,23 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     private void showNotEnoughSpaceDialog() {
         DialogShower.showBlockingDialog(getActivity(), R.string.alert_not_enough_space_title, R.string.alert_not_enough_space_message);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.navigation_item_edit_friends:
+                showEditFriends();
+                break;
+            case R.id.navigation_item_help:
+                sendFeedback();
+                break;
+            default:
+                DialogShower.showToast(context, String.valueOf(item.getTitle()));
+                break;
+        }
+        toggleNavigationPanel();
+        return true;
     }
 
     private class MainActivityReceiver extends BroadcastReceiver {
@@ -497,6 +463,10 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             } else {
                 menuView.setState(MaterialMenuDrawable.IconState.BURGER);
             }
+        }
+        if (!isNavigationOpened && (newState == DrawerLayout.STATE_DRAGGING || newState == DrawerLayout.STATE_SETTLING)) {
+            navigationView.getMenu().findItem(R.id.navigation_item_edit_friends)
+                    .setVisible(managerHolder.getFeatures().isUnlocked(Features.Feature.DELETE_FRIEND));
         }
     }
 

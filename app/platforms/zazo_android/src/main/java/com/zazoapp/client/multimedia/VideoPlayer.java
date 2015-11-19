@@ -260,12 +260,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 	}
 
     public boolean isPlaying(){
-        return videoView.isPlaying();
+        return videoView != null && videoView.isPlaying();
     }
 
     @Override
     public void rewind(int msec) {
-        if (videoView.isPlaying()) {
+        if (isPlaying()) {
             int current = videoView.getCurrentPosition();
             int length = videoView.getDuration();
             if (length > 0) {

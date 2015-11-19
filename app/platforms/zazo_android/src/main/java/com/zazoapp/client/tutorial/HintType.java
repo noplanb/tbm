@@ -57,7 +57,7 @@ public enum HintType {
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             View parent = (View) layout.getParent();
             if (parent != null) {
-                View button = parent.findViewById(R.id.overflow_menu);
+                View button = parent.findViewById(R.id.menu_view);
                 if (button != null) {
                     layout.dimExceptForRect(getViewRect(button));
                 }
