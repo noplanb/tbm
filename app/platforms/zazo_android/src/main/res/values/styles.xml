@@ -15,7 +15,7 @@
             backward-compatibility can go here.
         -->
         <item name="android:dropDownListViewStyle">@style/DropDownListViewStyle</item>
-        <item name="android:windowBackground">@color/splash_background</item>
+        <item name="android:windowBackground">@color/bgn_main</item>
         <item name="android:listViewStyle">@style/ListViewStyle</item>
         <item name="android:textViewStyle">@style/TextViewStyle</item>
         <item name="colorPrimary">@color/primary</item>

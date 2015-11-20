@@ -2,22 +2,38 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/bg_bench"
+                android:background="@color/bgn_main"
                 android:padding="5dp">
-    <com.zazoapp.client.ui.view.ClearableAutoCompleteTextView
-            android:id="@+id/contacts_auto_complete_text_view"
+    <RelativeLayout
+            android:id="@+id/search_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:completionThreshold="1"
-            android:ems="10"
-            android:padding="10dp"
-            android:hint="@string/search_all_contacts_hint"
-            android:textColorHint="@color/dark_grey"
-            android:background="@drawable/search_border"
-            android:textColor="@android:color/white"
-            android:inputType="textNoSuggestions"
-            android:textCursorDrawable="@null"/>
+            android:layout_height="wrap_content">
+        <Spinner
+                android:id="@+id/contacts_group_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/ThemeOverlay.AppCompat.Light"
+        >
+
+        </Spinner>
+        <com.zazoapp.client.ui.view.ClearableAutoCompleteTextView
+                android:id="@+id/contacts_auto_complete_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:completionThreshold="1"
+                android:ems="10"
+                android:padding="10dp"
+                android:hint="@string/search_all_contacts_hint"
+                android:textColorHint="@color/dark_grey"
+                android:background="@drawable/search_border"
+                android:textColor="@android:color/white"
+                android:inputType="textNoSuggestions"
+                android:textCursorDrawable="@null"
+                android:visibility="invisible"
+        />
+    </RelativeLayout>
+
 
     <ProgressBar
             android:id="@+id/progress"
@@ -36,8 +52,8 @@
             android:divider="@android:color/black"
             android:dividerHeight="1dp"
             android:visibility="invisible"
-            android:layout_below="@id/contacts_auto_complete_text_view"
-            android:background="@color/bg_bench">
+            android:layout_below="@id/search_layout"
+            android:background="@color/bgn_main">
 
         <requestFocus/>
     </ListView>
@@ -46,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignParentBottom="true"
-            android:layout_below="@id/contacts_auto_complete_text_view">
+            android:layout_below="@id/search_layout">
 
         <include
                 layout="@layout/contacts_heading"

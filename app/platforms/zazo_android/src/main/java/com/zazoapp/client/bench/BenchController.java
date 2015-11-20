@@ -12,6 +12,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -42,6 +43,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @InjectView(R.id.bench_list) ListView listView;
     @InjectView(R.id.contacts_heading) View slidingHeading;
     @InjectView(R.id.contacts_auto_complete_text_view) ClearableAutoCompleteTextView autoCompleteTextView;
+    @InjectView(R.id.contacts_group_selector) Spinner groupSelector;
 
     private TextView slidingTitle;
     private BenchAdapter adapter;
@@ -156,6 +158,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             mScrollListener = new BenchScrollListener();
             listView.setOnItemClickListener(this);
             listView.setOnScrollListener(mScrollListener);
+//            groupSelector.setAdapter(new ContactsGroupAdapter);
         }
     }
 
@@ -289,7 +292,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         return listView != null && slidingTitle != null;
     }
 
-    private class BenchAdapter extends BaseAdapter{
+    private class BenchAdapter extends BaseAdapter {
 
         private Context context;
         private List<BenchObject>[] lists;

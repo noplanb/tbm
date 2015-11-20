@@ -25,7 +25,7 @@
     <color name="bg_unread_msg_count">#dc0505</color>
     
     <color name="actionbar_bg">@color/primary</color>
-    <color name="actionbar_textcolor">#ffdddad2</color>
+    <color name="actionbar_textcolor">@color/white</color>
     
     <color name="recording_border_color">#dc0505</color>
     
@@ -33,10 +33,7 @@
     <color name="bg_downloading">@color/orange</color>
     
     <color name="bg_empty_friend">#1c1c19</color>
-    
-    <color name="bg_bench">@color/light_grey_new</color>
-    <color name="bg_main">@color/light_grey_new</color>
-    
+
     <color name="light_grey">#a8a294</color>
     <color name="dialog_title_bg">@color/orange</color>
     <color name="dialog_body_bg">#f1efe9</color>
@@ -56,7 +53,6 @@
 
     <color name="spinner_ring_start">#00F48A31</color>
     <color name="spinner_ring_middle">#DDF48A31</color>
-    <color name="splash_background">@color/light_grey_new</color>
 
     <color name="feature_unlock_dialog_bg">#CC2f2e28</color>
     <color name="feature_unlock_popup_bg">#CC1c1c19</color>
@@ -68,4 +64,5 @@
     <color name="gray">#7D7D7D</color>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
+    <color name="bgn_main">#F8F8F8</color>
 </resources>

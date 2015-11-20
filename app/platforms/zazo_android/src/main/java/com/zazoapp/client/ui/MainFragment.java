@@ -62,10 +62,11 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     private DialogFragment pd;
     private GridViewFragment gridFragment;
+    private ContactsFragment contactsFragment;
+
     private boolean isNavigationOpened;
 
     private ZazoPagerAdapter pagerAdapter;
-
     @InjectView(R.id.action_bar_icon) ImageView actionBarIcon;
     @InjectView(R.id.tabs) TabLayout tabsLayout;
     @InjectView(R.id.navigation_view) NavigationView navigationView;
@@ -158,8 +159,8 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     private void setupActionBar() {
         actionBarIcon.setOnTouchListener(new ZazoGestureListener(context));
-        tabsLayout.addTab(tabsLayout.newTab().setIcon(R.drawable.ic_action_view_as_list), true);
-        tabsLayout.addTab(tabsLayout.newTab().setIcon(R.drawable.ic_friends));
+        tabsLayout.addTab(tabsLayout.newTab().setIcon(R.drawable.tab_grid), true);
+        tabsLayout.addTab(tabsLayout.newTab().setIcon(R.drawable.tab_contacts));
         tabsLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -480,14 +481,11 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         public Fragment getItem(int position) {
             switch (position) {
                 case TAB_MAIN:
-                    gridFragment = (GridViewFragment) getChildFragmentManager().findFragmentByTag("grid");
-                    if (gridFragment == null) {
-                        gridFragment = new GridViewFragment();
-                    }
+                    gridFragment = new GridViewFragment();
                     return gridFragment;
                 case TAB_FRIENDS:
-                    Fragment fragment = new ContactsFragment();
-                    return fragment;
+                    contactsFragment = new ContactsFragment();
+                    return contactsFragment;
             }
             return null;
         }

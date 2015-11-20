@@ -18,47 +18,43 @@
             <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
-                <android.support.design.widget.AppBarLayout
+
+                <RelativeLayout
                         android:id="@+id/zazo_action_bar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                    <RelativeLayout
-                            style="@style/ZazoActionBar">
+                        style="@style/ZazoActionBar">
 
-                        <com.balysv.materialmenu.MaterialMenuView
-                                android:id="@+id/menu_view"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_centerVertical="true"
-                                android:layout_alignParentLeft="true"
-                                android:layout_alignParentStart="true"
-                                android:paddingLeft="@dimen/actionbar_item_padding"
-                                android:paddingRight="@dimen/actionbar_item_padding"
-                        />
+                    <com.balysv.materialmenu.MaterialMenuView
+                            android:id="@+id/menu_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:paddingLeft="@dimen/actionbar_item_padding"
+                            android:paddingRight="@dimen/actionbar_item_padding"
+                    />
 
-                        <ImageView
-                                android:id="@+id/action_bar_icon"
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                android:layout_toRightOf="@id/menu_view"
-                                android:layout_toEndOf="@id/menu_view"
-                                android:paddingTop="@dimen/actionbar_item_icon_padding"
-                                android:paddingBottom="@dimen/actionbar_item_icon_padding"
-                                android:layout_centerVertical="true"
-                                android:adjustViewBounds="true"
-                                android:src="@drawable/zazo_type_white"/>
+                    <ImageView
+                            android:id="@+id/action_bar_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_toRightOf="@id/menu_view"
+                            android:layout_toEndOf="@id/menu_view"
+                            android:paddingTop="@dimen/actionbar_item_icon_padding"
+                            android:paddingBottom="@dimen/actionbar_item_icon_padding"
+                            android:layout_centerVertical="true"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/zazo_type_white"/>
 
-                        <android.support.design.widget.TabLayout
-                                android:id="@+id/tabs"
-                                android:layout_toRightOf="@id/action_bar_icon"
-                                android:layout_toEndOf="@id/action_bar_icon"
-                                android:layout_alignParentRight="true"
-                                android:layout_alignParentEnd="true"
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"/>
-                    </RelativeLayout>
-                </android.support.design.widget.AppBarLayout>
-
+                    <android.support.design.widget.TabLayout
+                            android:id="@+id/tabs"
+                            android:layout_toRightOf="@id/action_bar_icon"
+                            android:layout_toEndOf="@id/action_bar_icon"
+                            android:layout_alignParentRight="true"
+                            android:layout_alignParentEnd="true"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+                </RelativeLayout>
                 <android.support.v4.view.ViewPager
 
                         android:id="@+id/content_frame"
@@ -75,6 +71,11 @@
                                 />-->
 
                 </android.support.v4.view.ViewPager>
+                <View
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/zazo_action_bar"
+                        android:background="@drawable/toolbar_shadow"/>
 
             </RelativeLayout>
             <FrameLayout

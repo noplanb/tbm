@@ -19,7 +19,7 @@
                 android:title="@string/navigation_new_group" />
         <item
                 android:id="@+id/navigation_item_contacts"
-                android:icon="@drawable/zazo_type"
+                android:icon="@drawable/ic_contacts_normal"
                 android:title="@string/navigation_contacts" />
     </group>
 

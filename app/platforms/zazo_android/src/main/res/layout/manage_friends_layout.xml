@@ -4,38 +4,38 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/dialog_body_bg">
-    <android.support.design.widget.AppBarLayout
-            android:id="@+id/zazo_action_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <RelativeLayout
-                style="@style/ZazoActionBar"
-                android:clickable="true">
-            <LinearLayout
-                    android:id="@+id/home"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="?android:selectableItemBackground"
-                    android:clickable="true">
-                <com.balysv.materialmenu.MaterialMenuView
-                        android:id="@+id/up"
-                        android:layout_width="48dp"
-                        android:layout_height="match_parent"
-                        android:padding="@dimen/actionbar_item_padding"/>
-                <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="12dp"
-                        android:text="@string/manage_friends"
-                        android:textSize="@dimen/text_very_large"
-                        android:textColor="@color/actionbar_textcolor"
-                />
-            </LinearLayout>
 
-        </RelativeLayout>
-    </android.support.design.widget.AppBarLayout>
+    <RelativeLayout
+            android:id="@+id/zazo_action_bar"
+            style="@style/ZazoActionBar"
+            android:clickable="true">
+
+        <LinearLayout
+                android:id="@+id/home"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="?android:selectableItemBackground"
+                android:clickable="true">
+
+            <com.balysv.materialmenu.MaterialMenuView
+                    android:id="@+id/up"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/actionbar_item_padding"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    android:text="@string/manage_friends"
+                    android:textSize="@dimen/text_very_large"
+                    android:textColor="@color/actionbar_textcolor"
+            />
+        </LinearLayout>
+
+    </RelativeLayout>
 
     <ListView
             android:id="@+id/friends_list"
@@ -45,4 +45,9 @@
             android:divider="@color/black_overlay"
             android:dividerHeight="1px"
             tools:listitem="@layout/manage_friends_list_item"/>
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/zazo_action_bar"
+            android:background="@drawable/toolbar_shadow"/>
 </RelativeLayout>

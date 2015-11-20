@@ -19,7 +19,7 @@
         android:id="@+id/video_body"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-	    android:background="@color/bg_main"
+	    android:background="@color/bgn_main"
         android:visibility="gone" >
 
         <com.zazoapp.client.ui.view.VideoView
