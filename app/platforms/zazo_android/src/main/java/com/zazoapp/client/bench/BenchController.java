@@ -59,7 +59,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     // Constructor and setup
     // ----------------------
     public BenchController(Context c, ZazoManagerProvider mp) {
-        context = c;
+        context = c.getApplicationContext();
         managerProvider = mp;
         adapter = new BenchAdapter(context);
 
@@ -158,7 +158,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             mScrollListener = new BenchScrollListener();
             listView.setOnItemClickListener(this);
             listView.setOnScrollListener(mScrollListener);
-//            groupSelector.setAdapter(new ContactsGroupAdapter);
+            groupSelector.setAdapter(new ContactsGroupAdapter(context));
         }
     }
 

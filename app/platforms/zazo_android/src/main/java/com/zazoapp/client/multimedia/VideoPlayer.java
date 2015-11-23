@@ -121,14 +121,16 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @Override
     public void stop(){
         Log.i(TAG, "stop");
-        videoBody.setVisibility(View.INVISIBLE);
-        //need to clear videoView because of last frame of already viewed video appear before new one start playing
-        //TODO need to fix delay with black frame (or first video frame)
-//        videoView.setVisibility(View.INVISIBLE);
-//        videoView.setVisibility(View.VISIBLE);
-        videoView.stopPlayback();
-        videoView.setVideoURI(null);
-        videoView.suspend();
+        if (videoView != null && videoBody != null) {
+            videoBody.setVisibility(View.INVISIBLE);
+            //need to clear videoView because of last frame of already viewed video appear before new one start playing
+            //TODO need to fix delay with black frame (or first video frame)
+            //videoView.setVisibility(View.INVISIBLE);
+            //videoView.setVisibility(View.VISIBLE);
+            videoView.stopPlayback();
+            videoView.setVideoURI(null);
+            videoView.suspend();
+        }
         blockScreen.unlock(true);
         managerProvider.getAudioController().setSpeakerPhoneOn(false);
         cancelWaitingForStart();
