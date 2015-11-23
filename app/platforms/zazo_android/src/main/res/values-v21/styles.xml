@@ -5,6 +5,6 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
         <!-- To Make Navigation Drawer Fill Status Bar and become Transparent Too -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:statusBarColor">#3000</item>
+        <item name="android:statusBarColor">@color/status_bar_main_color</item>
     </style>
 </resources>

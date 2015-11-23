@@ -81,6 +81,15 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
 
     private static final int DEBUG_SCREEN_CODE = 293;
 
+    private static final String KEY_FIRST_NAME = "rf_first_name";
+    private static final String KEY_LAST_NAME = "rf_last_name";
+    private static final String KEY_COUNTRY_CODE = "rf_country_code";
+    private static final String KEY_MOBILE_NUMBER = "rf_mobile_number";
+    private static final String KEY_E164 = "rf_e164";
+    private static final String KEY_AUTH = "rf_auth";
+    private static final String KEY_MKEY = "rf_mkey";
+    private Bundle registerData;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -89,7 +98,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         setupListeners();
 
         setAdditionalViewHeight();
-        setUpView();
+        setUpView(savedInstanceState);
         initUser();
         return v;
     }
@@ -123,8 +132,29 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     //----------
     // SetupView
     //----------
-    private void setUpView() {
+    private void setUpView(@Nullable Bundle args) {
         //prefillTextFields(); issue 250
+        if (args != null) {
+            if (args.containsKey(KEY_FIRST_NAME)) {
+                firstNameTxt.setText(args.getString(KEY_FIRST_NAME));
+                firstName = args.getString(KEY_FIRST_NAME);
+            }
+            if (args.containsKey(KEY_LAST_NAME)) {
+                lastNameTxt.setText(args.getString(KEY_LAST_NAME));
+                lastName = args.getString(KEY_LAST_NAME);
+            }
+            if (args.containsKey(KEY_COUNTRY_CODE)) {
+                countryCodeTxt.setText(args.getString(KEY_COUNTRY_CODE));
+                countryCode = args.getString(KEY_COUNTRY_CODE);
+            }
+            if (args.containsKey(KEY_MOBILE_NUMBER)) {
+                mobileNumberTxt.setText(args.getString(KEY_MOBILE_NUMBER));
+                mobileNumber = args.getString(KEY_MOBILE_NUMBER);
+            }
+            e164 = args.getString(KEY_E164);
+            auth = args.getString(KEY_AUTH);
+            mkey = args.getString(KEY_MKEY);
+        }
     }
 
     private void prefillTextFields() {
@@ -162,8 +192,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         countryCodeTxt.setText(countryCode);
         mobileNumber = cleanNumber(mobileNumberTxt.getText().toString());
         mobileNumberTxt.setText(mobileNumber);
-        String newE164 = "+" + countryCode + mobileNumber;
-        e164 = newE164;
+        e164 = "+" + countryCode + mobileNumber;
 
         if (!isValidName(firstName)) {
             firstNameError();
@@ -177,9 +206,30 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
             phoneError();
             return;
         }
+        saveParams();
         register();
     }
 
+    private void saveParams() {
+        registerData = new Bundle();
+        registerData.putString(KEY_FIRST_NAME, firstName);
+        registerData.putString(KEY_LAST_NAME, lastName);
+        registerData.putString(KEY_COUNTRY_CODE, countryCode);
+        registerData.putString(KEY_MOBILE_NUMBER, mobileNumber);
+        registerData.putString(KEY_E164, e164);
+        registerData.putString(KEY_AUTH, auth);
+        registerData.putString(KEY_MKEY, mkey);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (registerData != null) {
+            for (String key : registerData.keySet()) {
+                outState.putString(key, registerData.getString(key));
+            }
+        }
+        super.onSaveInstanceState(outState);
+    }
 
     private boolean isValidPhone(String p) {
         PhoneNumberUtil pu = PhoneNumberUtil.getInstance();
@@ -287,6 +337,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         if ( HttpRequest.isSuccess(params.get(HttpRequest.ParamKeys.RESPONSE_STATUS)) ){
             auth = params.get(UserFactory.ServerParamKeys.AUTH);
             mkey = params.get(UserFactory.ServerParamKeys.MKEY);
+            saveParams();
             showVerificationDialog();
         } else {
             String title = params.get(HttpRequest.ParamKeys.ERROR_TITLE);

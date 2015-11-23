@@ -3,7 +3,6 @@ package com.zazoapp.client.ui.dialogs;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -76,7 +75,7 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
                         listener = (DialogListener) activity;
                         break;
                     case FRAGMENT:
-                        listener = (DialogListener) getTargetFragment();
+                        listener = (DialogListener) getParentFragment();
                         break;
                 }
             }
@@ -151,9 +150,6 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
         }
         getArguments().putSerializable(TARGET_TYPE, type);
         getArguments().putInt(ID, dialogId);
-        if (type == DialogListenerType.FRAGMENT) {
-            setTargetFragment((Fragment) listener, dialogId);
-        }
     }
 
     protected int getDialogId() {

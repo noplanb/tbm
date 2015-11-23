@@ -6,6 +6,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.rollbar.android.Rollbar;
+import com.zazoapp.client.BuildConfig;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.model.User;
@@ -23,7 +24,7 @@ public class RollbarTracker implements ErrorTracker {
 
     @Override
     public void init(Context context) {
-        Rollbar.init(context, "1fc7c2e85dfe4c9aa194d6f8e1e88a81", "production", false);
+        Rollbar.init(context, "1fc7c2e85dfe4c9aa194d6f8e1e88a81", BuildConfig.DISPATCH_ENVIRONMENT, false);
     }
 
     @Override

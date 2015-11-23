@@ -22,6 +22,7 @@ android {
         targetSdkVersion 22
         versionCode 117
         versionName "2.8.6" //<!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
+        resConfigs "en"
     }
 
     buildTypes {
@@ -29,10 +30,12 @@ android {
             debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "DISPATCH_ENVIRONMENT", "\"production\""
         }
 
         debug {
             debuggable true
+            buildConfigField "String", "DISPATCH_ENVIRONMENT", "\"development\""
         }
     }
     applicationVariants.all {
