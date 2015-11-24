@@ -22,7 +22,6 @@
                         android:layout_height="match_parent"
                         android:scaleType="centerInside"
                         android:src="@drawable/ic_zazo_letter"
-                        android:layout_alignParentTop="true"
                         android:visibility="visible"/>
 
                 <!--        <ImageView
@@ -39,7 +38,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_toRightOf="@id/thumb_layout"
+                    android:layout_toEndOf="@id/thumb_layout"
                     android:layout_toLeftOf="@+id/delete_btn"
+                    android:layout_toStartOf="@+id/delete_btn"
                     android:layout_centerVertical="true"
                     android:orientation="vertical"
                     android:padding="10dp">

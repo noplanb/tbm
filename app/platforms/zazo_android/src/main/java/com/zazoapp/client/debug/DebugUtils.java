@@ -10,6 +10,7 @@ import android.util.Pair;
 import android.widget.EditText;
 import com.google.gson.Gson;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.utilities.Convenience;
@@ -155,6 +156,7 @@ public final class DebugUtils {
         final EditText input = new EditText(context);
         // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setTextColor(context.getResources().getColor(R.color.white));
         builder.setView(input);
         builder.setCancelable(false);
         // Set up the buttons
