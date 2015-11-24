@@ -103,7 +103,7 @@ public class GcmHandler {
 	private SharedPreferences getGCMPreferences(Context context) {
 		// This sample app persists the registration ID in shared preferences, but
 		// how you store the regID in your app is up to you.
-		return activity.getSharedPreferences(activity.getClass().getSimpleName(),
+		return activity.getSharedPreferences("MainActivity",
 				Context.MODE_PRIVATE);
 	}
 
