@@ -738,4 +738,11 @@
         <item>Skype</item>
         <item>Inbox</item>
     </string-array>
+    <integer-array name="thumb_colors">
+        <item>@color/thumb_color_moderate_blue</item>
+        <item>@color/thumb_color_moderate_lime_green</item>
+        <item>@color/thumb_color_pure_orange</item>
+        <item>@color/thumb_color_strong_blue</item>
+        <item>@color/thumb_color_strong_cyan</item>
+    </integer-array>
 </resources>

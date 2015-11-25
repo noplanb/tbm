@@ -109,8 +109,6 @@
     <string name="tutorial_hint_send_welcome_with_record">Press and hold to record a welcome Zazo for %1$s.</string>
     <string name="tutorial_got_it">Got It</string>
     <string name="tutorial_try_it">Try it now</string>
-    <string name="bench_heading_sms">SMS Contacts</string>
-    <string name="bench_heading_all">All Contacts</string>
 
     <string name="invite_subject">Invitation to Zazo</string>
     <string name="no_app_selected">No app selected</string>

@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.StatFs;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -375,5 +376,9 @@ public class Convenience {
             LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(ON_NOT_ENOUGH_SPACE_ACTION));
         }
         return result;
+    }
+
+    public static int getStringDependentItem(@NonNull String base, @NonNull int[] colors) {
+        return colors[Math.abs(base.hashCode() % colors.length)];
     }
 }

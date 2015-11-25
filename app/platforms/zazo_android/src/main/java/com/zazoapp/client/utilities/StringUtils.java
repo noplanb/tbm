@@ -69,4 +69,15 @@ public class StringUtils {
             return null;
         }
     }
+
+    public static String getInitials(String a, String b) {
+        StringBuilder initials = new StringBuilder();
+        if (a != null && !a.isEmpty()) {
+            initials.append(a.toUpperCase().charAt(0));
+        }
+        if (b != null && !b.isEmpty()) {
+            initials.append(b.toUpperCase().charAt(0));
+        }
+        return initials.toString();
+    }
 }

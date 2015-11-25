@@ -6,8 +6,8 @@
                 android:background="@color/dialog_body_bg">
     <ImageView
             android:id="@+id/icon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/small_icon_size"
+            android:layout_height="@dimen/small_icon_size"
             android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"/>
 

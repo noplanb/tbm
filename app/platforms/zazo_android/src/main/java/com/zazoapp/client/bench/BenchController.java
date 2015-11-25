@@ -1,8 +1,11 @@
 package com.zazoapp.client.bench;
 
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +29,8 @@ import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.ui.view.ClearableAutoCompleteTextView;
 import com.zazoapp.client.utilities.AsyncTaskManager;
+import com.zazoapp.client.utilities.Convenience;
+import com.zazoapp.client.utilities.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +50,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @InjectView(R.id.contacts_auto_complete_text_view) ClearableAutoCompleteTextView autoCompleteTextView;
     @InjectView(R.id.contacts_group_selector) Spinner groupSelector;
 
-    private TextView slidingTitle;
+    private ImageView slidingIcon;
     private BenchAdapter adapter;
     private FriendFactory friendFactory;
     private BenchDataHandler benchDataHandler;
@@ -154,7 +159,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 listView.setAdapter(adapter);
                 listView.setVisibility(View.VISIBLE);
             }
-            slidingTitle = ButterKnife.findById(slidingHeading, R.id.title);
+            slidingHeading.setVisibility(View.VISIBLE);
+            slidingIcon = ButterKnife.findById(slidingHeading, R.id.icon);
             mScrollListener = new BenchScrollListener();
             listView.setOnItemClickListener(this);
             listView.setOnScrollListener(mScrollListener);
@@ -289,17 +295,23 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	}
 
     private boolean isViewAttached() {
-        return listView != null && slidingTitle != null;
+        return listView != null && slidingIcon != null;
     }
 
-    private class BenchAdapter extends BaseAdapter {
+    class BenchAdapter extends BaseAdapter {
 
         private Context context;
         private List<BenchObject>[] lists;
+        private List<ContactsGroup> groups;
+
+        private final int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
+        private final int colors[];
+        private SparseArray<ColorDrawable> colorDrawables = new SparseArray<>();
 
         public BenchAdapter(Context context) {
             this.context = context;
             this.lists = null;
+            colors = context.getResources().getIntArray(R.array.thumb_colors);
         }
 
         public boolean isDataSetReady() {
@@ -308,6 +320,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
         public void setList(List<BenchObject>[] lists) {
             this.lists = lists;
+            this.groups = ContactsGroup.getActive();
         }
 
         public boolean isFirstPositionForType(int position, int type) {
@@ -376,12 +389,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             View v;
             if(convertView == null){
                 v = LayoutInflater.from(context).inflate(R.layout.bench_list_item, parent, false);
-                holder = new ViewHolder();
-                holder.name = (TextView) v.findViewById(R.id.name);
-                holder.thumb = (ImageView) v.findViewById(R.id.thumb);
-                holder.thumbBorder = (ImageView) v.findViewById(R.id.borderImage);
-                holder.header = v.findViewById(R.id.header);
-                holder.headerTitle = (TextView) v.findViewById(R.id.title);
+                holder = new ViewHolder(v);
                 v.setTag(holder);
             }else{
                 v = convertView;
@@ -391,46 +399,65 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             BenchObject item = getItem(position);
 
             Friend friend = FriendFactory.getFactoryInstance().find(item.friendId);
-            if (friend!=null){
-                if(friend.thumbExists()) {
+            if (friend != null) {
+                if (friend.thumbExists()) {
                     holder.thumb.setImageBitmap(friend.thumbBitmap());
-                    holder.thumbBorder.setVisibility(View.VISIBLE);
-                }else {
-                    holder.thumb.setImageResource(R.drawable.ic_no_pic_z);
-                    holder.thumbBorder.setVisibility(View.INVISIBLE);
+                    holder.thumbTitle.setText("");
+                } else {
+                    holder.thumbBackground.setImageDrawable(getColorDrawable(Convenience.getStringDependentItem(item.displayName, colors)));
+                    holder.thumb.setImageResource(Convenience.getStringDependentItem(item.displayName, icons));
+                    holder.thumbTitle.setText(friend.getInitials());
                 }
-                holder.thumb.setVisibility(View.VISIBLE);
-            }else{
-                holder.thumb.setVisibility(View.GONE);
-                holder.thumbBorder.setVisibility(View.GONE);
-            }
-            if (isFirstPositionForType(position, 1)) {
-                holder.header.setVisibility(View.VISIBLE);
-                holder.headerTitle.setText(R.string.bench_heading_sms);
-            } else if (isFirstPositionForType(position, 2)) {
-                holder.header.setVisibility(View.VISIBLE);
-                holder.headerTitle.setText(R.string.bench_heading_all);
             } else {
+                holder.thumbBackground.setImageDrawable(getColorDrawable(Convenience.getStringDependentItem(item.displayName, colors)));
+                holder.thumb.setImageResource(Convenience.getStringDependentItem(item.displayName, icons));
+                holder.thumbTitle.setText(StringUtils.getInitials(item.firstName, item.lastName));
+            }
+            int itemViewType = getItemViewType(position);
+            if (position == 0 || !isFirstPositionForType(position, itemViewType)) {
                 holder.header.setVisibility(View.INVISIBLE);
+            } else {
+                holder.header.setVisibility(View.VISIBLE);
+                holder.headerIcon.setImageResource(groups.get(itemViewType).getIconId());
+            }
+            if (itemViewType < getViewTypeCount() - 1 &&
+                    isLastPositionForType(position, itemViewType) && lists[itemViewType+1].size() > 0) {
+                holder.groupDivider.setVisibility(View.VISIBLE);
+            } else {
+                holder.groupDivider.setVisibility(View.INVISIBLE);
             }
             holder.name.setText(item.displayName);
-
             return v;
         }
 
-        private class ViewHolder{
-            ImageView thumb;
-            ImageView thumbBorder;
-            TextView name;
-            View header;
-            TextView headerTitle;
+        private Drawable getColorDrawable(int color) {
+            ColorDrawable colorDrawable = colorDrawables.get(color);
+            if (colorDrawable == null) {
+                colorDrawable = new ColorDrawable(color);
+                colorDrawables.put(color, colorDrawable);
+            }
+            return colorDrawable;
+        }
+
+        class ViewHolder{
+            @InjectView(R.id.header) View header;
+            @InjectView(R.id.group_divider) View groupDivider;
+            @InjectView(R.id.thumb_background) ImageView thumbBackground;
+            @InjectView(R.id.thumb) ImageView thumb;
+            @InjectView(R.id.thumb_title) TextView thumbTitle;
+            @InjectView(R.id.name) TextView name;
+            @InjectView(R.id.icon) ImageView headerIcon;
+
+            public ViewHolder(View v) {
+                ButterKnife.inject(this, v);
+            }
         }
     }
 
     private class BenchScrollListener implements AbsListView.OnScrollListener {
 
         BenchScrollListener() {
-            slidingHeading.setTag(0);
+            slidingHeading.setTag(-1);
         }
 
         @Override
@@ -442,29 +469,18 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             if (visibleItemCount > 0) {
                 int type = adapter.getItemViewType(firstVisibleItem);
                 View item = view.getChildAt(0);
-                boolean firstForSms = adapter.isFirstPositionForType(firstVisibleItem, 1);
-                boolean lastForSms = adapter.isLastPositionForType(firstVisibleItem, 1);
-                boolean firstForAll = adapter.isFirstPositionForType(firstVisibleItem, 2);
-                if (firstForSms && item.getTop() >= 0 || firstForAll && item.getTop() >= 0) {
-                    type = 0;
-                }
+                boolean lastForGroup = adapter.isLastPositionForType(firstVisibleItem, type);
+
                 if ((int) slidingHeading.getTag() != type) {
                     slidingHeading.setTag(type);
-                    switch (type) {
-                        case 1:
-                            slidingTitle.setText(R.string.bench_heading_sms);
-                            slidingHeading.setVisibility(View.VISIBLE);
-                            break;
-                        case 2:
-                            slidingTitle.setText(R.string.bench_heading_all);
-                            slidingHeading.setVisibility(View.VISIBLE);
-                            break;
-                        default:
-                            slidingHeading.setVisibility(View.INVISIBLE);
-                            break;
+                    slidingIcon.setImageResource(adapter.groups.get(type).getIconId());
+                    if (type == 0) {
+                        slidingHeading.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
+                    } else {
+                        slidingHeading.setBackgroundColor(context.getResources().getColor(R.color.bgn_main));
                     }
                 }
-                if (lastForSms && item.getBottom() < slidingHeading.getHeight()) {
+                if (type < adapter.groups.size() - 1 && lastForGroup && item.getBottom() < slidingHeading.getHeight()) {
                     slidingHeading.setTranslationY(item.getBottom() - slidingHeading.getHeight());
                 } else {
                     slidingHeading.setTranslationY(0);

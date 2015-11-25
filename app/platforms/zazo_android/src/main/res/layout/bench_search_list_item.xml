@@ -13,12 +13,10 @@
         android:layout_toRightOf="@id/thumb"
         android:gravity="center_vertical"
         android:minHeight="?android:attr/listPreferredItemHeightSmall"
-        android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
         android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
         android:paddingRight="?android:attr/listPreferredItemPaddingRight"
-        android:paddingStart="?android:attr/listPreferredItemPaddingStart"
         android:text="fdsdfs"
         android:textAppearance="?android:attr/textAppearanceListItemSmall"
-        android:textColor="@color/bench_textcolor" />
+        android:textColor="@color/contacts_name_text" />
 
 </RelativeLayout>

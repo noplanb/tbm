@@ -5,41 +5,76 @@
 
     <include layout="@layout/contacts_heading"
             android:id="@+id/header"/>
-    <ImageView
-        android:id="@+id/thumb"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_centerVertical="true"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_no_pic_z" />
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/borderImage"
-        android:layout_alignTop="@id/thumb"
-        android:layout_alignLeft="@id/thumb"
-        android:layout_alignBottom="@id/thumb"
-        android:layout_alignRight="@id/thumb"
-        android:src="@drawable/ic_no_pic_z_border_only"
-        android:visibility="invisible" />
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toRightOf="@id/header"
+            android:layout_toEndOf="@id/header">
 
-    <TextView
-        android:id="@+id/name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@id/thumb"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:minHeight="?android:attr/listPreferredItemHeightSmall"
-        android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
-        android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
-        android:paddingRight="?android:attr/listPreferredItemPaddingRight"
-        android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-        android:text="fdsdfs"
-        android:textAppearance="?android:attr/textAppearanceListItemSmall"
-        android:textColor="@color/bench_textcolor" />
+        <View
+                android:id="@+id/group_divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/contacts_group_divider_color"
+                android:layout_alignParentBottom="true"
+        />
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@id/group_divider"
+        >
+            <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/thumb_background"
+                    android:layout_width="@dimen/thumb_icon_size"
+                    android:layout_height="@dimen/thumb_icon_size"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:src="@color/accent_2"
+                />
+            <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/thumb"
+                    android:layout_width="@dimen/thumb_icon_size"
+                    android:layout_height="@dimen/thumb_icon_size"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:src="@drawable/bgn_thumb_2"
+                     />
+            <TextView
+                    android:id="@+id/thumb_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@id/thumb"
+                    android:layout_alignStart="@id/thumb"
+                    android:layout_alignRight="@id/thumb"
+                    android:layout_alignEnd="@id/thumb"
+                    android:layout_alignTop="@id/thumb"
+                    android:layout_alignBottom="@id/thumb"
+                    android:text="AB"
+                    android:shadowColor="#4000"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_xlarge"
+                    android:gravity="center"
+            />
+            <TextView
+                    android:id="@+id/name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@id/thumb"
+                    android:layout_toEndOf="@id/thumb"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+                    android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
+                    android:paddingRight="?android:attr/listPreferredItemPaddingRight"
+                    android:text="fdsdfs"
+                    android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                    android:textColor="@color/contacts_name_text" />
+        </RelativeLayout>
+    </RelativeLayout>
 
 </RelativeLayout>

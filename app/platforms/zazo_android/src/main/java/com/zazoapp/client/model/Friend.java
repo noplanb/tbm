@@ -21,6 +21,7 @@ import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.utilities.Convenience;
+import com.zazoapp.client.utilities.StringUtils;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -833,5 +834,9 @@ public class Friend extends ActiveModel{
 
     public String getFullName() {
         return get(Attributes.FIRST_NAME) + " " + get(Attributes.LAST_NAME);
+    }
+
+    public String getInitials() {
+        return StringUtils.getInitials(get(Attributes.FIRST_NAME), get(Attributes.LAST_NAME));
     }
 }

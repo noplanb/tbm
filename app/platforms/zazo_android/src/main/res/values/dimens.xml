@@ -14,6 +14,7 @@
     <dimen name="text_normal">16sp</dimen>
     <dimen name="text_large">18sp</dimen>
     <dimen name="text_very_large">22sp</dimen>
+    <dimen name="text_xlarge">24sp</dimen>
     <dimen name="text_huge">36sp</dimen>
     <dimen name="popup_radius">2dp</dimen>
     <dimen name="button_radius">3dp</dimen>
@@ -22,4 +23,8 @@
     <dimen name="anim_sliding_fragment_distance">400dp</dimen>
     <dimen name="actionbar_item_padding">11dp</dimen>
     <dimen name="actionbar_item_icon_padding">15dp</dimen>
+
+    <dimen name="small_icon_size">32dp</dimen>
+    <dimen name="thumb_icon_size">48dp</dimen>
+    <dimen name="contacts_group_icon_size">@dimen/small_icon_size</dimen>
 </resources>

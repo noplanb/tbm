@@ -19,8 +19,6 @@
     <color name="bg_name">#e64e4d42</color>
     <color name="color_name">#ffffff</color>
     
-    <color name="bench_textcolor">#a8a294</color>
-    
     <color name="bg_unread_msg">@color/green</color>
     <color name="bg_unread_msg_count">#dc0505</color>
     
@@ -68,4 +66,14 @@
     <color name="popup_text_color">#434343</color>
     <color name="status_bar_main_color">#3000</color>
     <color name="status_bar_register_color">#739a39</color>
+
+    <color name="contacts_group_divider_color">#d4d4d4</color>
+    <color name="contacts_name_text">#212121</color>
+
+    <color name="thumb_color_strong_cyan">#00AABF</color>
+    <color name="thumb_color_moderate_blue">#3A4AA6</color>
+    <color name="thumb_color_strong_blue">#176ABD</color>
+    <color name="thumb_color_moderate_lime_green">#46A149</color>
+    <color name="thumb_color_pure_orange">#E78A00</color>
+
 </resources>
