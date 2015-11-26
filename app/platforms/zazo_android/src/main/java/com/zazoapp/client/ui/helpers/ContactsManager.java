@@ -71,7 +71,7 @@ public class ContactsManager implements OnItemClickListener {
 	// AutocompleteContactsView
 	// -------------------------
 	public void setupAutoComplete(AutoCompleteTextView view) {
-		AsyncTaskManager.executeAsyncTask(false, new SetupAutoCompleteAsync(view), new Void[] {});
+		AsyncTaskManager.executeAsyncTask(false, new SetupAutoCompleteAsync(view));
 	}
 
 	public class SetupAutoCompleteAsync extends AsyncTask<Void, Void, Map<String, String>> {
@@ -573,7 +573,7 @@ public class ContactsManager implements OnItemClickListener {
 		private Map<String, String> namesIdMap;
 		public List<String> originalNames;
 		private SearchFilter filter;
-		public Object mLock = new Object();
+		public final Object mLock = new Object();
 		
 		public AutocompleteBaseAdapter(Context context, Map<String, String> names) {
 			this.context = context;

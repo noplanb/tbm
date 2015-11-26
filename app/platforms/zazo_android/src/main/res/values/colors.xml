@@ -1,10 +1,7 @@
 <resources>
 
     <color name="black_overlay">#66000000</color>
-    <color name="grey_background">#faaa</color>
-    <color name="beige_background">#ffF7F2DF</color>
     <color name="dark_grey">#f555</color>
-    <color name="charcoal">#f444</color>
     <color name="yellow">#ffFAF538</color>
     
     <color name="orange">#F48A31</color>

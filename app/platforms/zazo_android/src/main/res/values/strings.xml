@@ -47,7 +47,6 @@
     <string name="dialog_send_sms_failure_title">Didn\'t Send Invitation</string>
     <string name="dialog_send_sms_failure_message">It looks like you can\'t or didn\'t send an invitation link. Perhaps you can just call or email %1$s and tell them about %2$s.</string>
     <string name="dialog_select_phone_number">Select number to invite %1$s</string>
-    <string name="dialog_send_link_through">Send Link As</string>
     <string name="dialog_invite_sms_title">Send Link</string>
     <string name="dialog_invite_sms_message">I sent you a message on %1$s. Get the app: %2$s%3$s</string>
     <string name="dialog_invite_sms_action">Send</string>
@@ -59,8 +58,6 @@
     <string name="dialog_record_hint_message">Hint: Press and hold a friend to record.</string>
     <string name="dialog_already_connected_title">Send a Zazo</string>
     <string name="dialog_already_connected_message">It seems that %1$s is already connected with you.\n\nRecord %2$s to %3$s now.</string>
-    <string name="dialog_connected_title">Send a Zazo</string>
-    <string name="dialog_connected_message">You and %1$s are connected.\n\nRecord a welcome %2$s to %3$s now.</string>
     <string name="dialog_nudge_friend_title">Nudge %1$s</string>
     <string name="dialog_nudge_friend_message">%1$s still hasn\'t installed %2$s.\n\nDo you want to send them a link again?</string>
     <string name="dialog_invite_friend_title">Invite %1$s</string>
@@ -82,8 +79,6 @@
     <string name="toast_two_finger_touch">Two Finger Touch</string>
     <string name="toast_could_not_get_audio_focus">Could not get audio focus. Probably you are in call</string>
     <string name="toast_could_not_sync">Could not sync</string>
-
-    <string name="menu_bench">Contacts</string>
 
     <string name="recording">Recording</string>
     <string name="register_first_name">Your First Name</string>

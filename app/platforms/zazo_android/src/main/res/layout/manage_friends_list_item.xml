@@ -24,14 +24,6 @@
                         android:src="@drawable/ic_zazo_letter"
                         android:visibility="visible"/>
 
-                <!--        <ImageView
-                                android:id="@+id/borderImage"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:layout_alignParentLeft="true"
-                                android:layout_alignParentTop="true"
-                                android:src="@drawable/ic_no_pic_z_border_only"
-                                android:visibility="visible" />-->
             </FrameLayout>
 
             <LinearLayout

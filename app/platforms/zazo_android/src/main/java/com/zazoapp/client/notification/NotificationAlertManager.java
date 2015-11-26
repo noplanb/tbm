@@ -2,7 +2,6 @@ package com.zazoapp.client.notification;
 
 import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -115,8 +114,8 @@ public class NotificationAlertManager {
         notiStyle.bigText(subTitle);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-                .setPriority(Notification.PRIORITY_DEFAULT)
-                .setCategory(Notification.CATEGORY_RECOMMENDATION)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
                 .setVibrate(vibratePattern)
                 //.setSound(getNotificationToneUri(context))
                 .setSmallIcon(getNotificationIcon())
@@ -191,8 +190,8 @@ public class NotificationAlertManager {
         notiStyle.setBigContentTitle(title);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-                .setPriority(Notification.PRIORITY_HIGH)
-                .setCategory(Notification.CATEGORY_MESSAGE)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setSound(getNotificationToneUri(context))
                 .setSmallIcon(getNotificationIcon())
                 .setContentTitle(title)

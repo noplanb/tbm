@@ -192,7 +192,7 @@ public class Convenience {
 
     public static boolean screenIsLocked(Context context) {
         KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-        return (Boolean) km.inKeyguardRestrictedInputMode();
+        return km.inKeyguardRestrictedInputMode();
     }
 
     public static boolean screenIsLockedOrOff(Context context) {

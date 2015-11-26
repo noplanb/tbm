@@ -120,15 +120,15 @@ public class GcmHandler {
 		}
 	}
 
-	/**
-	 * Registers the application with GCM servers asynchronously.
-	 * <p>
-	 * Stores the registration ID and app versionCode in the application's
-	 * shared preferences.
-	 */
-	private void registerInBackground() {
-		AsyncTaskManager.executeAsyncTask(false, new RIBAsync(), new Void[]{});
-	}
+    /**
+     * Registers the application with GCM servers asynchronously.
+     * <p>
+     * Stores the registration ID and app versionCode in the application's
+     * shared preferences.
+     */
+    private void registerInBackground() {
+        AsyncTaskManager.executeAsyncTask(false, new RIBAsync());
+    }
 
 
 	private class RIBAsync extends AsyncTask<Void, Void, Void>{

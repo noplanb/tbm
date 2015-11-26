@@ -27,13 +27,14 @@ public class FriendGetter {
 		context = c;
 		this.destroyAll = destroyAll;
 	}
-	
-	// I do not use an interface here because I want to be able to call failure from the 
-	// instantiation method of httpRequest.
-	protected void success(){};
-    protected void failure(){};
 
-	public void getFriends(){
+    // I do not use an interface here because I want to be able to call failure from the
+    // instantiation method of httpRequest.
+    protected void success() {}
+
+    protected void failure(){}
+
+    public void getFriends(){
 		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
 		String uri = new Uri.Builder().appendPath("reg").appendPath("get_friends").build().toString();
 		new HttpRequest(uri, params, new HttpRequest.Callbacks() {

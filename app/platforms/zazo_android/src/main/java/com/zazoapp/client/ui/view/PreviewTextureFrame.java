@@ -118,7 +118,7 @@ public class PreviewTextureFrame extends FrameLayout {
         if (Config.SHOW_RED_DOT) {
             //draw circle
             int radius = Convenience.dpToPx(getContext(), 4);
-            c.drawCircle(0 + 2 * radius,
+            c.drawCircle(2 * radius,
                     text_y - radius,
                     radius, paint);
         }

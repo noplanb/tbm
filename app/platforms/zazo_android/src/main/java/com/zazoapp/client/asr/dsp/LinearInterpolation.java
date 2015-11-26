@@ -43,7 +43,7 @@ public class LinearInterpolation {
             return samples;
         }
 
-        int newLength=(int)Math.round(((float)samples.length/oldSampleRate*newSampleRate));
+        int newLength= Math.round(((float)samples.length/oldSampleRate*newSampleRate));
         float lengthMultiplier=(float)newLength/samples.length;
         short[] interpolatedSamples = new short[newLength];
 

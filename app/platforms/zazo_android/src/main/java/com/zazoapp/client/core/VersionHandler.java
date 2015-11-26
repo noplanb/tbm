@@ -133,7 +133,7 @@ public class VersionHandler {
                 showVersionHandlerDialog(context.getString(R.string.dialog_update_out_of_date_message, Config.appName), true);
             }
         } else if (!VersionHandler.current(result)) {
-            Dispatch.dispatch("Version compatibilityCheckCallback: Unknow result: " + result.toString());
+            Dispatch.dispatch("Version compatibilityCheckCallback: Unknow result: " + result);
         }
     }
 

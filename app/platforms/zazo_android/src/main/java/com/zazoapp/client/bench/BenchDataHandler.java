@@ -39,9 +39,9 @@ public class BenchDataHandler {
         public static final String COUNT = "messages_count";
     }
 
-	public static interface BenchDataHandlerCallback {
-		public void receivePhoneData(ArrayList<LinkedTreeMap<String, String>> phoneData);
-	}
+    public interface BenchDataHandlerCallback {
+        void receivePhoneData(ArrayList<LinkedTreeMap<String, String>> phoneData);
+    }
 
 	private static final String TAG = BenchDataHandler.class.getSimpleName();
 
@@ -75,7 +75,7 @@ public class BenchDataHandler {
 	//-------------------------------------------------
 	public void getRankedPhoneData(){
         if(!isRequestRunning)
-            AsyncTaskManager.executeAsyncTask(false, new GetRankedPhoneDataAsync(), new Void[]{});
+            AsyncTaskManager.executeAsyncTask(false, new GetRankedPhoneDataAsync());
 	}
 
     private class GetRankedPhoneDataAsync extends AsyncTask<Void, Void, Void>{

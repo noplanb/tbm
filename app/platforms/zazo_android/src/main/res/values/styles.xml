@@ -29,7 +29,9 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
-    <style name="DebugTheme" parent="AppTheme"/>
+    <style name="DebugTheme" parent="AppTheme">
+        <item name="android:windowBackground">@color/light_grey_new</item>
+    </style>
 
     <style name="ZazoActionBar" parent="@android:style/Widget.Holo.ActionBar">
         <item name="android:background">@color/actionbar_bg</item>

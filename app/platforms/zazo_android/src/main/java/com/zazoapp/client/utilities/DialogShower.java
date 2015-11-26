@@ -37,7 +37,7 @@ public class DialogShower {
 
     private static final String FEATURE_FRAME = "featureFrame";
 
-    private DialogShower() {};
+    private DialogShower() {}
 
     public static void showToast(final Context context, final String message) {
         Handler handler = new Handler(Looper.getMainLooper());

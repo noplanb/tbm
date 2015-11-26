@@ -66,7 +66,6 @@
                     android:layout_alignParentTop="true"
                     android:layout_toRightOf="@id/thumb"
                     android:layout_toEndOf="@id/thumb"
-                    android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:minHeight="?android:attr/listPreferredItemHeightSmall"
                     android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"

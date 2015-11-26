@@ -29,13 +29,8 @@ public class CountryCodeEditText extends AutoCompleteTextView {
 	public CountryCodeEditText(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
-	
-	@Override
-	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-	}
-	
-	@Override
+
+    @Override
 	protected void onDraw(Canvas canvas) {
 		if(!isPlusDrawn){
 			drawSign();

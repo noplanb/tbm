@@ -129,7 +129,7 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
 	public Long timeOfLastAction(Friend f){
 		String stime = f.get(Friend.Attributes.TIME_OF_LAST_ACTION);
 		if (stime == null || stime.equals(""))
-			return 0l;
+			return 0L;
 		return Long.valueOf(stime);
 	}
 

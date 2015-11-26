@@ -134,14 +134,14 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
      */
     public Friend createWithServerParams(Context context, LinkedTreeMap<String, String> params){
         Log.i(TAG, "createFriendFromServerParams: " + params);
-        if (existsWithId(params.get(ServerParamKeys.ID).toString())){
+        if (existsWithId(params.get(ServerParamKeys.ID))){
             Log.i(TAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
             return null;
         }
         Friend f = makeInstance(context);
         f.set(Friend.Attributes.FIRST_NAME, params.get(ServerParamKeys.FIRST_NAME));
         f.set(Friend.Attributes.LAST_NAME, params.get(ServerParamKeys.LAST_NAME));
-        f.set(Friend.Attributes.ID, params.get(ServerParamKeys.ID).toString());
+        f.set(Friend.Attributes.ID, params.get(ServerParamKeys.ID));
         f.set(Friend.Attributes.MKEY, params.get(ServerParamKeys.MKEY));
         f.set(Friend.Attributes.MOBILE_NUMBER, params.get(ServerParamKeys.MOBILE_NUMBER));
         f.set(Friend.Attributes.CKEY, params.get(ServerParamKeys.CKEY));
@@ -154,7 +154,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
     }
 
     public Friend getExistingFriend(LinkedTreeMap<String, String> params) {
-        return find(params.get(ServerParamKeys.ID).toString());
+        return find(params.get(ServerParamKeys.ID));
     }
 
     public void reconcileFriends(Context context, final List<LinkedTreeMap<String, String>> remoteFriends) {

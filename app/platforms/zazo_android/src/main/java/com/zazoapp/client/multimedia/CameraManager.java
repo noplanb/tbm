@@ -303,7 +303,7 @@ public class CameraManager {
     private static void sortVideoSizeByAscendingWidth(List <Camera.Size> videoSizes){
           Collections.sort(videoSizes, new Comparator<Camera.Size>(){
              public int compare(Camera.Size s1,Camera.Size s2){
-                 return ((Integer) s1.width).compareTo((Integer) s2.width);
+                 return ((Integer) s1.width).compareTo(s2.width);
            }});
     }
 

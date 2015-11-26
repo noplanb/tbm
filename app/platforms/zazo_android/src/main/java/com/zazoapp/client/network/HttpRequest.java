@@ -35,7 +35,7 @@ import java.util.List;
 
 public class HttpRequest {
 
-    public static interface Callbacks{
+    public interface Callbacks{
         void success(String response);
         void error(String errorString);
     }
@@ -87,7 +87,7 @@ public class HttpRequest {
         sParams = null;
         method = "GET";
         this.callbacks = callbacks;
-        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq(), new Void[]{});
+        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
     }
 
 
@@ -96,14 +96,14 @@ public class HttpRequest {
         sParams = params;
         method = "GET";
         this.callbacks = callbacks;
-        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq(), new Void[]{});
+        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
     }
 
     public HttpRequest(String uri, LinkedTreeMap<String, String> params, String method){
         this.uri = uri;
         this.method = method;
         sParams = params;
-        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq(), new Void[]{});
+        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
     }
 
     public HttpRequest(String uri, LinkedTreeMap<String, String> params, String method, Callbacks callbacks) {
@@ -111,7 +111,7 @@ public class HttpRequest {
         this.method = method;
         sParams = params;
         this.callbacks = callbacks;
-        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq(), new Void[]{});
+        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
     }
 
     public HttpRequest(String uri, LinkedTreeMap<String, String> params, String login, String pass, Callbacks callbacks){
@@ -121,7 +121,7 @@ public class HttpRequest {
         this.login = login;
         this.pass = pass;
         this.callbacks = callbacks;
-        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq(), new Void[]{});
+        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
     }
 
     public HttpRequest(String uri, JSONObject json, String method, Callbacks callbacks) {
@@ -129,7 +129,7 @@ public class HttpRequest {
         this.method = method;
         this.jsonParams = json;
         this.callbacks = callbacks;
-        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq(), new Void[]{});
+        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
     }
 
     //-----
