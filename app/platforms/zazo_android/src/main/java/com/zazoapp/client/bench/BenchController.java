@@ -13,6 +13,8 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -38,10 +40,9 @@ import java.util.Comparator;
 import java.util.List;
 
 public class BenchController implements BenchDataHandler.BenchDataHandlerCallback, OnItemClickListener,
-        ContactsManager.ContactSelected, BenchViewManager {
+        ContactsManager.ContactSelected, BenchViewManager, AdapterView.OnItemSelectedListener {
 
     private static final String TAG = BenchController.class.getSimpleName();
-    private AbsListView.OnScrollListener mScrollListener;
 
     private Context context;
     private ZazoManagerProvider managerProvider;
@@ -56,7 +57,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private BenchDataHandler benchDataHandler;
     private ArrayList<BenchObject> smsBenchObjects;
     private ArrayList<BenchObject> contactBenchObjects;
-    private ArrayList<BenchObject> currentAllOnBench;
+    private ArrayList<BenchObject> favoriteBenchObjects;
+    private BenchObjectList<ContactsGroup> currentAllOnBench;
     private ContactsManager contactsManager;
     private boolean isBenchShown;
 
@@ -75,10 +77,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
 	public void loadContacts() {
         friendFactory = FriendFactory.getFactoryInstance();
-		benchDataHandler.getRankedPhoneData();
-	}
-
-	public void callSms() {
 		benchDataHandler.getRankedPhoneData();
 	}
 
@@ -134,7 +132,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @Override
     public void updateBench() {
         AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
-            private List<BenchObject>[] list;
+            private BenchObjectList<ContactsGroup> list;
             @Override
             protected Void doInBackground(Void... params) {
                 list = allOnBench();
@@ -161,10 +159,11 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             }
             slidingHeading.setVisibility(View.VISIBLE);
             slidingIcon = ButterKnife.findById(slidingHeading, R.id.icon);
-            mScrollListener = new BenchScrollListener();
+            AbsListView.OnScrollListener mScrollListener = new BenchScrollListener();
             listView.setOnItemClickListener(this);
             listView.setOnScrollListener(mScrollListener);
             groupSelector.setAdapter(new ContactsGroupAdapter(context));
+            groupSelector.setOnItemSelectedListener(this);
         }
     }
 
@@ -183,23 +182,32 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	// ---------
 	private void populate(final ArrayList<LinkedTreeMap<String, String>> phoneData) {
         AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
-            private List<BenchObject>[] list;
+            private BenchObjectList<ContactsGroup> list;
             @Override
             protected Void doInBackground(Void... params) {
                 smsBenchObjects = new ArrayList<>();
                 contactBenchObjects = new ArrayList<>();
+                favoriteBenchObjects = new ArrayList<>();
                 for (LinkedTreeMap<String, String> e : phoneData) {
-                    LinkedTreeMap<String, String> b = new LinkedTreeMap<String, String>();
+                    LinkedTreeMap<String, String> b = new LinkedTreeMap<>();
                     b.put(BenchObject.Keys.FIRST_NAME, e.get(BenchDataHandler.Keys.FIRST_NAME));
                     b.put(BenchObject.Keys.LAST_NAME, e.get(BenchDataHandler.Keys.LAST_NAME));
                     b.put(BenchObject.Keys.DISPLAY_NAME, e.get(BenchDataHandler.Keys.DISPLAY_NAME));
                     b.put(BenchObject.Keys.MOBILE_NUMBER, e.get(BenchDataHandler.Keys.MOBILE_NUMBER));
                     b.put(BenchObject.Keys.CONTACT_ID, e.get(BenchDataHandler.Keys.CONTACT_ID));
+                    b.put(BenchObject.Keys.FAVORITE, e.get(BenchDataHandler.Keys.FAVORITE));
+                    b.put(BenchObject.Keys.HAS_PHONE, e.get(BenchDataHandler.Keys.HAS_PHONE));
                     BenchObject bo = new BenchObject(b);
-                    if (bo.hasFixedContact()) {
-                        smsBenchObjects.add(bo);
-                    } else {
-                        contactBenchObjects.add(bo);
+                    switch ((ContactsGroup) bo.getGroup()) {
+                        case SMS_CONTACTS:
+                            smsBenchObjects.add(bo);
+                            break;
+                        case FAVORITES:
+                            favoriteBenchObjects.add(bo);
+                            break;
+                        case CONTACTS:
+                            contactBenchObjects.add(bo);
+                            break;
                     }
                 }
                 list = allOnBench();
@@ -222,38 +230,45 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         });
 	}
 
-    private List<BenchObject>[] allOnBench() {
-        List<BenchObject>[] allLists = new List[3];
-        allLists[0] = benchFriendsAsBenchObjects();
-        allLists[1] = dedupedSmsBenchObjects();
-        allLists[2] = allContacts();
-        currentAllOnBench = new ArrayList<>();
-        for (List<BenchObject> list : allLists) {
-            currentAllOnBench.addAll(list);
+    private BenchObjectList<ContactsGroup> allOnBench() {
+        List<List<BenchObject>> allLists = new ArrayList<>();
+        List<BenchObject> bench = benchFriendsAsBenchObjects();
+        List<BenchObject> sms = dedupedSmsBenchObjects();
+        if (!bench.isEmpty()) {
+            allLists.add(bench);
         }
-        return allLists;
+        if (!sms.isEmpty()) {
+            allLists.add(sms);
+        }
+        if (favoriteBenchObjects != null && !favoriteBenchObjects.isEmpty()) {
+            allLists.add(favoriteBenchObjects);
+        }
+        if (contactBenchObjects != null && !contactBenchObjects.isEmpty()) {
+            allLists.add(contactBenchObjects);
+        }
+        currentAllOnBench = new BenchObjectList<>();
+        for (List<BenchObject> list : allLists) {
+            currentAllOnBench.addGroup(list, (ContactsGroup) list.get(0).getGroup());
+        }
+        return currentAllOnBench;
     }
 
     // --------------------------
-	// Friend overflow from grid
-	// --------------------------
-	private ArrayList<BenchObject> benchFriendsAsBenchObjects() {
-		ArrayList<BenchObject> r = new ArrayList<BenchObject>();
-		for (Friend f : GridManager.getInstance().friendsOnBench()) {
-			LinkedTreeMap<String, String> e = new LinkedTreeMap<String, String>();
-			e.put(BenchObject.Keys.FRIEND_ID, f.getId());
-			e.put(BenchObject.Keys.MOBILE_NUMBER, f.get(Friend.Attributes.MOBILE_NUMBER));
-			e.put(BenchObject.Keys.DISPLAY_NAME, f.getFullName());
-			e.put(BenchObject.Keys.FIRST_NAME, f.get(Friend.Attributes.FIRST_NAME));
-			e.put(BenchObject.Keys.LAST_NAME, f.get(Friend.Attributes.LAST_NAME));
-			r.add(new BenchObject(e));
-		}
+    // Friend overflow from grid
+    // --------------------------
+    private ArrayList<BenchObject> benchFriendsAsBenchObjects() {
+        ArrayList<BenchObject> r = new ArrayList<>();
+        for (Friend f : GridManager.getInstance().friendsOnBench()) {
+            LinkedTreeMap<String, String> e = new LinkedTreeMap<>();
+            e.put(BenchObject.Keys.FRIEND_ID, f.getId());
+            e.put(BenchObject.Keys.MOBILE_NUMBER, f.get(Friend.Attributes.MOBILE_NUMBER));
+            e.put(BenchObject.Keys.DISPLAY_NAME, f.getFullName());
+            e.put(BenchObject.Keys.FIRST_NAME, f.get(Friend.Attributes.FIRST_NAME));
+            e.put(BenchObject.Keys.LAST_NAME, f.get(Friend.Attributes.LAST_NAME));
+            r.add(new BenchObject(e));
+        }
         sortBench(r);
         return r;
-	}
-
-    private List<BenchObject> allContacts() {
-        return (contactBenchObjects != null) ? contactBenchObjects : new ArrayList<BenchObject>();
     }
 
     // -------------
@@ -262,20 +277,20 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @Override
     public void receivePhoneData(ArrayList<LinkedTreeMap<String, String>> phoneData) {
         populate(phoneData);
-        contactsManager.setupAutoComplete(autoCompleteTextView);
+        //contactsManager.setupAutoComplete(autoCompleteTextView);
     }
 
-	private ArrayList<BenchObject> dedupedSmsBenchObjects() {
-		ArrayList<BenchObject> r = new ArrayList<BenchObject>();
-		if (smsBenchObjects == null)
-			return r;
+    private ArrayList<BenchObject> dedupedSmsBenchObjects() {
+        ArrayList<BenchObject> r = new ArrayList<>();
+        if (smsBenchObjects == null)
+            return r;
 
-		for (BenchObject b : smsBenchObjects) {
-			if (!isBenchObjectAFriend(b))
-				r.add(b);
-		}
-		return r;
-	}
+        for (BenchObject b : smsBenchObjects) {
+            if (!isBenchObjectAFriend(b))
+                r.add(b);
+        }
+        return r;
+    }
 
     private void sortBench(List<BenchObject> list) {
         Collections.sort(list, new Comparator<BenchObject>() {
@@ -298,10 +313,27 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         return listView != null && slidingIcon != null;
     }
 
-    class BenchAdapter extends BaseAdapter {
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if (parent.equals(groupSelector)) {
+            switch ((ContactsGroup) parent.getSelectedItem()) {
+                case ALL:
+                    updateBench();
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
+
+    class BenchAdapter extends BaseAdapter implements Filterable {
 
         private Context context;
-        private List<BenchObject>[] lists;
+        private SearchFilter filter;
+        private BenchObjectList<ContactsGroup> list;
         private List<ContactsGroup> groups;
 
         private final int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
@@ -310,72 +342,50 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
         public BenchAdapter(Context context) {
             this.context = context;
-            this.lists = null;
+            this.list = null;
             colors = context.getResources().getIntArray(R.array.thumb_colors);
         }
 
         public boolean isDataSetReady() {
-            return lists != null;
+            return list != null;
         }
 
-        public void setList(List<BenchObject>[] lists) {
-            this.lists = lists;
-            this.groups = ContactsGroup.getActive();
+        public void setList(BenchObjectList<ContactsGroup> list) {
+            this.list = list;
+            this.groups = list.getGroups();
         }
 
         public boolean isFirstPositionForType(int position, int type) {
-            BenchObject o = getItem(position);
-            if (lists[type].size() > 0 && lists[type].get(0).equals(o)) {
-                return true;
-            }
-            return false;
+            return list.isFirstForGroup(position, groups.get(type));
         }
 
         public boolean isLastPositionForType(int position, int type) {
-            BenchObject o = getItem(position);
-            if (lists[type].size() > 0 && lists[type].get(lists[type].size() - 1).equals(o)) {
-                return true;
-            }
-            return false;
+            return list.isLastForGroup(position, groups.get(type));
         }
 
         @Override
         public int getViewTypeCount() {
-            return lists.length;
+            return list.getGroupCount();
         }
 
         @Override
         public int getItemViewType(int position) {
-            int offset = 0;
-            for (int i = 0; i < getViewTypeCount(); i++) {
-                if (offset + lists[i].size() > position) {
-                    return i;
-                }
-                offset += lists[i].size();
+            ContactsGroup group = list.getGroup(position);
+            int index = groups.indexOf(group);
+            if (index >= 0) {
+                return index;
             }
             throw new IndexOutOfBoundsException("Wrong position: " + position + " " + getCount());  // never get here
         }
 
         @Override
         public int getCount() {
-            int count = 0;
-            for (List<BenchObject> list : lists) {
-                count += list.size();
-            }
-            return count;
+            return list.size();
         }
 
         @Override
         public BenchObject getItem(int position) {
-            int correctedPos = position;
-            for (List<BenchObject> list : lists) {
-                if (list.size() > correctedPos) {
-                    return list.get(correctedPos);
-                } else {
-                    correctedPos -= list.size();
-                }
-            }
-            throw new IndexOutOfBoundsException("Wrong position: " + position + " " + getCount()); // never get here
+            return list.get(position);
         }
 
         @Override
@@ -420,8 +430,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 holder.header.setVisibility(View.VISIBLE);
                 holder.headerIcon.setImageResource(groups.get(itemViewType).getIconId());
             }
-            if (itemViewType < getViewTypeCount() - 1 &&
-                    isLastPositionForType(position, itemViewType) && lists[itemViewType+1].size() > 0) {
+            if (itemViewType < getViewTypeCount() - 1 && isLastPositionForType(position, itemViewType)) {
                 holder.groupDivider.setVisibility(View.VISIBLE);
             } else {
                 holder.groupDivider.setVisibility(View.INVISIBLE);
@@ -439,6 +448,14 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             return colorDrawable;
         }
 
+        @Override
+        public Filter getFilter() {
+            if (filter == null) {
+                filter = new SearchFilter();
+            }
+            return filter;
+        }
+
         class ViewHolder{
             @InjectView(R.id.header) View header;
             @InjectView(R.id.group_divider) View groupDivider;
@@ -450,6 +467,65 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
             public ViewHolder(View v) {
                 ButterKnife.inject(this, v);
+            }
+        }
+
+        private class SearchFilter extends Filter {
+
+            final Object mLock = new Object();
+            List<String> originalNames;
+            List<String> names;
+
+            @Override
+            protected FilterResults performFiltering(CharSequence filterString) {
+
+                FilterResults results = new FilterResults();
+
+                if (originalNames == null) {
+                    synchronized (mLock) {
+                        originalNames = new ArrayList<>(names);
+                    }
+                }
+                if (filterString == null || filterString.length() == 0) {
+                    ArrayList<String> list;
+                    synchronized (mLock) {
+                        list = new ArrayList<>(originalNames);
+                    }
+                    results.values = list;
+                    results.count = list.size();
+                } else {
+                    String prefixString = filterString.toString().toLowerCase();
+
+                    ArrayList<String> values;
+                    synchronized (mLock) {
+                        values = new ArrayList<>(originalNames);
+                    }
+
+
+                    // find all matching objects here and add
+                    // them to allMatching, use filterString.
+                    List<String> allMatching = new ArrayList<>();
+
+                    for (String name : values) {
+                        if (name != null && name.toLowerCase().contains(prefixString)) {
+                            allMatching.add(name);
+                        }
+                    }
+
+                    results.values = allMatching;
+                    results.count = allMatching.size();
+                }
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                names = (List<String>) results.values;
+                if (results.count > 0) {
+                    notifyDataSetChanged();
+                } else {
+                    notifyDataSetInvalidated();
+                }
             }
         }
     }

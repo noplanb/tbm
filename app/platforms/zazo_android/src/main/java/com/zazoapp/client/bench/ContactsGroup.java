@@ -9,12 +9,12 @@ import java.util.List;
  * Created by skamenkovych@codeminders.com on 11/23/2015.
  */
 public enum ContactsGroup {
-    ALL(R.drawable.ic_contacts_black, R.string.contacts_groups_all),
-    ZAZO_FRIEND(R.drawable.ic_zazo_letter, R.string.contacts_groups_zazo_friends),
-    ZAZO_GROUPS(R.drawable.ic_contacts_black, R.string.contacts_groups_zazo_groups, false),
-    FAVORITES(R.drawable.ic_contacts_black, R.string.contacts_groups_favorites, false),
-    SMS_CONTACTS(R.drawable.ic_contacts_black, R.string.contacts_groups_sms_contacts),
-    CONTACTS(R.drawable.ic_contacts_black, R.string.contacts_groups_contacts);
+    ALL(R.drawable.ic_contacts_group_all, R.string.contacts_groups_all),
+    ZAZO_FRIEND(R.drawable.ic_contacts_group_zazo_friends, R.string.contacts_groups_zazo_friends),
+    ZAZO_GROUPS(R.drawable.ic_contacts_group_zazo_groups, R.string.contacts_groups_zazo_groups, false),
+    FAVORITES(R.drawable.ic_contacts_group_favorites, R.string.contacts_groups_favorites),
+    SMS_CONTACTS(R.drawable.ic_contacts_group_sms, R.string.contacts_groups_sms_contacts),
+    CONTACTS(R.drawable.ic_contacts_group_contacts, R.string.contacts_groups_contacts);
 
     private int iconId;
 
@@ -49,12 +49,12 @@ public enum ContactsGroup {
 
     /**
      *
-     * @return list of all enabled groups except {@link ContactsGroup#ALL}
+     * @return list of all enabled groups
      */
     public static List<ContactsGroup> getActive() {
         ArrayList<ContactsGroup> activeGroups = new ArrayList<>();
         for (ContactsGroup group : values()) {
-            if (group.enabled && group != ALL) {
+            if (group.enabled) {
                 activeGroups.add(group);
             }
         }

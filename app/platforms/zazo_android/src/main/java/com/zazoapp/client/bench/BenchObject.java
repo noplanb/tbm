@@ -22,6 +22,8 @@ public class BenchObject {
 		public static final String DISPLAY_NAME = "displayName";
 		public static final String MOBILE_NUMBER = "mobileNumber";
         public static final String CONTACT_ID = "contact_id";
+        public static final String FAVORITE = "fav";
+        public static final String HAS_PHONE = "has_phone";
     }
 
     public final String friendId;
@@ -30,6 +32,8 @@ public class BenchObject {
     public final String displayName;
     public final String mobileNumber;
     public final String contactId;
+    public final boolean favorite;
+    private final boolean hasPhone;
 
 	public BenchObject(LinkedTreeMap<String, String> params){
 		friendId = params.get(Keys.FRIEND_ID);
@@ -38,10 +42,29 @@ public class BenchObject {
 		displayName = params.get(Keys.DISPLAY_NAME);
 		mobileNumber = params.get(Keys.MOBILE_NUMBER);
         contactId = params.get(Keys.CONTACT_ID);
+        favorite = !"0".equals(params.get(Keys.FAVORITE));
+        hasPhone = !"0".equals(params.get(Keys.HAS_PHONE));
     }
 
     public boolean hasFixedContact() {
         return mobileNumber != null;
+    }
+
+    public <K> K getGroup() {
+        if (friendId != null) {
+            return (K) ContactsGroup.ZAZO_FRIEND;
+        }
+        if (hasFixedContact()) {
+            return (K) ContactsGroup.SMS_CONTACTS;
+        }
+        if (favorite) {
+            return (K) ContactsGroup.FAVORITES;
+        }
+        return (K) ContactsGroup.CONTACTS;
+    }
+
+    public boolean hasPhone() {
+        return mobileNumber != null || hasPhone;
     }
 
     @Override

@@ -9,10 +9,10 @@ import android.provider.ContactsContract;
 import android.provider.Telephony;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
-import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
+import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Logger;
 
@@ -31,6 +31,8 @@ public class BenchDataHandler {
 		public static final String MOBILE_NUMBER = "mobileNumber";
 		public static final String NUM_MESSAGES = "numMessages";
 		public static final String CONTACT_ID = "id";
+		public static final String FAVORITE = "fav";
+		public static final String HAS_PHONE = "has_phone";
 	}
 
     public static class SmsColumnNames {
@@ -70,19 +72,20 @@ public class BenchDataHandler {
 			delegate.receivePhoneData(rankedPhoneData);
 	}
 
-	//-------------------------------------------------
-	// Ranking phone data by frequency of text messages
-	//-------------------------------------------------
-	public void getRankedPhoneData(){
-        if(!isRequestRunning)
+    //-------------------------------------------------
+    // Ranking phone data by frequency of text messages
+    //-------------------------------------------------
+    public void getRankedPhoneData() {
+        if (!isRequestRunning) {
+            isRequestRunning = true;
             AsyncTaskManager.executeAsyncTask(false, new GetRankedPhoneDataAsync());
-	}
+        }
+    }
 
     private class GetRankedPhoneDataAsync extends AsyncTask<Void, Void, Void>{
         @Override
         protected Void doInBackground(Void... params) {
             Log.i(TAG, "GetRankedPhoneDataAsync");
-            isRequestRunning = true;
 
             rankedPhoneData.clear();
             addPhoneData(getMessagesPhoneData());
@@ -136,11 +139,12 @@ public class BenchDataHandler {
 
     private static Cursor getContactsCursor(Context context) {
         // get only display name of contacts
-        String[] projection = new String[] { ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID};
+        String[] projection = new String[] { ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID,
+                ContactsContract.Contacts.HAS_PHONE_NUMBER, ContactsContract.Contacts.STARRED};
         // for contacts which have phone number
-        String where = ContactsContract.Contacts.HAS_PHONE_NUMBER + " > 0";
-        //String where = null; // to show all contacts, issue 265: Contact search and contact list
-        // when no sms should include all contacts regardless of whether they have a phone
+        //String where =  + " > 0";
+        String where = null; // to show all contacts, issue 265: Contact search and contact list
+        //when no sms should include all contacts regardless of whether they have a phone
 
         // Starred contacts first, then other, alphabetically
         String orderBy = ContactsContract.Contacts.STARRED + " DESC, " + ContactsContract.Contacts.DISPLAY_NAME;
@@ -200,13 +204,19 @@ public class BenchDataHandler {
         List<Map<String, String>> contactsPhoneData = new ArrayList<>();
         int nameCol = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
         int idCol = cursor.getColumnIndex(ContactsContract.Contacts._ID);
+        int favCol = cursor.getColumnIndex(ContactsContract.Contacts.STARRED);
+        int hasPhoneCol = cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER);
         cursor.moveToFirst();
         do {
             String name = cursor.getString(nameCol);
             String id = cursor.getString(idCol);
+            String fav = cursor.getString(favCol);
+            String hasPhone = cursor.getString(hasPhoneCol);
             LinkedTreeMap<String, String> map = new LinkedTreeMap<String, String>();
             map.put(Keys.DISPLAY_NAME, name);
             map.put(Keys.CONTACT_ID, id);
+            map.put(Keys.FAVORITE, fav);
+            map.put(Keys.HAS_PHONE, hasPhone);
             contactsPhoneData.add(map);
         } while (cursor.moveToNext());
         cursor.close();
@@ -246,6 +256,8 @@ public class BenchDataHandler {
             entry.put(Keys.MOBILE_NUMBER, mobileNumber);
             entry.put(Keys.NUM_MESSAGES, numMessage);
             entry.put(Keys.CONTACT_ID, id);
+            entry.put(Keys.FAVORITE, data.get(Keys.FAVORITE));
+            entry.put(Keys.HAS_PHONE, data.get(Keys.HAS_PHONE));
             entry.put(Keys.FIRST_NAME, firstLast.get(Contact.ContactKeys.FIRST_NAME));
             entry.put(Keys.LAST_NAME, firstLast.get(Contact.ContactKeys.LAST_NAME));
             entry.put(Keys.DISPLAY_NAME, firstLast.get(Contact.ContactKeys.DISPLAY_NAME));
