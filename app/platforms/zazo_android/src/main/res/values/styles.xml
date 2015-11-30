@@ -18,6 +18,7 @@
         <item name="android:windowBackground">@color/bgn_main</item>
         <item name="android:listViewStyle">@style/ListViewStyle</item>
         <item name="android:textViewStyle">@style/TextViewStyle</item>
+        <item name="android:editTextStyle">@style/EditTextStyle</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
@@ -37,6 +38,10 @@
         <item name="android:background">@color/actionbar_bg</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">?actionBarSize</item>
+        <item name="android:theme">@style/AppTheme.ActionBar</item>
+    </style>
+
+    <style name="AppTheme.ActionBar">
     </style>
 
     <style name="darkButton">
@@ -80,8 +85,11 @@
         <item name="android:textColor">@color/dialog_textcolor</item>
     </style>
 
-    <style name="BenchFrameStyle">
-        <item name="android:layout_width">wrap_content</item>
+    <style name="EditTextStyle" parent="Widget.AppCompat.EditText">
+        <item name="android:textColorHint">@color/dark_grey</item>
+        <item name="android:textColor">@color/contacts_name_text</item>
+        <item name="android:textCursorDrawable">@null</item>
+        <item name="android:background">@null</item>
     </style>
 
     <style name="RegistrationFieldStyle">

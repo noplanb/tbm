@@ -5,12 +5,11 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AutoCompleteTextView;
-
-import com.zazoapp.client.utilities.Convenience;
+import android.widget.EditText;
 import com.zazoapp.client.R;
+import com.zazoapp.client.utilities.Convenience;
 
-public class ClearableAutoCompleteTextView extends AutoCompleteTextView {
+public class ClearableAutoCompleteTextView extends EditText {
 	// was the text just cleared?
 	boolean justCleared = false;
 

@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by skamenkovych@codeminders.com on 11/26/2015.
  */
-public final  class BenchObjectList<K> extends ArrayList<BenchObject> {
+public final class BenchObjectList<K> extends ArrayList<BenchObject> {
     private SparseArray<Group> startEndPoints = new SparseArray<>();
     private LinkedHashSet<Group<K>> groups = new LinkedHashSet<>();
     private Group lastGroup;
@@ -179,4 +179,13 @@ public final  class BenchObjectList<K> extends ArrayList<BenchObject> {
         groups.clear();
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public Object clone() {
+        BenchObjectList<K> list = (BenchObjectList<K>) super.clone();
+        list.groups = (LinkedHashSet<Group<K>>) this.groups.clone();
+        list.startEndPoints = this.startEndPoints.clone();
+        list.lastGroup = this.lastGroup;
+        return list;
+    }
 }

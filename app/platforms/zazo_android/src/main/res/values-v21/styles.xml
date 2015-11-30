@@ -6,6 +6,7 @@
         <!-- To Make Navigation Drawer Fill Status Bar and become Transparent Too -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@color/status_bar_main_color</item>
+        <item name="colorAccent">@color/accent_2</item>
     </style>
 
     <style name="DebugTheme" parent="AppTheme">
@@ -14,5 +15,10 @@
         <!-- To Make Navigation Drawer Fill Status Bar and become Transparent Too -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@color/dark_grey</item>
+    </style>
+    <style name="EditTextStyle" parent="Widget.AppCompat.EditText">
+        <item name="android:textColorHint">@color/dark_grey</item>
+        <item name="android:textColor">@color/contacts_name_text</item>
+        <item name="android:background">@null</item>
     </style>
 </resources>

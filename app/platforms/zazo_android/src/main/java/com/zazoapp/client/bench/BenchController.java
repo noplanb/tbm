@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -61,6 +63,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private BenchObjectList<ContactsGroup> currentAllOnBench;
     private ContactsManager contactsManager;
     private boolean isBenchShown;
+    private ContactsGroup currentSelectedGroup = ContactsGroup.ALL;
+    private final Object filterLock = new Object();
 
     // ----------------------
     // Constructor and setup
@@ -164,6 +168,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             listView.setOnScrollListener(mScrollListener);
             groupSelector.setAdapter(new ContactsGroupAdapter(context));
             groupSelector.setOnItemSelectedListener(this);
+            autoCompleteTextView.addTextChangedListener(new MyWatcher());
         }
     }
 
@@ -237,18 +242,20 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         if (!bench.isEmpty()) {
             allLists.add(bench);
         }
-        if (!sms.isEmpty()) {
-            allLists.add(sms);
-        }
         if (favoriteBenchObjects != null && !favoriteBenchObjects.isEmpty()) {
             allLists.add(favoriteBenchObjects);
+        }
+        if (!sms.isEmpty()) {
+            allLists.add(sms);
         }
         if (contactBenchObjects != null && !contactBenchObjects.isEmpty()) {
             allLists.add(contactBenchObjects);
         }
-        currentAllOnBench = new BenchObjectList<>();
-        for (List<BenchObject> list : allLists) {
-            currentAllOnBench.addGroup(list, (ContactsGroup) list.get(0).getGroup());
+        synchronized (filterLock) {
+            currentAllOnBench = new BenchObjectList<>();
+            for (List<BenchObject> list : allLists) {
+                currentAllOnBench.addGroup(list, (ContactsGroup) list.get(0).getGroup());
+            }
         }
         return currentAllOnBench;
     }
@@ -316,10 +323,9 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (parent.equals(groupSelector)) {
-            switch ((ContactsGroup) parent.getSelectedItem()) {
-                case ALL:
-                    updateBench();
-                    break;
+            if (!currentSelectedGroup.equals(parent.getSelectedItem())) {
+                currentSelectedGroup = (ContactsGroup) parent.getSelectedItem();
+                applyFilter();
             }
         }
     }
@@ -472,43 +478,37 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
         private class SearchFilter extends Filter {
 
-            final Object mLock = new Object();
-            List<String> originalNames;
-            List<String> names;
-
             @Override
             protected FilterResults performFiltering(CharSequence filterString) {
 
                 FilterResults results = new FilterResults();
-
-                if (originalNames == null) {
-                    synchronized (mLock) {
-                        originalNames = new ArrayList<>(names);
-                    }
+                BenchObjectList<?> listCopy;
+                synchronized (filterLock) {
+                    listCopy = (BenchObjectList<?>) currentAllOnBench.clone();
                 }
                 if (filterString == null || filterString.length() == 0) {
-                    ArrayList<String> list;
-                    synchronized (mLock) {
-                        list = new ArrayList<>(originalNames);
+                    // find all matching objects here and add
+                    // them to allMatching, use filterString.
+                    BenchObjectList<?> allMatching = new BenchObjectList<>();
+                    for (BenchObject name : listCopy) {
+                        if (currentSelectedGroup == ContactsGroup.ALL || currentSelectedGroup.equals(name.getGroup())) {
+                            allMatching.add(name);
+                        }
                     }
-                    results.values = list;
-                    results.count = list.size();
+
+                    results.values = allMatching;
+                    results.count = allMatching.size();
                 } else {
                     String prefixString = filterString.toString().toLowerCase();
 
-                    ArrayList<String> values;
-                    synchronized (mLock) {
-                        values = new ArrayList<>(originalNames);
-                    }
-
-
                     // find all matching objects here and add
                     // them to allMatching, use filterString.
-                    List<String> allMatching = new ArrayList<>();
-
-                    for (String name : values) {
-                        if (name != null && name.toLowerCase().contains(prefixString)) {
-                            allMatching.add(name);
+                    BenchObjectList<?> allMatching = new BenchObjectList<>();
+                    for (BenchObject name : listCopy) {
+                        if (name != null && name.displayName.toLowerCase().contains(prefixString)) {
+                            if (currentSelectedGroup == ContactsGroup.ALL || currentSelectedGroup.equals(name.getGroup())) {
+                                allMatching.add(name);
+                            }
                         }
                     }
 
@@ -520,7 +520,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                names = (List<String>) results.values;
+                setList((BenchObjectList<ContactsGroup>) results.values);
                 if (results.count > 0) {
                     notifyDataSetChanged();
                 } else {
@@ -528,6 +528,34 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 }
             }
         }
+    }
+
+    private class MyWatcher implements TextWatcher {
+        public void afterTextChanged(Editable s) {
+            applyFilter();
+        }
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+        }
+    }
+
+    void applyFilter() {
+        // filter is applied only when a minimum number of characters
+        // was typed in the text view
+        if (enoughToFilter()) {
+            if (listView.getAdapter() != null) {
+                adapter.getFilter().filter(autoCompleteTextView.getText());
+            }
+        } else {
+            if (listView.getAdapter() != null) {
+                adapter.getFilter().filter(null);
+            }
+        }
+    }
+
+    private boolean enoughToFilter() {
+        return autoCompleteTextView.getText().length() >= 1;
     }
 
     private class BenchScrollListener implements AbsListView.OnScrollListener {
@@ -544,11 +572,12 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
             if (visibleItemCount > 0) {
                 int type = adapter.getItemViewType(firstVisibleItem);
+                Object typeObject = adapter.groups.get(type);
                 View item = view.getChildAt(0);
                 boolean lastForGroup = adapter.isLastPositionForType(firstVisibleItem, type);
 
-                if ((int) slidingHeading.getTag() != type) {
-                    slidingHeading.setTag(type);
+                if (!typeObject.equals(slidingHeading.getTag())) {
+                    slidingHeading.setTag(typeObject);
                     slidingIcon.setImageResource(adapter.groups.get(type).getIconId());
                     if (type == 0) {
                         slidingHeading.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
@@ -561,6 +590,9 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 } else {
                     slidingHeading.setTranslationY(0);
                 }
+            } else {
+                slidingHeading.setTag(-1);
+                slidingIcon.setImageDrawable(null);
             }
         }
     }

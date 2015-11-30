@@ -11,6 +11,8 @@
                 android:id="@+id/contacts_group_selector"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
                 style="@style/ThemeOverlay.AppCompat.Light"
                 app:popupTheme="@style/Widget.AppCompat.PopupMenu"
         />
@@ -19,17 +21,17 @@
                 android:id="@+id/contacts_auto_complete_text_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@id/contacts_group_selector"
+                android:layout_toEndOf="@id/contacts_group_selector"
                 android:completionThreshold="1"
                 android:ems="10"
                 android:padding="10dp"
                 android:hint="@string/search_all_contacts_hint"
-                android:textColorHint="@color/dark_grey"
-                android:background="@drawable/search_border"
-                android:textColor="@android:color/white"
                 android:inputType="textNoSuggestions"
-                android:textCursorDrawable="@null"
-                android:visibility="invisible"
+                style="@style/EditTextStyle"
         />
     </RelativeLayout>
 
@@ -68,4 +70,9 @@
                 android:id="@+id/contacts_heading"/>
 
     </FrameLayout>
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/search_layout"
+            android:background="@drawable/toolbar_shadow"/>
 </RelativeLayout>
