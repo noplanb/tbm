@@ -7,12 +7,13 @@
         android:background="@color/bgn_main"
         android:visibility="invisible">
 
-    <ImageView
+    <android.support.v7.widget.AppCompatImageView
             android:id="@+id/icon"
             android:layout_width="@dimen/contacts_group_icon_size"
             android:layout_height="@dimen/contacts_group_icon_size"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
+            android:tint="@color/contacts_group_icon_tint_color"
     />
 
 </RelativeLayout>
