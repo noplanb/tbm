@@ -6,11 +6,13 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.method.TextKeyListener;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -42,7 +44,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class BenchController implements BenchDataHandler.BenchDataHandlerCallback, OnItemClickListener,
-        ContactsManager.ContactSelected, BenchViewManager, AdapterView.OnItemSelectedListener {
+        BenchViewManager, AdapterView.OnItemSelectedListener {
 
     private static final String TAG = BenchController.class.getSimpleName();
 
@@ -74,7 +76,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         managerProvider = mp;
         adapter = new BenchAdapter(context);
 
-		contactsManager = new ContactsManager(context, this);
+		contactsManager = new ContactsManager(context);
 		benchDataHandler = new BenchDataHandler(context);
         benchDataHandler.setListener(this);
 	}
@@ -107,17 +109,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         }
     }
 
-    // ---------------------
-    // Contact List Contact
-    // ---------------------
-    @Override
-    public void contactSelected(Contact contact) {
-        Log.i(TAG, contact.toString());
-
-        hideBench();
-        managerProvider.getInviteHelper().invite(contact);
-    }
-
     @Override
     public void showBench() {
         isBenchShown = true;
@@ -128,8 +119,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         isBenchShown = false;
         if (isViewAttached()) {
             //clear contacts_auto_complete_text_view because after resume, "old filtering" word appear
-            autoCompleteTextView.setText("");
-            contactsManager.hideKeyboard();
+            resetViews();
         }
     }
 
@@ -540,7 +530,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         }
     }
 
-    void applyFilter() {
+    private void applyFilter() {
         // filter is applied only when a minimum number of characters
         // was typed in the text view
         if (enoughToFilter()) {
@@ -595,5 +585,24 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 slidingIcon.setImageDrawable(null);
             }
         }
+    }
+
+    public void clearTextView() {
+        if (autoCompleteTextView == null)
+            return;
+        TextKeyListener.clear(autoCompleteTextView.getEditableText());
+    }
+
+    public void hideKeyboard() {
+        if (autoCompleteTextView == null)
+            return;
+
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(autoCompleteTextView.getWindowToken(), 0);
+    }
+
+    public void resetViews() {
+        hideKeyboard();
+        clearTextView();
     }
 }

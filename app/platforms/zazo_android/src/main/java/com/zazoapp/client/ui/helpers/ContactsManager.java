@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
@@ -13,159 +12,32 @@ import android.provider.ContactsContract.PhoneLookup;
 import android.provider.ContactsContract.Profile;
 import android.provider.ContactsContract.RawContacts;
 import android.support.annotation.Nullable;
-import android.text.method.TextKeyListener;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AutoCompleteTextView;
-import android.widget.BaseAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
-import android.widget.TextView;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.UserFactory;
-import com.zazoapp.client.utilities.AsyncTaskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ContactsManager implements OnItemClickListener {
+public class ContactsManager {
 
-	private final static String TAG = ContactsManager.class.getSimpleName();
+    private static final String TAG = ContactsManager.class.getSimpleName();
 
-    public interface ContactSelected {
-        void contactSelected(Contact contact);
-    }
-
-	private Context context;
-	private ContactSelected contactSelectedDelegate;
-	private AutoCompleteTextView autoCompleteTextView;
-
-	public ContactsManager(Context c, ContactSelected delegate) {
-		context = c;
-		contactSelectedDelegate = delegate;
-	}
+    private Context context;
 
     public ContactsManager(Context c) {
-        this(c, null);
+        context = c;
     }
-
-	// -------------------------
-	// AutocompleteContactsView
-	// -------------------------
-	public void setupAutoComplete(AutoCompleteTextView view) {
-		AsyncTaskManager.executeAsyncTask(false, new SetupAutoCompleteAsync(view));
-	}
-
-	public class SetupAutoCompleteAsync extends AsyncTask<Void, Void, Map<String, String>> {
-
-		private AutoCompleteTextView view;
-
-		public SetupAutoCompleteAsync(AutoCompleteTextView view) {
-			this.view = view;
-		}
-
-		@Override
-		protected Map<String, String> doInBackground(Void... params) {
-			return setAutoCompleteNames();
-		}
-
-		@Override
-		protected void onPostExecute(Map<String, String> params) {
-            if (params != null) {
-                setupContactsAutoCompleteView(view, params);
-            }
-		}
-
-		private Map<String, String> setAutoCompleteNames() {
-			String[] projection = new String[] { Contacts.DISPLAY_NAME, Contacts._ID };
-			// Show all contacts so user can enter the number in his contact
-			// list if it isnt there.
-			// String selection = Contacts.HAS_PHONE_NUMBER + "=1";
-			Cursor c = context.getContentResolver().query(Contacts.CONTENT_URI, projection, null, null, null);
-			if (c == null || c.getCount() == 0) {
-                Log.i(TAG, "ERROR: setAutoCompleteData: got null cursor from contacts query");
-				if (c != null)
-					c.close();
-				return null;
-			}
-
-			Map<String, String> uniq = new LinkedHashMap<>();
-			int di = c.getColumnIndex(Contacts.DISPLAY_NAME);
-            int ii = c.getColumnIndex(Contacts._ID);
-			c.moveToFirst();
-			do {
-				uniq.put(c.getString(di), c.getString(ii));
-			} while (c.moveToNext());
-			c.close();
-			Log.i(TAG, "count = " + uniq.size());
-			// printAllPhoneNumberObjectForNames(autoCompleteNames);
-			return uniq;
-		}
-
-		private void setupContactsAutoCompleteView(AutoCompleteTextView atv, Map<String, String> autoCompleteNames) {
-			autoCompleteTextView = atv;
-			AutocompleteBaseAdapter autoCompleteAdapter = new AutocompleteBaseAdapter(context, autoCompleteNames);
-			autoCompleteTextView.setAdapter(autoCompleteAdapter);
-			autoCompleteTextView.setOnItemClickListener(ContactsManager.this);
-		}
-	}
-
-	// -----------------------
-	// AutoComplete itemClick
-	// -----------------------
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		String displayName = autoCompleteTextView.getText().toString();
-		Contact contact = contactWithDisplayName(displayName);
-        String contactId = ((AutocompleteBaseAdapter) autoCompleteTextView.getAdapter()).getIdForItem(displayName);
-        contact.contact.put(Contact.ContactKeys.ID, contactId);
-		hideKeyboard();
-		notifyContactSelected(contact);
-		resetViews();
-	}
-
-	private void notifyContactSelected(Contact contact) {
-		if (contactSelectedDelegate != null)
-			contactSelectedDelegate.contactSelected(contact);
-	}
-
-	public void clearTextView() {
-		if (autoCompleteTextView == null)
-			return;
-		// autoCompleteTextView.getText().clear();
-		TextKeyListener.clear(autoCompleteTextView.getEditableText());
-	}
-
-	public void hideKeyboard() {
-		if (autoCompleteTextView == null)
-			return;
-
-		InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.hideSoftInputFromWindow(autoCompleteTextView.getWindowToken(), 0);
-	}
-
-	public void resetViews() {
-		hideKeyboard();
-		clearTextView();
-	}
 
 	// ----------------
 	// Contact look up used to get contact from sms.
@@ -541,152 +413,4 @@ public class ContactsManager implements OnItemClickListener {
         return r;
     }
 
-//	private void printAutoCompleteNames() {
-//		for (String n : autoCompleteNames) {
-//			Log.i(TAG, n);
-//		}
-//	}
-//
-//	private void allDataWithRawContactId(String rawContactId) {
-//		String selection = Data.RAW_CONTACT_ID + "='" + rawContactId + "'";
-//		Cursor c = context.getContentResolver().query(Data.CONTENT_URI, null, selection, null, null);
-//		Log.i(TAG, "Data Count: " + c.getCount());
-//		c.moveToFirst();
-//		do {
-//			for (int i = 0; i < c.getColumnCount(); i++) {
-//				Log.i(TAG, c.getColumnName(i) + ":" + c.getString(i));
-//			}
-//		} while (c.moveToNext());
-//		c.close();
-//	}
-//
-//	private void printAllPhoneNumberObjectForNames(String[] names) {
-//		for (String name : names) {
-//			Log.i(TAG, name + " " + validPhoneObjectsWithDisplayName(name).toString());
-//		}
-//	}
-
-	private class AutocompleteBaseAdapter extends BaseAdapter implements Filterable{
-
-		private Context context;
-		private List<String> names;
-		private Map<String, String> namesIdMap;
-		public List<String> originalNames;
-		private SearchFilter filter;
-		public final Object mLock = new Object();
-		
-		public AutocompleteBaseAdapter(Context context, Map<String, String> names) {
-			this.context = context;
-			this.names = new ArrayList<>(names.keySet());
-            this.namesIdMap = names;
-		}
-		
-		@Override
-		public int getCount() {
-			return names.size();
-		}
-
-		@Override
-		public String getItem(int position) {
-			return names.get(position);
-		}
-
-		@Override
-		public long getItemId(int position) {
-			return position;
-		}
-
-        public String getIdForItem(String item) {
-            return namesIdMap.get(item);
-        }
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			View v;
-			TextView tw;
-			ViewHolder holder = null;
-			if(convertView == null){
-				holder = new ViewHolder();
-				v = LayoutInflater.from(context).inflate(R.layout.bench_search_list_item, parent, false);
-				holder.name = (TextView) v.findViewById(R.id.name);
-				holder.name.setBackgroundColor(context.getResources().getColor(R.color.contacts_search_bg));
-				v.setTag(holder);
-			}else{
-				v = convertView;
-				holder = (ViewHolder) v.getTag();
-			}
-			
-			String name = names.get(position);
-			
-			holder.name.setText(name);
-			
-			return v;
-		}
-
-		@Override
-		public Filter getFilter() {
-	        if (filter == null) {
-	            filter = new SearchFilter();
-	        }
-	        return filter;
-		}
-		
-		private class ViewHolder{
-			TextView name;
-		}
-		private class SearchFilter extends Filter {
-			
-		    @Override
-		    protected FilterResults performFiltering(CharSequence filterString) {
-
-		        FilterResults results = new FilterResults();
-		        
-	            if (originalNames == null) {
-	                synchronized (mLock) {
-	                    originalNames = new ArrayList<String>(names);
-	                }
-	            }
-	            if (filterString == null || filterString.length() == 0) {
-	                ArrayList<String> list;
-	                synchronized (mLock) {
-	                    list = new ArrayList<String>(originalNames);
-	                }
-	                results.values = list;
-	                results.count = list.size();
-	            } else {
-	                String prefixString = filterString.toString().toLowerCase();
-	                
-	                ArrayList<String> values;
-	                synchronized (mLock) {
-	                    values = new ArrayList<String>(originalNames);
-	                }
-
-
-			        // find all matching objects here and add 
-			        // them to allMatching, use filterString.
-			        List<String> allMatching = new ArrayList<String>();
-
-                    for (String name : values) {
-                        if (name != null && name.toLowerCase().contains(prefixString)) {
-                            allMatching.add(name);
-                        }
-                    }
-
-			        results.values = allMatching;
-			        results.count = allMatching.size();
-	            }
-		        return results;
-		    }
-
-		    @Override
-		    protected void publishResults(CharSequence constraint, FilterResults results) {
-	            names = (List<String>) results.values;
-	            if (results.count > 0) {
-	                notifyDataSetChanged();
-	            } else {
-	                notifyDataSetInvalidated();
-	            }
-		    }
-		}
-	}
 }
