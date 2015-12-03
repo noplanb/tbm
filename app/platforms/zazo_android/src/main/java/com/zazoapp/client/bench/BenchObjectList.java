@@ -11,16 +11,17 @@ import java.util.List;
 /**
  * Created by skamenkovych@codeminders.com on 11/26/2015.
  */
-public final class BenchObjectList<K> extends ArrayList<BenchObject> {
+public final class BenchObjectList extends ArrayList<BenchObject> {
     private SparseArray<Group> startEndPoints = new SparseArray<>();
-    private LinkedHashSet<Group<K>> groups = new LinkedHashSet<>();
+    private LinkedHashSet<Group> groups = new LinkedHashSet<>();
     private Group lastGroup;
-    private static class Group<K> {
-        K type;
+
+    private static class Group {
+        ContactsGroup type;
         int start;
         int end;
 
-        Group(K type, int start, int end) {
+        Group(ContactsGroup type, int start, int end) {
             this.type = type;
             this.start = start;
             this.end = end;
@@ -42,16 +43,16 @@ public final class BenchObjectList<K> extends ArrayList<BenchObject> {
         int currentIndex = size();
         boolean result = super.add(object);
         if (result) {
-            K objectGroup = object.getGroup();
+            ContactsGroup objectGroup = object.getGroup();
             if (currentIndex == 0) {
-                Group<K> group = new Group<>(objectGroup, 0, 0);
+                Group group = new Group(objectGroup, 0, 0);
                 groups.add(group);
                 startEndPoints.put(0, group);
                 lastGroup = group;
             } else {
                 boolean groupThreshold = !lastGroup.type.equals(objectGroup);
                 if (groupThreshold) {
-                    Group<K> group = new Group<>(objectGroup, currentIndex, currentIndex);
+                    Group group = new Group(objectGroup, currentIndex, currentIndex);
                     if (groups.contains(group)) {
                         super.remove(currentIndex);
                         throw new IllegalArgumentException("Group of objects can't be added twice");
@@ -87,19 +88,19 @@ public final class BenchObjectList<K> extends ArrayList<BenchObject> {
         throw new UnsupportedOperationException("Use addGroup instead");
     }
 
-    public boolean addGroup(Collection<? extends BenchObject> collection, K groupType) {
+    public boolean addGroup(Collection<? extends BenchObject> collection, ContactsGroup groupType) {
         int currentIndex = size();
         boolean result = super.addAll(collection);
         if (result) {
             if (currentIndex == 0) {
-                Group<K> group = new Group<>(groupType, 0, size() - 1);
+                Group group = new Group(groupType, 0, size() - 1);
                 groups.add(group);
                 startEndPoints.put(0, group);
                 lastGroup = group;
             } else {
                 boolean groupThreshold = !lastGroup.type.equals(groupType);
                 if (groupThreshold) {
-                    Group<K> group = new Group<>(groupType, currentIndex, size() - 1);
+                    Group group = new Group(groupType, currentIndex, size() - 1);
                     if (groups.contains(group)) {
                         super.removeRange(currentIndex, size());
                         throw new IllegalArgumentException("Group of objects can't be added twice");
@@ -117,18 +118,45 @@ public final class BenchObjectList<K> extends ArrayList<BenchObject> {
         return result;
     }
 
-    public boolean isFirstForGroup(int position, K groupType) {
+    public boolean addWithSubgroups(BenchObjectList contactBenchObjects) {
+        int currentIndex = size();
+        boolean result = super.addAll(contactBenchObjects);
+        if (result) {
+            if (currentIndex == 0) {
+                groups = (LinkedHashSet<Group>) contactBenchObjects.groups.clone();
+                startEndPoints = contactBenchObjects.startEndPoints.clone();
+            } else {
+                for (Group group : contactBenchObjects.groups) {
+                    if (groups.contains(group)) {
+                        super.removeRange(currentIndex, size());
+                        throw new IllegalArgumentException("Group of objects can't be added twice");
+                    }
+                    Group newGroup = new Group(group.type, currentIndex + group.start, currentIndex + group.end);
+                    groups.add(newGroup);
+                    startEndPoints.put(newGroup.start, newGroup);
+                    startEndPoints.put(newGroup.end, newGroup);
+                }
+                lastGroup.end = currentIndex - 1;
+                startEndPoints.put(lastGroup.end, lastGroup);
+            }
+            Group oldLast = contactBenchObjects.lastGroup;
+            lastGroup = new Group(oldLast.type, currentIndex + oldLast.start, currentIndex + oldLast.end);
+        }
+        return result;
+    }
+
+    public boolean isFirstForGroup(int position, ContactsGroup groupType) {
         Group group = startEndPoints.get(position);
         return group != null && group.start == position && groupType.equals(group.type);
     }
 
-    public boolean isLastForGroup(int position, K groupType) {
+    public boolean isLastForGroup(int position, ContactsGroup groupType) {
         Group group = (position == size() - 1) ? lastGroup : startEndPoints.get(position);
         return group != null && group.end == position && groupType.equals(group.type);
     }
 
-    public K getGroup(int position) {
-        for (Group<K> group : groups) {
+    public ContactsGroup getGroup(int position) {
+        for (Group group : groups) {
             if (position >= group.start && position <= group.end) {
                 return group.type;
             }
@@ -140,9 +168,9 @@ public final class BenchObjectList<K> extends ArrayList<BenchObject> {
         return groups.size();
     }
 
-    public List<K> getGroups() {
-        ArrayList<K> groupList = new ArrayList<>(groups.size());
-        for (Group<K> group : groups) {
+    public List<ContactsGroup> getGroups() {
+        ArrayList<ContactsGroup> groupList = new ArrayList<>(groups.size());
+        for (Group group : groups) {
             groupList.add(group.type);
         }
         return groupList;
@@ -182,8 +210,8 @@ public final class BenchObjectList<K> extends ArrayList<BenchObject> {
     @SuppressWarnings("unchecked")
     @Override
     public Object clone() {
-        BenchObjectList<K> list = (BenchObjectList<K>) super.clone();
-        list.groups = (LinkedHashSet<Group<K>>) this.groups.clone();
+        BenchObjectList list = (BenchObjectList) super.clone();
+        list.groups = (LinkedHashSet<Group>) this.groups.clone();
         list.startEndPoints = this.startEndPoints.clone();
         list.lastGroup = this.lastGroup;
         return list;

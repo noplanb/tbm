@@ -15,6 +15,7 @@
     <dimen name="text_large">18sp</dimen>
     <dimen name="text_very_large">22sp</dimen>
     <dimen name="text_xlarge">24sp</dimen>
+    <dimen name="text_xxlarge">28sp</dimen>
     <dimen name="text_huge">36sp</dimen>
     <dimen name="popup_radius">2dp</dimen>
     <dimen name="button_radius">3dp</dimen>

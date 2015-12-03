@@ -11,4 +11,18 @@
         <attr name="buttonBarButtonStyle" format="reference" /> -->
     </declare-styleable>
 
+    <declare-styleable name="TextImageView">
+        <attr name="textSize" format="dimension"/>
+        <attr name="text" format="string"/>
+        <attr name="textColor" format="reference|color"/>
+        <attr name="src" format="reference"/>
+        <attr name="shape" format="enum">
+            <enum name="rectangle" value="0"/>
+            <enum name="circle" value="1"/>
+        </attr>
+        <attr name="circular_border_width" format="dimension"/>
+        <attr name="circular_border_color" format="color"/>
+        <attr name="circular_border_overlay" format="boolean"/>
+        <attr name="circular_fill_color" format="color"/>
+    </declare-styleable>
 </resources>

@@ -65,9 +65,15 @@
             android:layout_alignParentBottom="true"
             android:layout_below="@id/search_layout">
 
-        <include
-                layout="@layout/contacts_heading"
-                android:id="@+id/contacts_heading"/>
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="?android:attr/listPreferredItemHeight">
+            <include
+                    layout="@layout/contacts_heading"
+                    android:id="@+id/contacts_heading"
+            />
+        </RelativeLayout>
+
 
     </FrameLayout>
     <View

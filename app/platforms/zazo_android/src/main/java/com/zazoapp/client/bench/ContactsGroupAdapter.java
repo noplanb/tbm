@@ -20,20 +20,20 @@ import java.util.List;
  */
 public final class ContactsGroupAdapter extends BaseAdapter {
 
-    private List<ContactsGroup> mItems = new ArrayList<>();
+    private List<GeneralContactsGroup> mItems = new ArrayList<>();
 
     private Context context;
 
     ContactsGroupAdapter(Context context) {
         this.context = context;
-        addItems(ContactsGroup.getActive());
+        addItems(GeneralContactsGroup.getActive());
     }
 
     public void clear() {
         mItems.clear();
     }
 
-    public void addItems(List<ContactsGroup> yourObjectList) {
+    public void addItems(List<GeneralContactsGroup> yourObjectList) {
         mItems.addAll(yourObjectList);
     }
 
@@ -43,7 +43,7 @@ public final class ContactsGroupAdapter extends BaseAdapter {
     }
 
     @Override
-    public ContactsGroup getItem(int position) {
+    public GeneralContactsGroup getItem(int position) {
         return mItems.get(position);
     }
 
@@ -62,7 +62,7 @@ public final class ContactsGroupAdapter extends BaseAdapter {
         } else {
             h = (Holder) view.getTag();
         }
-        ContactsGroup item = getItem(position);
+        GeneralContactsGroup item = getItem(position);
         h.text.setText(item.getTitleId());
         h.icon.setImageResource(item.getIconId());
         return view;
@@ -78,7 +78,7 @@ public final class ContactsGroupAdapter extends BaseAdapter {
         } else {
             h = (Holder) view.getTag();
         }
-        ContactsGroup item = getItem(position);
+        GeneralContactsGroup item = getItem(position);
         h.text.setText(item.getTitleId());
         return view;
     }

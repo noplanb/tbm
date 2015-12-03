@@ -4,6 +4,7 @@ import android.test.InstrumentationTestCase;
 import com.zazoapp.client.bench.BenchObject;
 import com.zazoapp.client.bench.BenchObjectList;
 import com.zazoapp.client.bench.ContactsGroup;
+import com.zazoapp.client.bench.GeneralContactsGroup;
 import junit.framework.Assert;
 import org.junit.Before;
 
@@ -24,32 +25,32 @@ public class BenchObjectListTest extends InstrumentationTestCase {
     }
 
     public void testAdding() {
-        BenchObjectList<ContactsGroup> list = new BenchObjectList<>();
-        BenchObject zazoFriend = getBenchObjectWithGroup(ContactsGroup.ZAZO_FRIEND);
-        BenchObject smsContact = getBenchObjectWithGroup(ContactsGroup.SMS_CONTACTS);
-        BenchObject contact = getBenchObjectWithGroup(ContactsGroup.CONTACTS);
+        BenchObjectList list = new BenchObjectList();
+        BenchObject zazoFriend = getBenchObjectWithGroup(GeneralContactsGroup.ZAZO_FRIEND);
+        BenchObject smsContact = getBenchObjectWithGroup(GeneralContactsGroup.SMS_CONTACTS);
+        BenchObject contact = getBenchObjectWithGroup(GeneralContactsGroup.CONTACTS);
 
         list.add(zazoFriend);
-        Assert.assertTrue(list.isFirstForGroup(0, ContactsGroup.ZAZO_FRIEND));
-        Assert.assertTrue(list.isLastForGroup(0, ContactsGroup.ZAZO_FRIEND));
-        Assert.assertFalse(list.isFirstForGroup(0, ContactsGroup.SMS_CONTACTS));
-        Assert.assertFalse(list.isLastForGroup(0, ContactsGroup.SMS_CONTACTS));
+        Assert.assertTrue(list.isFirstForGroup(0, ContactsGroup.getGeneralGroup(GeneralContactsGroup.ZAZO_FRIEND)));
+        Assert.assertTrue(list.isLastForGroup(0, ContactsGroup.getGeneralGroup(GeneralContactsGroup.ZAZO_FRIEND)));
+        Assert.assertFalse(list.isFirstForGroup(0, ContactsGroup.getGeneralGroup(GeneralContactsGroup.SMS_CONTACTS)));
+        Assert.assertFalse(list.isLastForGroup(0, ContactsGroup.getGeneralGroup(GeneralContactsGroup.SMS_CONTACTS)));
         list.add(smsContact);
-        Assert.assertEquals(ContactsGroup.ZAZO_FRIEND, list.getGroup(0));
-        Assert.assertEquals(ContactsGroup.SMS_CONTACTS, list.getGroup(1));
-        Assert.assertTrue(list.isFirstForGroup(0, ContactsGroup.ZAZO_FRIEND));
-        Assert.assertTrue(list.isLastForGroup(0, ContactsGroup.ZAZO_FRIEND));
-        Assert.assertTrue(list.isFirstForGroup(1, ContactsGroup.SMS_CONTACTS));
-        Assert.assertTrue(list.isLastForGroup(1, ContactsGroup.SMS_CONTACTS));
+        Assert.assertEquals(GeneralContactsGroup.ZAZO_FRIEND, list.getGroup(0).getGeneralGroup());
+        Assert.assertEquals(GeneralContactsGroup.SMS_CONTACTS, list.getGroup(1).getGeneralGroup());
+        Assert.assertTrue(list.isFirstForGroup(0, ContactsGroup.getGeneralGroup(GeneralContactsGroup.ZAZO_FRIEND)));
+        Assert.assertTrue(list.isLastForGroup(0, ContactsGroup.getGeneralGroup(GeneralContactsGroup.ZAZO_FRIEND)));
+        Assert.assertTrue(list.isFirstForGroup(1, ContactsGroup.getGeneralGroup(GeneralContactsGroup.SMS_CONTACTS)));
+        Assert.assertTrue(list.isLastForGroup(1, ContactsGroup.getGeneralGroup(GeneralContactsGroup.SMS_CONTACTS)));
         list.add(contact);
         list.add(contact);
         Assert.assertEquals(3, list.getGroupCount());
     }
 
     public void testAddingWrongGroup() {
-        BenchObjectList<ContactsGroup> list = new BenchObjectList<>();
-        BenchObject zazoFriend = getBenchObjectWithGroup(ContactsGroup.ZAZO_FRIEND);
-        BenchObject smsContact = getBenchObjectWithGroup(ContactsGroup.SMS_CONTACTS);
+        BenchObjectList list = new BenchObjectList();
+        BenchObject zazoFriend = getBenchObjectWithGroup(GeneralContactsGroup.ZAZO_FRIEND);
+        BenchObject smsContact = getBenchObjectWithGroup(GeneralContactsGroup.SMS_CONTACTS);
         list.add(zazoFriend);
         list.add(smsContact);
         try {
@@ -61,10 +62,10 @@ public class BenchObjectListTest extends InstrumentationTestCase {
     }
 
     public void testAddingGroups() {
-        BenchObjectList<ContactsGroup> list = new BenchObjectList<>();
-        BenchObject zazoFriend = getBenchObjectWithGroup(ContactsGroup.ZAZO_FRIEND);
-        BenchObject smsContact = getBenchObjectWithGroup(ContactsGroup.SMS_CONTACTS);
-        BenchObject contact = getBenchObjectWithGroup(ContactsGroup.CONTACTS);
+        BenchObjectList list = new BenchObjectList();
+        BenchObject zazoFriend = getBenchObjectWithGroup(GeneralContactsGroup.ZAZO_FRIEND);
+        BenchObject smsContact = getBenchObjectWithGroup(GeneralContactsGroup.SMS_CONTACTS);
+        BenchObject contact = getBenchObjectWithGroup(GeneralContactsGroup.CONTACTS);
         BenchObject[] objects = {zazoFriend, smsContact, contact};
         final int COUNT = 20;
         for (BenchObject benchObject : objects) {
@@ -72,26 +73,26 @@ public class BenchObjectListTest extends InstrumentationTestCase {
             for (int i = 0; i < COUNT; i++) {
                 groupList.add(benchObject);
             }
-            list.addGroup(groupList, (ContactsGroup) benchObject.getGroup());
+            list.addGroup(groupList, benchObject.getGroup());
             if (benchObject.equals(zazoFriend)) {
-                Assert.assertEquals(ContactsGroup.ZAZO_FRIEND, list.getGroup(1));
+                Assert.assertEquals(GeneralContactsGroup.ZAZO_FRIEND, list.getGroup(1).getGeneralGroup());
             }
         }
-        Assert.assertTrue(list.isFirstForGroup(0, ContactsGroup.ZAZO_FRIEND));
-        Assert.assertTrue(list.isFirstForGroup(COUNT, ContactsGroup.SMS_CONTACTS));
-        Assert.assertTrue(list.isFirstForGroup(2*COUNT, ContactsGroup.CONTACTS));
-        Assert.assertTrue(list.isLastForGroup(COUNT - 1, ContactsGroup.ZAZO_FRIEND));
-        Assert.assertTrue(list.isLastForGroup(2 * COUNT - 1, ContactsGroup.SMS_CONTACTS));
-        Assert.assertTrue(list.isLastForGroup(3 * COUNT - 1, ContactsGroup.CONTACTS));
+        Assert.assertTrue(list.isFirstForGroup(0, ContactsGroup.getGeneralGroup(GeneralContactsGroup.ZAZO_FRIEND)));
+        Assert.assertTrue(list.isFirstForGroup(COUNT, ContactsGroup.getGeneralGroup(GeneralContactsGroup.SMS_CONTACTS)));
+        Assert.assertTrue(list.isFirstForGroup(2*COUNT, ContactsGroup.getGeneralGroup(GeneralContactsGroup.CONTACTS)));
+        Assert.assertTrue(list.isLastForGroup(COUNT - 1, ContactsGroup.getGeneralGroup(GeneralContactsGroup.ZAZO_FRIEND)));
+        Assert.assertTrue(list.isLastForGroup(2 * COUNT - 1, ContactsGroup.getGeneralGroup(GeneralContactsGroup.SMS_CONTACTS)));
+        Assert.assertTrue(list.isLastForGroup(3 * COUNT - 1, ContactsGroup.getGeneralGroup(GeneralContactsGroup.CONTACTS)));
         for (int i = 0; i < list.size(); i++) {
-            ContactsGroup group = (i >= 2*COUNT) ? ContactsGroup.CONTACTS : (i < COUNT) ? ContactsGroup.ZAZO_FRIEND : ContactsGroup.SMS_CONTACTS;
-            Assert.assertEquals(group, list.getGroup(i));
+            GeneralContactsGroup group = (i >= 2*COUNT) ? GeneralContactsGroup.CONTACTS : (i < COUNT) ? GeneralContactsGroup.ZAZO_FRIEND : GeneralContactsGroup.SMS_CONTACTS;
+            Assert.assertEquals(group, list.getGroup(i).getGeneralGroup());
         }
     }
 
-    private BenchObject getBenchObjectWithGroup(ContactsGroup group) {
+    private BenchObject getBenchObjectWithGroup(GeneralContactsGroup group) {
         BenchObject object = mock(BenchObject.class);
-        when(object.getGroup()).thenReturn(group);
+        when(object.getGroup()).thenReturn(ContactsGroup.getGeneralGroup(group));
         return object;
     }
 }

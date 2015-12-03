@@ -34,6 +34,7 @@ import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.ui.view.ClearableAutoCompleteTextView;
+import com.zazoapp.client.ui.view.TextImageView;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.StringUtils;
@@ -55,17 +56,17 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @InjectView(R.id.contacts_auto_complete_text_view) ClearableAutoCompleteTextView autoCompleteTextView;
     @InjectView(R.id.contacts_group_selector) Spinner groupSelector;
 
-    private ImageView slidingIcon;
+    private TextImageView slidingIcon;
     private BenchAdapter adapter;
     private FriendFactory friendFactory;
     private BenchDataHandler benchDataHandler;
     private ArrayList<BenchObject> smsBenchObjects;
-    private ArrayList<BenchObject> contactBenchObjects;
+    private BenchObjectList contactBenchObjects;
     private ArrayList<BenchObject> favoriteBenchObjects;
-    private BenchObjectList<ContactsGroup> currentAllOnBench;
+    private BenchObjectList currentAllOnBench;
     private ContactsManager contactsManager;
     private boolean isBenchShown;
-    private ContactsGroup currentSelectedGroup = ContactsGroup.ALL;
+    private GeneralContactsGroup currentSelectedGroup = GeneralContactsGroup.ALL;
     private final Object filterLock = new Object();
 
     // ----------------------
@@ -126,7 +127,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @Override
     public void updateBench() {
         AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
-            private BenchObjectList<ContactsGroup> list;
+            private BenchObjectList list;
             @Override
             protected Void doInBackground(Void... params) {
                 list = allOnBench();
@@ -177,11 +178,12 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 	// ---------
 	private void populate(final ArrayList<LinkedTreeMap<String, String>> phoneData) {
         AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
-            private BenchObjectList<ContactsGroup> list;
+            private BenchObjectList list;
             @Override
             protected Void doInBackground(Void... params) {
                 smsBenchObjects = new ArrayList<>();
-                contactBenchObjects = new ArrayList<>();
+                List<BenchObject> contacts = new ArrayList<>();
+                contactBenchObjects = new BenchObjectList();
                 favoriteBenchObjects = new ArrayList<>();
                 for (LinkedTreeMap<String, String> e : phoneData) {
                     LinkedTreeMap<String, String> b = new LinkedTreeMap<>();
@@ -193,7 +195,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     b.put(BenchObject.Keys.FAVORITE, e.get(BenchDataHandler.Keys.FAVORITE));
                     b.put(BenchObject.Keys.HAS_PHONE, e.get(BenchDataHandler.Keys.HAS_PHONE));
                     BenchObject bo = new BenchObject(b);
-                    switch ((ContactsGroup) bo.getGroup()) {
+                    switch (bo.getGroup().getGeneralGroup()) {
                         case SMS_CONTACTS:
                             smsBenchObjects.add(bo);
                             break;
@@ -201,9 +203,13 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                             favoriteBenchObjects.add(bo);
                             break;
                         case CONTACTS:
-                            contactBenchObjects.add(bo);
+                            contacts.add(bo);
                             break;
                     }
+                }
+                sortBench(contacts);
+                for (BenchObject contact : contacts) {
+                    contactBenchObjects.add(contact);
                 }
                 list = allOnBench();
                 return null;
@@ -225,7 +231,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         });
 	}
 
-    private BenchObjectList<ContactsGroup> allOnBench() {
+    private BenchObjectList allOnBench() {
         List<List<BenchObject>> allLists = new ArrayList<>();
         List<BenchObject> bench = benchFriendsAsBenchObjects();
         List<BenchObject> sms = dedupedSmsBenchObjects();
@@ -238,13 +244,14 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         if (!sms.isEmpty()) {
             allLists.add(sms);
         }
-        if (contactBenchObjects != null && !contactBenchObjects.isEmpty()) {
-            allLists.add(contactBenchObjects);
-        }
+
         synchronized (filterLock) {
-            currentAllOnBench = new BenchObjectList<>();
+            currentAllOnBench = new BenchObjectList();
             for (List<BenchObject> list : allLists) {
-                currentAllOnBench.addGroup(list, (ContactsGroup) list.get(0).getGroup());
+                currentAllOnBench.addGroup(list, list.get(0).getGroup());
+            }
+            if (contactBenchObjects != null && !contactBenchObjects.isEmpty()) {
+                currentAllOnBench.addWithSubgroups(contactBenchObjects);
             }
         }
         return currentAllOnBench;
@@ -293,7 +300,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         Collections.sort(list, new Comparator<BenchObject>() {
             @Override
             public int compare(BenchObject lhs, BenchObject rhs) {
-                return lhs.displayName.compareTo(rhs.displayName);
+                return lhs.displayName.compareToIgnoreCase(rhs.displayName);
             }
         });
     }
@@ -314,7 +321,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (parent.equals(groupSelector)) {
             if (!currentSelectedGroup.equals(parent.getSelectedItem())) {
-                currentSelectedGroup = (ContactsGroup) parent.getSelectedItem();
+                currentSelectedGroup = (GeneralContactsGroup) parent.getSelectedItem();
                 applyFilter();
             }
         }
@@ -329,7 +336,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
         private Context context;
         private SearchFilter filter;
-        private BenchObjectList<ContactsGroup> list;
+        private BenchObjectList list;
         private List<ContactsGroup> groups;
 
         private final int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
@@ -346,7 +353,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             return list != null;
         }
 
-        public void setList(BenchObjectList<ContactsGroup> list) {
+        public void setList(BenchObjectList list) {
             this.list = list;
             this.groups = list.getGroups();
         }
@@ -424,7 +431,12 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 holder.header.setVisibility(View.INVISIBLE);
             } else {
                 holder.header.setVisibility(View.VISIBLE);
-                holder.headerIcon.setImageResource(groups.get(itemViewType).getIconId());
+                ContactsGroup group = groups.get(itemViewType);
+                if (group.isGeneralGroup()) {
+                    holder.headerIcon.setImageAndText(group.getIcon(), "");
+                } else {
+                    holder.headerIcon.setImageAndText(null, group.getText());
+                }
             }
             if (itemViewType < getViewTypeCount() - 1 && isLastPositionForType(position, itemViewType)) {
                 holder.groupDivider.setVisibility(View.VISIBLE);
@@ -459,7 +471,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             @InjectView(R.id.thumb) ImageView thumb;
             @InjectView(R.id.thumb_title) TextView thumbTitle;
             @InjectView(R.id.name) TextView name;
-            @InjectView(R.id.icon) ImageView headerIcon;
+            @InjectView(R.id.icon) TextImageView headerIcon;
 
             public ViewHolder(View v) {
                 ButterKnife.inject(this, v);
@@ -472,16 +484,16 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             protected FilterResults performFiltering(CharSequence filterString) {
 
                 FilterResults results = new FilterResults();
-                BenchObjectList<?> listCopy;
+                BenchObjectList listCopy;
                 synchronized (filterLock) {
-                    listCopy = (BenchObjectList<?>) currentAllOnBench.clone();
+                    listCopy = (BenchObjectList) currentAllOnBench.clone();
                 }
                 if (filterString == null || filterString.length() == 0) {
                     // find all matching objects here and add
                     // them to allMatching, use filterString.
-                    BenchObjectList<?> allMatching = new BenchObjectList<>();
+                    BenchObjectList allMatching = new BenchObjectList();
                     for (BenchObject name : listCopy) {
-                        if (currentSelectedGroup == ContactsGroup.ALL || currentSelectedGroup.equals(name.getGroup())) {
+                        if (currentSelectedGroup == GeneralContactsGroup.ALL || currentSelectedGroup.equals(name.getGroup().getGeneralGroup())) {
                             allMatching.add(name);
                         }
                     }
@@ -493,10 +505,10 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
                     // find all matching objects here and add
                     // them to allMatching, use filterString.
-                    BenchObjectList<?> allMatching = new BenchObjectList<>();
+                    BenchObjectList allMatching = new BenchObjectList();
                     for (BenchObject name : listCopy) {
                         if (name != null && name.displayName.toLowerCase().contains(prefixString)) {
-                            if (currentSelectedGroup == ContactsGroup.ALL || currentSelectedGroup.equals(name.getGroup())) {
+                            if (currentSelectedGroup == GeneralContactsGroup.ALL || currentSelectedGroup.equals(name.getGroup().getGeneralGroup())) {
                                 allMatching.add(name);
                             }
                         }
@@ -510,7 +522,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                setList((BenchObjectList<ContactsGroup>) results.values);
+                setList((BenchObjectList) results.values);
                 if (results.count > 0) {
                     notifyDataSetChanged();
                 } else {
@@ -551,7 +563,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private class BenchScrollListener implements AbsListView.OnScrollListener {
 
         BenchScrollListener() {
-            slidingHeading.setTag(-1);
+            slidingIcon.setTag(-1);
         }
 
         @Override
@@ -562,23 +574,31 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
             if (visibleItemCount > 0) {
                 int type = adapter.getItemViewType(firstVisibleItem);
-                Object typeObject = adapter.groups.get(type);
+                ContactsGroup typeObject = adapter.groups.get(type);
                 View item = view.getChildAt(0);
                 boolean lastForGroup = adapter.isLastPositionForType(firstVisibleItem, type);
-
+                if (type < adapter.groups.size() - 1 && lastForGroup && item.getBottom() < slidingHeading.getHeight()) {
+                    slidingHeading.setTranslationY(item.getBottom() - slidingHeading.getHeight());
+                } else {
+                    if (slidingHeading.getTranslationY() != 0) {
+                        Log.d(TAG, "Moved to 0");
+                        slidingHeading.setTranslationY(0);
+                    }
+                }
                 if (!typeObject.equals(slidingHeading.getTag())) {
                     slidingHeading.setTag(typeObject);
-                    slidingIcon.setImageResource(adapter.groups.get(type).getIconId());
+                    if (typeObject.isGeneralGroup()) {
+                        slidingIcon.setImageAndText(typeObject.getIcon(), "");
+                    } else {
+                        Log.d(TAG, "Set text: " + typeObject.getText());
+                        slidingIcon.setImageAndText(null, typeObject.getText());
+                    }
+
                     if (type == 0) {
                         slidingHeading.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
                     } else {
                         slidingHeading.setBackgroundColor(context.getResources().getColor(R.color.bgn_main));
                     }
-                }
-                if (type < adapter.groups.size() - 1 && lastForGroup && item.getBottom() < slidingHeading.getHeight()) {
-                    slidingHeading.setTranslationY(item.getBottom() - slidingHeading.getHeight());
-                } else {
-                    slidingHeading.setTranslationY(0);
                 }
             } else {
                 slidingHeading.setTag(-1);

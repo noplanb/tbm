@@ -2,6 +2,7 @@ package com.zazoapp.client.bench;
 
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.model.Contact;
+import com.zazoapp.client.utilities.StringUtils;
 
 public class BenchObject {
 
@@ -50,17 +51,18 @@ public class BenchObject {
         return mobileNumber != null;
     }
 
-    public <K> K getGroup() {
+    public ContactsGroup getGroup() {
         if (friendId != null) {
-            return (K) ContactsGroup.ZAZO_FRIEND;
+            return ContactsGroup.getGeneralGroup(GeneralContactsGroup.ZAZO_FRIEND);
         }
         if (hasFixedContact()) {
-            return (K) ContactsGroup.SMS_CONTACTS;
+            return ContactsGroup.getGeneralGroup(GeneralContactsGroup.SMS_CONTACTS);
         }
         if (favorite) {
-            return (K) ContactsGroup.FAVORITES;
+            return ContactsGroup.getGeneralGroup(GeneralContactsGroup.FAVORITES);
         }
-        return (K) ContactsGroup.CONTACTS;
+        CharSequence firstLetter = StringUtils.getFirstLetter(displayName);
+        return ContactsGroup.getSubGroup(ContactsGroup.getGeneralGroup(GeneralContactsGroup.CONTACTS), firstLetter);
     }
 
     public boolean hasPhone() {

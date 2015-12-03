@@ -1,5 +1,6 @@
 package com.zazoapp.client.utilities;
 
+import android.text.TextUtils;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -79,5 +80,15 @@ public class StringUtils {
             initials.append(b.toUpperCase().charAt(0));
         }
         return initials.toString();
+    }
+
+    public static CharSequence getFirstLetter(CharSequence sequence) {
+        if (TextUtils.isEmpty(sequence)) {
+            return "?";
+        }
+        if (sequence.charAt(0) <= '9') {
+            return "#";
+        }
+        return String.valueOf(sequence.charAt(0)).toUpperCase();
     }
 }
