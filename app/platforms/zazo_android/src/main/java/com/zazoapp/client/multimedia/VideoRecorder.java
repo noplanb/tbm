@@ -63,8 +63,12 @@ public class VideoRecorder implements SurfaceTextureListener {
         startPreview(holder);
     }
 
-    public void onPause() {
-        release(true);
+    public void onPause(boolean release) {
+        if (release) {
+            release(true);
+        } else {
+            stopPreview();
+        }
     }
 
     public Friend getCurrentFriend() {
@@ -325,6 +329,20 @@ public class VideoRecorder implements SurfaceTextureListener {
             isPreviewing = true;
         } else {
             Log.w(TAG, "startPreview: Not starting preview: holder=" + holder + " isPreviewing=" + isPreviewing+ " isSurfaceAvailable=" + isSurfaceAvailable);
+        }
+    }
+
+    private void stopPreview() {
+        if (isPreviewing) {
+            Camera camera = CameraManager.getCamera(context);
+            if (camera != null) {
+                try {
+                    camera.stopPreview();
+                } catch (RuntimeException e) {
+                    Log.w(TAG, "Couldn't stop preview");
+                }
+            }
+            isPreviewing = false;
         }
     }
 

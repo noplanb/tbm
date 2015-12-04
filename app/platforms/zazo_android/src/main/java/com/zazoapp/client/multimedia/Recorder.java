@@ -34,8 +34,9 @@ public interface Recorder {
 
     /**
      * Should be called in onPause of host activity
+     * @param release true to release camera
      */
-    void pause();
+    void pause(boolean release);
 
     /**
      * Indicates whether it is currently recording

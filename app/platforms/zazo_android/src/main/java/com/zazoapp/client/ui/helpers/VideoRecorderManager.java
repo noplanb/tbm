@@ -111,9 +111,11 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     }
 
     @Override
-    public void pause() {
-        videoRecorder.onPause();
-        videoRecorder.stopRecording();
+    public void pause(boolean release) {
+        videoRecorder.onPause(release);
+        if (release) {
+            videoRecorder.stopRecording();
+        }
     }
 
     @Override

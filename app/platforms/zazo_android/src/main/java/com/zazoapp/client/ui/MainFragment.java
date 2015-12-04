@@ -1,17 +1,31 @@
 package com.zazoapp.client.ui;
 
-import android.content.*;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.*;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.*;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -26,11 +40,19 @@ import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Contact;
+import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
-import com.zazoapp.client.ui.dialogs.*;
+import com.zazoapp.client.ui.dialogs.AbstractDialogFragment;
+import com.zazoapp.client.ui.dialogs.ActionInfoDialogFragment;
+import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
+import com.zazoapp.client.ui.dialogs.InviteIntent;
+import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
+import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
+import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
+import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -161,38 +183,8 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         actionBarIcon.setOnTouchListener(new ZazoGestureListener(context));
         tabsLayout.addTab(tabsLayout.newTab().setIcon(R.drawable.tab_grid), true);
         tabsLayout.addTab(tabsLayout.newTab().setIcon(R.drawable.tab_contacts));
-        tabsLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                switch (tab.getPosition()) {
-                    case TAB_MAIN:
-                        managerHolder.getBenchViewManager().hideBench();
-                        break;
-                    case TAB_FRIENDS:
-                        if (gridFragment != null) {
-                            if (managerHolder.getPlayer().isPlaying()) {
-                                managerHolder.getPlayer().stop();
-                            }
-                            if (managerHolder.getRecorder().isRecording()) {
-                                tabsLayout.getTabAt(0).select();
-                                return;
-                            }
-                        }
-                        managerHolder.getBenchViewManager().showBench();
-                        break;
-                }
-                contentFrame.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
-        });
-        contentFrame.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabsLayout));
+        tabsLayout.setOnTabSelectedListener(new MyOnTabSelectedListener());
+        contentFrame.addOnPageChangeListener(new MyOnPageChangeListener(tabsLayout));
         menuView.setState(MaterialMenuDrawable.IconState.BURGER);
         menuView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -496,4 +488,65 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         }
     }
 
+    private class MyOnTabSelectedListener implements TabLayout.OnTabSelectedListener {
+        @Override
+        public void onTabSelected(TabLayout.Tab tab) {
+            switch (tab.getPosition()) {
+                case TAB_FRIENDS:
+                    if (gridFragment != null) {
+                        if (managerHolder.getPlayer().isPlaying()) {
+                            managerHolder.getPlayer().stop();
+                        }
+                        if (managerHolder.getRecorder().isRecording()) {
+                            tabsLayout.getTabAt(0).select();
+                            return;
+                        }
+                    }
+                    managerHolder.getBenchViewManager().showBench();
+                    break;
+            }
+            contentFrame.setCurrentItem(tab.getPosition());
+        }
+
+        @Override
+        public void onTabUnselected(TabLayout.Tab tab) {
+        }
+
+        @Override
+        public void onTabReselected(TabLayout.Tab tab) {
+        }
+    }
+
+    private class MyOnPageChangeListener extends TabLayout.TabLayoutOnPageChangeListener {
+        public MyOnPageChangeListener(TabLayout tabLayout) {
+            super(tabLayout);
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int state) {
+            super.onPageScrollStateChanged(state);
+            int currentTab = tabsLayout.getSelectedTabPosition();
+            final Recorder recorder = managerHolder.getRecorder();
+            if (state == ViewPager.SCROLL_STATE_IDLE) {
+                if (currentTab == TAB_MAIN) {
+                    AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
+                        @Override
+                        protected Void doInBackground(Void... params) {
+                            recorder.resume();
+                            return null;
+                        }
+                    });
+                    managerHolder.getBenchViewManager().hideBench();
+                } else {
+                    AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
+                        @Override
+                        protected Void doInBackground(Void... params) {
+                            recorder.pause(false);
+                            return null;
+                        }
+                    });
+                }
+            }
+        }
+    }
 }

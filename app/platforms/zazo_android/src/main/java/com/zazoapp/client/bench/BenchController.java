@@ -5,6 +5,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
 import android.util.Log;
@@ -90,7 +91,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        hideBench();
         BenchObject bo = adapter.getItem(position);
         Log.i(TAG, "Position:" + position + " " + bo.displayName);
 
@@ -604,7 +604,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     }
 
     public void clearTextView() {
-        if (autoCompleteTextView == null)
+        if (autoCompleteTextView == null || TextUtils.isEmpty(autoCompleteTextView.getText()))
             return;
         TextKeyListener.clear(autoCompleteTextView.getEditableText());
     }
@@ -620,5 +620,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     public void resetViews() {
         hideKeyboard();
         clearTextView();
+        if (groupSelector != null && groupSelector.getSelectedItemPosition() != 0) {
+            groupSelector.setSelection(0);
+        }
     }
 }

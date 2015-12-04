@@ -63,7 +63,7 @@ public class ManagerHolder implements ZazoManagerProvider {
     }
 
     public void unregisterManagers() {
-        videoRecorder.pause();
+        videoRecorder.pause(true);
         CameraManager.releaseCamera();
         videoPlayer.release();
         audioManager.abandonFocus();
