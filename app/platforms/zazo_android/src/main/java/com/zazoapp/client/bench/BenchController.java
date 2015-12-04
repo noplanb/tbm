@@ -138,7 +138,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 adapter.setList(list);
-                adapter.notifyDataSetChanged();
+                applyFilter();
             }
         });
     }
@@ -148,6 +148,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         if (!isViewAttached()) {
             ButterKnife.inject(this, view);
             listView.setSelection(0); // to scroll list to the first position
+            listView.setTextFilterEnabled(true);
             if (adapter.isDataSetReady()) {
                 listView.setAdapter(adapter);
                 listView.setVisibility(View.VISIBLE);
@@ -221,7 +222,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 adapter.setList(list);
                 if (isViewAttached()) {
                     if (listView.getAdapter() == adapter) {
-                        adapter.notifyDataSetChanged();
+                        applyFilter();
                     } else {
                         listView.setAdapter(adapter);
                     }
