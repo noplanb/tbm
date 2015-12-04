@@ -164,6 +164,14 @@ public final class BenchObjectList extends ArrayList<BenchObject> {
         return null;
     }
 
+    public GeneralContactsGroup getGeneralGroup(int position) {
+        ContactsGroup group = getGroup(position);
+        if (group != null) {
+            return group.getGeneralGroup();
+        }
+        return null;
+    }
+
     public int getGroupCount() {
         return groups.size();
     }

@@ -427,18 +427,18 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 holder.thumbTitle.setText(StringUtils.getInitials(item.firstName, item.lastName));
             }
             int itemViewType = getItemViewType(position);
-            if (position == 0 || !isFirstPositionForType(position, itemViewType)) {
+            ContactsGroup group = groups.get(itemViewType);
+            if (!isFirstPositionForType(position, itemViewType)) {
                 holder.header.setVisibility(View.INVISIBLE);
             } else {
                 holder.header.setVisibility(View.VISIBLE);
-                ContactsGroup group = groups.get(itemViewType);
                 if (group.isGeneralGroup()) {
                     holder.headerIcon.setImageAndText(group.getIcon(), "");
                 } else {
                     holder.headerIcon.setImageAndText(null, group.getText());
                 }
             }
-            if (itemViewType < getViewTypeCount() - 1 && isLastPositionForType(position, itemViewType)) {
+            if (itemViewType < getViewTypeCount() - 1 && isLastPositionForType(position, itemViewType) && group.getGeneralGroup() != GeneralContactsGroup.CONTACTS) {
                 holder.groupDivider.setVisibility(View.VISIBLE);
             } else {
                 holder.groupDivider.setVisibility(View.INVISIBLE);
@@ -577,32 +577,27 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 ContactsGroup typeObject = adapter.groups.get(type);
                 View item = view.getChildAt(0);
                 boolean lastForGroup = adapter.isLastPositionForType(firstVisibleItem, type);
-                if (type < adapter.groups.size() - 1 && lastForGroup && item.getBottom() < slidingHeading.getHeight()) {
-                    slidingHeading.setTranslationY(item.getBottom() - slidingHeading.getHeight());
-                } else {
-                    if (slidingHeading.getTranslationY() != 0) {
-                        Log.d(TAG, "Moved to 0");
-                        slidingHeading.setTranslationY(0);
-                    }
-                }
                 if (!typeObject.equals(slidingHeading.getTag())) {
                     slidingHeading.setTag(typeObject);
                     if (typeObject.isGeneralGroup()) {
                         slidingIcon.setImageAndText(typeObject.getIcon(), "");
                     } else {
-                        Log.d(TAG, "Set text: " + typeObject.getText());
                         slidingIcon.setImageAndText(null, typeObject.getText());
                     }
-
-                    if (type == 0) {
-                        slidingHeading.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
-                    } else {
-                        slidingHeading.setBackgroundColor(context.getResources().getColor(R.color.bgn_main));
-                    }
+                }
+                if (type < adapter.groups.size() - 1 && lastForGroup && item.getBottom() < slidingHeading.getHeight()) {
+                    slidingHeading.setTranslationY(item.getBottom() - slidingHeading.getHeight());
+                } else {
+                    slidingHeading.setTranslationY(0);
+                }
+                if (adapter.isFirstPositionForType(firstVisibleItem, 0) && item.getTop() >= 0) {
+                    slidingHeading.setVisibility(View.INVISIBLE);
+                } else {
+                    slidingHeading.setVisibility(View.VISIBLE);
                 }
             } else {
+                slidingHeading.setVisibility(View.INVISIBLE);
                 slidingHeading.setTag(-1);
-                slidingIcon.setImageDrawable(null);
             }
         }
     }
