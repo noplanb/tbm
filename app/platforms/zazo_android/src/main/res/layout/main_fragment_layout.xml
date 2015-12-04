@@ -26,10 +26,11 @@
                     <com.balysv.materialmenu.MaterialMenuView
                             android:id="@+id/menu_view"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_centerVertical="true"
                             android:layout_alignParentLeft="true"
                             android:layout_alignParentStart="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
                             android:paddingLeft="@dimen/actionbar_item_padding"
                             android:paddingRight="@dimen/actionbar_item_padding"
                     />

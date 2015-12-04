@@ -4,35 +4,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
     <RelativeLayout
-            android:id="@+id/search_layout"
+            android:id="@+id/filter_panel"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="@dimen/search_panel_height">
         <android.support.v7.widget.AppCompatSpinner
                 android:id="@+id/contacts_group_selector"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
+                android:layout_marginLeft="@dimen/search_panel_margin"
+                android:layout_marginStart="@dimen/search_panel_margin"
+                android:layout_centerVertical="true"
                 style="@style/ThemeOverlay.AppCompat.Light"
                 app:popupTheme="@style/Widget.AppCompat.PopupMenu"
         />
 
-        <com.zazoapp.client.ui.view.ClearableAutoCompleteTextView
-                android:id="@+id/contacts_auto_complete_text_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+        <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/search_button"
+                android:layout_width="@dimen/small_icon_size"
+                android:layout_height="match_parent"
+                android:layout_marginRight="@dimen/search_panel_margin"
+                android:layout_marginEnd="@dimen/search_panel_margin"
+                android:layout_centerVertical="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_toRightOf="@id/contacts_group_selector"
-                android:layout_toEndOf="@id/contacts_group_selector"
-                android:completionThreshold="1"
-                android:ems="10"
-                android:padding="10dp"
-                android:hint="@string/search_all_contacts_hint"
-                android:inputType="textNoSuggestions"
-                style="@style/EditTextStyle"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_search"
         />
+
+        <include layout="@layout/search_layout"
+                 android:id="@+id/search_layout"/>
     </RelativeLayout>
 
 
@@ -53,7 +55,7 @@
             android:divider="@null"
             android:dividerHeight="0px"
             android:visibility="invisible"
-            android:layout_below="@id/search_layout"
+            android:layout_below="@id/filter_panel"
             android:background="@color/bgn_main">
 
         <requestFocus/>
@@ -63,7 +65,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignParentBottom="true"
-            android:layout_below="@id/search_layout">
+            android:layout_below="@id/filter_panel">
 
         <RelativeLayout
                 android:layout_width="match_parent"
@@ -79,6 +81,6 @@
     <View
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/search_layout"
+            android:layout_below="@id/filter_panel"
             android:background="@drawable/toolbar_shadow"/>
 </RelativeLayout>

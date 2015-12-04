@@ -1,5 +1,7 @@
 package com.zazoapp.client.bench;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -18,6 +20,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
@@ -26,6 +29,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.OnClick;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.Contact;
@@ -34,7 +38,6 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.helpers.ContactsManager;
-import com.zazoapp.client.ui.view.ClearableAutoCompleteTextView;
 import com.zazoapp.client.ui.view.TextImageView;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
@@ -54,7 +57,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private ZazoManagerProvider managerProvider;
     @InjectView(R.id.bench_list) ListView listView;
     @InjectView(R.id.contacts_heading) View slidingHeading;
-    @InjectView(R.id.contacts_auto_complete_text_view) ClearableAutoCompleteTextView autoCompleteTextView;
+    @InjectView(R.id.search_view) EditText searchView;
+    @InjectView(R.id.search_layout) View searchLayout;
     @InjectView(R.id.contacts_group_selector) Spinner groupSelector;
 
     private TextImageView slidingIcon;
@@ -160,7 +164,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             listView.setOnScrollListener(mScrollListener);
             groupSelector.setAdapter(new ContactsGroupAdapter(context));
             groupSelector.setOnItemSelectedListener(this);
-            autoCompleteTextView.addTextChangedListener(new MyWatcher());
+            searchView.addTextChangedListener(new MyWatcher());
         }
     }
 
@@ -282,7 +286,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @Override
     public void receivePhoneData(ArrayList<LinkedTreeMap<String, String>> phoneData) {
         populate(phoneData);
-        //contactsManager.setupAutoComplete(autoCompleteTextView);
     }
 
     private ArrayList<BenchObject> dedupedSmsBenchObjects() {
@@ -548,7 +551,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         // was typed in the text view
         if (enoughToFilter()) {
             if (listView.getAdapter() != null) {
-                adapter.getFilter().filter(autoCompleteTextView.getText());
+                adapter.getFilter().filter(searchView.getText());
             }
         } else {
             if (listView.getAdapter() != null) {
@@ -558,7 +561,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     }
 
     private boolean enoughToFilter() {
-        return autoCompleteTextView.getText().length() >= 1;
+        return searchView.getText().length() >= 1;
     }
 
     private class BenchScrollListener implements AbsListView.OnScrollListener {
@@ -604,17 +607,27 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     }
 
     public void clearTextView() {
-        if (autoCompleteTextView == null || TextUtils.isEmpty(autoCompleteTextView.getText()))
+        if (searchView == null || TextUtils.isEmpty(searchView.getText()))
             return;
-        TextKeyListener.clear(autoCompleteTextView.getEditableText());
+        TextKeyListener.clear(searchView.getEditableText());
     }
 
     public void hideKeyboard() {
-        if (autoCompleteTextView == null)
+        if (searchView == null)
             return;
 
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(autoCompleteTextView.getWindowToken(), 0);
+        imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
+    }
+
+    public void showKeyboard() {
+        if (searchView == null)
+            return;
+
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(searchView, 0);
+        }
     }
 
     public void resetViews() {
@@ -623,5 +636,30 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         if (groupSelector != null && groupSelector.getSelectedItemPosition() != 0) {
             groupSelector.setSelection(0);
         }
+    }
+
+    @OnClick(R.id.search_button)
+    public void onSearchButtonClicked(View v) {
+        searchLayout.setVisibility(View.VISIBLE);
+        searchLayout.animate().setListener(null).alpha(1f).start();
+        searchView.requestFocusFromTouch();
+        showKeyboard();
+    }
+
+    @OnClick(R.id.search_back)
+    public void onSearchBackButtonClicked(View v) {
+        searchLayout.animate().alpha(0f).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                searchLayout.setVisibility(View.INVISIBLE);
+                clearTextView();
+            }
+        }).start();
+        hideKeyboard();
+    }
+
+    public void onSearchClearButtonClicked(View v) {
+        clearTextView();
     }
 }

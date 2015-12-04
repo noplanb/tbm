@@ -69,6 +69,7 @@
     <color name="contacts_group_icon_tint_color">#727272</color>
     <color name="contacts_name_text">#212121</color>
 
+    <color name="search_hint">#747474</color>
     <color name="thumb_color_strong_cyan">#00AABF</color>
     <color name="thumb_color_moderate_blue">#3A4AA6</color>
     <color name="thumb_color_strong_blue">#176ABD</color>
