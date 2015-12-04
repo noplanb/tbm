@@ -91,7 +91,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
         hideBench();
-        BenchObject bo = currentAllOnBench.get(position);
+        BenchObject bo = adapter.getItem(position);
         Log.i(TAG, "Position:" + position + " " + bo.displayName);
 
         // if it is just a friend on bench, move it to grid
