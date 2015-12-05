@@ -47,7 +47,5 @@
             android:inputType="textNoSuggestions"
             android:imeOptions="actionDone"
             style="@style/EditTextStyle"
-    >
-        <requestFocus/>
-    </android.support.v7.widget.AppCompatEditText>
+    />
 </RelativeLayout>

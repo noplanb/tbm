@@ -60,6 +60,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @InjectView(R.id.search_view) EditText searchView;
     @InjectView(R.id.search_layout) View searchLayout;
     @InjectView(R.id.contacts_group_selector) Spinner groupSelector;
+    @InjectView(R.id.progress) View progressView;
 
     private TextImageView slidingIcon;
     private BenchAdapter adapter;
@@ -155,7 +156,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             listView.setTextFilterEnabled(true);
             if (adapter.isDataSetReady()) {
                 listView.setAdapter(adapter);
-                listView.setVisibility(View.VISIBLE);
+                doListViewAppearing();
             }
             slidingHeading.setVisibility(View.VISIBLE);
             slidingIcon = ButterKnife.findById(slidingHeading, R.id.icon);
@@ -166,6 +167,21 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             groupSelector.setOnItemSelectedListener(this);
             searchView.addTextChangedListener(new MyWatcher());
         }
+    }
+
+    private void doListViewAppearing() {
+        final float offset = Convenience.dpToPx(context, 50);
+        progressView.animate().alpha(0).translationY(-offset).setListener(
+                new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        listView.setTranslationY(offset);
+                        listView.setVisibility(View.VISIBLE);
+                        listView.setAlpha(0f);
+                        listView.animate().alpha(1f).translationY(0).start();
+                    }
+                }).start();
     }
 
     @Override
@@ -230,11 +246,13 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     } else {
                         listView.setAdapter(adapter);
                     }
-                    listView.setVisibility(View.VISIBLE);
+                    if (listView.getVisibility() != View.VISIBLE) {
+                        doListViewAppearing();
+                    }
                 }
             }
         });
-	}
+    }
 
     private BenchObjectList allOnBench() {
         List<List<BenchObject>> allLists = new ArrayList<>();
