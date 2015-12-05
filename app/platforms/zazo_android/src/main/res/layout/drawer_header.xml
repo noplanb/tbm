@@ -6,38 +6,51 @@
               android:background="@color/primary"
               >
 
-    <LinearLayout
+    <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/repeat_background"
-            android:padding="16dp"
-            android:gravity="bottom"
-            android:orientation="vertical">
+            android:background="@drawable/repeat_background">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:src="@drawable/ic_feature_three_stars"
-                android:layout_marginBottom="20dp"/>
-        <TextView
-                android:id="@+id/account_name"
+        <View
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sani Elfishawy"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/text_large"
-                android:layout_marginBottom="2dp"
-        />
+                android:background="@drawable/bottom_scrim"
+                android:layout_alignTop="@+id/account_info_layout"
+                android:layout_alignBottom="@id/account_info_layout"/>
 
-        <TextView
-                android:id="@+id/account_id"
+        <LinearLayout
+                android:id="@id/account_info_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="+38 (095) 123-45-67"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/text_large"/>
-    </LinearLayout>
+                android:padding="16dp"
+                android:layout_alignParentBottom="true"
+                android:orientation="vertical">
 
+            <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_feature_three_stars"
+                    android:layout_marginBottom="20dp"/>
+
+            <TextView
+                    android:id="@+id/account_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sani Elfishawy"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/text_large"
+                    android:layout_marginBottom="2dp"
+                    />
+
+            <TextView
+                    android:id="@+id/account_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="+38 (095) 123-45-67"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/text_large"/>
+        </LinearLayout>
+    </RelativeLayout>
 
 </LinearLayout>
