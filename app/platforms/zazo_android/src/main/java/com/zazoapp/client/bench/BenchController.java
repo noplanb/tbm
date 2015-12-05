@@ -609,8 +609,11 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 }
                 if (type < adapter.groups.size() - 1 && lastForGroup && item.getBottom() < slidingHeading.getHeight()) {
                     slidingHeading.setTranslationY(item.getBottom() - slidingHeading.getHeight());
+                    float alpha = item.getBottom() / (float) slidingHeading.getHeight();
+                    slidingIcon.setAlpha(alpha*alpha);
                 } else {
                     slidingHeading.setTranslationY(0);
+                    slidingIcon.setAlpha(1f);
                 }
                 if (adapter.isFirstPositionForType(firstVisibleItem, 0) && item.getTop() >= 0) {
                     slidingHeading.setVisibility(View.INVISIBLE);
