@@ -2,8 +2,8 @@ package com.zazoapp.client.network;
 
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.util.Log;
-import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.model.User;
@@ -18,8 +18,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.protocol.HTTP;
@@ -46,6 +50,9 @@ public class HttpRequest {
     private String pass;
     private String login;
     private String uri;
+    private String url;
+    private String host;
+    private boolean securedConnection;
     private LinkedTreeMap<String, String> sParams;
     private JSONObject jsonParams;
     private Callbacks callbacks;
@@ -132,6 +139,96 @@ public class HttpRequest {
         AsyncTaskManager.executeAsyncTask(true, new BgHttpReq(), new Void[]{});
     }
 
+    private HttpRequest(Builder builder) {
+        if (builder.url == null) {
+            url = Config.fullUrl(builder.uri);
+            host = Config.getServerHost();
+        } else {
+            url = builder.url;
+            host = builder.host;
+        }
+        securedConnection = url.toLowerCase().startsWith("https:");
+        method = (builder.method != null) ? builder.method : GET;
+        sParams = builder.params;
+        login = builder.login;
+        pass = builder.pass;
+        jsonParams = builder.jsonParams;
+        callbacks = builder.callbacks;
+        AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
+    }
+
+    public static final String POST = "POST";
+    public static final String GET = "GET";
+
+    public static class Builder {
+        private String url;
+        private String uri;
+        private String method;
+        private LinkedTreeMap<String, String> params;
+        private String login;
+        private String pass;
+        private Callbacks callbacks;
+        private JSONObject jsonParams;
+        private String host;
+
+        public Builder setUrl(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public Builder setUri(String uri) {
+            this.uri = uri;
+            return this;
+        }
+
+        public Builder setMethod(String method) {
+            this.method = method;
+            return this;
+        }
+
+        public Builder setParams(LinkedTreeMap<String, String> params) {
+            this.params = params;
+            return this;
+        }
+
+        public Builder setLogin(String login) {
+            this.login = login;
+            return this;
+        }
+
+        public Builder setPass(String pass) {
+            this.pass = pass;
+            return this;
+        }
+
+        public Builder setCallbacks(Callbacks callbacks) {
+            this.callbacks = callbacks;
+            return this;
+        }
+
+        public Builder setJsonParams(JSONObject jsonParams) {
+            this.jsonParams = jsonParams;
+            return this;
+        }
+
+        public Builder setHost(String host) {
+            this.host = host;
+            return this;
+        }
+
+        public HttpRequest build() {
+            if (TextUtils.isEmpty(url) && TextUtils.isEmpty(uri)) {
+                throw new IllegalStateException("At least one from url or uri must be set");
+            }
+            if (this.jsonParams != null && this.params != null) {
+                throw new IllegalStateException("Both json and non-json params can't be used at once");
+            }
+            if (!TextUtils.isEmpty(url) && TextUtils.isEmpty(this.host)) {
+                throw new IllegalStateException("Host must be set if url is set");
+            }
+            return new HttpRequest(this);
+        }
+    }
     //-----
     // Http
     //-----
@@ -151,13 +248,20 @@ public class HttpRequest {
     }
 
     public String httpReq() throws IOException{
-        String sUrl = Config.fullUrl(uri);
+        String sUrl = (url == null) ? Config.fullUrl(uri) : url;
+        String sHost = (host == null) ? Config.getServerHost() : host;
         String result = "";
 
         DefaultHttpClient http = new DefaultHttpClient();
         http.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Android");
         http.getParams().setParameter("Accept-Charset", "UTF-8");
-
+        if (securedConnection) {
+            SchemeRegistry schemeRegistry = new SchemeRegistry();
+            schemeRegistry.register(new Scheme("https",
+                    SSLSocketFactory.getSocketFactory(), 443));
+            SingleClientConnManager mgr = new SingleClientConnManager(http.getParams(), schemeRegistry);
+            http = new DefaultHttpClient(mgr, http.getParams());
+        }
         if(login==null || pass == null){
             User user = UserFactory.current_user();
             if(user != null){
@@ -170,7 +274,7 @@ public class HttpRequest {
         }
 
         http.getCredentialsProvider().setCredentials(
-                new AuthScope(Config.getServerHost(), AuthScope.ANY_PORT, "zazo.com"),
+                new AuthScope(sHost, AuthScope.ANY_PORT, "zazo.com"),
                 new UsernamePasswordCredentials(login, pass)
         );
 
@@ -178,7 +282,6 @@ public class HttpRequest {
         if (isPost()) {
             request = new HttpPost(sUrl);
             if (jsonParams != null) {
-                Gson gson = new Gson();
                 StringEntity entity = new StringEntity(jsonParams.toString());
                 request.addHeader(HTTP.CONTENT_TYPE, "application/json");
                 ((HttpPost)request).setEntity(entity);
