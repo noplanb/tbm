@@ -20,6 +20,7 @@ public class FriendFinderRequests {
             object.put("contacts", contacts);
             new HttpRequest.Builder()
                     .setUrl(getUrl("api/v1/contacts"))
+                    .setHost(getServerHost())
                     .setMethod(HttpRequest.POST)
                     .setJsonParams(object)
                     .setCallbacks(callbacks)
@@ -40,6 +41,10 @@ public class FriendFinderRequests {
     }
 
     private static String getServerUri() {
-        return "https://" + ((DebugConfig.getInstance().shouldUseCustomServer()) ? STAGING_HOST : PROD_HOST);
+        return "https://" + getServerHost();
+    }
+
+    private static String getServerHost() {
+        return DebugConfig.getInstance().shouldUseCustomServer() ? STAGING_HOST : PROD_HOST;
     }
 }
