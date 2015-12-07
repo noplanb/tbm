@@ -14,6 +14,8 @@ public class FriendFinderRequests {
     private static final String PROD_HOST = "ff.zazoapp.com";
     private static final String STAGING_HOST = "ff-staging.zazoapp.com";
 
+    private static final String NOTIFICATION_API = "api/v1/notifications";
+
     public static void sendContacts(JSONArray contacts, @Nullable HttpRequest.Callbacks callbacks) {
         JSONObject object = new JSONObject();
         try {
@@ -30,6 +32,31 @@ public class FriendFinderRequests {
                 callbacks.error("Json exception");
             }
         }
+    }
+
+    public static void addFriend(String nkey, @Nullable HttpRequest.Callbacks callbacks) {
+        requestNotificationApi("add", nkey, callbacks);
+    }
+
+    public static void ignoreFriend(String nkey, @Nullable HttpRequest.Callbacks callbacks) {
+        requestNotificationApi("ignore", nkey, callbacks);
+    }
+
+    public static void unsubscribe(String nkey, @Nullable HttpRequest.Callbacks callbacks) {
+        requestNotificationApi("unsubscribe", nkey, callbacks);
+    }
+
+    public static void subscribe(String nkey, @Nullable HttpRequest.Callbacks callbacks) {
+        requestNotificationApi("subscribe", nkey, callbacks);
+    }
+
+    private static void requestNotificationApi(String action, String nkey, @Nullable HttpRequest.Callbacks callbacks) {
+        new HttpRequest.Builder()
+                .setUrl(getUrl(NOTIFICATION_API, nkey, action))
+                .setHost(getServerHost())
+                .setMethod(HttpRequest.POST)
+                .setCallbacks(callbacks)
+                .build();
     }
 
     private static String getUrl(String... uri) {
