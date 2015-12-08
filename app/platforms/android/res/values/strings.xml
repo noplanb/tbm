@@ -117,6 +117,7 @@
     <string name="no_supported_app_available">No applications available</string>
 
     <string name="action_view">View</string>
+    <string name="action_dismiss">Dismiss</string>
     <plurals name="notification_title">
         <item quantity="one">%d new Zazo</item>
         <item quantity="other">%d new Zazos</item>
@@ -159,6 +160,16 @@
 
     <string name="alert_not_enough_space_title">Not enough space</string>
     <string name="alert_not_enough_space_message">Free some space to continue using Zazo</string>
+
+    <string name="new_friend_joined">%1$s joined Zazo!</string>
+    <string name="action_add_joined_friend">Add</string>
+    <string name="action_ignore_joined_friend">Ignore</string>
+    <string name="action_unsubscribe_joined_friend">Unsubscribe</string>
+
+    <string name="ff_add_success_message">You and %1$s are connected! Happy Zazoing.</string>
+    <string name="ff_add_error_message">Couldn\'t add friend</string>
+    <string name="ff_ignore_success_message">Ignored!</string>
+    <string name="ff_ignore_error_message">Couldn\'t ignore friend</string>
 
     <string name="dev_previous"><![CDATA[<]]></string>
     <string name="dev_next"><![CDATA[>]]></string>

@@ -15,6 +15,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelFactory;
 import com.zazoapp.client.model.ActiveModelsHandler;
@@ -30,11 +31,13 @@ import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileUploadService;
+import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Convenience;
+import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.Logger;
 
 import java.util.ArrayList;
@@ -244,6 +247,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 handleUploadIntent();
             } else if (isStoringIntent()) {
                 handleStoringIntent();
+            } else if (isFriendJoinedIntent()) {
+                handleFriendJoinedIntent();
             }
         }
 
@@ -260,6 +265,10 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
         private boolean isStoringIntent() {
             return IntentActions.SAVE_MODEL.equals(intent.getAction());
+        }
+
+        private boolean isFriendJoinedIntent() {
+            return IntentActions.FRIEND_JOINED.equals(intent.getAction());
         }
 
         // ---------------------
@@ -420,6 +429,48 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             }
         }
 
+        private void handleFriendJoinedIntent() {
+            String friendJoinedAction = intent.getStringExtra(FriendJoinedIntentFields.ACTION);
+            if (friendJoinedAction == null) {
+                return;
+            }
+            final String name = intent.getStringExtra(FriendJoinedIntentFields.NAME);
+            String nkey = intent.getStringExtra(FriendJoinedIntentFields.NKEY);
+            switch (friendJoinedAction) {
+                case FriendJoinedActions.NOTIFY:
+                    NotificationAlertManager.alertFriendJoined(IntentHandlerService.this, nkey, name);
+                    break;
+                case FriendJoinedActions.ADD:
+                    NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
+                    FriendFinderRequests.addFriend(nkey, new HttpRequest.Callbacks() {
+                        @Override
+                        public void success(String response) {
+                            DialogShower.showToast(getApplicationContext(), getString(R.string.ff_add_success_message, name));
+                        }
+
+                        @Override
+                        public void error(String errorString) {
+                            DialogShower.showToast(getApplicationContext(), R.string.ff_add_error_message);
+                        }
+                    });
+                    break;
+                case FriendJoinedActions.IGNORE:
+                    NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
+                    FriendFinderRequests.ignoreFriend(nkey, new HttpRequest.Callbacks() {
+                        @Override
+                        public void success(String response) {
+                            DialogShower.showToast(getApplicationContext(), R.string.ff_ignore_success_message);
+                        }
+
+                        @Override
+                        public void error(String errorString) {
+                            DialogShower.showToast(getApplicationContext(), R.string.ff_ignore_error_message);
+                        }
+                    });
+                    break;
+            }
+        }
+
         //--------
         // Helpers
         //--------
@@ -455,6 +506,21 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         public static final String PLAY_VIDEO = "playVideo";
         public static final String SMS_RESULT = "smsResult";
         public static final String SAVE_MODEL = "saveModel";
+        public static final String FRIEND_JOINED = "friend_joined";
+    }
+
+    public static class FriendJoinedIntentFields {
+        public static final String NAME = "friend_name";
+        public static final String ACTION = "action";
+        public static final String NKEY = "nkey";
+    }
+
+    public static class FriendJoinedActions {
+        public static final String NOTIFY = "notify";
+        public static final String ADD = "add";
+        public static final String IGNORE = "ignore";
+        public static final String UNSUBSCRIBE = "unsubscribe";
+        public static final String SUBSCRIBE = "subscribe";
     }
 
     public class NetworkReceiver extends BroadcastReceiver {

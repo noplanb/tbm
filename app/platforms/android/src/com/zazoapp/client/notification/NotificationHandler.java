@@ -18,17 +18,28 @@ public class NotificationHandler {
 	    public static final String STATUS = "status";
 	    public static final String TYPE = "type";
 	    public static final String SERVER_HOST = "host";
-	}
-	
-	public static class StatusEnum{
-		public static final String DOWNLOADED = "downloaded";
-		public static final String VIEWED = "viewed";
-	}
-	
-	public static class TypeEnum{
-		public static final String VIDEO_RECEIVED = "video_received";
-		public static final String VIDEO_STATUS_UPDATE = "video_status_update";
-	}
+
+        // Friend finder
+        public static final String CONTENT = "content";
+        public static final String SUBJECT = "subject";
+        public static final String ADDITIONS = "additions";
+        public static final String NKEY = "mkey";
+
+        public static class Additions {
+            public static final String FRIEND_NAME = "friend_name";
+        }
+    }
+
+    public static class StatusEnum {
+        public static final String DOWNLOADED = "downloaded";
+        public static final String VIEWED = "viewed";
+    }
+
+    public static class TypeEnum {
+        public static final String VIDEO_RECEIVED = "video_received";
+        public static final String VIDEO_STATUS_UPDATE = "video_status_update";
+        public static final String FRIEND_JOINED = "friend_joined";
+    }
 
 	public static void sendForVideoReceived(Friend friend, String videoId) {
 		LinkedTreeMap<String, String> params = new LinkedTreeMap<String, String>();

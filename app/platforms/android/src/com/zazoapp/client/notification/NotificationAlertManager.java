@@ -2,7 +2,6 @@ package com.zazoapp.client.notification;
 
 import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -33,6 +32,18 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class NotificationAlertManager {
+
+    public enum NotificationType {
+        NEW_VIDEO,
+        FEATURE_AWARD,
+        NO_SPACE_LEFT,
+        NOT_CLOSING_SEPARATOR,
+        FRIEND_JOINED;
+
+        public int id() {
+            return ordinal() + 1;
+        }
+    }
 
     public enum Tone {
         BEEP,
@@ -102,10 +113,14 @@ public class NotificationAlertManager {
 		postNativeAlert(context, friend, videoId);
 	}
 
-    public static void alert(Context context, String title, String subTitle, long[] vibratePattern, int id) {
-        if (id <= 0) {
-            id = 2;
+    public static void alertFriendJoined(Context context, String nkey, String name) {
+        if (screenIsLocked(context) || screenIsOff(context)) {
+            postLockScreenFriendJoinedAlert(context, nkey, name);
         }
+        postNativeFriendJoinedAlert(context, nkey, name);
+    }
+
+    public static void alert(Context context, String title, String subTitle, long[] vibratePattern, int id) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
         PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, intent, 0);
@@ -115,8 +130,8 @@ public class NotificationAlertManager {
         notiStyle.bigText(subTitle);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-                .setPriority(Notification.PRIORITY_DEFAULT)
-                .setCategory(Notification.CATEGORY_RECOMMENDATION)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
                 .setVibrate(vibratePattern)
                 //.setSound(getNotificationToneUri(context))
                 .setSmallIcon(getNotificationIcon())
@@ -155,7 +170,9 @@ public class NotificationAlertManager {
         beepTone = soundPool.load(context, R.raw.beep, 1);
         featureUnlockTone = soundPool.load(context, R.raw.feature_unlock, 1);
 
-        cancelNativeAlerts(context);
+        for (int i = 1; i < NotificationType.NOT_CLOSING_SEPARATOR.id(); i++) {
+            cancelNativeAlert(context, i);
+        }
     }
 
     public static void cleanUp() {
@@ -178,7 +195,6 @@ public class NotificationAlertManager {
 	// Private 
 	private static void postNativeAlert(Context context, Friend friend, String videoId) {
 		Log.i(TAG, "postNativeAlert");
-		final int NOTIFICATION_ID = 1;
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
 		PendingIntent playVideoIntent = PendingIntent.getActivity(context, 0,
@@ -191,8 +207,8 @@ public class NotificationAlertManager {
         notiStyle.setBigContentTitle(title);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-                .setPriority(Notification.PRIORITY_HIGH)
-                .setCategory(Notification.CATEGORY_MESSAGE)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setSound(getNotificationToneUri(context))
                 .setSmallIcon(getNotificationIcon())
                 .setContentTitle(title)
@@ -219,9 +235,44 @@ public class NotificationAlertManager {
             }
         }
 
-        notificationManager.cancel(NOTIFICATION_ID);
-		notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-	}
+        notificationManager.cancel(NotificationType.NEW_VIDEO.id());
+        notificationManager.notify(NotificationType.NEW_VIDEO.id(), mBuilder.build());
+    }
+
+    // Private
+    private static void postNativeFriendJoinedAlert(Context context, String nkey, String name) {
+        Log.i(TAG, "postNativeAlert");
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        Intent activityIntent = new Intent(context.getApplicationContext(), MainActivity.class);
+        Intent serviceIntent = new Intent(context.getApplicationContext(), IntentHandlerService.class);
+        PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, activityIntent, 0);
+        PendingIntent addJoinedFriendIntent = PendingIntent.getService(context, 1,
+                makeJoinedFriendIntent(serviceIntent, nkey, name, IntentHandlerService.FriendJoinedActions.ADD), 0);
+        PendingIntent ignoreJoinedFriendIntent = PendingIntent.getService(context, 2,
+                makeJoinedFriendIntent(serviceIntent, nkey, name, IntentHandlerService.FriendJoinedActions.IGNORE), 0);
+
+        String title = context.getString(R.string.new_friend_joined, name);
+        NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
+        notiStyle.setBigContentTitle(title);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+                .setSmallIcon(getNotificationIcon())
+                .setContentTitle(title)
+                .setStyle(notiStyle)
+                .setColor(context.getResources().getColor(R.color.green))
+                .setAutoCancel(true);
+        mBuilder.setContentIntent(openAppIntent);
+        //mBuilder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.icons_plus));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            mBuilder.addAction(R.drawable.ic_action_accept, context.getString(R.string.action_add_joined_friend), addJoinedFriendIntent);
+            mBuilder.addAction(R.drawable.ic_action_cancel, context.getString(R.string.action_ignore_joined_friend), ignoreJoinedFriendIntent);
+        }
+
+        notificationManager.cancel(NotificationType.FRIEND_JOINED.id());
+        notificationManager.notify(NotificationType.FRIEND_JOINED.id(), mBuilder.build());
+    }
 
     private static String formatFriendsList(Context context, Friend friend, boolean longList) {
         ArrayList<IncomingVideo> notViewedVideos = IncomingVideoFactory.getFactoryInstance().allNotViewed();
@@ -274,13 +325,34 @@ public class NotificationAlertManager {
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startActivity(i);
 	}
-	
+
+    private static void postLockScreenFriendJoinedAlert(Context context, String nkey, String name) {
+        Log.i(TAG, "postLockScreenAlert");
+        Intent ri = new Intent(context, LockScreenAlertActivity.class);
+        Intent i = makeJoinedFriendIntent(ri, nkey, name, IntentHandlerService.FriendJoinedActions.NOTIFY);
+        i.putExtra(TITLE_KEY, context.getString(R.string.new_friend_joined, name));
+        i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        i.addFlags(Intent.FLAG_FROM_BACKGROUND);
+        //i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK); // This is probably not necessary since the activity has launch mode singleInstance.
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(i);
+    }
+
 	public static Intent makePlayVideoIntent(Intent intent, Context context, Friend friend){
         Intent i = new Intent(intent);
         i.setAction(IntentHandlerService.IntentActions.PLAY_VIDEO);
         Uri uri = new Uri.Builder().appendPath(IntentHandlerService.IntentActions.PLAY_VIDEO).appendQueryParameter(
                 IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
         i.setData(uri);
+        return i;
+    }
+
+    public static Intent makeJoinedFriendIntent(Intent intent, String nkey, String name, String friendJoinedAction) {
+        Intent i = new Intent(intent);
+        i.setAction(IntentHandlerService.IntentActions.FRIEND_JOINED);
+        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, friendJoinedAction);
+        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.NKEY, nkey);
+        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.NAME, name);
         return i;
     }
 
