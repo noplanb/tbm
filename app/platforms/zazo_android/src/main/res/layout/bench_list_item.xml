@@ -53,7 +53,6 @@
                     android:layout_alignTop="@id/thumb"
                     android:layout_alignBottom="@id/thumb"
                     android:text="AB"
-                    android:shadowColor="#4000"
                     android:textColor="@color/white"
                     android:textSize="@dimen/text_xlarge"
                     android:gravity="center"
@@ -71,6 +70,8 @@
                     android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
                     android:paddingRight="?android:attr/listPreferredItemPaddingRight"
                     android:text="fdsdfs"
+                    android:ellipsize="end"
+                    android:maxLines="2"
                     android:textAppearance="?android:attr/textAppearanceListItemSmall"
                     android:textColor="@color/contacts_name_text" />
         </RelativeLayout>

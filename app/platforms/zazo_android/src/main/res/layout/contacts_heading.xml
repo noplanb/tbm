@@ -6,7 +6,6 @@
         android:layout_height="?android:attr/listPreferredItemHeight"
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
-        android:background="@color/bgn_main"
         android:visibility="invisible">
 
     <!--Match parent height is important for child to be redrawn on scroll-->

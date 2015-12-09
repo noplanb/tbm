@@ -48,7 +48,6 @@ public class BenchDataHandler {
 	private static final String TAG = BenchDataHandler.class.getSimpleName();
 
 	private Context context;
-	private ArrayList<LinkedTreeMap<String, String>> rankedPhoneData;
 
 	private BenchDataHandlerCallback delegate;
 
@@ -60,14 +59,13 @@ public class BenchDataHandler {
 	//------------
 	public BenchDataHandler(Context c) {
 		context = c.getApplicationContext();
-        rankedPhoneData = new ArrayList<>();
 	}
 
 	public void setListener(BenchDataHandlerCallback d){
 		delegate = d;
 	}
 
-	private void notifyDelegate(){
+	private void notifyDelegate(ArrayList<LinkedTreeMap<String, String>> rankedPhoneData) {
 		if (rankedPhoneData != null && delegate != null)
 			delegate.receivePhoneData(rankedPhoneData);
 	}
@@ -83,15 +81,15 @@ public class BenchDataHandler {
     }
 
     private class GetRankedPhoneDataAsync extends AsyncTask<Void, Void, Void>{
+        private ArrayList<LinkedTreeMap<String, String>> rankedPhoneData = new ArrayList<>();
         @Override
         protected Void doInBackground(Void... params) {
             Log.i(TAG, "GetRankedPhoneDataAsync");
 
-            rankedPhoneData.clear();
-            addPhoneData(getMessagesPhoneData());
-            addPhoneData(getContactsPhoneData());
+            addPhoneData(getMessagesPhoneData(), rankedPhoneData);
+            addPhoneData(getContactsPhoneData(), rankedPhoneData);
             Logger.d(TAG, "rankedPhoneData: " + rankedPhoneData);
-            printRankedPhoneData();
+            printRankedPhoneData(rankedPhoneData);
             return null;
         }
 
@@ -99,7 +97,7 @@ public class BenchDataHandler {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            notifyDelegate();
+            notifyDelegate(rankedPhoneData);
             isRequestRunning = false;
             isRequestComplete = true;
         }
@@ -226,9 +224,10 @@ public class BenchDataHandler {
     /**
      *
      * @param phoneData phone number and its number map
+     * @param outData output ranked phone data
      * @return true if data was added
      */
-    private boolean addPhoneData(List<Map<String, String>> phoneData){
+    private boolean addPhoneData(List<Map<String, String>> phoneData, ArrayList<LinkedTreeMap<String, String>> outData) {
         if (phoneData == null)
             return false;
 
@@ -261,7 +260,7 @@ public class BenchDataHandler {
             entry.put(Keys.FIRST_NAME, firstLast.get(Contact.ContactKeys.FIRST_NAME));
             entry.put(Keys.LAST_NAME, firstLast.get(Contact.ContactKeys.LAST_NAME));
             entry.put(Keys.DISPLAY_NAME, firstLast.get(Contact.ContactKeys.DISPLAY_NAME));
-            rankedPhoneData.add(entry);
+            outData.add(entry);
             result = true;
         }
         return result;
@@ -270,10 +269,6 @@ public class BenchDataHandler {
 	//------
 	// Debug
 	//------
-	public void printRankedPhoneData(){
-		BenchDataHandler.printRankedPhoneData(rankedPhoneData);
-	}
-	
 	public static void printRankedPhoneData(ArrayList<LinkedTreeMap<String, String>> rankedPhoneData){
         Logger.d(TAG, "printRankedPhoneData");
 		if (rankedPhoneData == null){

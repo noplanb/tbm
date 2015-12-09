@@ -452,8 +452,10 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             ContactsGroup group = groups.get(itemViewType);
             if (!isFirstPositionForType(position, itemViewType)) {
                 holder.header.setVisibility(View.INVISIBLE);
+                holder.header.setTag(null);
             } else {
                 holder.header.setVisibility(View.VISIBLE);
+                holder.header.setTag(group);
                 if (group.isGeneralGroup()) {
                     holder.headerIcon.setImageAndText(group.getIcon(), "");
                 } else {
@@ -584,10 +586,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
     private class BenchScrollListener implements AbsListView.OnScrollListener {
 
-        BenchScrollListener() {
-            slidingIcon.setTag(-1);
-        }
-
         @Override
         public void onScrollStateChanged(AbsListView view, int scrollState) {
         }
@@ -598,7 +596,15 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 int type = adapter.getItemViewType(firstVisibleItem);
                 ContactsGroup typeObject = adapter.groups.get(type);
                 View item = view.getChildAt(0);
-                boolean lastForGroup = adapter.isLastPositionForType(firstVisibleItem, type);
+                View currentItemHeading = ((BenchAdapter.ViewHolder) item.getTag()).header;
+                View nextView = null;
+                View nextViewHeading = null;
+                // if second visible item exists, get its view and header
+                if (visibleItemCount > 1) {
+                    nextView = view.getChildAt(1);
+                    nextViewHeading = ((BenchAdapter.ViewHolder) nextView.getTag()).header;
+                }
+                // check if sliding heading should be changed
                 if (!typeObject.equals(slidingHeading.getTag())) {
                     slidingHeading.setTag(typeObject);
                     if (typeObject.isGeneralGroup()) {
@@ -606,7 +612,19 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     } else {
                         slidingIcon.setImageAndText(null, typeObject.getText());
                     }
+                    // As soon as sliding heading is changed update next item heading's visibility state
+                    if (nextView != null && nextViewHeading.getTag() != null) {
+                        nextViewHeading.setVisibility(View.VISIBLE);
+                    }
                 }
+                // While current group is shown by scrolling heading, keep current item heading invisible
+                if (typeObject.equals(currentItemHeading.getTag())) {
+                    currentItemHeading.setVisibility(View.INVISIBLE);
+                } else if (currentItemHeading.getTag() != null) {
+                    currentItemHeading.setVisibility(View.VISIBLE);
+                }
+                // Slide and animate last group heading
+                boolean lastForGroup = adapter.isLastPositionForType(firstVisibleItem, type);
                 if (type < adapter.groups.size() - 1 && lastForGroup && item.getBottom() < slidingHeading.getHeight()) {
                     slidingHeading.setTranslationY(item.getBottom() - slidingHeading.getHeight());
                     float alpha = item.getBottom() / (float) slidingHeading.getHeight();
@@ -615,14 +633,17 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     slidingHeading.setTranslationY(0);
                     slidingIcon.setAlpha(1f);
                 }
+                // To support overscroll issues restore original heading instead of scrolling one
                 if (adapter.isFirstPositionForType(firstVisibleItem, 0) && item.getTop() >= 0) {
                     slidingHeading.setVisibility(View.INVISIBLE);
+                    currentItemHeading.setVisibility(View.VISIBLE);
                 } else {
                     slidingHeading.setVisibility(View.VISIBLE);
                 }
             } else {
+                // Hide sliding heading if no visible items in the list
                 slidingHeading.setVisibility(View.INVISIBLE);
-                slidingHeading.setTag(-1);
+                slidingHeading.setTag(null);
             }
         }
     }
