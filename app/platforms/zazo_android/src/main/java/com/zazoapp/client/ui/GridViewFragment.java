@@ -99,9 +99,11 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
             @Override
             public void onLayoutComplete() {
-                setupGridElements();
-                layoutVideoRecorder();
-                viewLoaded = true;
+                if (!viewLoaded) {
+                    setupGridElements();
+                    layoutVideoRecorder();
+                    viewLoaded = true;
+                }
                 handleIntentAction(getActivity().getIntent());
             }
         });

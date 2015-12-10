@@ -142,8 +142,6 @@
     <string name="feature_carousel_hint">Move a friend.\nDrag a friend to any position</string>
 
     <string name="manage_friends">Edit friends</string>
-    <string name="delete">Delete</string>
-    <string name="restore">Restore</string>
 
     <string name="send_feedback">Send feedback</string>
     <string name="feedback_subject">Feedback</string>

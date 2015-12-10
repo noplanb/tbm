@@ -1,82 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="68dp"
-                android:orientation="horizontal">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:layout_width="match_parent"
+             android:layout_height="?android:attr/listPreferredItemHeight"
+             android:orientation="horizontal">
 
-    <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
         <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-            <FrameLayout
-                    android:id="@+id/thumb_layout"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="center_vertical"
-                    android:layout_margin="10dp">
-                <ImageView
-                        android:id="@+id/thumb"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_zazo_letter"
-                        android:visibility="visible"/>
+                android:layout_height="match_parent"
+                android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
+                android:paddingRight="@dimen/abc_list_item_padding_horizontal_material">
 
-            </FrameLayout>
-
-            <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_toRightOf="@id/thumb_layout"
-                    android:layout_toEndOf="@id/thumb_layout"
-                    android:layout_toLeftOf="@+id/delete_btn"
-                    android:layout_toStartOf="@+id/delete_btn"
-                    android:layout_centerVertical="true"
-                    android:orientation="vertical"
-                    android:padding="10dp">
-                <TextView
-                        android:id="@+id/name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:singleLine="true"
-                        android:text="J.J. Philips Abramson"
-                        android:textSize="@dimen/text_very_large"
-                        android:textColor="@color/dialog_action_text"
-                        android:textStyle="bold"/>
-                <TextView
-                        android:id="@+id/phone"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="+1 000 0000000"
-                        android:textSize="@dimen/text_normal"
-                        android:textColor="@color/bg_name" />
-            </LinearLayout>
-
-            <View
-                    android:id="@+id/deleted_bg"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/light_grey"
-                    android:alpha="0.3"/>
-
-            <ToggleButton
+            <android.support.v7.widget.SwitchCompat
                     android:id="@+id/delete_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textOn="@string/restore"
-                    android:textOff="@string/delete"
-                    android:textColor="@color/dialog_action_text"
-                    android:textSize="@dimen/text_normal"
-                    android:textAllCaps="false"
                     android:checked="false"
-                    android:background="@drawable/manage_friends_delete_btn_bg"
+                    app:showText="false"
                     android:layout_centerVertical="true"
                     android:layout_alignParentRight="true"
-                    android:layout_margin="10dp"/>
+                    android:layout_alignParentEnd="true"/>
+
+            <RelativeLayout
+                    android:id="@+id/left_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_toLeftOf="@id/delete_btn"
+                    android:layout_toStartOf="@id/delete_btn">
+                <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/thumb_background"
+                        android:layout_width="@dimen/thumb_icon_size"
+                        android:layout_height="@dimen/thumb_icon_size"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:src="@color/accent_2"
+                />
+                <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/thumb"
+                        android:layout_width="@dimen/thumb_icon_size"
+                        android:layout_height="@dimen/thumb_icon_size"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:src="@drawable/bgn_thumb_2"
+                />
+                <TextView
+                        android:id="@+id/thumb_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@id/thumb"
+                        android:layout_alignStart="@id/thumb"
+                        android:layout_alignRight="@id/thumb"
+                        android:layout_alignEnd="@id/thumb"
+                        android:layout_alignTop="@id/thumb"
+                        android:layout_alignBottom="@id/thumb"
+                        android:text="AB"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_xlarge"
+                        android:gravity="center"
+                />
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@id/thumb"
+                        android:layout_toEndOf="@id/thumb"
+                        android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
+                        android:paddingRight="?android:attr/listPreferredItemPaddingRight"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp">
+                    <TextView
+                            android:id="@+id/name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:gravity="center_vertical"
+                            android:text="J.J. Philips Abramson"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:layout_weight="1"
+                            android:textSize="@dimen/text_large"
+                            android:textColor="@color/contacts_name_text" />
+                    <TextView
+                            android:id="@+id/phone"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:text="+1 000 0000000"
+                            android:textSize="@dimen/text_normal"
+                            android:textColor="@color/contacts_phone_text" />
+                </LinearLayout>
+            </RelativeLayout>
 
         </RelativeLayout>
         <RelativeLayout
@@ -85,21 +100,20 @@
                 android:layout_height="match_parent"
                 android:clickable="true"
                 android:visibility="invisible">
-            <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/dialog_body_bg"
-                    android:alpha="0.5"/>
             <com.github.rahatarmanahmed.cpv.CircularProgressView
-                    xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:id="@+id/progress"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     app:cpv_animAutostart="true"
                     app:cpv_indeterminate="true"
-                    app:cpv_color="@color/orange"
+                    app:cpv_color="@color/primary"
                     android:layout_centerInParent="true"/>
-        </RelativeLayout>
-    </FrameLayout>
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/dialog_body_bg"
+                    android:alpha="0.5"/>
 
-</LinearLayout>
+        </RelativeLayout>
+
+</FrameLayout>

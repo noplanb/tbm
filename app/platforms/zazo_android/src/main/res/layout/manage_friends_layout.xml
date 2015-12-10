@@ -37,14 +37,41 @@
 
     </RelativeLayout>
 
+    <RelativeLayout
+            android:id="@+id/filter_panel"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/search_panel_height"
+            android:layout_below="@id/zazo_action_bar">
+        <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/search_button"
+                android:layout_width="@dimen/small_icon_size"
+                android:layout_height="match_parent"
+                android:layout_marginRight="@dimen/search_panel_margin"
+                android:layout_marginEnd="@dimen/search_panel_margin"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_search"
+        />
+
+        <include layout="@layout/search_layout"
+                 android:id="@+id/search_layout"/>
+    </RelativeLayout>
     <ListView
             android:id="@+id/friends_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/zazo_action_bar"
-            android:divider="@color/black_overlay"
-            android:dividerHeight="1px"
+            android:layout_below="@id/filter_panel"
+            android:layout_alignParentBottom="true"
+            android:divider="@null"
+            android:dividerHeight="0px"
             tools:listitem="@layout/manage_friends_list_item"/>
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/filter_panel"
+            android:background="@drawable/toolbar_shadow"/>
     <View
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
