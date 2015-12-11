@@ -701,6 +701,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         hideKeyboard();
     }
 
+    @OnClick(R.id.search_clear)
     public void onSearchClearButtonClicked(View v) {
         clearTextView();
     }
