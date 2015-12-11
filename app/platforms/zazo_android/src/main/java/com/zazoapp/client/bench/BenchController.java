@@ -6,21 +6,15 @@ import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.text.method.TextKeyListener;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
@@ -29,7 +23,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import butterknife.OnClick;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.Contact;
@@ -38,6 +31,8 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.helpers.ContactsManager;
+import com.zazoapp.client.ui.view.FilterWatcher;
+import com.zazoapp.client.ui.view.SearchPanel;
 import com.zazoapp.client.ui.view.TextImageView;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
@@ -57,8 +52,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private ZazoManagerProvider managerProvider;
     @InjectView(R.id.bench_list) ListView listView;
     @InjectView(R.id.contacts_heading) View slidingHeading;
-    @InjectView(R.id.search_view) EditText searchView;
-    @InjectView(R.id.search_layout) View searchLayout;
     @InjectView(R.id.contacts_group_selector) Spinner groupSelector;
     @InjectView(R.id.progress) View progressView;
 
@@ -71,6 +64,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private ArrayList<BenchObject> favoriteBenchObjects;
     private BenchObjectList currentAllOnBench;
     private ContactsManager contactsManager;
+    private SearchPanel searchPanel;
     private boolean isBenchShown;
     private GeneralContactsGroup currentSelectedGroup = GeneralContactsGroup.ALL;
     private final Object filterLock = new Object();
@@ -143,7 +137,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 adapter.setList(list);
-                applyFilter();
+                applyFilter(searchPanel.getText());
             }
         });
     }
@@ -165,7 +159,13 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             listView.setOnScrollListener(mScrollListener);
             groupSelector.setAdapter(new ContactsGroupAdapter(context));
             groupSelector.setOnItemSelectedListener(this);
-            searchView.addTextChangedListener(new MyWatcher());
+            searchPanel = new SearchPanel(view);
+            searchPanel.addTextChangedListener(new FilterWatcher() {
+                @Override
+                protected void applyFilter(CharSequence text) {
+                    BenchController.this.applyFilter(text);
+                }
+            });
         }
     }
 
@@ -242,7 +242,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 adapter.setList(list);
                 if (isViewAttached()) {
                     if (listView.getAdapter() == adapter) {
-                        applyFilter();
+                        applyFilter(searchPanel.getText());
                     } else {
                         listView.setAdapter(adapter);
                     }
@@ -344,7 +344,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         if (parent.equals(groupSelector)) {
             if (!currentSelectedGroup.equals(parent.getSelectedItem())) {
                 currentSelectedGroup = (GeneralContactsGroup) parent.getSelectedItem();
-                applyFilter();
+                applyFilter(searchPanel.getText());
             }
         }
     }
@@ -556,32 +556,10 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         }
     }
 
-    private class MyWatcher implements TextWatcher {
-        public void afterTextChanged(Editable s) {
-            applyFilter();
+    protected void applyFilter(CharSequence text) {
+        if (listView.getAdapter() != null) {
+            adapter.getFilter().filter(text);
         }
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        }
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-        }
-    }
-
-    private void applyFilter() {
-        // filter is applied only when a minimum number of characters
-        // was typed in the text view
-        if (enoughToFilter()) {
-            if (listView.getAdapter() != null) {
-                adapter.getFilter().filter(searchView.getText());
-            }
-        } else {
-            if (listView.getAdapter() != null) {
-                adapter.getFilter().filter(null);
-            }
-        }
-    }
-
-    private boolean enoughToFilter() {
-        return searchView.getText().length() >= 1;
     }
 
     private class BenchScrollListener implements AbsListView.OnScrollListener {
@@ -648,61 +626,14 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         }
     }
 
-    public void clearTextView() {
-        if (searchView == null || TextUtils.isEmpty(searchView.getText()))
-            return;
-        TextKeyListener.clear(searchView.getEditableText());
-    }
-
-    public void hideKeyboard() {
-        if (searchView == null)
-            return;
-
-        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
-    }
-
-    public void showKeyboard() {
-        if (searchView == null)
-            return;
-
-        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null) {
-            imm.showSoftInput(searchView, 0);
-        }
-    }
-
     public void resetViews() {
-        hideKeyboard();
-        clearTextView();
+        if (isViewAttached()) {
+            searchPanel.hideKeyboard();
+            searchPanel.clearTextView();
+        }
         if (groupSelector != null && groupSelector.getSelectedItemPosition() != 0) {
             groupSelector.setSelection(0);
         }
     }
 
-    @OnClick(R.id.search_button)
-    public void onSearchButtonClicked(View v) {
-        searchLayout.setVisibility(View.VISIBLE);
-        searchLayout.animate().setListener(null).alpha(1f).start();
-        searchView.requestFocusFromTouch();
-        showKeyboard();
-    }
-
-    @OnClick(R.id.search_back)
-    public void onSearchBackButtonClicked(View v) {
-        searchLayout.animate().alpha(0f).setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                searchLayout.setVisibility(View.INVISIBLE);
-                clearTextView();
-            }
-        }).start();
-        hideKeyboard();
-    }
-
-    @OnClick(R.id.search_clear)
-    public void onSearchClearButtonClicked(View v) {
-        clearTextView();
-    }
 }

@@ -21,6 +21,8 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ListView;
 import android.widget.TextView;
 import butterknife.ButterKnife;
@@ -37,10 +39,13 @@ import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.animations.SlideHorizontalFadeAnimation;
+import com.zazoapp.client.ui.view.FilterWatcher;
+import com.zazoapp.client.ui.view.SearchPanel;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -53,13 +58,24 @@ public class ManageFriendsFragment extends Fragment {
     @InjectView(R.id.friends_list) ListView listView;
     @InjectView(R.id.up) MaterialMenuView up;
 
+    private SearchPanel searchPanel;
+    private FriendsAdapter adapter;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.manage_friends_layout, null);
         ButterKnife.inject(this, v);
-        listView.setAdapter(new FriendsAdapter(getActivity()));
+        adapter = new FriendsAdapter(getActivity());
+        listView.setAdapter(adapter);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
+        searchPanel = new SearchPanel(v);
+        searchPanel.addTextChangedListener(new FilterWatcher() {
+            @Override
+            protected void applyFilter(CharSequence text) {
+                filter(text);
+            }
+        });
         return v;
     }
 
@@ -67,6 +83,7 @@ public class ManageFriendsFragment extends Fragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.home:
+                searchPanel.hideKeyboard();
                 getFragmentManager().popBackStack();
                 break;
         }
@@ -84,7 +101,13 @@ public class ManageFriendsFragment extends Fragment {
         }
     }
 
-    class FriendsAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener {
+    private void filter(CharSequence text) {
+        if (listView.getAdapter() != null) {
+            adapter.getFilter().filter(text);
+        }
+    }
+
+    class FriendsAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener, Filterable {
 
         private Context context;
         private LayoutInflater inflater;
@@ -98,6 +121,7 @@ public class ManageFriendsFragment extends Fragment {
         private final float MIN_SATURATION = 0.25f;
         private final float MIN_ALPHA = 0.6f;
         private final long ANIM_DURATION = 300;
+        private Filter filter;
 
         FriendsAdapter(Activity context) {
             this.context = context.getApplicationContext();
@@ -113,6 +137,10 @@ public class ManageFriendsFragment extends Fragment {
             colors = context.getResources().getIntArray(R.array.thumb_colors);
             grayedMatrix.setSaturation(MIN_SATURATION);
             disabledFilter = new ColorMatrixColorFilter(grayedMatrix);
+        }
+
+        void setList(List<Friend> friends) {
+            this.friends = friends;
         }
 
         @Override
@@ -251,6 +279,14 @@ public class ManageFriendsFragment extends Fragment {
 
         }
 
+        @Override
+        public Filter getFilter() {
+            if (filter == null) {
+                filter = new SearchFilter();
+            }
+            return filter;
+        }
+
         class Holder {
             @InjectView(R.id.thumb) CircleImageView thumb;
             @InjectView(R.id.thumb_background) CircleImageView thumbBackground;
@@ -263,6 +299,45 @@ public class ManageFriendsFragment extends Fragment {
 
             Holder(View source) {
                 ButterKnife.inject(this, source);
+            }
+        }
+
+        private class SearchFilter extends Filter {
+
+            @Override
+            protected FilterResults performFiltering(CharSequence filterString) {
+
+                FilterResults results = new FilterResults();
+                List<Friend> listCopy = FriendFactory.getFactoryInstance().all();
+                if (filterString == null || filterString.length() == 0) {
+                    results.values = listCopy;
+                    results.count = listCopy.size();
+                } else {
+                    String prefixString = filterString.toString().toLowerCase();
+
+                    // find all matching objects here and add
+                    // them to allMatching, use filterString.
+                    List<Friend> allMatching = new ArrayList<>();
+                    for (Friend friend : listCopy) {
+                        if (friend != null && friend.getDisplayName().toLowerCase().contains(prefixString)) {
+                            allMatching.add(friend);
+                        }
+                    }
+
+                    results.values = allMatching;
+                    results.count = allMatching.size();
+                }
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                setList((List<Friend>) results.values);
+                if (results.count > 0) {
+                    notifyDataSetChanged();
+                } else {
+                    notifyDataSetInvalidated();
+                }
             }
         }
     }
