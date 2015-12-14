@@ -22,14 +22,9 @@
 
         <android.support.v7.widget.AppCompatImageButton
                 android:id="@+id/search_button"
-                android:layout_width="@dimen/small_icon_size"
-                android:layout_height="match_parent"
-                android:layout_marginRight="@dimen/search_panel_margin"
-                android:layout_marginEnd="@dimen/search_panel_margin"
-                android:layout_centerVertical="true"
+                style="@style/SearchPanelIcon"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_search"
         />
 

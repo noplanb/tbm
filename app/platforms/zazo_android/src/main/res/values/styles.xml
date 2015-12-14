@@ -103,6 +103,14 @@
         <item name="android:textCursorDrawable">@null</item>
         <item name="android:textSize">@dimen/text_very_large</item>
     </style>
+    <style name="SearchPanelIcon">
+        <item name="android:layout_width">62dp</item> <!-- small_icon_size + 2*search_panel_margin -->
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:paddingRight">@dimen/search_panel_margin</item>
+        <item name="android:paddingLeft">@dimen/search_panel_margin</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+    </style>
 
     <style name="DevDivider"/>
     <style name="DevDivider.Layout">
