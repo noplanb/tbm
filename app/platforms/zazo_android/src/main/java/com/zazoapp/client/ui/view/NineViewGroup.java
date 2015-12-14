@@ -78,15 +78,15 @@ public class NineViewGroup extends ViewGroup {
     }
 
     public enum Box {
-        TOP_LEFT(0, 0, -Math.PI*3/4),
-        TOP_CENTER(1, 1, -Math.PI/2),
-        TOP_RIGHT(2, 2, -Math.PI/4),
-        CENTER_LEFT(3, 7, -Math.PI),
+        TOP_LEFT(7, 0, -Math.PI*3/4),
+        TOP_CENTER(6, 1, -Math.PI/2),
+        TOP_RIGHT(4, 2, -Math.PI/4),
+        CENTER_LEFT(5, 7, -Math.PI),
         CENTER(8, 8, 0),
-        CENTER_RIGHT(4, 3, 0),
-        BOTTOM_LEFT(5, 6, Math.PI*3/4),
-        BOTTOM_CENTER(6, 5, Math.PI/2),
-        BOTTOM_RIGHT(7, 4, Math.PI/4);
+        CENTER_RIGHT(0, 3, 0),
+        BOTTOM_LEFT(3, 6, Math.PI*3/4),
+        BOTTOM_CENTER(1, 5, Math.PI/2),
+        BOTTOM_RIGHT(2, 4, Math.PI/4);
 
         private int pos;
         private int spinOrder;
@@ -299,9 +299,9 @@ public class NineViewGroup extends ViewGroup {
     /**
      * Returns view by desired populating order:
      * <pre>
-     * 0 1 2
-     * 3 8 4
-     * 5 6 7
+     * 7 6 4
+     * 5 8 0
+     * 3 1 2
      * </pre>
      * <p/>
      * By converting from this internal index order
