@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="?android:attr/listPreferredItemHeight">
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="?android:attr/listPreferredItemHeight">
 
     <include layout="@layout/contacts_heading"
             android:id="@+id/header"/>
@@ -25,15 +26,6 @@
                 android:layout_above="@id/group_divider"
         >
             <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/thumb_background"
-                    android:layout_width="@dimen/thumb_icon_size"
-                    android:layout_height="@dimen/thumb_icon_size"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
-                    android:src="@color/accent_2"
-                />
-            <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/thumb"
                     android:layout_width="@dimen/thumb_icon_size"
                     android:layout_height="@dimen/thumb_icon_size"
@@ -41,6 +33,7 @@
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
                     android:src="@drawable/bgn_thumb_2"
+                    app:civ_fill_color="@color/accent_2"
                      />
             <TextView
                     android:id="@+id/thumb_title"

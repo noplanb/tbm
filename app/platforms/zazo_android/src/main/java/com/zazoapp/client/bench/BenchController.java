@@ -3,11 +3,8 @@ package com.zazoapp.client.bench;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +14,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -37,6 +33,7 @@ import com.zazoapp.client.ui.view.TextImageView;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.StringUtils;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -363,7 +360,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
         private final int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
         private final int colors[];
-        private SparseArray<ColorDrawable> colorDrawables = new SparseArray<>();
 
         public BenchAdapter(Context context) {
             this.context = context;
@@ -439,13 +435,13 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     holder.thumb.setImageBitmap(friend.thumbBitmap());
                     holder.thumbTitle.setText("");
                 } else {
-                    holder.thumbBackground.setImageDrawable(getColorDrawable(Convenience.getStringDependentItem(item.displayName, colors)));
                     holder.thumb.setImageResource(Convenience.getStringDependentItem(item.displayName, icons));
+                    holder.thumb.setFillColor(Convenience.getStringDependentItem(item.displayName, colors));
                     holder.thumbTitle.setText(friend.getInitials());
                 }
             } else {
-                holder.thumbBackground.setImageDrawable(getColorDrawable(Convenience.getStringDependentItem(item.displayName, colors)));
                 holder.thumb.setImageResource(Convenience.getStringDependentItem(item.displayName, icons));
+                holder.thumb.setFillColor(Convenience.getStringDependentItem(item.displayName, colors));
                 holder.thumbTitle.setText(StringUtils.getInitials(item.firstName, item.lastName));
             }
             int itemViewType = getItemViewType(position);
@@ -471,15 +467,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             return v;
         }
 
-        private Drawable getColorDrawable(int color) {
-            ColorDrawable colorDrawable = colorDrawables.get(color);
-            if (colorDrawable == null) {
-                colorDrawable = new ColorDrawable(color);
-                colorDrawables.put(color, colorDrawable);
-            }
-            return colorDrawable;
-        }
-
         @Override
         public Filter getFilter() {
             if (filter == null) {
@@ -491,8 +478,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         class ViewHolder{
             @InjectView(R.id.header) View header;
             @InjectView(R.id.group_divider) View groupDivider;
-            @InjectView(R.id.thumb_background) ImageView thumbBackground;
-            @InjectView(R.id.thumb) ImageView thumb;
+            @InjectView(R.id.thumb) CircleImageView thumb;
             @InjectView(R.id.thumb_title) TextView thumbTitle;
             @InjectView(R.id.name) TextView name;
             @InjectView(R.id.icon) TextImageView headerIcon;

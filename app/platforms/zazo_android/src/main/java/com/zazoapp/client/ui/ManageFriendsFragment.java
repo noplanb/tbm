@@ -7,12 +7,10 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.SwitchCompat;
-import android.util.SparseArray;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -109,14 +107,13 @@ public class ManageFriendsFragment extends Fragment {
 
     class FriendsAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener, Filterable {
 
-        private Context context;
         private LayoutInflater inflater;
         private List<Friend> friends;
         private final int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
         private final int colors[];
-        private SparseArray<ColorDrawable> colorDrawables = new SparseArray<>();
         private ColorMatrix grayedMatrix = new ColorMatrix();
         private ColorMatrixColorFilter disabledFilter;
+        private ColorDrawable transparentDrawable = new ColorDrawable(Color.TRANSPARENT);
 
         private final float MIN_SATURATION = 0.25f;
         private final float MIN_ALPHA = 0.6f;
@@ -124,7 +121,6 @@ public class ManageFriendsFragment extends Fragment {
         private Filter filter;
 
         FriendsAdapter(Activity context) {
-            this.context = context.getApplicationContext();
             ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(context.getBaseContext(), R.style.AppTheme_SwitchCompat);
             inflater = (LayoutInflater) contextThemeWrapper.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             friends = FriendFactory.getFactoryInstance().all();
@@ -215,29 +211,21 @@ public class ManageFriendsFragment extends Fragment {
             }
         }
 
-        private Drawable getColorDrawable(int color) {
-            ColorDrawable colorDrawable = colorDrawables.get(color);
-            if (colorDrawable == null) {
-                colorDrawable = new ColorDrawable(color);
-                colorDrawables.put(color, colorDrawable);
-            }
-            return colorDrawable;
-        }
-
         void setState(final boolean enabled, final View v, final int position, boolean smooth) {
             Friend f = getItem(position);
             final Holder h = (Holder) v.getTag();
             final int posId = (int) v.getTag(R.id.id);
             if (f.thumbExists()) {
-                h.thumbBackground.setImageBitmap(f.thumbBitmap());
                 h.thumbTitle.setText(null);
-                h.thumb.setImageDrawable(null);
+                h.thumb.setImageBitmap(f.thumbBitmap());
+                h.thumb.setFillColor(Color.TRANSPARENT);
             } else if (f.hasApp()) {
                 h.thumb.setImageResource(Convenience.getStringDependentItem(f.getDisplayName(), icons));
-                h.thumbBackground.setImageDrawable(getColorDrawable(Convenience.getStringDependentItem(f.getDisplayName(), colors)));
+                h.thumb.setFillColor(Convenience.getStringDependentItem(f.getDisplayName(), colors));
                 h.thumbTitle.setText(f.getInitials());
             } else {
-                h.thumbBackground.setImageDrawable(getColorDrawable(Color.GRAY));
+                h.thumb.setImageDrawable(transparentDrawable);
+                h.thumb.setFillColor(Color.GRAY);
                 h.thumbTitle.setText(f.getInitials());
             }
             if (smooth) {
@@ -260,7 +248,7 @@ public class ManageFriendsFragment extends Fragment {
                             h.leftLayout.setAlpha(value * (1 - MIN_ALPHA) + MIN_ALPHA);
                             matrix.setSaturation(value * (1 - MIN_SATURATION) + MIN_SATURATION);
                             filter = new ColorMatrixColorFilter(matrix);
-                            h.thumbBackground.setColorFilter(filter);
+                            h.thumb.setColorFilter(filter);
                         } else {
                             animation.cancel();
                         }
@@ -270,10 +258,10 @@ public class ManageFriendsFragment extends Fragment {
             } else {
                 if (enabled) {
                     h.leftLayout.setAlpha(1f);
-                    h.thumbBackground.setColorFilter(null);
+                    h.thumb.setColorFilter(null);
                 } else {
                     h.leftLayout.setAlpha(MIN_ALPHA);
-                    h.thumbBackground.setColorFilter(disabledFilter);
+                    h.thumb.setColorFilter(disabledFilter);
                 }
             }
 
@@ -289,7 +277,6 @@ public class ManageFriendsFragment extends Fragment {
 
         class Holder {
             @InjectView(R.id.thumb) CircleImageView thumb;
-            @InjectView(R.id.thumb_background) CircleImageView thumbBackground;
             @InjectView(R.id.thumb_title) TextView thumbTitle;
             @InjectView(R.id.delete_btn) SwitchCompat button;
             @InjectView(R.id.name) TextView name;
