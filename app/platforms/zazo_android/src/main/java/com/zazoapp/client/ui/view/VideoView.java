@@ -21,26 +21,24 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
-import android.media.MediaFormat;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.MediaController;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * Displays a video file.  The VideoView class
@@ -58,13 +56,15 @@ import java.util.Vector;
  * Also note that the audio session id (from {@link #getAudioSessionId}) may
  * change from its previously returned value when the VideoView is restored.
  */
-public class VideoView extends SurfaceView
+public class VideoView extends TextureView
         implements MediaController.MediaPlayerControl {
     private String TAG = "VideoView";
     // settable by the client
     private Uri mUri;
     private Map<String, String> mHeaders;
     private Context mContext;
+    private final VideoSizeCalculator videoSizeCalculator;
+    private VideoStateListener onPlayStateListener;
 
     // all possible internal states
     private static final int STATE_ERROR              = -1;
@@ -84,13 +84,9 @@ public class VideoView extends SurfaceView
     private int mTargetState  = STATE_IDLE;
 
     // All the stuff we need for playing and showing a video
-    private SurfaceHolder mSurfaceHolder = null;
+    private SurfaceTexture mSurfaceTexture = null;
     private MediaPlayer mMediaPlayer = null;
     private int         mAudioSession;
-    private int         mVideoWidth;
-    private int         mVideoHeight;
-    private int         mSurfaceWidth;
-    private int         mSurfaceHeight;
     private MediaController mMediaController;
     private MediaPlayer.OnCompletionListener mOnCompletionListener;
     private MediaPlayer.OnPreparedListener mOnPreparedListener;
@@ -104,8 +100,7 @@ public class VideoView extends SurfaceView
     private boolean     speakerPhoneOn = true;
 
     public VideoView(Context context) {
-        super(context);
-        initVideoView();
+        this(context, null);
     }
 
     public VideoView(Context context, AttributeSet attrs) {
@@ -114,77 +109,21 @@ public class VideoView extends SurfaceView
 
     public VideoView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        videoSizeCalculator = new VideoSizeCalculator();
         initVideoView();
     }
 
     @SuppressLint("NewApi")
     public VideoView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        videoSizeCalculator = new VideoSizeCalculator();
         initVideoView();
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        //Log.i("@@@@", "onMeasure(" + MeasureSpec.toString(widthMeasureSpec) + ", "
-        //        + MeasureSpec.toString(heightMeasureSpec) + ")");
-
-        int width = getDefaultSize(mVideoWidth, widthMeasureSpec);
-        int height = getDefaultSize(mVideoHeight, heightMeasureSpec);
-        if (mVideoWidth > 0 && mVideoHeight > 0) {
-
-            int widthSpecMode = MeasureSpec.getMode(widthMeasureSpec);
-            int widthSpecSize = MeasureSpec.getSize(widthMeasureSpec);
-            int heightSpecMode = MeasureSpec.getMode(heightMeasureSpec);
-            int heightSpecSize = MeasureSpec.getSize(heightMeasureSpec);
-
-            if (widthSpecMode == MeasureSpec.EXACTLY && heightSpecMode == MeasureSpec.EXACTLY) {
-                // the size is fixed
-                width = widthSpecSize;
-                height = heightSpecSize;
-
-                // for compatibility, we adjust size based on aspect ratio
-                if ( mVideoWidth * height  < width * mVideoHeight ) {
-                    //Log.i("@@@", "image too wide, correcting");
-                    width = height * mVideoWidth / mVideoHeight;
-                } else if ( mVideoWidth * height  > width * mVideoHeight ) {
-                    //Log.i("@@@", "image too tall, correcting");
-                    height = width * mVideoHeight / mVideoWidth;
-                }
-            } else if (widthSpecMode == MeasureSpec.EXACTLY) {
-                // only the width is fixed, adjust the height to match aspect ratio if possible
-                width = widthSpecSize;
-                height = width * mVideoHeight / mVideoWidth;
-                if (heightSpecMode == MeasureSpec.AT_MOST && height > heightSpecSize) {
-                    // couldn't match aspect ratio within the constraints
-                    height = heightSpecSize;
-                }
-            } else if (heightSpecMode == MeasureSpec.EXACTLY) {
-                // only the height is fixed, adjust the width to match aspect ratio if possible
-                height = heightSpecSize;
-                width = height * mVideoWidth / mVideoHeight;
-                if (widthSpecMode == MeasureSpec.AT_MOST && width > widthSpecSize) {
-                    // couldn't match aspect ratio within the constraints
-                    width = widthSpecSize;
-                }
-            } else {
-                // neither the width nor the height are fixed, try to use actual video size
-                width = mVideoWidth;
-                height = mVideoHeight;
-                if (heightSpecMode == MeasureSpec.AT_MOST && height > heightSpecSize) {
-                    // too tall, decrease both width and height
-                    height = heightSpecSize;
-                    width = height * mVideoWidth / mVideoHeight;
-                }
-                if (widthSpecMode == MeasureSpec.AT_MOST && width > widthSpecSize) {
-                    // too wide, decrease both width and height
-                    width = widthSpecSize;
-                    height = width * mVideoHeight / mVideoWidth;
-                }
-            }
-        } else {
-            // no size yet, just adopt the given spec sizes
-        }
-        setMeasuredDimension(width, height);
+        VideoSizeCalculator.Dimens dimens = videoSizeCalculator.measure(widthMeasureSpec, heightMeasureSpec);
+        setMeasuredDimension(dimens.getWidth(), dimens.getHeight());
     }
 
     @Override
@@ -205,16 +144,15 @@ public class VideoView extends SurfaceView
 
     private void initVideoView() {
         mContext = getContext();
-        mVideoWidth = 0;
-        mVideoHeight = 0;
-        getHolder().addCallback(mSHCallback);
-        getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        videoSizeCalculator.setVideoSize(0, 0);
+        mSurfaceTexture = getSurfaceTexture();
+        setSurfaceTextureListener(mSTListener);
         setFocusable(true);
         setFocusableInTouchMode(true);
         requestFocus();
-        mPendingSubtitleTracks = new Vector<Pair<InputStream, MediaFormat>>();
         mCurrentState = STATE_IDLE;
         mTargetState  = STATE_IDLE;
+        setOnInfoListener(onInfoToPlayStateListener);
     }
 
     /**
@@ -254,20 +192,19 @@ public class VideoView extends SurfaceView
         invalidate();
     }
 
-    private Vector<Pair<InputStream, MediaFormat>> mPendingSubtitleTracks;
-
     public void stopPlayback() {
         if (mMediaPlayer != null) {
             mMediaPlayer.stop();
             mMediaPlayer.release();
             mMediaPlayer = null;
+            setKeepScreenOn(false);
             mCurrentState = STATE_IDLE;
             mTargetState  = STATE_IDLE;
         }
     }
 
     private void openVideo() {
-        if (mUri == null || mSurfaceHolder == null) {
+        if (mUri == null || mSurfaceTexture == null) {
             // not ready for playback just yet, will try again later
             return;
         }
@@ -276,9 +213,6 @@ public class VideoView extends SurfaceView
         release(false);
         try {
             mMediaPlayer = new MediaPlayer();
-
-
-
             if (mAudioSession != 0) {
                 mMediaPlayer.setAudioSessionId(mAudioSession);
             } else {
@@ -292,7 +226,7 @@ public class VideoView extends SurfaceView
             mMediaPlayer.setOnBufferingUpdateListener(mBufferingUpdateListener);
             mCurrentBufferPercentage = 0;
             mMediaPlayer.setDataSource(mContext, mUri, mHeaders);
-            mMediaPlayer.setDisplay(mSurfaceHolder);
+            mMediaPlayer.setSurface(new Surface(mSurfaceTexture));
             mMediaPlayer.setAudioStreamType(speakerPhoneOn ? AudioManager.STREAM_MUSIC : AudioManager.STREAM_VOICE_CALL);
             mMediaPlayer.setScreenOnWhilePlaying(true);
             mMediaPlayer.prepareAsync();
@@ -313,8 +247,6 @@ public class VideoView extends SurfaceView
             mTargetState = STATE_ERROR;
             mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
             return;
-        } finally {
-            mPendingSubtitleTracks.clear();
         }
     }
 
@@ -339,10 +271,8 @@ public class VideoView extends SurfaceView
     MediaPlayer.OnVideoSizeChangedListener mSizeChangedListener =
             new MediaPlayer.OnVideoSizeChangedListener() {
                 public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-                    mVideoWidth = mp.getVideoWidth();
-                    mVideoHeight = mp.getVideoHeight();
-                    if (mVideoWidth != 0 && mVideoHeight != 0) {
-                        getHolder().setFixedSize(mVideoWidth, mVideoHeight);
+                    videoSizeCalculator.setVideoSize(mp.getVideoWidth(), mp.getVideoHeight());
+                    if (videoSizeCalculator.hasASizeYet()) {
                         requestLayout();
                     }
                 }
@@ -361,38 +291,22 @@ public class VideoView extends SurfaceView
             if (mMediaController != null) {
                 mMediaController.setEnabled(true);
             }
-            mVideoWidth = mp.getVideoWidth();
-            mVideoHeight = mp.getVideoHeight();
+            videoSizeCalculator.setVideoSize(mp.getVideoWidth(), mp.getVideoHeight());
 
             int seekToPosition = mSeekWhenPrepared;  // mSeekWhenPrepared may be changed after seekTo() call
             if (seekToPosition != 0) {
                 seekTo(seekToPosition);
             }
-            if (mVideoWidth != 0 && mVideoHeight != 0) {
-                //Log.i("@@@@", "video size: " + mVideoWidth +"/"+ mVideoHeight);
-                getHolder().setFixedSize(mVideoWidth, mVideoHeight);
-                if (mSurfaceWidth == mVideoWidth && mSurfaceHeight == mVideoHeight) {
-                    // We didn't actually change the size (it was already at the size
-                    // we need), so we won't get a "surface changed" callback, so
-                    // start the video here instead of in the callback.
-                    if (mTargetState == STATE_PLAYING) {
-                        start();
-                        if (mMediaController != null) {
-                            mMediaController.show();
-                        }
-                    } else if (!isPlaying() &&
-                            (seekToPosition != 0 || getCurrentPosition() > 0)) {
-                        if (mMediaController != null) {
-                            // Show the media controls when we're paused into a video and make 'em stick.
-                            mMediaController.show(0);
-                        }
-                    }
+            if (mTargetState == STATE_PLAYING) {
+                start();
+                if (mMediaController != null) {
+                    mMediaController.show();
                 }
-            } else {
-                // We don't know the video size yet, but should start anyway.
-                // The video size might be reported to us later.
-                if (mTargetState == STATE_PLAYING) {
-                    start();
+            } else if (!isPlaying() &&
+                    (seekToPosition != 0 || getCurrentPosition() > 0)) {
+                if (mMediaController != null) {
+                    // Show the media controls when we're paused into a video and make 'em stick.
+                    mMediaController.show(0);
                 }
             }
         }
@@ -401,6 +315,7 @@ public class VideoView extends SurfaceView
     private MediaPlayer.OnCompletionListener mCompletionListener =
             new MediaPlayer.OnCompletionListener() {
                 public void onCompletion(MediaPlayer mp) {
+                    setKeepScreenOn(false);
                     mCurrentState = STATE_PLAYBACK_COMPLETED;
                     mTargetState = STATE_PLAYBACK_COMPLETED;
                     if (mMediaController != null) {
@@ -526,15 +441,11 @@ public class VideoView extends SurfaceView
         mOnInfoListener = l;
     }
 
-    SurfaceHolder.Callback mSHCallback = new SurfaceHolder.Callback()
-    {
-        public void surfaceChanged(SurfaceHolder holder, int format,
-                                   int w, int h)
-        {
-            mSurfaceWidth = w;
-            mSurfaceHeight = h;
+    private SurfaceTextureListener mSTListener = new SurfaceTextureListener() {
+        @Override
+        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int w, int h) {
             boolean isValidState =  (mTargetState == STATE_PLAYING);
-            boolean hasValidSize = (mVideoWidth == w && mVideoHeight == h);
+            boolean hasValidSize = videoSizeCalculator.currentSizeIs(w, h);
             if (mMediaPlayer != null && isValidState && hasValidSize) {
                 if (mSeekWhenPrepared != 0) {
                     seekTo(mSeekWhenPrepared);
@@ -543,18 +454,24 @@ public class VideoView extends SurfaceView
             }
         }
 
-        public void surfaceCreated(SurfaceHolder holder)
-        {
-            mSurfaceHolder = holder;
+        @Override
+        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+            mSurfaceTexture = surface;
             openVideo();
         }
 
-        public void surfaceDestroyed(SurfaceHolder holder)
-        {
+        @Override
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
             // after we return from this we can't use the surface any more
-            mSurfaceHolder = null;
+            mSurfaceTexture = null;
             if (mMediaController != null) mMediaController.hide();
             release(true);
+            return false;
+        }
+
+        @Override
+        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
         }
     };
 
@@ -566,7 +483,6 @@ public class VideoView extends SurfaceView
             mMediaPlayer.reset();
             mMediaPlayer.release();
             mMediaPlayer = null;
-            mPendingSubtitleTracks.clear();
             mCurrentState = STATE_IDLE;
             if (cleartargetstate) {
                 mTargetState  = STATE_IDLE;
@@ -644,6 +560,7 @@ public class VideoView extends SurfaceView
     public void start() {
         if (isInPlaybackState()) {
             mMediaPlayer.start();
+            setKeepScreenOn(true);
             mCurrentState = STATE_PLAYING;
         }
         mTargetState = STATE_PLAYING;
@@ -655,6 +572,7 @@ public class VideoView extends SurfaceView
             if (mMediaPlayer.isPlaying()) {
                 mMediaPlayer.pause();
                 mCurrentState = STATE_PAUSED;
+                setKeepScreenOn(false);
             }
         }
         mTargetState = STATE_PAUSED;
@@ -752,5 +670,142 @@ public class VideoView extends SurfaceView
             mSeekWhenPrepared = mMediaPlayer.getCurrentPosition();
             openVideo();
         }
+    }
+
+    private boolean hasPlayStateListener() {
+        return onPlayStateListener != null;
+    }
+
+    public void setOnPlayStateListener(final VideoStateListener onPlayStateListener) {
+        this.onPlayStateListener = onPlayStateListener;
+    }
+
+    private final MediaPlayer.OnInfoListener onInfoToPlayStateListener = new MediaPlayer.OnInfoListener() {
+
+        @Override
+        public boolean onInfo(final MediaPlayer mp, final int what, final int extra) {
+            if (!hasPlayStateListener()) {
+                return false;
+            }
+
+            if (MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START == what) {
+                onPlayStateListener.onFirstVideoFrameRendered();
+                onPlayStateListener.onPlay();
+            }
+            if (MediaPlayer.MEDIA_INFO_BUFFERING_START == what) {
+                onPlayStateListener.onBuffer();
+            }
+            if (MediaPlayer.MEDIA_INFO_BUFFERING_END == what) {
+                onPlayStateListener.onPlay();
+            }
+
+            return false;
+        }
+    };
+
+    private static class VideoSizeCalculator {
+
+        private Dimens dimens;
+
+        private int mVideoWidth;
+        private int mVideoHeight;
+
+        public VideoSizeCalculator() {
+            dimens = new Dimens();
+        }
+
+        public void setVideoSize(int mVideoWidth, int mVideoHeight) {
+            this.mVideoWidth = mVideoWidth;
+            this.mVideoHeight = mVideoHeight;
+        }
+
+        public boolean hasASizeYet() {
+            return mVideoWidth > 0 && mVideoHeight > 0;
+        }
+
+        protected Dimens measure(int widthMeasureSpec, int heightMeasureSpec) {
+            int width = View.getDefaultSize(mVideoWidth, widthMeasureSpec);
+            int height = View.getDefaultSize(mVideoHeight, heightMeasureSpec);
+            if (hasASizeYet()) {
+
+                int widthSpecMode = View.MeasureSpec.getMode(widthMeasureSpec);
+                int widthSpecSize = View.MeasureSpec.getSize(widthMeasureSpec);
+                int heightSpecMode = View.MeasureSpec.getMode(heightMeasureSpec);
+                int heightSpecSize = View.MeasureSpec.getSize(heightMeasureSpec);
+
+                if (widthSpecMode == View.MeasureSpec.EXACTLY && heightSpecMode == View.MeasureSpec.EXACTLY) {
+                    // the size is fixed
+                    width = widthSpecSize;
+                    height = heightSpecSize;
+
+                    // for compatibility, we adjust size based on aspect ratio
+                    if (mVideoWidth * height < width * mVideoHeight) {
+                        width = height * mVideoWidth / mVideoHeight;
+                    } else if (mVideoWidth * height > width * mVideoHeight) {
+                        height = width * mVideoHeight / mVideoWidth;
+                    }
+                } else if (widthSpecMode == View.MeasureSpec.EXACTLY) {
+                    // only the width is fixed, adjust the height to match aspect ratio if possible
+                    width = widthSpecSize;
+                    height = width * mVideoHeight / mVideoWidth;
+                    if (heightSpecMode == View.MeasureSpec.AT_MOST && height > heightSpecSize) {
+                        // couldn't match aspect ratio within the constraints
+                        height = heightSpecSize;
+                    }
+                } else if (heightSpecMode == View.MeasureSpec.EXACTLY) {
+                    // only the height is fixed, adjust the width to match aspect ratio if possible
+                    height = heightSpecSize;
+                    width = height * mVideoWidth / mVideoHeight;
+                    if (widthSpecMode == View.MeasureSpec.AT_MOST && width > widthSpecSize) {
+                        // couldn't match aspect ratio within the constraints
+                        width = widthSpecSize;
+                    }
+                } else {
+                    // neither the width nor the height are fixed, try to use actual video size
+                    width = mVideoWidth;
+                    height = mVideoHeight;
+                    if (heightSpecMode == View.MeasureSpec.AT_MOST && height > heightSpecSize) {
+                        // too tall, decrease both width and height
+                        height = heightSpecSize;
+                        width = height * mVideoWidth / mVideoHeight;
+                    }
+                    if (widthSpecMode == View.MeasureSpec.AT_MOST && width > widthSpecSize) {
+                        // too wide, decrease both width and height
+                        width = widthSpecSize;
+                        height = width * mVideoHeight / mVideoWidth;
+                    }
+                }
+            }
+            dimens.width = width;
+            dimens.height = height;
+            return dimens;
+        }
+
+        public boolean currentSizeIs(int w, int h) {
+            return mVideoWidth == w && mVideoHeight == h;
+        }
+
+        public void updateHolder(SurfaceHolder holder) {
+            holder.setFixedSize(mVideoWidth, mVideoHeight);
+        }
+
+        static class Dimens {
+            int width;
+            int height;
+
+            public int getWidth() {
+                return width;
+            }
+
+            public int getHeight() {
+                return height;
+            }
+        }
+    }
+
+    public interface VideoStateListener {
+        void onFirstVideoFrameRendered();
+        void onPlay();
+        void onBuffer();
     }
 }

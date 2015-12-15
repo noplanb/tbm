@@ -122,7 +122,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     public void stop(){
         Log.i(TAG, "stop");
         if (videoView != null && videoBody != null) {
-            videoBody.setVisibility(View.INVISIBLE);
+            videoBody.setAlpha(0f);
             //need to clear videoView because of last frame of already viewed video appear before new one start playing
             //TODO need to fix delay with black frame (or first video frame)
             //videoView.setVisibility(View.INVISIBLE);
@@ -324,8 +324,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                 public void run() {
                                     // checks if it is playing to eliminate the case of released player
                                     if (videoView.isPlaying()) {
-                                        videoView.setVisibility(View.VISIBLE);
-                                        videoBody.setVisibility(View.VISIBLE);
+                                        videoBody.setAlpha(1);
                                         notifyStartPlaying();
                                     }
                                 }
