@@ -2,6 +2,8 @@ package com.zazoapp.client.ui.helpers;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.ViewGroup;
 import com.zazoapp.client.R;
@@ -121,8 +123,18 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     @Override
     public void addPreviewTo(ViewGroup container) {
         PreviewTextureFrame vrFrame = (PreviewTextureFrame) videoRecorder.getView();
-        container.addView(vrFrame, new PreviewTextureFrame.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            CardView cardView = new CardView(context);
+            cardView.addView(vrFrame, new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            container.addView(cardView, new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            container.setBackgroundResource(R.drawable.card_empty);
+        } else {
+            container.addView(vrFrame, new PreviewTextureFrame.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            container.setBackgroundResource(R.drawable.card);
+        }
     }
 
     @Override

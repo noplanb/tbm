@@ -369,7 +369,7 @@ public class ThumbView extends ImageView {
         if (mUserDrawableRadius >= 0) {
             mDrawableRadius = mUserDrawableRadius;
         } else {
-            mDrawableRadius = Math.min(mDrawableRect.height() / 2f, mDrawableRect.width() / 2f);
+            mDrawableRadius = (float) Math.sqrt(mDrawableRect.height() * mDrawableRect.height() + mDrawableRect.width() * mDrawableRect.width());
         }
     }
 

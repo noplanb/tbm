@@ -32,7 +32,6 @@ import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDial
 import com.zazoapp.client.ui.helpers.GridElementController;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.NineViewGroup.LayoutCompleteListener;
-import com.zazoapp.client.ui.view.VideoView;
 import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.Logger;
 
@@ -119,9 +118,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     private void setupVideoPlayer(View v) {
-        ViewGroup videoBody = (ViewGroup) v.findViewById(R.id.video_body);
-        VideoView videoView = (VideoView) v.findViewById(R.id.video_view);
-        getManagerProvider().getPlayer().init(videoBody, videoView);
+        getManagerProvider().getPlayer().init(v);
     }
 
     private ZazoManagerProvider getManagerProvider() {

@@ -1,14 +1,20 @@
 package com.zazoapp.client.multimedia;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
@@ -27,7 +33,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Player {
+public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Player, View.OnTouchListener {
 
 	private static final String TAG = VideoPlayer.class.getSimpleName();
 
@@ -35,8 +41,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 	private String videoId;
 	private String friendId;
 	private Friend friend;
-	private VideoView videoView;
-	private ViewGroup videoBody;
+    @InjectView(R.id.video_view) VideoView videoView;
+    @InjectView(R.id.video_body) ViewGroup videoBody;
+    @InjectView(R.id.video_root_layout) ViewGroup videoRootLayout;
+    @InjectView(R.id.zoom) View zoomView;
     private TouchBlockScreen blockScreen;
 	private boolean videosAreDownloading;
     private ZazoManagerProvider managerProvider;
@@ -52,11 +60,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     @Override
-    public void init(ViewGroup videoBody, final VideoView videoView) {
-        this.videoBody = videoBody;
-        this.videoView = videoView;
+    public void init(View rootView) {
+        ButterKnife.inject(this, rootView);
         this.videoView.setOnCompletionListener(this);
         this.videoView.setOnPreparedListener(this);
+        videoRootLayout.setOnTouchListener(this);
+        zoomView.setOnTouchListener(this);
         blockScreen.setUnlockListener(new TouchBlockScreen.UnlockListener() {
             @Override
             public void onUnlockGesture() {
@@ -122,7 +131,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     public void stop(){
         Log.i(TAG, "stop");
         if (videoView != null && videoBody != null) {
-            videoBody.setAlpha(0f);
+            videoRootLayout.animate().alpha(0f).start();
             //need to clear videoView because of last frame of already viewed video appear before new one start playing
             //TODO need to fix delay with black frame (or first video frame)
             //videoView.setVisibility(View.INVISIBLE);
@@ -324,7 +333,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                 public void run() {
                                     // checks if it is playing to eliminate the case of released player
                                     if (videoView.isPlaying()) {
-                                        videoBody.setAlpha(1);
+                                        videoRootLayout.animate().alpha(1).start();
                                         notifyStartPlaying();
                                     }
                                 }
@@ -346,4 +355,84 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         }
     }
 
+    boolean zoomed;
+    Runnable zoomRollback;
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        switch (v.getId()) {
+            case R.id.video_root_layout:
+                if (isPlaying() && event.getAction() == MotionEvent.ACTION_DOWN) {
+                    zoomOut();
+                    stop();
+                    return true;
+                }
+                break;
+            case R.id.zoom:
+                if (event.getAction() != MotionEvent.ACTION_DOWN) {
+                    return true;
+                }
+                if (zoomed) {
+                    zoomOut();
+                } else {
+                    if (zoomRollback == null) {
+                        zoomRollback = new Runnable() {
+                            float x = videoBody.getTranslationX();
+                            float y = videoBody.getTranslationY();
+                            int w = videoBody.getWidth();
+                            int h = videoBody.getHeight();
+
+                            @Override
+                            public void run() {
+                                videoBody.setTranslationX(x);
+                                videoBody.setTranslationY(y);
+                                videoView.setCropFraction(1);
+                                ViewGroup.LayoutParams p = videoBody.getLayoutParams();
+                                p.width = w;
+                                p.height = h;
+                                videoBody.setLayoutParams(p);
+                            }
+                        };
+                    }
+                    ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
+                    animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        int w = videoBody.getWidth();
+                        int h = videoBody.getHeight();
+                        float trX = videoBody.getTranslationX();
+                        float trY = videoBody.getTranslationY();
+
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            float fraction = animation.getAnimatedFraction();
+                            videoView.setCropFraction(1 - fraction);
+                            videoBody.setTranslationX(trX * (1 - fraction));
+                            videoBody.setTranslationY(trY * (1 - fraction));
+                            ViewGroup.LayoutParams p = videoBody.getLayoutParams();
+                            p.width = (int) (w + (videoRootLayout.getWidth() - w) * fraction);
+                            p.height = (int) (h + (videoRootLayout.getHeight() - h) * fraction);
+                            videoBody.setLayoutParams(p);
+                        }
+                    });
+                    animator.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            zoomed = true;
+                        }
+                    });
+                    animator.setDuration(1000);
+                    animator.start();
+                }
+                return true;
+        }
+        return false;
+    }
+
+    private void zoomOut() {
+        // TODO Cancel animator
+        if (zoomRollback != null) {
+            zoomRollback.run();
+            zoomRollback = null;
+        }
+        zoomed = false;
+    }
 }

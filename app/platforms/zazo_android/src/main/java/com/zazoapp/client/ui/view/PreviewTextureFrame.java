@@ -3,6 +3,7 @@ package com.zazoapp.client.ui.view;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.FontMetrics;
@@ -122,6 +123,17 @@ public class PreviewTextureFrame extends FrameLayout {
                     text_y - radius,
                     radius, paint);
         }
-
 	}
+
+    public void setTransformMatrix(Matrix matrix) {
+        textureView.setTransform(matrix);
+    }
+
+    public int getPreviewWidth() {
+        return textureView.getWidth();
+    }
+
+    public int getPreviewHeight() {
+        return textureView.getHeight();
+    }
 }

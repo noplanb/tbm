@@ -1,8 +1,6 @@
 package com.zazoapp.client.multimedia;
 
 import android.view.View;
-import android.view.ViewGroup;
-import com.zazoapp.client.ui.view.VideoView;
 
 /**
  * Created by skamenkovych@codeminders.com on 4/21/2015.
@@ -10,10 +8,10 @@ import com.zazoapp.client.ui.view.VideoView;
 public interface Player {
     /**
      * Init VideoPlayer instance
-     * @param videoBody parent layout of VideoView
-     * @param videoView VideoView
+     * @param rootView parent layout of VideoView
+     *
      */
-    void init(ViewGroup videoBody, VideoView videoView);
+    void init(View rootView);
     void togglePlayOverView(View view, String friendId);
     void stop();
     void release();

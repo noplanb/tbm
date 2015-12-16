@@ -1,6 +1,7 @@
 package com.zazoapp.client.multimedia;
 
 import android.content.Context;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
@@ -297,6 +298,24 @@ public class VideoRecorder implements SurfaceTextureListener {
         startPreview(holder);
     }
 
+    private void adjustPreviewRatio() {
+        Matrix matrix = new Matrix();
+        Camera camera = CameraManager.getCamera(context);
+        Camera.Size realSize = camera.getParameters().getPreviewSize();
+        float realAspect = realSize.width / (float) realSize.height;
+        float viewAspect = preview.getPreviewHeight() / (float) preview.getPreviewWidth();
+        float scaleX, scaleY;
+        if (realAspect > viewAspect) {
+            scaleX = 1f;
+            scaleY = realAspect / viewAspect;
+        } else {
+            scaleX = viewAspect / realAspect;
+            scaleY = 1f;
+        }
+        matrix.setScale(scaleX, scaleY, preview.getWidth() / 2, preview.getHeight() / 2);
+        preview.setTransformMatrix(matrix);
+    }
+
     private void startPreview(SurfaceTexture holder) {
         if (!isPreviewing && isSurfaceAvailable) {
             Log.i(TAG, "startPreview: starting preview");
@@ -307,7 +326,7 @@ public class VideoRecorder implements SurfaceTextureListener {
                 Log.w(TAG, "startPreview: could camera==nul");
                 return;
             }
-
+            adjustPreviewRatio();
             try {
                 camera.setPreviewTexture(holder);
             } catch (IOException e) {
@@ -357,6 +376,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+        adjustPreviewRatio();
     }
 
 

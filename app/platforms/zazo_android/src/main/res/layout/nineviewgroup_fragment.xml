@@ -16,17 +16,31 @@
         android:visibility="visible"/>
 
     <FrameLayout
-        android:id="@+id/video_body"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/bgn_main"
-        android:alpha="0">
-
-        <com.zazoapp.client.ui.view.VideoView
-            android:id="@+id/video_view"
-            android:layout_gravity="center_vertical"
+            android:id="@+id/video_root_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:alpha="0"
+            android:background="@color/black_overlay">
+        <FrameLayout
+                android:id="@+id/video_body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/card">
+
+            <com.zazoapp.client.ui.view.VideoView
+                    android:id="@+id/video_view"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+        </FrameLayout>
+        <ImageView
+                android:id="@+id/zoom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_zoom"
+                android:layout_gravity="center"
+                android:alpha="0.5"/>
     </FrameLayout>
+
 
 </FrameLayout>

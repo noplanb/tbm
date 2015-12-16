@@ -529,13 +529,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             final Recorder recorder = managerHolder.getRecorder();
             if (state == ViewPager.SCROLL_STATE_IDLE) {
                 if (currentTab == TAB_MAIN) {
-                    AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Void... params) {
-                            recorder.resume();
-                            return null;
-                        }
-                    });
+                    recorder.resume();
                     managerHolder.getBenchViewManager().hideBench();
                 } else {
                     AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {

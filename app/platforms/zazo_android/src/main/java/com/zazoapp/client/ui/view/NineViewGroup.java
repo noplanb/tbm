@@ -245,7 +245,7 @@ public class NineViewGroup extends ViewGroup {
             width = ASPECT * height;
         } else {
             width = (getWidth() - 2 * (marginPx() + paddingPx())) / 3;
-            height = width / ASPECT;
+            height = (getHeight() - 2 * (marginPx() + paddingPx())) / 3;
         }
         return new Pair<Float, Float>(width, height);
     }
@@ -267,11 +267,7 @@ public class NineViewGroup extends ViewGroup {
     }
 
     private Integer gutterTop() {
-        if (isHeightConstrained())
-            return (int) marginPx();
-        else
-            return (int) ((getHeight() - 3 * elementHeight() - 2 * paddingPx()) / 2);
-
+        return (int) marginPx();
     }
 
     private Integer gutterLeft() {

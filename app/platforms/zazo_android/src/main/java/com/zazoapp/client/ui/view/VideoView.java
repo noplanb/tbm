@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -58,7 +59,7 @@ import java.util.Map;
  */
 public class VideoView extends TextureView
         implements MediaController.MediaPlayerControl {
-    private String TAG = "VideoView";
+    private static final String TAG = VideoView.class.getSimpleName();
     // settable by the client
     private Uri mUri;
     private Map<String, String> mHeaders;
@@ -99,6 +100,8 @@ public class VideoView extends TextureView
     private boolean     mCanSeekForward;
     private boolean     speakerPhoneOn = true;
 
+    private float mCropFraction = 1.0f;
+
     public VideoView(Context context) {
         this(context, null);
     }
@@ -122,8 +125,9 @@ public class VideoView extends TextureView
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        VideoSizeCalculator.Dimens dimens = videoSizeCalculator.measure(widthMeasureSpec, heightMeasureSpec);
+        VideoSizeCalculator.Dimens dimens = videoSizeCalculator.measure(widthMeasureSpec, heightMeasureSpec, mCropFraction);
         setMeasuredDimension(dimens.getWidth(), dimens.getHeight());
+        adjustVideoSize();
     }
 
     @Override
@@ -559,11 +563,16 @@ public class VideoView extends TextureView
     @Override
     public void start() {
         if (isInPlaybackState()) {
+            adjustVideoSize();
             mMediaPlayer.start();
             setKeepScreenOn(true);
             mCurrentState = STATE_PLAYING;
         }
         mTargetState = STATE_PLAYING;
+    }
+
+    private void adjustVideoSize() {
+        setTransform(videoSizeCalculator.getTransform());
     }
 
     @Override
@@ -672,6 +681,10 @@ public class VideoView extends TextureView
         }
     }
 
+    public void setCropFraction(float fraction) {
+        mCropFraction = fraction;
+    }
+
     private boolean hasPlayStateListener() {
         return onPlayStateListener != null;
     }
@@ -709,6 +722,7 @@ public class VideoView extends TextureView
 
         private int mVideoWidth;
         private int mVideoHeight;
+        private Matrix matrix = new Matrix();
 
         public VideoSizeCalculator() {
             dimens = new Dimens();
@@ -723,7 +737,7 @@ public class VideoView extends TextureView
             return mVideoWidth > 0 && mVideoHeight > 0;
         }
 
-        protected Dimens measure(int widthMeasureSpec, int heightMeasureSpec) {
+        protected Dimens measure(int widthMeasureSpec, int heightMeasureSpec, float cropFraction) {
             int width = View.getDefaultSize(mVideoWidth, widthMeasureSpec);
             int height = View.getDefaultSize(mVideoHeight, heightMeasureSpec);
             if (hasASizeYet()) {
@@ -738,11 +752,13 @@ public class VideoView extends TextureView
                     width = widthSpecSize;
                     height = heightSpecSize;
 
-                    // for compatibility, we adjust size based on aspect ratio
+                    // Aspect ratio will be adjusted later with crop transformation on playback start
+                    // if cropFraction is 0 we adjust size, if cropFraction is 1 we skip
+                    //// for compatibility, we adjust size based on aspect ratio
                     if (mVideoWidth * height < width * mVideoHeight) {
-                        width = height * mVideoWidth / mVideoHeight;
+                        width = (int) (height * mVideoWidth * (1 - cropFraction) / mVideoHeight + width * cropFraction);
                     } else if (mVideoWidth * height > width * mVideoHeight) {
-                        height = width * mVideoHeight / mVideoWidth;
+                        height = (int) (width * mVideoHeight * (1 - cropFraction) / mVideoWidth + height * cropFraction);
                     }
                 } else if (widthSpecMode == View.MeasureSpec.EXACTLY) {
                     // only the width is fixed, adjust the height to match aspect ratio if possible
@@ -787,6 +803,21 @@ public class VideoView extends TextureView
 
         public void updateHolder(SurfaceHolder holder) {
             holder.setFixedSize(mVideoWidth, mVideoHeight);
+        }
+
+        public Matrix getTransform() {
+            float realAspect = mVideoHeight / (float) mVideoWidth;
+            float viewAspect = dimens.getHeight() / (float) dimens.getWidth();
+            float scaleX, scaleY;
+            if (realAspect > viewAspect) {
+                scaleX = 1f;
+                scaleY = realAspect / viewAspect;
+            } else {
+                scaleX = viewAspect / realAspect;
+                scaleY = 1f;
+            }
+            matrix.setScale(scaleX, scaleY, dimens.getWidth() / 2f, dimens.getHeight() / 2f);
+            return matrix;
         }
 
         static class Dimens {
