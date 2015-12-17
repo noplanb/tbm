@@ -52,7 +52,15 @@ public class GridElement extends ActiveModel {
         notifyCallbacks(false);
     }
 
+    public void forceUpdate() {
+        notifyCallbacks(true);
+    }
+
     public String getFriendId() {
         return attributes.get(Attributes.FRIEND_ID);
+    }
+
+    public boolean isNextEmpty() {
+        return this.equals(GridElementFactory.getFactoryInstance().firstEmptyGridElement());
     }
 }

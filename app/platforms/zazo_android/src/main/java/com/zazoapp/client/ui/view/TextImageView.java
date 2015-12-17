@@ -2,6 +2,7 @@ package com.zazoapp.client.ui.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.v7.widget.AppCompatImageView;
@@ -89,6 +90,7 @@ public class TextImageView extends FrameLayout {
                         break;
                     case R.styleable.TextImageView_textColor:
                         textView.setTextColor(a.getColorStateList(i));
+                        imageView.setColorFilter(textView.getCurrentTextColor(), PorterDuff.Mode.SRC_ATOP);
                         break;
                     case R.styleable.TextImageView_circular_border_color:
                         if (shape == SHAPE_CIRCLE) ((CircleImageView) imageView).setBorderColor(a.getColor(i, 0));

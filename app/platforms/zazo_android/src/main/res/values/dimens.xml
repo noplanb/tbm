@@ -27,6 +27,7 @@
 
     <dimen name="small_icon_size">32dp</dimen>
     <dimen name="thumb_icon_size">48dp</dimen>
+    <dimen name="large_icon_size">64dp</dimen>
     <dimen name="contacts_group_icon_size">@dimen/small_icon_size</dimen>
     <dimen name="search_panel_margin">15dp</dimen>
     <dimen name="search_panel_height">52dp</dimen>

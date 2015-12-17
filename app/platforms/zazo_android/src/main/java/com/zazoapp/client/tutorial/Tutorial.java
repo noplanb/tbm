@@ -207,7 +207,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
 
     private void showHint(HintType hint, View view, String text) {
         Log.i(TAG, "Show hint " + hint + " " + HintType.getViewRect(view));
-        if (managers.getBenchViewManager().isBenchShowed()) {
+        if (managers.getBenchViewManager().isBenchShown()) {
             managers.getBenchViewManager().hideBench();
         }
         current = hint;

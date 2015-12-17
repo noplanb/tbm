@@ -65,6 +65,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private boolean isBenchShown;
     private GeneralContactsGroup currentSelectedGroup = GeneralContactsGroup.ALL;
     private final Object filterLock = new Object();
+    private BenchListener benchListener;
 
     // ----------------------
     // Constructor and setup
@@ -108,15 +109,26 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
     @Override
     public void showBench() {
-        isBenchShown = true;
+        requestShowBench(true);
     }
 
     @Override
     public void hideBench() {
-        isBenchShown = false;
-        if (isViewAttached()) {
+        requestShowBench(false);
+    }
+
+    @Override
+    public void setBenchShown(boolean isShown) {
+        isBenchShown = isShown;
+        if (!isShown && isViewAttached()) {
             //clear contacts_auto_complete_text_view because after resume, "old filtering" word appear
             resetViews();
+        }
+    }
+
+    private void requestShowBench(boolean show) {
+        if (benchListener != null) {
+            benchListener.onBenchStateChangeRequest(show);
         }
     }
 
@@ -187,7 +199,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     }
 
     @Override
-    public boolean isBenchShowed() {
+    public boolean isBenchShown() {
         return isBenchShown;
     }
 
@@ -349,6 +361,10 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    public void setBenchListener(BenchListener benchListener) {
+        this.benchListener = benchListener;
     }
 
     class BenchAdapter extends BaseAdapter implements Filterable {
@@ -622,4 +638,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         }
     }
 
+    public interface BenchListener {
+        void onBenchStateChangeRequest(boolean visible);
+    }
 }

@@ -9,5 +9,6 @@
             android:layout_width="@dimen/contacts_group_icon_size"
             android:layout_height="@dimen/contacts_group_icon_size"
             android:src="@drawable/ic_contacts_normal"
-            android:tint="@color/popup_text_color"/>
+            android:tint="@color/black"
+            android:alpha="0.56"/>
 </LinearLayout>

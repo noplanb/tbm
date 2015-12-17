@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ANIMATION  -->
+    <integer name="rcv_default_anim_duration">1000</integer>
+    <integer name="rcv_default_anim_back_animation_delay">300</integer>
+    <!-- BACKGROUND VIEW -->
+    <color name="rcv_default_bg_color">#FFFFFF</color>
+    <color name="rcv_default_bg_ring_color">#88FFFFFF</color>
+    <dimen name="rcv_default_bg_ring_thickness">7dp</dimen>
+    <!-- ICON VIEW -->
+    <drawable name="rcv_default_icon_src">@drawable/record</drawable>
+    <dimen name="rcv_default_fg_size">40dp</dimen>
+
+    <!-- TEXT VIEW -->
+    rcv_text_size
+    <dimen name="rcv_default_text_size">16sp</dimen>
+    <string name="rcv_default_text">Hold to records</string>
+    <color name="rcv_default_text_color">#303F9F</color>
+
+</resources>

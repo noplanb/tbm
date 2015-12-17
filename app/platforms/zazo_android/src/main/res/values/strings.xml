@@ -165,6 +165,9 @@
     <string name="contacts_groups_sms_contacts">SMS contacts</string>
     <string name="contacts_groups_contacts">Contacts</string>
 
+    <string name="hold_to_record">Hold to record</string>
+    <string name="add_contact">Add contact</string>
+
     <string name="dev_previous"><![CDATA[<]]></string>
     <string name="dev_next"><![CDATA[>]]></string>
 </resources>

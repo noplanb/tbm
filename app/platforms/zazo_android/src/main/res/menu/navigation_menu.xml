@@ -4,33 +4,33 @@
     <group android:id="@+id/section_invite">
         <item
                 android:id="@+id/navigation_item_invite_friends"
-                android:icon="@drawable/icons_plus"
+                android:icon="@drawable/ic_navigation_invite_friend"
                 android:title="@string/navigation_invite_friends"/>
     </group>
 
     <group android:id="@+id/section_navigate"><!--android:checkableBehavior="single"-->
         <item
                 android:id="@+id/navigation_item_edit_friends"
-                android:icon="@drawable/ic_action_view"
+                android:icon="@drawable/ic_navigation_edit_zazo_friends"
                 android:title="@string/navigation_edit_friends" />
         <item
                 android:id="@+id/navigation_item_new_group"
-                android:icon="@drawable/ic_camera_switch"
+                android:icon="@drawable/ic_navigation_groups"
                 android:title="@string/navigation_new_group" />
         <item
                 android:id="@+id/navigation_item_contacts"
-                android:icon="@drawable/ic_contacts_normal"
+                android:icon="@drawable/ic_navigation_contacts"
                 android:title="@string/navigation_contacts" />
     </group>
 
     <group android:id="@+id/section_help">
         <item
                 android:id="@+id/navigation_item_settings"
-                android:icon="@drawable/ic_flag_us"
+                android:icon="@drawable/ic_navigation_settings"
                 android:title="@string/navigation_settings" />
         <item
                 android:id="@+id/navigation_item_help"
-                android:icon="@drawable/ic_flag_ua"
+                android:icon="@drawable/ic_navigation_help"
                 android:title="@string/navigation_help" />
     </group>
 

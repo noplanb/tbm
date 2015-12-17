@@ -378,7 +378,11 @@ public class Convenience {
         return result;
     }
 
-    public static int getStringDependentItem(@NonNull String base, @NonNull int[] colors) {
-        return colors[Math.abs(base.hashCode() % colors.length)];
+    public static int getStringDependentItem(@NonNull CharSequence base, @NonNull int[] items) {
+        return items[Math.abs(base.hashCode() % items.length)];
+    }
+
+    public static <T> T getStringDependentItem(@NonNull CharSequence base, @NonNull T[] items) {
+        return items[Math.abs(base.hashCode() % items.length)];
     }
 }

@@ -99,6 +99,7 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
                 ge.notifyUpdate();
             }
         }
+        updateAllEmpty();
     }
 
     public void moveNextFriendTo(GridElement ge) {
@@ -108,6 +109,15 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
             newFriend.setLastActionTime();
         }
         ge.setFriend(newFriend);
+        updateAllEmpty();
+    }
+
+    public void updateAllEmpty() {
+        for (GridElement ge : GridElementFactory.getFactoryInstance().all()) {
+            if (!ge.hasFriend()) {
+                ge.forceUpdate();
+            }
+        }
     }
 
     //--------

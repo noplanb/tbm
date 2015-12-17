@@ -163,17 +163,16 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         Friend friend = gridElement.getFriend();
         if (friend == null) {
             container.setVisibility(View.VISIBLE); // as content is loaded, display view
-            gridElementView.showEmpty(true);
+            gridElementView.showEmpty(true, gridElement.isNextEmpty());
             return;
         }
-        gridElementView.showEmpty(false);
+        gridElementView.showEmpty(false, false);
         int unreadMsgCount = friend.incomingVideoNotViewedCount();
         boolean lastEventOutgoing = friend.getLastEventType() == Friend.VideoStatusEventType.OUTGOING;
 
         boolean showNewMessages = unreadMsgCount > 0 && !animating && !isVideoPlaying;
         boolean showVideoViewed = friend.getOutgoingVideoStatus() == OutgoingVideo.Status.VIEWED
                 && !showNewMessages && lastEventOutgoing;
-        gridElementView.showNudge(!friend.hasApp());
         gridElementView.setVideoViewed(showVideoViewed);
         if (showVideoViewed) {
             managerProvider.getTutorial().onVideoViewedIndicatorShowed(gridElementView);
@@ -188,12 +187,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (thumbExists) {
             gridElementView.setThumbnail(friend.thumbBitmap());
             gridElementView.showButtons(false);
-        } else if (friend.hasIncomingPlayableVideos()) {
-            // Normally should not happen. Only for case of the very first video whose thumb is broken
-            gridElementView.setStubThumbnail();
-            gridElementView.showButtons(false);
         } else {
-            gridElementView.setThumbnail(null);
+            gridElementView.setStubThumbnail(friend.getDisplayName());
             gridElementView.showButtons(true);
         }
 

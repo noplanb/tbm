@@ -8,7 +8,8 @@ import android.view.View;
 public interface BenchViewManager {
     void showBench();
     void hideBench();
-    boolean isBenchShowed();
+    void setBenchShown(boolean isShown);
+    boolean isBenchShown();
     void updateBench();
     void attachView(View view);
     void detachView();

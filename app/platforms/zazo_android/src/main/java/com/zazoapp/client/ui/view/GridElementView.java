@@ -2,6 +2,7 @@ package com.zazoapp.client.ui.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +14,11 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.ui.view.ThumbView.MapArea;
+import com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView;
 import com.zazoapp.client.utilities.Convenience;
 
 public class GridElementView extends RelativeLayout implements View.OnClickListener, View.OnLongClickListener {
@@ -34,26 +39,30 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         void onDetached();
     }
 
-	private TextView twName;
-	private TextView twUnreadCount;
-	private TextView twNundge;
-	private TextView twRecord;
-	private ImageView imgThumb;
-	private ImageView imgViewed;
-	private ImageView imgDownloading;
-	private ImageView imgUploading;
-	private View progressLine;
-	private View unreadBorder;
-    private View mEmptyView;
-    private View bodyLayout;
+    @InjectView(R.id.tw_name) TextView twName;
+    @InjectView(R.id.tw_unread_count) TextView twUnreadCount;
+    @InjectView(R.id.img_thumb) ThumbView imgThumb;
+    @InjectView(R.id.img_viewed) ImageView imgViewed;
+    @InjectView(R.id.img_downloading) ImageView imgDownloading;
+    @InjectView(R.id.img_uploading) ImageView imgUploading;
+    @InjectView(R.id.line) View progressLine;
+    @InjectView(R.id.unread_border) View unreadBorder;
+    @InjectView(R.id.empty_view) View mEmptyView;
+    @InjectView(R.id.body) View bodyLayout;
+    @InjectView(R.id.hold_to_record) RotationCircleView holdToRecordView;
+    @InjectView(R.id.card_empty_icon) ImageView emptyIcon;
+    @InjectView(R.id.card_empty_text) TextView emptyText;
 
 	private ClickListener mClickListener;
 
-	private View buttonsBody;
     private FriendViewListener viewEventListener;
+
+    private final int colors[];
+    private final MapArea areas[] = {MapArea.LEFT_BOTTOM,  MapArea.RIGHT_TOP, MapArea.LEFT_TOP,  MapArea.LEFT_TOP, MapArea.RIGHT_BOTTOM, MapArea.LEFT_BOTTOM, MapArea.RIGHT_TOP, MapArea.RIGHT_BOTTOM};
 
     public GridElementView(Context context) {
         super(context);
+        colors = getResources().getIntArray(R.array.thumb_colors);
         init();
     }
 
@@ -65,30 +74,15 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         viewEventListener = listener;
     }
 
-	private void init() {
-		LayoutInflater.from(getContext()).inflate(R.layout.grid_element_view, this, true);
-		unreadBorder = findViewById(R.id.unread_border);
+    private void init() {
+        LayoutInflater.from(getContext()).inflate(R.layout.grid_element_view, this, true);
+        ButterKnife.inject(this);
 
-        mEmptyView = findViewById(R.id.empty_view);
-        bodyLayout = findViewById(R.id.body);
+        // allow childrens to extends parent border
+        setClipChildren(false);
+        setClipToPadding(false);
 
-		twName = (TextView) findViewById(R.id.tw_name);
-		twNundge = (TextView) findViewById(R.id.tw_nudge);
-		twRecord = (TextView) findViewById(R.id.tw_record);
-		twUnreadCount = (TextView) findViewById(R.id.tw_unread_count);
-		imgThumb = (ImageView) findViewById(R.id.img_thumb);
-		imgViewed = (ImageView) findViewById(R.id.img_viewed);
-		imgDownloading = (ImageView) findViewById(R.id.img_downloading);
-		imgUploading = (ImageView) findViewById(R.id.img_uploading);
-		progressLine = findViewById(R.id.line);
-		buttonsBody = findViewById(R.id.buttons_body);
-
-		// allow childrens to extends parent border
-		setClipChildren(false);
-		setClipToPadding(false);
-
-        twNundge.setOnClickListener(this);
-        twRecord.setOnClickListener(this);
+        holdToRecordView.setOnClickListener(this);
         mEmptyView.setOnClickListener(this);
         mEmptyView.setOnLongClickListener(this);
         imgThumb.setOnClickListener(this);
@@ -115,10 +109,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.tw_nudge:
-                mClickListener.onNudgeClicked();
-                break;
-            case R.id.tw_record:
+            case R.id.hold_to_record:
                 mClickListener.onRecordClicked();
                 break;
             case R.id.empty_view:
@@ -127,6 +118,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             case R.id.img_thumb:
                 mClickListener.onThumbViewClicked();
         }
+        //mClickListener.onNudgeClicked(); // TODO UI 2.0. Do after recording a video
     }
 
     @Override
@@ -145,18 +137,19 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 		twUnreadCount.setY(- dpToPx);
 	}
 
-    public void showNudge(boolean visible) {
-        twNundge.setVisibility(visible ? View.VISIBLE : View.GONE);
-        twRecord.requestLayout();
-    }
-
-    public void showEmpty(boolean visible) {
+    public void showEmpty(boolean visible, boolean next) {
         mEmptyView.setVisibility(visible ? VISIBLE : GONE);
         bodyLayout.setVisibility(visible ? GONE : VISIBLE);
+        emptyIcon.setEnabled(next);
+        emptyText.setVisibility(next ? VISIBLE : GONE);
     }
 
     public boolean isEmpty() {
         return mEmptyView.getVisibility() == VISIBLE;
+    }
+
+    public boolean isNext() {
+        return isEmpty() && emptyIcon.isEnabled();
     }
 
     public void setName(String name) {
@@ -169,13 +162,11 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void setUnreadCount(boolean visible, int unreadMsgCount) {
         if (visible) {
-            twName.setBackgroundColor(getResources().getColor(R.color.bg_unread_msg));
             twUnreadCount.setVisibility(VISIBLE);
             unreadBorder.setVisibility(VISIBLE);
             twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_red_circle));
             twUnreadCount.setText(String.valueOf(unreadMsgCount));
         } else {
-            twName.setBackgroundColor(getResources().getColor(R.color.bg_name));
             twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_transparent_circle));
             twUnreadCount.postInvalidate();
             twUnreadCount.setVisibility(INVISIBLE);
@@ -185,30 +176,25 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void setThumbnail(Bitmap bitmap) {
         if (bitmap != null) {
-            imgThumb.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imgThumb.setImageBitmap(bitmap);
-            imgThumb.setBackgroundDrawable(null);
-            LayoutParams params = (LayoutParams) imgThumb.getLayoutParams();
-            params.setMargins(0, 0, 0, 0);
-            imgThumb.setLayoutParams(params);
+            imgThumb.setMapArea(MapArea.FULL);
             imgThumb.setVisibility(VISIBLE);
         } else {
             imgThumb.setVisibility(INVISIBLE);
         }
     }
 
-    public void setStubThumbnail() {
-        imgThumb.setScaleType(ImageView.ScaleType.CENTER);
-        imgThumb.setBackgroundResource(R.drawable.background_no_thumb);
-        imgThumb.setImageResource(R.drawable.icon_no_pic_z);
-        LayoutParams params = (LayoutParams) imgThumb.getLayoutParams();
-        params.setMargins(0, 0, 0, twName.getHeight());
-        imgThumb.setLayoutParams(params);
+    public void setStubThumbnail(CharSequence text) {
+        int color = Convenience.getStringDependentItem(text, colors);
+        imgThumb.setFillColor(color);
+        imgThumb.setImageResource(R.drawable.navigation_background_pattern);
+        imgThumb.setMapArea(Convenience.getStringDependentItem(text, areas));
         imgThumb.setVisibility(VISIBLE);
+        holdToRecordView.getIconView().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
     }
 
     public void showButtons(boolean visible) {
-        buttonsBody.setVisibility(visible ? VISIBLE : GONE);
+        holdToRecordView.setVisibility(visible ? VISIBLE : GONE);
     }
 
     public void showUploadingMark(boolean visible) {

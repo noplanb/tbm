@@ -32,6 +32,7 @@ import butterknife.InjectView;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.bench.BenchController;
 import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.TbmApplication;
@@ -61,7 +62,7 @@ import com.zazoapp.client.utilities.DialogShower;
  */
 public class MainFragment extends ZazoFragment implements UnexpectedTerminationHelper.TerminationCallback, VersionHandler.Callback,
         ActionInfoDialogFragment.ActionInfoDialogListener, InviteManager.InviteDialogListener, SelectPhoneNumberDialog.Callbacks,
-        DoubleActionDialogFragment.DoubleActionDialogListener, DrawerLayout.DrawerListener, NavigationView.OnNavigationItemSelectedListener {
+        DoubleActionDialogFragment.DoubleActionDialogListener, DrawerLayout.DrawerListener, NavigationView.OnNavigationItemSelectedListener, BenchController.BenchListener {
 
     private static final String TAG = MainFragment.class.getSimpleName();
 
@@ -167,7 +168,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     @Override
     public void onPause() {
         super.onPause();
-        if (managerHolder.getBenchViewManager().isBenchShowed()) {
+        if (managerHolder.getBenchViewManager().isBenchShown()) {
             managerHolder.getBenchViewManager().hideBench();
         }
         releaseManagers();
@@ -395,6 +396,17 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         return true;
     }
 
+    @Override
+    public void onBenchStateChangeRequest(boolean visible) {
+        int newTabId = visible ? TAB_FRIENDS : TAB_MAIN;
+        if (newTabId != tabsLayout.getSelectedTabPosition()) {
+            TabLayout.Tab tab = tabsLayout.getTabAt(newTabId);
+            if (tab != null) {
+                tab.select();
+            }
+        }
+    }
+
     private class MainActivityReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -502,7 +514,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                             return;
                         }
                     }
-                    managerHolder.getBenchViewManager().showBench();
+                    managerHolder.getBenchViewManager().setBenchShown(true);
                     break;
             }
             contentFrame.setCurrentItem(tab.getPosition());
@@ -530,7 +542,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             if (state == ViewPager.SCROLL_STATE_IDLE) {
                 if (currentTab == TAB_MAIN) {
                     recorder.resume();
-                    managerHolder.getBenchViewManager().hideBench();
+                    managerHolder.getBenchViewManager().setBenchShown(false);
                 } else {
                     AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
                         @Override

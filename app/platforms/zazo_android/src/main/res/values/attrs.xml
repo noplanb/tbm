@@ -25,4 +25,22 @@
         <attr name="circular_border_overlay" format="boolean"/>
         <attr name="circular_fill_color" format="color"/>
     </declare-styleable>
+
+    <declare-styleable name="RotationCircleView">
+        <!--VIEW-->
+        <attr name="rcv_fg_size" format="dimension" />
+        <!-- ANIMATION  -->
+        <attr name="rcv_anim_duration" format="integer" />
+        <attr name="rcv_anim_back_animation_delay" format="integer" />
+        <!-- BACKGROUND VIEW -->
+        <attr name="rcv_bg_color" format="color" />
+        <attr name="rcv_bg_ring_color" format="color" />
+        <attr name="rcv_bg_ring_thickness" format="dimension" />
+        <!-- ICON VIEW -->
+        <attr name="rcv_icon_src" format="integer" />
+        <!-- TEXT VIEW -->
+        <attr name="rcv_text" format="string" />
+        <attr name="rcv_text_size" format="dimension" />
+        <attr name="rcv_text_color" format="color" />
+    </declare-styleable>
 </resources>
