@@ -2,12 +2,76 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/card"
                 android:clipChildren="false"
                 android:clipToPadding="false">
 
-    <include layout="@layout/grid_element_view_body"
-             android:id="@+id/body"/>
-    <include layout="@layout/friendview_empty_item"
-             android:id="@+id/empty_view"/>
+    <RelativeLayout
+            android:id="@+id/card_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/card">
+        <include layout="@layout/grid_element_view_body"
+                 android:id="@+id/body"/>
+        <include layout="@layout/friendview_empty_item"
+                 android:id="@+id/empty_view"/>
+    </RelativeLayout>
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/card_empty"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+        <com.zazoapp.client.ui.view.StatusIndicator
+                android:id="@+id/img_viewed"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_gravity="right"
+                android:background="@color/bg_unread_msg"
+                android:scaleType="fitCenter"
+                android:src="@drawable/viewed"
+                android:visibility="gone"/>
+
+        <View
+                android:id="@+id/line"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:visibility="invisible"/>
+
+        <com.zazoapp.client.ui.view.StatusIndicator
+                android:id="@+id/img_uploading"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:background="@color/bg_uploading"
+                android:scaleType="fitCenter"
+                android:src="@drawable/uploading"
+                android:visibility="invisible"/>
+
+        <com.zazoapp.client.ui.view.StatusIndicator
+                android:id="@+id/img_downloading"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:background="@color/bg_uploading"
+                android:scaleType="fitCenter"
+                android:src="@drawable/downloading"
+                android:visibility="invisible"/>
+
+        <com.zazoapp.client.ui.view.AutoResizeTextView
+                android:id="@+id/tw_unread_count"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/bg_red_circle"
+                android:padding="1dp"
+                android:gravity="center"
+                android:text="12"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/text_very_small"
+                android:singleLine="true"
+                android:visibility="visible"/>
+    </RelativeLayout>
+
 </RelativeLayout>

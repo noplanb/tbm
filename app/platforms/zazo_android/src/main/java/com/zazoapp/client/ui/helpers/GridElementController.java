@@ -16,7 +16,7 @@ import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.ui.ZazoManagerProvider;
-import com.zazoapp.client.ui.animations.FriendAppearingAnimation;
+import com.zazoapp.client.ui.animations.GridElementAnimation;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -88,7 +88,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onRecordClicked() {
-        DialogShower.showHintDialog(activity, activity.getString(R.string.dialog_record_title), activity.getString(R.string.dialog_record_message));
+        //DialogShower.showHintDialog(activity, activity.getString(R.string.dialog_record_title), activity.getString(R.string.dialog_record_message));
+        GridElementAnimation.holdToRec(gridElementView).start();
     }
 
     @Override
@@ -104,6 +105,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (friend.hasIncomingPlayableVideos()) {
             managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId());
             managerProvider.getTutorial().onVideoStartPlayingByUser();
+        } else if (friend.getIncomingNotViewedVideos().isEmpty()){
+            GridElementAnimation.holdToRec(gridElementView).start();
         } else {
             DialogShower.showToast(activity, R.string.video_is_not_playable);
         }
@@ -365,7 +368,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                FriendAppearingAnimation.get(activity, gridElementView, true).start();
+                GridElementAnimation.appearing(activity, gridElementView, true).start();
                 pendingAnim = false;
             }
         });

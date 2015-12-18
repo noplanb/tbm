@@ -3,6 +3,7 @@ package com.zazoapp.client.ui.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,12 +47,12 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     @InjectView(R.id.img_downloading) ImageView imgDownloading;
     @InjectView(R.id.img_uploading) ImageView imgUploading;
     @InjectView(R.id.line) View progressLine;
-    @InjectView(R.id.unread_border) View unreadBorder;
     @InjectView(R.id.empty_view) View mEmptyView;
     @InjectView(R.id.body) View bodyLayout;
     @InjectView(R.id.hold_to_record) RotationCircleView holdToRecordView;
     @InjectView(R.id.card_empty_icon) ImageView emptyIcon;
     @InjectView(R.id.card_empty_text) TextView emptyText;
+    @InjectView(R.id.card_layout) RelativeLayout cardLayout;
 
 	private ClickListener mClickListener;
 
@@ -81,6 +82,11 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         // allow childrens to extends parent border
         setClipChildren(false);
         setClipToPadding(false);
+
+        Typeface face = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Medium.ttf");
+        twUnreadCount.setTypeface(face);
+        emptyText.setTypeface(face);
+        twName.setTypeface(face);
 
         holdToRecordView.setOnClickListener(this);
         mEmptyView.setOnClickListener(this);
@@ -163,14 +169,14 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     public void setUnreadCount(boolean visible, int unreadMsgCount) {
         if (visible) {
             twUnreadCount.setVisibility(VISIBLE);
-            unreadBorder.setVisibility(VISIBLE);
+            cardLayout.getBackground().setColorFilter(getResources().getColor(R.color.primary), PorterDuff.Mode.SRC_IN);
             twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_red_circle));
             twUnreadCount.setText(String.valueOf(unreadMsgCount));
         } else {
+            cardLayout.getBackground().setColorFilter(null);
             twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_transparent_circle));
             twUnreadCount.postInvalidate();
             twUnreadCount.setVisibility(INVISIBLE);
-            unreadBorder.setVisibility(INVISIBLE);
         }
     }
 
@@ -191,6 +197,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         imgThumb.setMapArea(Convenience.getStringDependentItem(text, areas));
         imgThumb.setVisibility(visibility);
         holdToRecordView.getIconView().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+        holdToRecordView.getTextView().setTextColor(color);
     }
 
     public void showButtons(boolean visible) {

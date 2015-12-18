@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="visible"
-        android:clipChildren="false"
-        android:clipToPadding="false">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="visible"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
     <RelativeLayout
             android:layout_width="match_parent"
@@ -34,7 +34,7 @@
                 android:layout_marginTop="10dp"
                 android:text="Firstnameisverylongandshouldbetruncated Firstnameisverylongandshouldbetruncated  "
                 android:textColor="@color/color_name"
-                android:textSize="@dimen/text_large"
+                android:textSize="@dimen/text_normal"
                 android:ellipsize="end"
                 android:lines="1"
                 android:maxLines="1"
@@ -47,76 +47,25 @@
             android:layout_height="match_parent"
             android:layout_above="@id/name_layout"
             android:weightSum="5"
-            android:gravity="center">
-        <com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView
-                android:id="@+id/hold_to_record"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="3"
-                android:maxWidth="@dimen/large_icon_size"
-                android:maxHeight="@dimen/large_icon_size"
-                android:visibility="invisible"
-                />
-    </LinearLayout>
-
-
-    <View
-            android:id="@+id/unread_border"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="invisible"
-            android:background="@drawable/friend_body_unread_border"/>
-
-    <com.zazoapp.client.ui.view.StatusIndicator
-            android:id="@+id/img_viewed"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentRight="true"
-            android:layout_gravity="right"
-            android:background="@color/bg_unread_msg"
-            android:scaleType="fitCenter"
-            android:src="@drawable/viewed"
-            android:visibility="gone"/>
-
-    <View
-            android:id="@+id/line"
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:visibility="invisible"/>
-
-    <com.zazoapp.client.ui.view.StatusIndicator
-            android:id="@+id/img_uploading"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentRight="true"
-            android:background="@color/bg_uploading"
-            android:scaleType="fitCenter"
-            android:src="@drawable/uploading"
-            android:visibility="invisible"/>
-
-    <com.zazoapp.client.ui.view.StatusIndicator
-            android:id="@+id/img_downloading"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentRight="true"
-            android:background="@color/bg_uploading"
-            android:scaleType="fitCenter"
-            android:src="@drawable/downloading"
-            android:visibility="invisible"/>
-
-    <TextView
-            android:id="@+id/tw_unread_count"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/bg_red_circle"
-            android:padding="1dp"
             android:gravity="center"
-            android:text="12"
-            android:textColor="@android:color/white"
-            android:textSize="@dimen/text_very_small"
-            android:singleLine="true"
-            android:visibility="invisible"/>
+            android:orientation="vertical">
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:weightSum="5"
+                android:layout_weight="3"
+                android:gravity="center">
+            <com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView
+                    android:id="@+id/hold_to_record"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="3"
+                    android:maxWidth="@dimen/large_icon_size"
+                    android:maxHeight="@dimen/large_icon_size"
+                    android:visibility="invisible"
+                    />
+        </LinearLayout>
+    </LinearLayout>
 
 </RelativeLayout>
 

@@ -2,14 +2,17 @@ package com.zazoapp.client.ui.view.rotationcircleview.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.ui.view.AutoResizeTextView;
 import com.zazoapp.client.ui.view.rotationcircleview.animation.AnimationController;
 import com.zazoapp.client.ui.view.rotationcircleview.animation.IRotationCircleViewController;
 import com.zazoapp.client.ui.view.rotationcircleview.view.background.Background;
@@ -115,11 +118,12 @@ public class RotationCircleView extends RelativeLayout {
         }
 
         final int size = (int) typedArray.getDimension(R.styleable.RotationCircleView_rcv_fg_size,
-                getResources().getDimension(R.dimen.rcv_default_fg_size));
+                ViewGroup.LayoutParams.MATCH_PARENT); // getResources().getDimension(R.dimen.rcv_default_fg_size)
         imageView.setImageDrawable(drawable);
 
-        RelativeLayout.LayoutParams params =
-                new RelativeLayout.LayoutParams(size, size);
+        LayoutParams params = new LayoutParams(size, size);
+        int margin = (int) background.getRingThickness() * 2;
+        params.setMargins(margin, margin, margin, margin);
         params.addRule(RelativeLayout.CENTER_IN_PARENT);
         imageView.setLayoutParams(params);
         return imageView;
@@ -138,18 +142,18 @@ public class RotationCircleView extends RelativeLayout {
         }
 
         final int size = (int) typedArray.getDimension(R.styleable.RotationCircleView_rcv_fg_size,
-                getResources().getDimension(R.dimen.rcv_default_fg_size));
+                ViewGroup.LayoutParams.MATCH_PARENT); // getResources().getDimension(R.dimen.rcv_default_fg_size)
 
-        TextView textView = new TextView( getContext() );
+        TextView textView = new AutoResizeTextView(getContext());
         textView.setText(str);
-        //Typeface face = Typeface.createFromAsset(getContext().getAssets(),"Roboto-Medium.ttf");
-        //textView.setTypeface(face);
-//        textView.setBackgroundColor(Color.argb(120, 0, 0, 150));
+        Typeface face = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Medium.ttf");
+        textView.setTypeface(face);
         textView.setTextColor(textColor);
         textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
         textView.setTextSize(textSize);
-        RelativeLayout.LayoutParams params =
-                new RelativeLayout.LayoutParams(size, size);
+        LayoutParams params = new LayoutParams(size, ViewGroup.LayoutParams.WRAP_CONTENT);
+        int margin = (int) background.getRingThickness() * 2;
+        params.setMargins(margin, margin, margin, margin);
         params.addRule(RelativeLayout.CENTER_IN_PARENT);
         textView.setLayoutParams(params);
 

@@ -16,7 +16,7 @@
     <color name="color_name">#ffffff</color>
     
     <color name="bg_unread_msg">@color/green</color>
-    <color name="bg_unread_msg_count">#dc0505</color>
+    <color name="bg_unread_msg_count">@color/accent_2</color>
     
     <color name="actionbar_bg">@color/primary</color>
     <color name="actionbar_textcolor">@color/white</color>

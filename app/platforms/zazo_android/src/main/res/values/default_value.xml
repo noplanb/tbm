@@ -13,9 +13,9 @@
     <dimen name="rcv_default_fg_size">40dp</dimen>
 
     <!-- TEXT VIEW -->
-    rcv_text_size
-    <dimen name="rcv_default_text_size">16sp</dimen>
-    <string name="rcv_default_text">Hold to records</string>
+
+    <dimen name="rcv_default_text_size">@dimen/text_small</dimen>
+    <string name="rcv_default_text">Hold to record</string>
     <color name="rcv_default_text_color">#303F9F</color>
 
 </resources>
