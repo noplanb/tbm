@@ -134,11 +134,17 @@ public class TextImageView extends FrameLayout {
     }
 
     public void setImageAndText(Drawable drawable, CharSequence text) {
-        imageView.setImageDrawable(drawable);
+        if (drawable == null) {
+            imageView.setAlpha(0f); // Change alpha to 0 instead of nulling drawable for performance issues
+        } else {
+            imageView.setAlpha(1f);
+            imageView.setImageDrawable(drawable);
+        }
         textView.setText(text);
     }
 
     public void setImageAndText(@DrawableRes int id, CharSequence text) {
+        imageView.setAlpha(1f);
         imageView.setImageResource(id);
         textView.setText(text);
     }

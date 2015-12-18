@@ -129,7 +129,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             container.addView(cardView, new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            container.setBackgroundResource(R.drawable.card_empty_icon_selector);
+            container.setBackgroundResource(R.drawable.card_empty);
         } else {
             container.addView(vrFrame, new PreviewTextureFrame.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));

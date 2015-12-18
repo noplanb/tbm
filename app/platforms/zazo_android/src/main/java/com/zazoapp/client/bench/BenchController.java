@@ -95,6 +95,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         Friend friend = friendFactory.find(bo.friendId);
         if (friend != null) {
             GridManager.getInstance().moveFriendToGrid(friend);
+            hideBench();
             return;
         }
 
@@ -606,7 +607,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                 // Slide and animate last group heading
                 boolean lastForGroup = adapter.isLastPositionForType(firstVisibleItem, type);
                 if (type < adapter.groups.size() - 1 && lastForGroup && item.getBottom() < slidingHeading.getHeight()) {
-                    slidingHeading.setTranslationY(item.getBottom() - slidingHeading.getHeight());
+                    slidingHeading.setTranslationY(Math.max(item.getBottom(), 1) - slidingHeading.getHeight());
                     float alpha = item.getBottom() / (float) slidingHeading.getHeight();
                     slidingIcon.setAlpha(alpha*alpha);
                 } else {

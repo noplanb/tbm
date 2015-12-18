@@ -369,8 +369,12 @@ public class ThumbView extends ImageView {
         if (mUserDrawableRadius >= 0) {
             mDrawableRadius = mUserDrawableRadius;
         } else {
-            mDrawableRadius = (float) Math.sqrt(mDrawableRect.height() * mDrawableRect.height() + mDrawableRect.width() * mDrawableRect.width());
+            mDrawableRadius = getDefaultDrawableRadius();
         }
+    }
+
+    public float getDefaultDrawableRadius() {
+        return (float) Math.sqrt(mDrawableRect.height() * mDrawableRect.height() + mDrawableRect.width() * mDrawableRect.width());
     }
 
     public void setMapArea(MapArea area) {

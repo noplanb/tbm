@@ -10,11 +10,4 @@
              android:id="@+id/body"/>
     <include layout="@layout/friendview_empty_item"
              android:id="@+id/empty_view"/>
-    <View
-            android:id="@+id/animation_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/yellow"
-            android:visibility="invisible"
-            android:clickable="false"/>
 </RelativeLayout>

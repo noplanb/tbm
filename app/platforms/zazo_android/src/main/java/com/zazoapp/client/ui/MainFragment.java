@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -41,7 +40,6 @@ import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Contact;
-import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
@@ -53,7 +51,6 @@ import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
 import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
-import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -400,10 +397,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public void onBenchStateChangeRequest(boolean visible) {
         int newTabId = visible ? TAB_FRIENDS : TAB_MAIN;
         if (newTabId != tabsLayout.getSelectedTabPosition()) {
-            TabLayout.Tab tab = tabsLayout.getTabAt(newTabId);
-            if (tab != null) {
-                tab.select();
-            }
+            selectTab(newTabId);
+        }
+    }
+
+    private void selectTab(int index) {
+        TabLayout.Tab tab = tabsLayout.getTabAt(index);
+        if (tab != null) {
+            tab.select();
         }
     }
 
@@ -510,11 +511,10 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                             managerHolder.getPlayer().stop();
                         }
                         if (managerHolder.getRecorder().isRecording()) {
-                            tabsLayout.getTabAt(0).select();
+                            selectTab(TAB_MAIN);
                             return;
                         }
                     }
-                    managerHolder.getBenchViewManager().setBenchShown(true);
                     break;
             }
             contentFrame.setCurrentItem(tab.getPosition());
@@ -537,21 +537,8 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         @Override
         public void onPageScrollStateChanged(int state) {
             super.onPageScrollStateChanged(state);
-            int currentTab = tabsLayout.getSelectedTabPosition();
-            final Recorder recorder = managerHolder.getRecorder();
             if (state == ViewPager.SCROLL_STATE_IDLE) {
-                if (currentTab == TAB_MAIN) {
-                    recorder.resume();
-                    managerHolder.getBenchViewManager().setBenchShown(false);
-                } else {
-                    AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Void... params) {
-                            recorder.pause(false);
-                            return null;
-                        }
-                    });
-                }
+                managerHolder.getBenchViewManager().setBenchShown(tabsLayout.getSelectedTabPosition() == TAB_FRIENDS);
             }
         }
     }

@@ -174,22 +174,22 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         }
     }
 
-    public void setThumbnail(Bitmap bitmap) {
+    public void setThumbnail(Bitmap bitmap, int visibility) {
         if (bitmap != null) {
             imgThumb.setImageBitmap(bitmap);
             imgThumb.setMapArea(MapArea.FULL);
-            imgThumb.setVisibility(VISIBLE);
+            imgThumb.setVisibility(visibility);
         } else {
             imgThumb.setVisibility(INVISIBLE);
         }
     }
 
-    public void setStubThumbnail(CharSequence text) {
+    public void setStubThumbnail(CharSequence text, int visibility) {
         int color = Convenience.getStringDependentItem(text, colors);
         imgThumb.setFillColor(color);
         imgThumb.setImageResource(R.drawable.navigation_background_pattern);
         imgThumb.setMapArea(Convenience.getStringDependentItem(text, areas));
-        imgThumb.setVisibility(VISIBLE);
+        imgThumb.setVisibility(visibility);
         holdToRecordView.getIconView().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
     }
 

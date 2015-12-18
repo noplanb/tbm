@@ -6,7 +6,6 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.ActiveModel;
 import com.zazoapp.client.model.Friend;
@@ -17,6 +16,7 @@ import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.ui.ZazoManagerProvider;
+import com.zazoapp.client.ui.animations.FriendAppearingAnimation;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -34,6 +34,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private FragmentActivity activity;
     private ZazoManagerProvider managerProvider;
     private boolean isVideoPlaying = false;
+    private boolean pendingAnim = false;
 
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
@@ -185,10 +186,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         gridElementView.setUnreadCount(showNewMessages, unreadMsgCount);
         boolean thumbExists = friend.thumbExists();
         if (thumbExists) {
-            gridElementView.setThumbnail(friend.thumbBitmap());
+            gridElementView.setThumbnail(friend.thumbBitmap(), pendingAnim ? View.INVISIBLE : View.VISIBLE);
             gridElementView.showButtons(false);
         } else {
-            gridElementView.setStubThumbnail(friend.getDisplayName());
+            gridElementView.setStubThumbnail(friend.getDisplayName(), pendingAnim ? View.INVISIBLE : View.VISIBLE);
             gridElementView.showButtons(true);
         }
 
@@ -338,6 +339,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onModelUpdated(boolean changed) {
+        pendingAnim = changed;
         if (changed) {
             updateContentFromUi(false);
             managerProvider.getBenchViewManager().updateBench();
@@ -360,14 +362,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (!gridElement.hasFriend()) {
             return;
         }
-
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                final View v = container.findViewById(R.id.animation_view);
-                v.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.grid_element_appear));
+                FriendAppearingAnimation.get(activity, gridElementView, true).start();
+                pendingAnim = false;
             }
         });
-
     }
 }
