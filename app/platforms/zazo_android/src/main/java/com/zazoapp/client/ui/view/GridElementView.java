@@ -4,13 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Interpolator;
-import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -19,12 +17,14 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.ui.view.ThumbView.MapArea;
+import com.zazoapp.client.ui.view.downloadingview.DownloadingView;
+import com.zazoapp.client.ui.view.downloadingview.animation.listener.IDownloadAnimationListener;
 import com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView;
+import com.zazoapp.client.ui.view.uploadingview.UploadingView;
 import com.zazoapp.client.utilities.Convenience;
 
 public class GridElementView extends RelativeLayout implements View.OnClickListener, View.OnLongClickListener {
 
-    private static final String TAG = "GridElementView";
     private static final int ANIMATION_DELAY_MILLIS = 200;
     private static final int ANIMATION_DURATION_MILLIS = 400;
 
@@ -44,9 +44,10 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     @InjectView(R.id.tw_unread_count) TextView twUnreadCount;
     @InjectView(R.id.img_thumb) ThumbView imgThumb;
     @InjectView(R.id.img_viewed) ImageView imgViewed;
-    @InjectView(R.id.img_downloading) ImageView imgDownloading;
     @InjectView(R.id.img_uploading) ImageView imgUploading;
-    @InjectView(R.id.line) View progressLine;
+    @InjectView(R.id.downloading_animation_view) DownloadingView downloadingView;
+    @InjectView(R.id.uploading_animation_view) UploadingView uploadingView;
+    @InjectView(R.id.animation_background) View animationBackground;
     @InjectView(R.id.empty_view) View mEmptyView;
     @InjectView(R.id.body) View bodyLayout;
     @InjectView(R.id.hold_to_record) RotationCircleView holdToRecordView;
@@ -100,7 +101,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         if (viewEventListener != null) {
             viewEventListener.onAttached();
         }
-        moveUnviewedCountToPosition();
     }
 
 
@@ -136,12 +136,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         }
         return false;
     }
-
-	private void moveUnviewedCountToPosition() {
-		int dpToPx = Convenience.dpToPx(getContext(), 3);
-		twUnreadCount.setX(getWidth() - twUnreadCount.getMeasuredWidth() + dpToPx);
-		twUnreadCount.setY(- dpToPx);
-	}
 
     public void showEmpty(boolean visible, boolean next) {
         mEmptyView.setVisibility(visible ? VISIBLE : GONE);
@@ -212,36 +206,19 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             imgUploading.setLayoutParams(params);
         }
         imgUploading.clearAnimation();
-        progressLine.setVisibility(INVISIBLE);
         imgUploading.setVisibility(visible ? VISIBLE : INVISIBLE);
 
     }
 
     public void showDownloadingMark(boolean visible) {
-        imgDownloading.setVisibility(visible ? VISIBLE : INVISIBLE);
+        downloadingView.setVisibility(visible ? VISIBLE : INVISIBLE);
         if (!visible) {
-            imgDownloading.clearAnimation();
-            progressLine.setVisibility(INVISIBLE);
+            downloadingView.getAnimationController().cancel();
         }
     }
 
-    public void showProgressLine(boolean visible) {
-        progressLine.setVisibility(visible ? VISIBLE : INVISIBLE);
-    }
-
 	public void animateUploading(final Runnable task) {
-        Log.d(TAG, this + "animateUploading");
-		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
-        progressLine.setVisibility(VISIBLE);
         Interpolator interpolator = new AccelerateDecelerateInterpolator();
-		ScaleAnimation scale = new ScaleAnimation(
-				0f, 1f, 
-				1f, 1f, 
-				Animation.RELATIVE_TO_SELF, (float) 0,
-				Animation.RELATIVE_TO_SELF, (float) 0);
-		scale.setDuration(ANIMATION_DURATION_MILLIS);
-        scale.setStartOffset(ANIMATION_DELAY_MILLIS);
-        scale.setInterpolator(interpolator);
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
@@ -275,28 +252,17 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             public void onAnimationRepeat(Animation animation) {}
         });
 		imgUploading.startAnimation(trAn);
-		progressLine.startAnimation(scale);
 	}
 
 	public void animateDownloading(final Runnable task) {
-		progressLine.setBackgroundColor(getContext().getResources().getColor(R.color.bg_uploading));
-        progressLine.setVisibility(VISIBLE);
         Interpolator interpolator = new AccelerateDecelerateInterpolator();
-		final ScaleAnimation scale = new ScaleAnimation(
-				0f, 1f, 
-				1f, 1f, 
-				Animation.RELATIVE_TO_SELF, 1.0f,
-				Animation.RELATIVE_TO_SELF, 0.0f);
-		scale.setDuration(ANIMATION_DURATION_MILLIS);
-        scale.setStartOffset(ANIMATION_DELAY_MILLIS);
-        scale.setInterpolator(interpolator);
 
 		float fromYDelta = 0;
 		float toYDelta = 0;
 		float fromXDelta = 0;
-		float toXDelta = -getMeasuredWidth() + imgDownloading.getMeasuredWidth();
+		float toXDelta = -getMeasuredWidth() + downloadingView.getMeasuredWidth();
 
-		TranslateAnimation trAn = new TranslateAnimation(
+		final TranslateAnimation trAn = new TranslateAnimation(
 				Animation.RELATIVE_TO_SELF, fromXDelta,
 				Animation.ABSOLUTE,	toXDelta,
 				Animation.RELATIVE_TO_SELF, fromYDelta, 
@@ -317,12 +283,17 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             @Override
             public void onAnimationRepeat(Animation animation) {}
         });
-        imgDownloading.startAnimation(trAn);
-        progressLine.startAnimation(scale);
+        downloadingView.getAnimationController().setExternalDownloadAnimationListener(new IDownloadAnimationListener.Stub() {
+            @Override
+            public void onProgressAnimationFinish() {
+                downloadingView.startAnimation(trAn);
+            }
+        });
+        downloadingView.getAnimationController().start();
     }
 
     public boolean isAnimating() {
-        return imgDownloading.getAnimation() != null || imgUploading.getAnimation() != null;
+        return downloadingView.getAnimation() != null || imgUploading.getAnimation() != null;
     }
 
     public boolean isReadyToAnimate() {

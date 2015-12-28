@@ -4,9 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorInflater;
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
-
 import com.zazoapp.client.R;
 
 /**
@@ -15,8 +13,6 @@ import com.zazoapp.client.R;
 public class AnimationController implements FlipFlopAnimation.IControllerView
         , Animator.AnimatorListener
         , IRotationCircleViewController{
-
-    private static final String TAG = AnimationController.class.getSimpleName();
 
     private final Handler handler;
     private final Runnable runnableStart;
@@ -76,7 +72,6 @@ public class AnimationController implements FlipFlopAnimation.IControllerView
 
     @Override
     public void setAnimDuration(long animDuration) {
-        Log.d(TAG, "setAnimDuration() called with: " + "animDuration = [" + animDuration + "]");
         flipFlopAnimation.setDuration( animDuration );
     }
 
@@ -124,12 +119,10 @@ public class AnimationController implements FlipFlopAnimation.IControllerView
 
     @Override
     public void onAnimationStart(Animator animation) {
-        Log.d(TAG, "onAnimationStart() called with: " + "animation = [" + animation + "]");
     }
 
     @Override
     public void onAnimationEnd(Animator animation) {
-        Log.d(TAG, "onAnimationEnd() called with: " + "animation = [" + animation + "]");
         isAnimationFinish = true;
         swapState();
         if( !isForward && !isCancel ){
@@ -139,11 +132,9 @@ public class AnimationController implements FlipFlopAnimation.IControllerView
 
     @Override
     public void onAnimationCancel(Animator animation) {
-        Log.d(TAG, "onAnimationCancel() called with: " + "animation = [" + animation + "]");
     }
 
     @Override
     public void onAnimationRepeat(Animator animation) {
-        Log.d(TAG, "onAnimationRepeat() called with: " + "animation = [" + animation + "]");
     }
 }

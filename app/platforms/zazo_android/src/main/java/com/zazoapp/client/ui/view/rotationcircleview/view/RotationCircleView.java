@@ -5,7 +5,6 @@ import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -53,10 +52,6 @@ public class RotationCircleView extends RelativeLayout {
     private void initAttributes(AttributeSet attrs, int defStyle) {
         final TypedArray typedArray = getContext().obtainStyledAttributes(
                 attrs, R.styleable.RotationCircleView, defStyle, 0);
-
-        if ( attrs == null ){
-            Log.e(TAG, "initAttributes() :: attrs == null" );
-        }
 
         animationController = createAnimationController(typedArray);
         //bg

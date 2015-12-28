@@ -18,4 +18,23 @@
     <string name="rcv_default_text">Hold to record</string>
     <color name="rcv_default_text_color">#303F9F</color>
 
+    <!-- UploadView BACKGROUND VIEW -->
+    <color name="upload_bg_color_default">#FFFFFF</color>
+    <color name="upload_bg_ring_color_first_default">@color/progress_half_blue</color>
+    <color name="upload_bg_ring_color_second_default">@color/primary</color>
+    <dimen name="upload_ring_thickness_default">3dp</dimen>
+
+    <drawable name="upload_icon_src_default">@drawable/upload_view</drawable>
+
+    <!-- DownloadingView BACKGROUND VIEW -->
+    <color name="dw_bg_color_default">#FFFFFF</color>
+    <color name="dw_bg_color_final_default">#FF0000</color>
+    <color name="dw_bg_ring_color_first_default">@color/progress_half_blue</color>
+    <color name="dw_bg_ring_color_second_default">@color/primary</color>
+    <dimen name="dw_default_dg_ring_thickness_default">3dp</dimen>
+
+    <!-- ICON VIEW -->
+    <drawable name="dw_icon_src_default">@drawable/download_view</drawable>
+    <dimen name="dw_icon_size_x_default">16dp</dimen>
+    <dimen name="dw_icon_size_y_default">20dp</dimen>
 </resources>

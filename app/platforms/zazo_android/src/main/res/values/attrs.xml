@@ -43,4 +43,30 @@
         <attr name="rcv_text_size" format="dimension" />
         <attr name="rcv_text_color" format="color" />
     </declare-styleable>
+
+    <declare-styleable name="UploadingView">
+        <!--VIEW-->
+        <!-- BACKGROUND VIEW -->
+        <attr name="upload_bg_color" format="color" />
+        <attr name="upload_bg_ring_color_first" format="color" />
+        <attr name="upload_bg_ring_color_second" format="color" />
+        <attr name="upload_ring_thickness" format="dimension" />
+        <!--FOREGROUND VIEW-->
+        <attr name="upload_icon_src" format="reference" />
+
+    </declare-styleable>
+
+    <declare-styleable name="DownloadingView">
+        <!--VIEW-->
+        <!-- BACKGROUND VIEW -->
+        <attr name="dw_dg_ring_thickness" format="dimension" />
+        <attr name="dw_bg_color" format="color" />
+        <attr name="dw_bg_color_final" format="color" />
+        <attr name="dw_bg_ring_color_first" format="color" />
+        <attr name="dw_bg_ring_color_second" format="color" />
+        <!-- ICON VIEW -->
+        <attr name="dw_icon_src" format="integer" />
+        <attr name="dw_icon_size_x" format="dimension" />
+        <attr name="dw_icon_size_y" format="dimension" />
+    </declare-styleable>
 </resources>

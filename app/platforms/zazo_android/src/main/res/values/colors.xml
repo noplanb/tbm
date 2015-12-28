@@ -77,5 +77,6 @@
     <color name="thumb_color_pure_orange">#E78A00</color>
 
     <color name="white_active_tint">#8A000000</color>
+    <color name="progress_half_blue">#140000FF</color>
 
 </resources>

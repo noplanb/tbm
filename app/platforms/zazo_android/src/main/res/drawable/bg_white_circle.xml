@@ -16,7 +16,7 @@
           android:top="@dimen/grid_item_status_icon_body_padding"
           android:bottom="@dimen/grid_item_status_icon_body_padding">
         <shape android:shape="oval">
-            <solid android:color="@color/bg_unread_msg_count"/>
+            <solid android:color="@color/white"/>
         </shape>
     </item>
 </layer-list>
