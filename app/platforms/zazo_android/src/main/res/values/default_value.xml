@@ -28,7 +28,7 @@
 
     <!-- DownloadingView BACKGROUND VIEW -->
     <color name="dw_bg_color_default">#FFFFFF</color>
-    <color name="dw_bg_color_final_default">#FF0000</color>
+    <color name="dw_bg_color_final_default">@color/accent_2</color>
     <color name="dw_bg_ring_color_first_default">@color/progress_half_blue</color>
     <color name="dw_bg_ring_color_second_default">@color/primary</color>
     <dimen name="dw_default_dg_ring_thickness_default">3dp</dimen>

@@ -1,5 +1,6 @@
 package com.zazoapp.client.ui.view;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -256,7 +258,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
 	public void animateDownloading(final Runnable task) {
         Interpolator interpolator = new AccelerateDecelerateInterpolator();
-
+        downloadingView.setVisibility(VISIBLE);
 		float fromYDelta = 0;
 		float toYDelta = 0;
 		float fromXDelta = 0;
@@ -290,6 +292,17 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             }
         });
         downloadingView.getAnimationController().start();
+        ValueAnimator progress = ValueAnimator.ofFloat(0, 100f);
+        progress.setInterpolator(new LinearInterpolator());
+        progress.setDuration(500);
+        progress.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                downloadingView.getAnimationController().updateProgress(value);
+            }
+        });
+        progress.start();
     }
 
     public boolean isAnimating() {

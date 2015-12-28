@@ -22,9 +22,7 @@ public class FlipInAnimator extends DownloadAnimation {
     protected ValueAnimator createAnimation() {
         ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(getViewAnimationListener() ,
                 ROTATION_Y, START_VALUE, END_VALUE );
-        objectAnimator.setObjectValues(objectAnimator);
         objectAnimator.setDuration(ANIMATION_DURATION);
-
         return objectAnimator;
     }
 
@@ -36,7 +34,6 @@ public class FlipInAnimator extends DownloadAnimation {
     public void setExternalListener(IArrowShowAnimationListener arrowShowAnimationListener) {
         this.arrowShowAnimationListener = arrowShowAnimationListener;
     }
-
 
     @Override
     public void onAnimationEnd(Animator animation) {
