@@ -14,18 +14,18 @@ import com.zazoapp.client.ui.view.downloadingview.animation.IViewMoveDownAnimati
  */
 public class Foreground extends View implements IViewMoveDownAnimationListener {
 
-    private static final float ICON_SIZE_COEF = 0.8f;
-    private static final float LINE_Y_POS = 0.9f;
+    private static final float LINE_Y_COEF = 0.11f;
+    private static final float CONTENT_COEF = 0.5f;
     private Paint drawPaintLine;
 
     private Paint drawPaintArrow;
     private Rect rectLine;
     private Rect rectIconDestination;
+    private Rect rectContent;
     private Rect rectIconSource;
     private Bitmap bitmap;
 
     private int iconShift = 0;
-    private int iconHeight;
 
     public Foreground(Context context) {
         super(context);
@@ -35,9 +35,10 @@ public class Foreground extends View implements IViewMoveDownAnimationListener {
     }
 
     private void initRect() {
-        rectLine = new Rect(0,0,0,0);
-        rectIconDestination = new Rect(0,0,0,0);
-        rectIconSource = new Rect(0,0,0,0);
+        rectLine = new Rect();
+        rectIconDestination = new Rect();
+        rectIconSource = new Rect();
+        rectContent = new Rect();
     }
 
     private void initPaint() {
@@ -53,30 +54,31 @@ public class Foreground extends View implements IViewMoveDownAnimationListener {
     }
 
     private void updateRect(int w, int h) {
-        setIconHeight((int) (h * ICON_SIZE_COEF));
+        int contentShiftX = (int) (w * 0.5f * CONTENT_COEF);
+        int contentShiftY = (int) (h * 0.5f * CONTENT_COEF);
+        rectContent.set(contentShiftX, contentShiftY, w - contentShiftX, h - contentShiftY);
         updateIconDestinationRect(w);
-        rectLine.set(0, (int) (h * LINE_Y_POS), w, h);
     }
 
     private void updateIconDestinationRect(int w) {
-        float xRatio = 1f;
-        float yRatio = 1f;
+        float ratio = 1f;
+        int rectLineHeight = (int) (rectContent.height() * LINE_Y_COEF);
+        int iconMaxHeight = rectContent.height() - rectLineHeight * 2;
+        int iconMaxWidth = rectContent.width();
         if (rectIconSource.height() != 0 && rectIconSource.width() != 0) {
-            if (getWidth() * rectIconSource.height() > rectIconSource.width() * getHeight()) {
-                xRatio = rectIconSource.height() / (float) rectIconSource.width();
+            if (iconMaxWidth * rectIconSource.height() > rectIconSource.width() * iconMaxHeight) {
+                ratio = iconMaxHeight / (float) rectIconSource.height();
             } else {
-                yRatio = rectIconSource.width() / (float) rectIconSource.height();
+                ratio = iconMaxWidth / (float) rectIconSource.width();
             }
         }
-        rectIconDestination.set(0, iconShift, (int) (getWidth() * xRatio), (int) (getHeight() * yRatio + iconShift));
-    }
+        float newWidth = rectIconSource.width() * ratio;
+        float newHeight = rectIconSource.height() * ratio;
+        int xOffset = (int) ((iconMaxWidth - newWidth) * 0.5) + rectContent.left;
+        int yOffset = (int) ((iconMaxHeight - newHeight) * 0.5) + rectContent.top + iconShift;
 
-    private int getIconHeight() {
-        return iconHeight;
-    }
-
-    private void setIconHeight(int iconHeight) {
-        this.iconHeight = iconHeight;
+        rectIconDestination.set(xOffset, yOffset , (int) newWidth + xOffset, (int) newHeight + yOffset);
+        rectLine.set(rectIconDestination.left, rectContent.bottom - rectLineHeight, rectIconDestination.right, rectContent.bottom);
     }
 
     private void updateIconSourceRect() {
