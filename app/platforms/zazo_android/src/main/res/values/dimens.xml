@@ -36,6 +36,7 @@
     <dimen name="grid_item_status_icon_text_padding">3dp</dimen>
     <dimen name="grid_item_status_icon_body_padding">2dp</dimen>
     <dimen name="grid_item_status_icon_shadow_radius">10.5dp</dimen>
+    <dimen name="grid_item_status_icon_content_radius">9dp</dimen>
     <dimen name="grid_item_status_icon_y_shift">-4dp</dimen>
     <dimen name="grid_item_status_icon_x_shift">4dp</dimen>
     <dimen name="grid_item_status_icon_content_padding">5dp</dimen>

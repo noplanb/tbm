@@ -67,13 +67,16 @@
                 android:src="@drawable/ic_upload_arrow"
                 android:visibility="invisible"/>
 
-        <com.zazoapp.client.ui.view.downloadingview.DownloadingView
-                android:id="@+id/downloading_animation_view"
-                android:layout_width="@dimen/large_icon_size"
-                android:layout_height="@dimen/large_icon_size"
-                android:layout_alignParentRight="true"
-                app:dw_icon_src="@drawable/ic_download_arrow"
-                android:visibility="invisible"/>
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            <com.zazoapp.client.ui.view.downloadingview.DownloadingView
+                    android:id="@+id/downloading_animation_view"
+                    android:layout_width="@dimen/large_icon_size"
+                    android:layout_height="@dimen/large_icon_size"
+                    app:dw_icon_src="@drawable/ic_download_arrow"
+                    android:visibility="invisible"/>
+        </FrameLayout>
 
         <com.zazoapp.client.ui.view.AutoResizeTextView
                 android:id="@+id/tw_unread_count"

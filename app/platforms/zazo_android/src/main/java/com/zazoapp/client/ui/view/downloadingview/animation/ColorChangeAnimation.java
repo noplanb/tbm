@@ -10,22 +10,18 @@ import com.zazoapp.client.ui.view.downloadingview.animation.listener.IColorChang
  */
 public class ColorChangeAnimation extends DownloadAnimation {
 
-    private static final long ANIMATION_DURATION = 1000;
-    private static final long ANIMATION_START_DELAY_DEFAULT = 300;
+    private static final long ANIMATION_DURATION = 350;
 
-    private int initialColor = Integer.MIN_VALUE;
-    private long animStartDelay = ANIMATION_START_DELAY_DEFAULT;
+    private int initialColor = 0xFFFFFFFF;
     private IViewColorChangeAnimationListener viewColorChangeAnimationListener;
     private IColorChangeAnimationListener colorChangeAnimationListener;
 
     @Override
     protected ValueAnimator createAnimation() {
-
         initialColor = viewColorChangeAnimationListener.getStartColor();
         ValueAnimator anim = new ValueAnimator();
         anim.setIntValues(initialColor, viewColorChangeAnimationListener.getFinalColor());
         anim.setEvaluator(new ArgbEvaluator());
-        anim.setStartDelay(animStartDelay);
         anim.addListener(this);
         anim.setDuration(ANIMATION_DURATION);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -54,7 +50,6 @@ public class ColorChangeAnimation extends DownloadAnimation {
         return viewColorChangeAnimationListener;
     }
 
-
     @Override
     public void onAnimationEnd(Animator animation) {
         super.onAnimationEnd(animation);
@@ -78,7 +73,4 @@ public class ColorChangeAnimation extends DownloadAnimation {
         this.colorChangeAnimationListener = colorChangeAnimationListener;
     }
 
-    public void setDelayTime(long aDelayTime) {
-        animStartDelay = aDelayTime;
-    }
 }

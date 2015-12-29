@@ -102,6 +102,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         // As it has thumb it must have friend, so play/stop video if there are any.
         // Otherwise show toast "Video is not playable"
         Friend friend = gridElement.getFriend();
+        // TODO FIXME TEST
+        //if (friend != null) {
+        //    IncomingVideo latest = friend.newestIncomingVideo();
+        //    friend.setAndNotifyIncomingVideoStatus(latest.getId(),
+        //            (latest.getVideoStatus() != IncomingVideo.Status.DOWNLOADED) ? IncomingVideo.Status.DOWNLOADED : IncomingVideo.Status.VIEWED);
+        //}
         if (friend.hasIncomingPlayableVideos()) {
             managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId());
             managerProvider.getTutorial().onVideoStartPlayingByUser();
@@ -153,7 +159,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                updateContent(hideIndicators);
+                updateContent();
             }
         });
     }
@@ -161,9 +167,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     /**
      * Update content. Should be called from UI thread
      *
-     * @param animating hide indicators flag
      */
-    private void updateContent(boolean animating) {
+    private void updateContent() {
         Friend friend = gridElement.getFriend();
         if (friend == null) {
             container.setVisibility(View.VISIBLE); // as content is loaded, display view
@@ -174,17 +179,15 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         int unreadMsgCount = friend.incomingVideoNotViewedCount();
         boolean lastEventOutgoing = friend.getLastEventType() == Friend.VideoStatusEventType.OUTGOING;
 
-        boolean showNewMessages = unreadMsgCount > 0 && !animating && !isVideoPlaying;
+        boolean showNewMessages = unreadMsgCount > 0 && !isVideoPlaying;
         boolean showVideoViewed = friend.getOutgoingVideoStatus() == OutgoingVideo.Status.VIEWED
                 && !showNewMessages && lastEventOutgoing;
         gridElementView.setVideoViewed(showVideoViewed);
         if (showVideoViewed) {
             managerProvider.getTutorial().onVideoViewedIndicatorShowed(gridElementView);
         }
-        if (!animating) {
-            gridElementView.showUploadingMark(isUploading() && !showNewMessages);
-            gridElementView.showDownloadingMark(isDownloading() && !showNewMessages);
-        }
+        gridElementView.showUploadingMark(isUploading() && !showNewMessages);
+        gridElementView.showDownloadingMark(isDownloading() && !showNewMessages);
 
         gridElementView.setUnreadCount(showNewMessages, unreadMsgCount);
         boolean thumbExists = friend.thumbExists();
@@ -205,7 +208,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     private void updateVideoStatus(boolean statusChanged) {
         Friend friend = gridElement.getFriend();
         if (friend == null) {
-            updateContent(false);
+            updateContent();
             return;
         }
         int lastEventType = friend.getLastEventType();
@@ -233,7 +236,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                     case IncomingVideo.Status.NEW:
                     case IncomingVideo.Status.QUEUED:
                     case IncomingVideo.Status.DOWNLOADING:
-                        updateContent(false);
+                        updateContent();
                         break;
                     case IncomingVideo.Status.DOWNLOADED:
                         if (gridElementView.isReadyToAnimate() && statusChanged) {
@@ -244,20 +247,20 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                                     NotificationAlertManager.playTone(NotificationAlertManager.Tone.BEEP, 0.3f);
                                 }
                             }
-                            updateContent(true);
+                            updateContent();
                             gridElementView.animateDownloading(new Runnable() {
                                 @Override
                                 public void run() {
-                                    updateContent(false);
+                                    updateContent();
                                     managerProvider.getTutorial().onNewMessage(gridElementView);
                                 }
                             });
                         } else {
-                            updateContent(false);
+                            updateContent();
                         }
                         break;
                     default:
-                        updateContent(gridElementView.isAnimating());
+                        updateContent();
                         break;
                 }
             }
@@ -270,11 +273,11 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             public void run() {
                 switch (status) {
                     case OutgoingVideo.Status.QUEUED:
-                        updateContent(true);
+                        updateContent();
                         gridElementView.animateUploading(new Runnable() {
                             @Override
                             public void run() {
-                                updateContent(false);
+                                updateContent();
                                 if (gridElement.getFriend().incomingVideoNotViewedCount() == 0) {
                                     managerProvider.getTutorial().onVideoSentIndicatorShowed(gridElementView);
                                 } else {
@@ -286,10 +289,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         break;
                     case OutgoingVideo.Status.VIEWED:
                         gridElementView.showUploadingMark(false);
-                        updateContent(gridElementView.isAnimating());
+                        updateContent();
                         break;
                     default:
-                        updateContent(gridElementView.isAnimating());
+                        updateContent();
                         break;
                 }
             }

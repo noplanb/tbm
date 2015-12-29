@@ -33,7 +33,6 @@ public class AnimationController implements IDownloadController, IDownloadAnimat
         moveDownAnimation.setExternalListener(this);
 
         colorChangeAnimation = new ColorChangeAnimation();
-        colorChangeAnimation.setDelayTime( moveDownAnimation.getAnimationDuration() );
         colorChangeAnimation.setExternalListener(this);
     }
 
@@ -122,6 +121,7 @@ public class AnimationController implements IDownloadController, IDownloadAnimat
     public void onArrowHideAnimationFinish() {
         flipInAnimation.getViewAnimationListener().setVisibility(View.INVISIBLE);
         colorChangeAnimation.getView().setDrawRing(false);
+        colorChangeAnimation.start();
         if ( getExternalDownloadAnimationListener() != null ){
             getExternalDownloadAnimationListener().onArrowHideAnimationFinish();
         }
@@ -144,7 +144,6 @@ public class AnimationController implements IDownloadController, IDownloadAnimat
     @Override
     public void onProgressAnimationFinish() {
         moveDownAnimation.start();
-        colorChangeAnimation.start();
         if ( getExternalDownloadAnimationListener() != null ){
             getExternalDownloadAnimationListener().onProgressAnimationFinish();
         }

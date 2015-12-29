@@ -8,7 +8,7 @@ import android.view.animation.DecelerateInterpolator;
  */
 public class FiniteRingAnimation extends DownloadAnimation {
 
-    private static final long ANIMATION_DURATION = 1000;
+    private static final long ANIMATION_DURATION = 500;
     private static final float START_SWEEP_ANGLE = 0;
     private static final float FINAL_SWEEP_ANGLE = 360;
 

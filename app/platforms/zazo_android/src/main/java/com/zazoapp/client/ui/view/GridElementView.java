@@ -1,10 +1,13 @@
 package com.zazoapp.client.ui.view;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -12,6 +15,7 @@ import android.view.animation.Animation;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -257,44 +261,51 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 	}
 
 	public void animateDownloading(final Runnable task) {
-        Interpolator interpolator = new AccelerateDecelerateInterpolator();
-        downloadingView.setVisibility(VISIBLE);
-		float fromYDelta = 0;
-		float toYDelta = 0;
-		float fromXDelta = 0;
-		float toXDelta = -getMeasuredWidth() + downloadingView.getMeasuredWidth();
-
-		final TranslateAnimation trAn = new TranslateAnimation(
-				Animation.RELATIVE_TO_SELF, fromXDelta,
-				Animation.ABSOLUTE,	toXDelta,
-				Animation.RELATIVE_TO_SELF, fromYDelta, 
-				Animation.RELATIVE_TO_SELF, toYDelta);
-		trAn.setDuration(ANIMATION_DURATION_MILLIS);
-        trAn.setStartOffset(ANIMATION_DELAY_MILLIS);
-        trAn.setFillAfter(true);
-        trAn.setInterpolator(interpolator);
-        trAn.setAnimationListener(new Animation.AnimationListener() {
+        int duration = 350;
+        animationBackground.setAlpha(0f);
+        ValueAnimator startAnimation = ValueAnimator.ofFloat(0, 1f);
+        startAnimation.setDuration(duration);
+        startAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            float size = Math.min(getWidth(), getHeight()) * 0.5f;
             @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                postDelayed(task, ANIMATION_DELAY_MILLIS);
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                setProgressAnimation(downloadingView, (int) (size * value));
+                animationBackground.setAlpha(value * 0.5f);
             }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
         });
+        final ValueAnimator endAnimation = ValueAnimator.ofFloat(1f, 0f);
+        endAnimation.setDuration(duration);
+        endAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            float size = Math.min(getWidth(), getHeight()) * 0.5f;
+            int contentRadius = getResources().getDimensionPixelSize(R.dimen.grid_item_status_icon_content_radius);
+            float endSize = contentRadius * 2;
+            float targetX = twUnreadCount.getX() + contentRadius;
+            float targetY = twUnreadCount.getY() + contentRadius;
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                setProgressFinishAnimation(downloadingView, (int) Math.abs((size - endSize) * value + endSize), 1 - value, targetX, targetY);
+                animationBackground.setAlpha(value * 0.5f);
+            }
+        });
+        downloadingView.setVisibility(VISIBLE);
+
         downloadingView.getAnimationController().setExternalDownloadAnimationListener(new IDownloadAnimationListener.Stub() {
             @Override
-            public void onProgressAnimationFinish() {
-                downloadingView.startAnimation(trAn);
+            public void onArrowHideAnimationFinish() {
+                endAnimation.start();
+            }
+
+            @Override
+            public void onColorChangeAnimationFinish() {
+                post(task);
             }
         });
-        downloadingView.getAnimationController().start();
-        ValueAnimator progress = ValueAnimator.ofFloat(0, 100f);
+
+        final ValueAnimator progress = ValueAnimator.ofFloat(0, 100f);
         progress.setInterpolator(new LinearInterpolator());
-        progress.setDuration(500);
+        progress.setDuration(750);
         progress.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -302,7 +313,46 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
                 downloadingView.getAnimationController().updateProgress(value);
             }
         });
-        progress.start();
+        startAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                downloadingView.getAnimationController().start();
+                progress.start();
+            }
+        });
+        startAnimation.start();
+    }
+
+    /**
+     * @param v animated view, should be placed inside FrameLayout
+     */
+    private void setProgressAnimation(View v, int size) {
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) v.getLayoutParams();
+        params.width = size;
+        params.height = size;
+        v.setLayoutParams(params);
+        v.setX((getWidth() - size) / 2);
+        v.setY(2 * getHeight() / 5 - size / 2);
+        v.setVisibility(VISIBLE);
+    }
+
+    /**
+     * @param v animated view, should be placed inside FrameLayout
+     */
+    private void setProgressFinishAnimation(View v, int size, float fraction, float targetX, float targetY) {
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) v.getLayoutParams();
+        params.width = size;
+        params.height = size;
+        v.setLayoutParams(params);
+        int radius = size / 2;
+        int cX = getWidth() / 2;
+        int cY = 2 * getHeight() / 5;
+        v.setX(cX - radius + (targetX - cX) * fraction);
+        v.setY(cY - radius + (targetY - cY) * fraction);
+        Log.d("Animation", "" + cX + ":" + cY + " " + radius + " " + targetX + ":" + targetY + " "
+         + v.getX() + ":" + v.getY() + " " + twUnreadCount.getX() + ":" + twUnreadCount.getY() + " " + twUnreadCount.getWidth() + ":" + twUnreadCount.getHeight());
+        v.setVisibility(VISIBLE);
     }
 
     public boolean isAnimating() {
