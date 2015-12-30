@@ -5,12 +5,13 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
@@ -166,18 +167,64 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         imgViewed.setVisibility(visible ? VISIBLE : INVISIBLE);
     }
 
-    public void setUnreadCount(boolean visible, int unreadMsgCount) {
+    public void setUnreadCount(boolean visible, int unreadMsgCount, boolean animate) {
         if (visible) {
             twUnreadCount.setVisibility(VISIBLE);
             cardLayout.getBackground().setColorFilter(getResources().getColor(R.color.primary), PorterDuff.Mode.SRC_IN);
             twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_red_circle));
-            twUnreadCount.setText(String.valueOf(unreadMsgCount));
+            if (animate) {
+                animateUnreadCountChanging(unreadMsgCount);
+            } else {
+                twUnreadCount.setText(String.valueOf(unreadMsgCount));
+            }
+            downloadingView.setVisibility(INVISIBLE);
         } else {
             cardLayout.getBackground().setColorFilter(null);
             twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_transparent_circle));
             twUnreadCount.postInvalidate();
+            twUnreadCount.setText(String.valueOf(unreadMsgCount));
             twUnreadCount.setVisibility(INVISIBLE);
         }
+
+    }
+
+    private void animateUnreadCountChanging(final int unreadMsgCount) {
+        ValueAnimator.AnimatorUpdateListener updateListener = new ValueAnimator.AnimatorUpdateListener() {
+            float scaleFactor = 0.33f;
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                int currentColor = twUnreadCount.getCurrentTextColor();
+                int r = Color.red(currentColor);
+                int b = Color.blue(currentColor);
+                int g = Color.green(currentColor);
+                twUnreadCount.setTextColor(Color.argb((int) (0xFF * value), r, g, b));
+                twUnreadCount.setScaleX(1f + scaleFactor * (1f - value));
+                twUnreadCount.setScaleY(1f + scaleFactor * (1f - value));
+            }
+        };
+        ValueAnimator anim1 = ValueAnimator.ofFloat(1f, 0);
+        final ValueAnimator anim2 = ValueAnimator.ofFloat(0, 1f);
+        anim1.setInterpolator(new AccelerateInterpolator());
+        anim1.setDuration(300);
+        anim1.addUpdateListener(updateListener);
+        anim2.setInterpolator(new AccelerateInterpolator());
+        anim2.setDuration(anim1.getDuration());
+        anim2.addUpdateListener(updateListener);
+        anim1.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        twUnreadCount.setText(String.valueOf(unreadMsgCount));
+                        anim2.start();
+                    }
+                });
+            }
+        });
+        anim1.start();
     }
 
     public void setThumbnail(Bitmap bitmap, int visibility) {
@@ -290,7 +337,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             }
         });
         downloadingView.setVisibility(VISIBLE);
-
+        downloadingView.getAnimationController().reset();
         downloadingView.getAnimationController().setExternalDownloadAnimationListener(new IDownloadAnimationListener.Stub() {
             @Override
             public void onArrowHideAnimationFinish() {
@@ -350,8 +397,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         int cY = 2 * getHeight() / 5;
         v.setX(cX - radius + (targetX - cX) * fraction);
         v.setY(cY - radius + (targetY - cY) * fraction);
-        Log.d("Animation", "" + cX + ":" + cY + " " + radius + " " + targetX + ":" + targetY + " "
-         + v.getX() + ":" + v.getY() + " " + twUnreadCount.getX() + ":" + twUnreadCount.getY() + " " + twUnreadCount.getWidth() + ":" + twUnreadCount.getHeight());
         v.setVisibility(VISIBLE);
     }
 
