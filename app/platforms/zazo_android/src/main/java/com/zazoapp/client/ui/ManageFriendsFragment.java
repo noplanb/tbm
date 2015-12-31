@@ -220,8 +220,8 @@ public class ManageFriendsFragment extends Fragment {
                 h.thumb.setImageBitmap(f.thumbBitmap());
                 h.thumb.setFillColor(Color.TRANSPARENT);
             } else if (f.hasApp()) {
-                h.thumb.setImageResource(Convenience.getStringDependentItem(f.getDisplayName(), icons));
-                h.thumb.setFillColor(Convenience.getStringDependentItem(f.getDisplayName(), colors));
+                h.thumb.setImageResource(Convenience.getStringDependentItem(f.getFullName(), icons));
+                h.thumb.setFillColor(Convenience.getStringDependentItem(f.getFullName(), colors));
                 h.thumbTitle.setText(f.getInitials());
             } else {
                 h.thumb.setImageDrawable(transparentDrawable);
@@ -306,7 +306,7 @@ public class ManageFriendsFragment extends Fragment {
                     // them to allMatching, use filterString.
                     List<Friend> allMatching = new ArrayList<>();
                     for (Friend friend : listCopy) {
-                        if (friend != null && friend.getDisplayName().toLowerCase().contains(prefixString)) {
+                        if (friend != null && friend.getFullName().toLowerCase().contains(prefixString)) {
                             allMatching.add(friend);
                         }
                     }

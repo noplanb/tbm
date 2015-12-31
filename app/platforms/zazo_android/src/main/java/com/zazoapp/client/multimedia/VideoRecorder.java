@@ -13,6 +13,7 @@ import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.ui.CancelableTask;
 import com.zazoapp.client.ui.view.PreviewTextureFrame;
+import com.zazoapp.client.utilities.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -126,7 +127,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             try {
                 mediaRecorder.stop();
                 rval = true;
-                Log.i(TAG,
+                Logger.i(TAG,
                         String.format("Recorded file %s : %d", Config.recordingFilePath(context),
                                 Config.recordingFile(context).length()));
                 if (currentFriend != null)

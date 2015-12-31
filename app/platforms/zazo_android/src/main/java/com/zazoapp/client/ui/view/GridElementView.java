@@ -23,6 +23,8 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.ui.animations.TransferProgressAnimation;
+import com.zazoapp.client.ui.animations.UnreadCountAnimation;
 import com.zazoapp.client.ui.view.ThumbView.MapArea;
 import com.zazoapp.client.ui.view.downloadingview.DownloadingView;
 import com.zazoapp.client.ui.view.downloadingview.animation.listener.IDownloadAnimationListener;
@@ -182,49 +184,19 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             cardLayout.getBackground().setColorFilter(null);
             twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_transparent_circle));
             twUnreadCount.postInvalidate();
-            twUnreadCount.setText(String.valueOf(unreadMsgCount));
+            twUnreadCount.setText((unreadMsgCount <= 0) ? "" : String.valueOf(unreadMsgCount));
             twUnreadCount.setVisibility(INVISIBLE);
         }
 
     }
 
     private void animateUnreadCountChanging(final int unreadMsgCount) {
-        ValueAnimator.AnimatorUpdateListener updateListener = new ValueAnimator.AnimatorUpdateListener() {
-            float scaleFactor = 0.33f;
+        UnreadCountAnimation.animate(this, twUnreadCount, new Runnable() {
             @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue();
-                int currentColor = twUnreadCount.getCurrentTextColor();
-                int r = Color.red(currentColor);
-                int b = Color.blue(currentColor);
-                int g = Color.green(currentColor);
-                twUnreadCount.setTextColor(Color.argb((int) (0xFF * value), r, g, b));
-                twUnreadCount.setScaleX(1f + scaleFactor * (1f - value));
-                twUnreadCount.setScaleY(1f + scaleFactor * (1f - value));
-            }
-        };
-        ValueAnimator anim1 = ValueAnimator.ofFloat(1f, 0);
-        final ValueAnimator anim2 = ValueAnimator.ofFloat(0, 1f);
-        anim1.setInterpolator(new AccelerateInterpolator());
-        anim1.setDuration(300);
-        anim1.addUpdateListener(updateListener);
-        anim2.setInterpolator(new AccelerateInterpolator());
-        anim2.setDuration(anim1.getDuration());
-        anim2.addUpdateListener(updateListener);
-        anim1.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        twUnreadCount.setText(String.valueOf(unreadMsgCount));
-                        anim2.start();
-                    }
-                });
+            public void run() {
+                twUnreadCount.setText(String.valueOf(unreadMsgCount));
             }
         });
-        anim1.start();
     }
 
     public void setThumbnail(Bitmap bitmap, int visibility) {
@@ -307,97 +279,8 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 		imgUploading.startAnimation(trAn);
 	}
 
-	public void animateDownloading(final Runnable task) {
-        int duration = 350;
-        animationBackground.setAlpha(0f);
-        ValueAnimator startAnimation = ValueAnimator.ofFloat(0, 1f);
-        startAnimation.setDuration(duration);
-        startAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            float size = Math.min(getWidth(), getHeight()) * 0.5f;
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue();
-                setProgressAnimation(downloadingView, (int) (size * value));
-                animationBackground.setAlpha(value * 0.5f);
-            }
-        });
-        final ValueAnimator endAnimation = ValueAnimator.ofFloat(1f, 0f);
-        endAnimation.setDuration(duration);
-        endAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            float size = Math.min(getWidth(), getHeight()) * 0.5f;
-            int contentRadius = getResources().getDimensionPixelSize(R.dimen.grid_item_status_icon_content_radius);
-            float endSize = contentRadius * 2;
-            float targetX = twUnreadCount.getX() + contentRadius;
-            float targetY = twUnreadCount.getY() + contentRadius;
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue();
-                setProgressFinishAnimation(downloadingView, (int) Math.abs((size - endSize) * value + endSize), 1 - value, targetX, targetY);
-                animationBackground.setAlpha(value * 0.5f);
-            }
-        });
-        downloadingView.setVisibility(VISIBLE);
-        downloadingView.getAnimationController().reset();
-        downloadingView.getAnimationController().setExternalDownloadAnimationListener(new IDownloadAnimationListener.Stub() {
-            @Override
-            public void onArrowHideAnimationFinish() {
-                endAnimation.start();
-            }
-
-            @Override
-            public void onColorChangeAnimationFinish() {
-                post(task);
-            }
-        });
-
-        final ValueAnimator progress = ValueAnimator.ofFloat(0, 100f);
-        progress.setInterpolator(new LinearInterpolator());
-        progress.setDuration(750);
-        progress.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue();
-                downloadingView.getAnimationController().updateProgress(value);
-            }
-        });
-        startAnimation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                downloadingView.getAnimationController().start();
-                progress.start();
-            }
-        });
-        startAnimation.start();
-    }
-
-    /**
-     * @param v animated view, should be placed inside FrameLayout
-     */
-    private void setProgressAnimation(View v, int size) {
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) v.getLayoutParams();
-        params.width = size;
-        params.height = size;
-        v.setLayoutParams(params);
-        v.setX((getWidth() - size) / 2);
-        v.setY(2 * getHeight() / 5 - size / 2);
-        v.setVisibility(VISIBLE);
-    }
-
-    /**
-     * @param v animated view, should be placed inside FrameLayout
-     */
-    private void setProgressFinishAnimation(View v, int size, float fraction, float targetX, float targetY) {
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) v.getLayoutParams();
-        params.width = size;
-        params.height = size;
-        v.setLayoutParams(params);
-        int radius = size / 2;
-        int cX = getWidth() / 2;
-        int cY = 2 * getHeight() / 5;
-        v.setX(cX - radius + (targetX - cX) * fraction);
-        v.setY(cY - radius + (targetY - cY) * fraction);
-        v.setVisibility(VISIBLE);
+    public void animateDownloading(Runnable task) {
+        TransferProgressAnimation.animateDownloading(this, task);
     }
 
     public boolean isAnimating() {

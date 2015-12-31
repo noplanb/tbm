@@ -200,7 +200,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             gridElementView.setThumbnail(friend.thumbBitmap(), pendingAnim ? View.INVISIBLE : View.VISIBLE);
             gridElementView.showButtons(false);
         } else {
-            gridElementView.setStubThumbnail(friend.getDisplayName(), pendingAnim ? View.INVISIBLE : View.VISIBLE);
+            gridElementView.setStubThumbnail(friend.getFullName(), pendingAnim ? View.INVISIBLE : View.VISIBLE);
             gridElementView.showButtons(true);
         }
 
