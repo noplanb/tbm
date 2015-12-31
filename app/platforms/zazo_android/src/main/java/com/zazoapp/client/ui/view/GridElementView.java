@@ -1,22 +1,11 @@
 package com.zazoapp.client.ui.view;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.Interpolator;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.TranslateAnimation;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -26,10 +15,9 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.ui.animations.TransferProgressAnimation;
 import com.zazoapp.client.ui.animations.UnreadCountAnimation;
 import com.zazoapp.client.ui.view.ThumbView.MapArea;
-import com.zazoapp.client.ui.view.downloadingview.DownloadingView;
-import com.zazoapp.client.ui.view.downloadingview.animation.listener.IDownloadAnimationListener;
+import com.zazoapp.client.ui.view.transferview.DownloadingView;
 import com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView;
-import com.zazoapp.client.ui.view.uploadingview.UploadingView;
+import com.zazoapp.client.ui.view.transferview.UploadingView;
 import com.zazoapp.client.utilities.Convenience;
 
 public class GridElementView extends RelativeLayout implements View.OnClickListener, View.OnLongClickListener {
@@ -179,7 +167,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             } else {
                 twUnreadCount.setText(String.valueOf(unreadMsgCount));
             }
-            downloadingView.setVisibility(INVISIBLE);
         } else {
             cardLayout.getBackground().setColorFilter(null);
             twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_transparent_circle));
@@ -242,42 +229,9 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         }
     }
 
-	public void animateUploading(final Runnable task) {
-        Interpolator interpolator = new AccelerateDecelerateInterpolator();
-
-		float fromYDelta = 0;
-		float toYDelta = 0;
-		float fromXDelta = 0;
-		float toXDelta = getMeasuredWidth() - imgUploading.getMeasuredWidth();
-
-        RelativeLayout.LayoutParams params = (LayoutParams) imgUploading.getLayoutParams();
-        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        params.addRule(ALIGN_PARENT_RIGHT, 0); // remove rule
-        imgUploading.setLayoutParams(params);
-        imgUploading.setVisibility(VISIBLE);
-		TranslateAnimation trAn = new TranslateAnimation(
-				Animation.RELATIVE_TO_SELF, fromXDelta,
-				Animation.ABSOLUTE,	toXDelta,
-				Animation.RELATIVE_TO_SELF, fromYDelta, 
-				Animation.RELATIVE_TO_SELF, toYDelta);
-		trAn.setDuration(ANIMATION_DURATION_MILLIS);
-        trAn.setStartOffset(ANIMATION_DELAY_MILLIS);
-        trAn.setFillAfter(true);
-        trAn.setInterpolator(interpolator);
-        trAn.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                postDelayed(task, ANIMATION_DELAY_MILLIS);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
-		imgUploading.startAnimation(trAn);
-	}
+    public void animateUploading(final Runnable task) {
+        TransferProgressAnimation.animateUploading(this, task);
+    }
 
     public void animateDownloading(Runnable task) {
         TransferProgressAnimation.animateDownloading(this, task);

@@ -30,13 +30,17 @@
             android:clipChildren="false"
             android:clipToPadding="false">
 
-        <com.zazoapp.client.ui.view.uploadingview.UploadingView
-                android:id="@+id/uploading_animation_view"
-                android:layout_width="@dimen/large_icon_size"
-                android:layout_height="@dimen/large_icon_size"
-                android:layout_alignParentRight="true"
-                app:upload_icon_src="@drawable/ic_upload_arrow"
-                android:visibility="invisible"/>
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <com.zazoapp.client.ui.view.transferview.UploadingView
+                    android:id="@+id/uploading_animation_view"
+                    android:layout_width="@dimen/large_icon_size"
+                    android:layout_height="@dimen/large_icon_size"
+                    app:upload_icon_src="@drawable/ic_upload_arrow"
+                    android:visibility="invisible"/>
+        </FrameLayout>
 
         <ImageView
                 android:id="@+id/img_viewed"
@@ -70,7 +74,7 @@
         <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-            <com.zazoapp.client.ui.view.downloadingview.DownloadingView
+            <com.zazoapp.client.ui.view.transferview.DownloadingView
                     android:id="@+id/downloading_animation_view"
                     android:layout_width="@dimen/large_icon_size"
                     android:layout_height="@dimen/large_icon_size"

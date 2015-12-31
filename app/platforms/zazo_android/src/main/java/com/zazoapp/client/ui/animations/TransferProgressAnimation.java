@@ -11,9 +11,10 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
-import com.zazoapp.client.ui.view.downloadingview.DownloadingView;
-import com.zazoapp.client.ui.view.downloadingview.animation.listener.IDownloadAnimationListener;
-import com.zazoapp.client.ui.view.uploadingview.UploadingView;
+import com.zazoapp.client.ui.view.ITransferView;
+import com.zazoapp.client.ui.view.transferview.DownloadingView;
+import com.zazoapp.client.ui.view.transferview.animation.listeners.ITransferAnimationListener;
+import com.zazoapp.client.ui.view.transferview.UploadingView;
 
 /**
  * Created by Serhii on 31.12.2015.
@@ -35,10 +36,16 @@ public class TransferProgressAnimation {
     }
 
     public static void animateDownloading(View parent, Runnable task) {
-        new TransferProgressAnimation(parent).animateDownloadingInner(task);
+        TransferProgressAnimation anim = new TransferProgressAnimation(parent);
+        anim.animateTransferView(anim.downloadingView, task);
     }
 
-    private void animateDownloadingInner(final Runnable task) {
+    public static void animateUploading(View parent, Runnable task) {
+        TransferProgressAnimation anim = new TransferProgressAnimation(parent);
+        anim.animateTransferView(anim.uploadingView, task);
+    }
+
+    private void animateTransferView(final ITransferView transferView, final Runnable task) {
         animationBackground.setAlpha(0f);
         ValueAnimator startAnimation = ValueAnimator.ofFloat(0, 1f);
         startAnimation.setDuration(START_END_DURATION);
@@ -47,7 +54,7 @@ public class TransferProgressAnimation {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value = (float) animation.getAnimatedValue();
-                setProgressAnimation(downloadingView, (int) (size * value));
+                setProgressAnimation(transferView, (int) (size * value));
                 animationBackground.setAlpha(value * 0.5f);
             }
         });
@@ -62,21 +69,29 @@ public class TransferProgressAnimation {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value = (float) animation.getAnimatedValue();
-                setProgressFinishAnimation(downloadingView, (int) Math.abs((size - endSize) * value + endSize), 1 - value, targetX, targetY);
+                setProgressFinishAnimation(transferView, (int) Math.abs((size - endSize) * value + endSize), 1 - value, targetX, targetY);
                 animationBackground.setAlpha(value * 0.5f);
             }
         });
-        downloadingView.setVisibility(View.VISIBLE);
-        downloadingView.getAnimationController().cancel();
-        downloadingView.getAnimationController().setExternalDownloadAnimationListener(new IDownloadAnimationListener.Stub() {
+        endAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
-            public void onArrowHideAnimationFinish() {
-                endAnimation.start();
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                parent.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        task.run();
+                        transferView.setVisibility(View.INVISIBLE);
+                    }
+                });
             }
-
+        });
+        transferView.setVisibility(View.VISIBLE);
+        transferView.getAnimationController().cancel();
+        transferView.getAnimationController().setEndAnimationListener(new ITransferAnimationListener() {
             @Override
-            public void onColorChangeAnimationFinish() {
-                parent.post(task);
+            public void onAnimationEnd() {
+                endAnimation.start();
             }
         });
 
@@ -87,14 +102,14 @@ public class TransferProgressAnimation {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value = (float) animation.getAnimatedValue();
-                downloadingView.getAnimationController().updateProgress(value);
+                transferView.getAnimationController().updateProgress(value);
             }
         });
         startAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                downloadingView.getAnimationController().start();
+                transferView.getAnimationController().start();
                 progress.start();
             }
         });

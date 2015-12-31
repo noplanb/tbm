@@ -188,9 +188,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (showVideoViewed) {
             managerProvider.getTutorial().onVideoViewedIndicatorShowed(gridElementView);
         }
-        gridElementView.showUploadingMark(isUploading() && !showNewMessages);
 
         if (!onlyLabel || force) {
+            gridElementView.showUploadingMark(isUploading() && !showNewMessages);
             gridElementView.setUnreadCount(showNewMessages, unreadMsgCount, false);
         } else if (!showNewMessages) {
             gridElementView.setUnreadCount(false, unreadMsgCount, false);
@@ -284,7 +284,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             public void run() {
                 switch (status) {
                     case OutgoingVideo.Status.QUEUED:
-                        updateContent(false, force);
+                        updateContent(true, force);
                         gridElementView.animateUploading(new Runnable() {
                             @Override
                             public void run() {
