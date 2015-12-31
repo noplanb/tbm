@@ -93,7 +93,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         setClipChildren(false);
         setClipToPadding(false);
 
-        Typeface face = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Medium.ttf");
+        Typeface face = Convenience.getTypeface(getContext());
         twUnreadCount.setTypeface(face);
         emptyText.setTypeface(face);
         twName.setTypeface(face);

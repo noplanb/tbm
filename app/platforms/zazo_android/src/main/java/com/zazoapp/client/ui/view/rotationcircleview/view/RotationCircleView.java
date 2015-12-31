@@ -16,6 +16,7 @@ import com.zazoapp.client.ui.view.rotationcircleview.animation.AnimationControll
 import com.zazoapp.client.ui.view.rotationcircleview.animation.IRotationCircleViewController;
 import com.zazoapp.client.ui.view.rotationcircleview.view.background.Background;
 import com.zazoapp.client.ui.view.rotationcircleview.view.background.IBackground;
+import com.zazoapp.client.utilities.Convenience;
 
 /**
  * Created by sergii on 11.11.15.
@@ -141,7 +142,7 @@ public class RotationCircleView extends RelativeLayout {
 
         TextView textView = new AutoResizeTextView(getContext());
         textView.setText(str);
-        Typeface face = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Medium.ttf");
+        Typeface face = Convenience.getTypeface(getContext());
         textView.setTypeface(face);
         textView.setTextColor(textColor);
         textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);

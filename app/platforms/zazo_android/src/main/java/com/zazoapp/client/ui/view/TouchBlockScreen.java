@@ -128,7 +128,7 @@ public class TouchBlockScreen extends RelativeLayout {
             state = LockState.LOCKED;
             dimmed = true;
             TextView hint = (TextView) findViewById(R.id.block_screen_hint);
-            hint.setTypeface(Convenience.getTypeface(getContext()));
+            hint.setTypeface(Convenience.getTutorialTypeface(getContext()));
             setVisibility(VISIBLE);
             if (dimAnimator != null && dimmed) {
                 dimAnimator.cancel();

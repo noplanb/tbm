@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:padding="@dimen/record_frame_thickness"
+              android:weightSum="11">
+
+    <LinearLayout
+            android:id="@+id/record_marker_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:weightSum="9"
+            android:gravity="center_vertical">
+        <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/record_marker"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                app:civ_fill_color="@color/recording_border_color"
+                android:src="@android:color/transparent"
+                android:layout_margin="@dimen/record_frame_thickness"/>
+        <com.zazoapp.client.ui.view.AutoResizeTextView
+                android:id="@+id/record_label"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_large"
+                android:text="@string/rec"
+                android:layout_weight="8"
+                android:gravity="center_vertical"/>
+    </LinearLayout>
+
+</LinearLayout>

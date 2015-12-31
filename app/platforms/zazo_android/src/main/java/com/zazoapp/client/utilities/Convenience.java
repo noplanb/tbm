@@ -329,18 +329,28 @@ public class Convenience {
         return json;
     }
 
-    public static Typeface getTypeface(Context context) {
+    public static Typeface getTutorialTypeface(Context context) {
         boolean isLanguageSupported = isLanguageSupported(context);
         AssetManager am = context.getAssets();
         Typeface tf = null;
         if (isLanguageSupported) {
             try {
                 tf = Typeface.createFromAsset(am, "fonts/tutorial-" + Locale.getDefault().getLanguage() + ".ttf");
-            } catch (RuntimeException e) {}
+            } catch (RuntimeException e) {
+                tf = Convenience.getTypeface(context);
+            }
         } else {
             tf = Typeface.createFromAsset(am, "fonts/tutorial-en.ttf");
         }
         return tf;
+    }
+
+    public static Typeface getTypeface(Context context, CharSequence name) {
+        return Typeface.createFromAsset(context.getAssets(), "fonts/" + name + ".ttf");
+    }
+
+    public static Typeface getTypeface(Context context) {
+        return getTypeface(context, "Roboto-Medium");
     }
 
     public static float availableRoomSpace(File file) {

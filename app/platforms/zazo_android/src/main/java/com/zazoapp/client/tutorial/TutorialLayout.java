@@ -115,7 +115,7 @@ public class TutorialLayout extends FrameLayout {
     private void setUpHintText() {
         tutorialHintView = (TextView) findViewById(R.id.tutorial_hint);
         tutorialHintView.setText(hintText);
-        Typeface tf = Convenience.getTypeface(getContext());
+        Typeface tf = Convenience.getTutorialTypeface(getContext());
         tutorialHintView.setTypeface(tf);
         if (arrowAnchorRect == null) {
             arrowAnchorRect = dimExcludedRect;
