@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.view.View;
-import com.zazoapp.client.ui.view.transferview.background.IBackground;
 import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewFiniteAnimationListener;
 import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewOpacityChangeAnimationListener;
 import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewProgressAnimationListener;
@@ -166,7 +165,9 @@ public class UploadingBackground extends View implements IBackground,
 
     @Override
     public void setOpacity(int aOpacity) {
-        drawPaintSecondRing.setAlpha(aOpacity);
+        AlphaColorFilter filter = AlphaColorFilter.forAlpha(aOpacity);
+        drawPaintSecondRing.setColorFilter(filter);
+        drawPaintFirstRing.setColorFilter(filter);
     }
 }
 

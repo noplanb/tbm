@@ -11,7 +11,7 @@ import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewOpacityC
  */
 public class OpacityAnimation extends BaseAnimation {
 
-    private static final long ANIMATION_DURATION = 250;
+    private static final long ANIMATION_DURATION = 100;
 
     private int initialOpacity = 255;
     private int finalOpacity = 0;

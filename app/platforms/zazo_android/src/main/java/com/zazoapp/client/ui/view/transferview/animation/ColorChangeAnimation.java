@@ -2,6 +2,7 @@ package com.zazoapp.client.ui.view.transferview.animation;
 
 import android.animation.Animator;
 import android.animation.ArgbEvaluator;
+import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import com.zazoapp.client.ui.view.transferview.animation.listeners.IColorChangeAnimationListener;
 import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewColorChangeAnimationListener;
@@ -12,6 +13,8 @@ import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewColorCha
 public class ColorChangeAnimation extends BaseAnimation {
 
     private static final long ANIMATION_DURATION = 350;
+    private static final String ALPHA = "alpha";
+    private static final String COLOR = "color";
 
     private int initialColor = 0xFFFFFFFF;
     private IViewColorChangeAnimationListener viewColorChangeAnimationListener;
@@ -21,22 +24,24 @@ public class ColorChangeAnimation extends BaseAnimation {
     protected ValueAnimator createAnimation() {
         initialColor = viewColorChangeAnimationListener.getStartColor();
         ValueAnimator anim = new ValueAnimator();
-        anim.setIntValues(initialColor, viewColorChangeAnimationListener.getFinalColor());
+        anim.setValues(PropertyValuesHolder.ofInt(COLOR, initialColor, viewColorChangeAnimationListener.getFinalColor()),
+                PropertyValuesHolder.ofInt(ALPHA, 255, 0, 0, 0));
         anim.setEvaluator(new ArgbEvaluator());
         anim.addListener(this);
         anim.setDuration(ANIMATION_DURATION);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                updateView((Integer) valueAnimator.getAnimatedValue());
+                updateView((Integer) valueAnimator.getAnimatedValue(COLOR), (Integer) valueAnimator.getAnimatedValue(ALPHA));
             }
         });
 
         return anim;
     }
 
-    private void updateView(Integer animatedValue) {
-        viewColorChangeAnimationListener.setBackgroundColor(animatedValue);
+    private void updateView(int color, int alpha) {
+        viewColorChangeAnimationListener.setBackgroundColor(color);
+        viewColorChangeAnimationListener.setRingOpacity(alpha);
         viewColorChangeAnimationListener.invalidate();
     }
 
@@ -63,6 +68,7 @@ public class ColorChangeAnimation extends BaseAnimation {
     public void resetView() {
         if ( isInitColorValid() ){
             viewColorChangeAnimationListener.setBackgroundColor(initialColor);
+            viewColorChangeAnimationListener.setRingOpacity(255);
         }
     }
 

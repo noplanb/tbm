@@ -125,7 +125,6 @@ public class DownloadAnimationController extends TransferAnimationController imp
     @Override
     public void onArrowHideAnimationFinish() {
         flipInAnimation.getViewAnimationListener().setVisibility(View.INVISIBLE);
-        colorChangeAnimation.getView().setDrawRing(false);
         colorChangeAnimation.start();
         if ( getExternalDownloadAnimationListener() != null ){
             externalDownloadAnimationListener.onArrowHideAnimationFinish();

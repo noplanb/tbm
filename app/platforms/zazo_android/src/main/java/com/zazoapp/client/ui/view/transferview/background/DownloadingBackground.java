@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.support.annotation.IntRange;
 import android.view.View;
 import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewColorChangeAnimationListener;
 import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewFiniteAnimationListener;
@@ -178,6 +179,13 @@ public class DownloadingBackground extends View implements IBackground,
     @Override
     public void setDrawRing(boolean aIsDrawRings) {
         this.isDrawingRing = aIsDrawRings;
+    }
+
+    @Override
+    public void setRingOpacity(@IntRange(from = 0, to = 255) int opacity) {
+        AlphaColorFilter filter = AlphaColorFilter.forAlpha(opacity);
+        drawPaintFirstRing.setColorFilter(filter);
+        drawPaintSecondRing.setColorFilter(filter);
     }
 
 }
