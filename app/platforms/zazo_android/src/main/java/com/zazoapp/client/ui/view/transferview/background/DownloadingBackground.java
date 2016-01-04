@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.annotation.IntRange;
 import android.view.View;
+import com.zazoapp.client.ui.animations.AlphaColorFilter;
 import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewColorChangeAnimationListener;
 import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewFiniteAnimationListener;
 import com.zazoapp.client.ui.view.transferview.animation.listeners.IViewProgressAnimationListener;

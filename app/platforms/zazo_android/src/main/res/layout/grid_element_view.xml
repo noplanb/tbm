@@ -54,7 +54,7 @@
                 android:translationX="@dimen/grid_item_status_icon_x_shift"
                 android:translationY="@dimen/grid_item_status_icon_y_shift"
                 android:translationZ="2dp"
-                android:src="@drawable/viewed"
+                android:src="@drawable/ic_viewed"
                 android:visibility="invisible"/>
 
         <ImageView

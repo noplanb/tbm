@@ -2,14 +2,7 @@ package com.zazoapp.client.ui.view;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Paint.Align;
-import android.graphics.Paint.FontMetrics;
-import android.graphics.RectF;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.TextureView;
@@ -19,7 +12,6 @@ import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import butterknife.ButterKnife;
-import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.utilities.Convenience;
@@ -122,53 +114,6 @@ public class PreviewTextureFrame extends FrameLayout {
 
 	public void setSurfaceTextureListener(SurfaceTextureListener listener) {
 		textureView.setSurfaceTextureListener(listener);
-	}
-	
-	@Override
-	protected void dispatchDraw(Canvas canvas) {
-		super.dispatchDraw(canvas);
-		if(isRecording)
-			drawIndicator(canvas);
-	}
-
-	private void drawIndicator(Canvas c){
-        int padding = getResources().getDimensionPixelSize(R.dimen.record_frame_thickness);
-        c.clipRect(padding, padding, c.getWidth() - padding, c.getHeight() - padding); // draw only inside frame
-
-		Paint paint = new Paint();
-		paint.setStyle(Paint.Style.FILL);
-
-		paint.setTextSize(Convenience.dpToPx(getContext(), 13)); //some size
-		paint.setAntiAlias(true);
-		paint.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
-		paint.setTextAlign(Align.CENTER);
-		FontMetrics fm = paint.getFontMetrics();
-		String text = getContext().getString(R.string.recording);
-		int text_x = c.getWidth()/2;
-		int text_y = (int) (c.getHeight() - fm.bottom - padding);
-
-		RectF r = new RectF(0, 
-				text_y + fm.top,
-				c.getWidth(), 
-				c.getHeight());
-		
-		//draw text background
-		paint.setColor(Color.parseColor("#30000000"));
-		c.drawRect(r , paint);
-
-		//draw text
-		paint.setColor(Color.WHITE);
-		c.drawText(text, text_x, text_y, paint);
-
-		paint.setColor(getResources().getColor(R.color.recording_border_color));
-
-        if (Config.SHOW_RED_DOT) {
-            //draw circle
-            int radius = Convenience.dpToPx(getContext(), 4);
-            c.drawCircle(2 * radius,
-                    text_y - radius,
-                    radius, paint);
-        }
 	}
 
     public void setTransformMatrix(Matrix matrix) {

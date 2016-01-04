@@ -278,7 +278,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         });
     }
 
-    private void updateUiForOutgoingVideoStatus(final int status, boolean statusChanged, final boolean force) {
+    private void updateUiForOutgoingVideoStatus(final int status, final boolean statusChanged, final boolean force) {
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -301,6 +301,14 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                     case OutgoingVideo.Status.VIEWED:
                         gridElementView.showUploadingMark(false);
                         updateContent(false, force);
+                        if (statusChanged && !force) {
+                            gridElementView.animateViewed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateContent(false, force);
+                                }
+                            });
+                        }
                         break;
                     default:
                         updateContent(true, force);

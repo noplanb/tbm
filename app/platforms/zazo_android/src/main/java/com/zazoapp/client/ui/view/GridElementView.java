@@ -14,16 +14,14 @@ import butterknife.InjectView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.ui.animations.TransferProgressAnimation;
 import com.zazoapp.client.ui.animations.UnreadCountAnimation;
+import com.zazoapp.client.ui.animations.ViewedAnimation;
 import com.zazoapp.client.ui.view.ThumbView.MapArea;
-import com.zazoapp.client.ui.view.transferview.DownloadingView;
 import com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView;
+import com.zazoapp.client.ui.view.transferview.DownloadingView;
 import com.zazoapp.client.ui.view.transferview.UploadingView;
 import com.zazoapp.client.utilities.Convenience;
 
 public class GridElementView extends RelativeLayout implements View.OnClickListener, View.OnLongClickListener {
-
-    private static final int ANIMATION_DELAY_MILLIS = 200;
-    private static final int ANIMATION_DURATION_MILLIS = 400;
 
     public interface ClickListener {
 		void onNudgeClicked();
@@ -235,6 +233,10 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void animateDownloading(Runnable task) {
         TransferProgressAnimation.animateDownloading(this, task);
+    }
+
+    public void animateViewed(Runnable task) {
+        ViewedAnimation.animate(this, imgViewed, task);
     }
 
     public boolean isAnimating() {
