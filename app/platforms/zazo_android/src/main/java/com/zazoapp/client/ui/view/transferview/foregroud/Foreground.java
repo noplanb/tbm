@@ -30,7 +30,7 @@ public class Foreground extends View implements IViewMoveDownAnimationListener {
 
     public Foreground(Context context) {
         super(context);
-
+        setLayerType(LAYER_TYPE_SOFTWARE, null);
         initRect();
         initPaint();
     }
@@ -44,7 +44,7 @@ public class Foreground extends View implements IViewMoveDownAnimationListener {
     }
 
     private void initPaint() {
-        drawPaintLine = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+        drawPaintLine = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG | Paint.FILTER_BITMAP_FLAG);
         drawPaintLine.setColor(Color.BLUE);
         drawPaintArrow = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG | Paint.FILTER_BITMAP_FLAG);
     }
@@ -73,7 +73,7 @@ public class Foreground extends View implements IViewMoveDownAnimationListener {
         int xOffset = (int) ((iconMaxWidth - newWidth) * 0.5) + rectContent.left;
         int yOffset = (int) ((iconMaxHeight - newHeight) * 0.5) + rectContent.top + iconShift;
 
-        rectIconDestination.set(xOffset, yOffset , (int) newWidth + xOffset, Math.min((int) newHeight + yOffset, rectContent.bottom));
+        rectIconDestination.set(xOffset, Math.min(yOffset, rectContent.bottom) , (int) newWidth + xOffset, Math.min((int) newHeight + yOffset, rectContent.bottom));
         rectLine.set(rectIconDestination.left, rectContent.bottom - rectLineHeight, rectIconDestination.right, rectContent.bottom);
     }
 
@@ -116,11 +116,11 @@ public class Foreground extends View implements IViewMoveDownAnimationListener {
     public void setShift( int shift ){
         iconShift = shift;
         if (bitmap != null) {
-            if (getFinalValue() == 0 || iconShift < rectLine.height()) {
+            if (getFinalValue() == 0 || iconShift < 2 * rectLine.height()) {
                 rectIconSourceCrop.bottom = rectIconSource.top + bitmap.getHeight();
             } else {
                 rectIconSourceCrop.bottom = rectIconSource.top +
-                        bitmap.getHeight() * (getFinalValue() - iconShift + rectLine.height()) / getFinalValue();
+                        bitmap.getHeight() * (getFinalValue() - iconShift + 2 * rectLine.height()) / getFinalValue();
             }
         }
         updateIconDestinationRect();
