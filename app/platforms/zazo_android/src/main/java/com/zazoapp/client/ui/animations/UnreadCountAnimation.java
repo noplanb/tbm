@@ -7,24 +7,28 @@ import android.graphics.Color;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.TextView;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import com.zazoapp.client.R;
 
 /**
  * Created by Serhii on 31.12.2015.
  */
 public class UnreadCountAnimation {
-    public static void animate(final View parent, final TextView unreadCount, final Runnable changeAction) {
+    public static void animate(final View parent, final Runnable changeAction) {
+        final Holder h = new Holder(parent);
         ValueAnimator.AnimatorUpdateListener updateListener = new ValueAnimator.AnimatorUpdateListener() {
             float scaleFactor = 0.33f;
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value = (float) animation.getAnimatedValue();
-                int currentColor = unreadCount.getCurrentTextColor();
+                int currentColor = h.unreadCount.getCurrentTextColor();
                 int r = Color.red(currentColor);
                 int b = Color.blue(currentColor);
                 int g = Color.green(currentColor);
-                unreadCount.setTextColor(Color.argb((int) (0xFF * value), r, g, b));
-                unreadCount.setScaleX(1f + scaleFactor * (1f - value));
-                unreadCount.setScaleY(1f + scaleFactor * (1f - value));
+                h.unreadCount.setTextColor(Color.argb((int) (0xFF * value), r, g, b));
+                h.layout.setScaleX(1f + scaleFactor * (1f - value));
+                h.layout.setScaleY(1f + scaleFactor * (1f - value));
             }
         };
         ValueAnimator anim1 = ValueAnimator.ofFloat(1f, 0);
@@ -49,5 +53,14 @@ public class UnreadCountAnimation {
             }
         });
         anim1.start();
+    }
+
+    static class Holder {
+        @InjectView(R.id.unread_count_layout) View layout;
+        @InjectView(R.id.tw_unread_count) TextView unreadCount;
+
+        Holder(View v) {
+            ButterKnife.inject(this, v);
+        }
     }
 }

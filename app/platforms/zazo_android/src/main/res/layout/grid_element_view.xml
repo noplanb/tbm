@@ -42,34 +42,41 @@
                     android:visibility="invisible"/>
         </FrameLayout>
 
-        <ImageView
-                android:id="@+id/img_viewed"
+        <com.zazoapp.client.ui.view.ShadowedStatusLayout
+                android:id="@+id/viewed_layout"
                 android:layout_width="@dimen/grid_item_status_icon_size"
                 android:layout_height="@dimen/grid_item_status_icon_size"
                 android:layout_alignParentRight="true"
-                android:layout_gravity="right"
-                android:background="@drawable/bg_white_circle"
-                android:padding="@dimen/grid_item_status_icon_content_padding"
-                android:scaleType="fitCenter"
                 android:translationX="@dimen/grid_item_status_icon_x_shift"
                 android:translationY="@dimen/grid_item_status_icon_y_shift"
-                android:translationZ="2dp"
-                android:src="@drawable/ic_viewed"
-                android:visibility="invisible"/>
+                android:visibility="invisible">
 
-        <ImageView
-                android:id="@+id/img_uploading"
+            <ImageView
+                    android:id="@+id/img_viewed"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/grid_item_status_icon_content_padding"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_viewed"/>
+        </com.zazoapp.client.ui.view.ShadowedStatusLayout>
+
+        <com.zazoapp.client.ui.view.ShadowedStatusLayout
+                android:id="@+id/uploading_layout"
                 android:layout_width="@dimen/grid_item_status_icon_size"
                 android:layout_height="@dimen/grid_item_status_icon_size"
                 android:layout_alignParentRight="true"
-                android:background="@drawable/bg_white_circle"
-                android:padding="@dimen/grid_item_status_icon_content_padding"
-                android:scaleType="fitCenter"
                 android:translationX="@dimen/grid_item_status_icon_x_shift"
                 android:translationY="@dimen/grid_item_status_icon_y_shift"
-                android:translationZ="2dp"
-                android:src="@drawable/ic_upload_arrow"
-                android:visibility="invisible"/>
+                android:visibility="visible">
+            <ImageView
+                    android:id="@+id/img_uploading"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/grid_item_status_icon_content_padding"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_upload_arrow"
+                    />
+        </com.zazoapp.client.ui.view.ShadowedStatusLayout>
 
         <FrameLayout
                 android:layout_width="match_parent"
@@ -82,22 +89,27 @@
                     android:visibility="invisible"/>
         </FrameLayout>
 
-        <com.zazoapp.client.ui.view.AutoResizeTextView
-                android:id="@+id/tw_unread_count"
+        <com.zazoapp.client.ui.view.ShadowedStatusLayout
+                android:id="@+id/unread_count_layout"
                 android:layout_width="@dimen/grid_item_status_icon_size"
                 android:layout_height="@dimen/grid_item_status_icon_size"
                 android:layout_alignParentRight="true"
-                android:background="@drawable/bg_red_circle"
-                android:padding="@dimen/grid_item_status_icon_text_padding"
-                android:gravity="center"
-                android:text="12"
                 android:translationX="@dimen/grid_item_status_icon_x_shift"
                 android:translationY="@dimen/grid_item_status_icon_y_shift"
-                android:translationZ="2dp"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/text_very_small"
-                android:singleLine="true"
-                android:visibility="invisible"/>
+                android:visibility="invisible"
+                app:solid_background_color="@color/bg_unread_msg_count">
+
+            <com.zazoapp.client.ui.view.AutoResizeTextView
+                    android:id="@+id/tw_unread_count"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/grid_item_status_icon_text_padding"
+                    android:gravity="center"
+                    android:text="12"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/text_very_small"
+                    android:singleLine="true"/>
+        </com.zazoapp.client.ui.view.ShadowedStatusLayout>
     </RelativeLayout>
 
 </RelativeLayout>

@@ -39,7 +39,9 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     @InjectView(R.id.tw_unread_count) TextView twUnreadCount;
     @InjectView(R.id.img_thumb) ThumbView imgThumb;
     @InjectView(R.id.img_viewed) ImageView imgViewed;
-    @InjectView(R.id.img_uploading) ImageView imgUploading;
+    @InjectView(R.id.uploading_layout) View uploadingLayout;
+    @InjectView(R.id.unread_count_layout) View unreadCountLayout;
+    @InjectView(R.id.viewed_layout) View viewedLayout;
     @InjectView(R.id.downloading_animation_view) DownloadingView downloadingView;
     @InjectView(R.id.uploading_animation_view) UploadingView uploadingView;
     @InjectView(R.id.animation_background) View animationBackground;
@@ -152,14 +154,13 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     }
 
     public void setVideoViewed(boolean visible) {
-        imgViewed.setVisibility(visible ? VISIBLE : INVISIBLE);
+        viewedLayout.setVisibility(visible ? VISIBLE : INVISIBLE);
     }
 
     public void setUnreadCount(boolean visible, int unreadMsgCount, boolean animate) {
         if (visible) {
-            twUnreadCount.setVisibility(VISIBLE);
+            unreadCountLayout.setVisibility(VISIBLE);
             cardLayout.getBackground().setColorFilter(getResources().getColor(R.color.primary), PorterDuff.Mode.SRC_IN);
-            twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_red_circle));
             if (animate) {
                 animateUnreadCountChanging(unreadMsgCount);
             } else {
@@ -167,16 +168,14 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             }
         } else {
             cardLayout.getBackground().setColorFilter(null);
-            twUnreadCount.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_transparent_circle));
-            twUnreadCount.postInvalidate();
             twUnreadCount.setText((unreadMsgCount <= 0) ? "" : String.valueOf(unreadMsgCount));
-            twUnreadCount.setVisibility(INVISIBLE);
+            unreadCountLayout.setVisibility(INVISIBLE);
         }
 
     }
 
     private void animateUnreadCountChanging(final int unreadMsgCount) {
-        UnreadCountAnimation.animate(this, twUnreadCount, new Runnable() {
+        UnreadCountAnimation.animate(this, new Runnable() {
             @Override
             public void run() {
                 twUnreadCount.setText(String.valueOf(unreadMsgCount));
@@ -210,13 +209,13 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void showUploadingMark(boolean visible) {
         if (visible) {
-            RelativeLayout.LayoutParams params = (LayoutParams) imgUploading.getLayoutParams();
+            RelativeLayout.LayoutParams params = (LayoutParams) uploadingLayout.getLayoutParams();
             params.addRule(ALIGN_PARENT_RIGHT);
             params.addRule(ALIGN_PARENT_LEFT, 0); // remove rule
-            imgUploading.setLayoutParams(params);
+            uploadingLayout.setLayoutParams(params);
         }
-        imgUploading.clearAnimation();
-        imgUploading.setVisibility(visible ? VISIBLE : INVISIBLE);
+        uploadingLayout.clearAnimation();
+        uploadingLayout.setVisibility(visible ? VISIBLE : INVISIBLE);
 
     }
 
@@ -240,7 +239,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     }
 
     public boolean isAnimating() {
-        return downloadingView.getAnimation() != null || imgUploading.getAnimation() != null;
+        return downloadingView.getAnimation() != null || uploadingLayout.getAnimation() != null;
     }
 
     public boolean isReadyToAnimate() {

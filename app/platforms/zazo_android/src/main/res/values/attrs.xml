@@ -69,4 +69,8 @@
         <attr name="dw_icon_size_x" format="dimension" />
         <attr name="dw_icon_size_y" format="dimension" />
     </declare-styleable>
+
+    <declare-styleable name="ShadowedStatusLayout">
+        <attr name="solid_background_color" format="color"/>
+    </declare-styleable>
 </resources>

@@ -54,6 +54,9 @@ public class RotationCircleView extends RelativeLayout {
         final TypedArray typedArray = getContext().obtainStyledAttributes(
                 attrs, R.styleable.RotationCircleView, defStyle, 0);
 
+        if (isInEditMode()) {
+            return;
+        }
         animationController = createAnimationController(typedArray);
         //bg
         background = createBackground(typedArray);
@@ -142,8 +145,10 @@ public class RotationCircleView extends RelativeLayout {
 
         TextView textView = new AutoResizeTextView(getContext());
         textView.setText(str);
-        Typeface face = Convenience.getTypeface(getContext());
-        textView.setTypeface(face);
+        if (!isInEditMode()) {
+            Typeface face = Convenience.getTypeface(getContext());
+            textView.setTypeface(face);
+        }
         textView.setTextColor(textColor);
         textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
         textView.setTextSize(textSize);

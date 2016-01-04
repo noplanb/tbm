@@ -7,14 +7,13 @@ import android.support.annotation.DimenRes;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.ui.view.ITransferView;
 import com.zazoapp.client.ui.view.transferview.DownloadingView;
-import com.zazoapp.client.ui.view.transferview.animation.listeners.ITransferAnimationListener;
 import com.zazoapp.client.ui.view.transferview.UploadingView;
+import com.zazoapp.client.ui.view.transferview.animation.listeners.ITransferAnimationListener;
 
 /**
  * Created by Serhii on 31.12.2015.
@@ -27,7 +26,7 @@ public class TransferProgressAnimation {
     @InjectView(R.id.downloading_animation_view) DownloadingView downloadingView;
     @InjectView(R.id.uploading_animation_view) UploadingView uploadingView;
     @InjectView(R.id.animation_background) View animationBackground;
-    @InjectView(R.id.tw_unread_count) TextView twUnreadCount;
+    @InjectView(R.id.unread_count_layout) View anchorLayout;
     private View parent;
 
     private TransferProgressAnimation(View v) {
@@ -64,8 +63,8 @@ public class TransferProgressAnimation {
             float size = Math.min(getWidth(), getHeight()) * 0.5f;
             int contentRadius = getSize(R.dimen.grid_item_status_icon_content_radius);
             float endSize = contentRadius * 2;
-            float targetX = twUnreadCount.getX() + contentRadius;
-            float targetY = twUnreadCount.getY() + contentRadius;
+            float targetX = anchorLayout.getX() + contentRadius;
+            float targetY = anchorLayout.getY() + contentRadius;
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value = (float) animation.getAnimatedValue();
