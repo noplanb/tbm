@@ -64,7 +64,9 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
     @Override
     public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY) {
         if (nineViewGroup.getSpinStrategy() != null && !nineViewGroup.isCenterView(target)) {
-            nineViewGroup.getSpinStrategy().spin(startX, startY, offsetX, offsetY);
+            if (checkTouch(startX, startY)) {
+                nineViewGroup.getSpinStrategy().spin(startX, startY, offsetX, offsetY);
+            }
         }
     }
 
@@ -90,7 +92,7 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
                 //    return;
                 //}
             }
-            if (nineViewGroup.getSpinStrategy() != null) {
+            if (nineViewGroup.getSpinStrategy() != null && checkTouch(startX, startY)) {
                 nineViewGroup.getSpinStrategy().initSpin(startX, startY, offsetX, offsetY);
             }
         }
@@ -98,16 +100,21 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
 
     @Override
     public void endMove(double startX, double startY, double offsetX, double offsetY) {
-        if (nineViewGroup.getSpinStrategy() != null) {
+        if (nineViewGroup.getSpinStrategy() != null  && checkTouch(startX, startY)) {
             nineViewGroup.getSpinStrategy().finishSpin(startX, startY, offsetX, offsetY);
         }
     }
 
     @Override
     public void onTouch(double startX, double startY) {
-        if (nineViewGroup.getSpinStrategy() != null) {
+        if (nineViewGroup.getSpinStrategy() != null && checkTouch(startX, startY)) {
             nineViewGroup.getSpinStrategy().stopSpin(startX, startY);
         }
+    }
+
+    private boolean checkTouch(double startX, double startY) {
+        double bounce = nineViewGroup.getContext().getResources().getDimensionPixelSize(R.dimen.nine_view_sliding_min_bounce) / 2;
+        return startX > bounce && startX < nineViewGroup.getWidth() - bounce;
     }
 
     @Override

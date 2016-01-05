@@ -56,7 +56,7 @@
     <color name="gray">#7D7D7D</color>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
-    <color name="bgn_main">#F8F8F8</color>
+    <color name="bgn_main">#EEEEEE</color>
     <color name="popup_text_color">#434343</color>
     <color name="status_bar_main_color">#3000</color>
     <color name="status_bar_register_color">#739a39</color>
@@ -70,11 +70,11 @@
     <color name="add_contact_text">#8F8F8F</color>
 
     <color name="search_hint">#747474</color>
-    <color name="thumb_color_strong_cyan">#00AABF</color>
-    <color name="thumb_color_moderate_blue">#3A4AA6</color>
-    <color name="thumb_color_strong_blue">#176ABD</color>
-    <color name="thumb_color_moderate_lime_green">#46A149</color>
-    <color name="thumb_color_pure_orange">#E78A00</color>
+    <color name="thumb_color_cyan">#00acc1</color>
+    <color name="thumb_color_deep_purple">#673ab7</color>
+    <color name="thumb_color_indigo">#3f51b5</color>
+    <color name="thumb_color_teal">#009688</color>
+    <color name="thumb_color_blue">#1976d2</color>
 
     <color name="white_active_tint">#8A000000</color>
     <color name="progress_half_blue">#140000FF</color>

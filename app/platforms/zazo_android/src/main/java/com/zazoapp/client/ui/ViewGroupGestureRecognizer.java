@@ -272,8 +272,6 @@ public abstract class ViewGroupGestureRecognizer {
                     move(targetView, event.getX() - downPosition[0], event.getY() - downPosition[1]);
                     return;
                 case MotionEvent.ACTION_CANCEL:
-                    state = State.IDLE;
-                    return;
                 case MotionEvent.ACTION_UP:
                     state = State.IDLE;
                     endMove(downPosition[0], downPosition[1], event.getX() - downPosition[0], event.getY() - downPosition[1]);
@@ -379,14 +377,12 @@ public abstract class ViewGroupGestureRecognizer {
     }
 
     private boolean isMoving(MotionEvent event) {
-        double a2 = Math.pow(downPosition[0] - (double) event.getX(), 2D);
-        double b2 = Math.pow(downPosition[1] - (double) event.getY(), 2D);
-        double limit = Math.pow(activity.getResources().getDimension(R.dimen.nine_view_sliding_min_bounce), 2D);
-        if (a2 + b2 > limit) {
-            return true;
-        } else {
-            return false;
-        }
+        //double a2 = Math.pow(downPosition[0] - (double) event.getX(), 2D);
+        //double b2 = Math.pow(downPosition[1] - (double) event.getY(), 2D);
+        //double limit = Math.pow(activity.getResources().getDimension(R.dimen.nine_view_sliding_min_bounce), 2D);
+        double limit = activity.getResources().getDimension(R.dimen.nine_view_sliding_min_bounce);
+        double bounce = Math.abs(downPosition[1] - (double) event.getY());
+        return bounce > limit;
     }
 
     private void startLongpressTimer() {

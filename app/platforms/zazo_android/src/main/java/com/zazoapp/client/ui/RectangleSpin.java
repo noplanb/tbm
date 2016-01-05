@@ -79,7 +79,6 @@ public class RectangleSpin extends NineViewGroup.SpinStrategy {
 
     @Override
     protected void initSpin(double startX, double startY, double offsetX, double offsetY) {
-        isAnimating = false;
         isInited = false;
         if (valueAnimator != null) {
             valueAnimator.cancel();
@@ -115,20 +114,14 @@ public class RectangleSpin extends NineViewGroup.SpinStrategy {
         final double normEndAngle = Math.copySign(Math.round(Math.abs(maxEndAngle / quarter)), maxEndAngle) * quarter;
 
         final long parkingDuration = (long) (duration * Math.abs(normEndAngle - maxEndAngle) / maxDistance);
-        valueAnimator = new ValueAnimator();
+        valueAnimator = ValueAnimator.ofFloat((float) currentAngle,
+                (float) (((normEndAngle != 0) ? normEndAngle : maxEndAngle) - angle));
         animationLastTime = System.nanoTime();
-        valueAnimator.setValues();
-        if (normEndAngle != 0) {
-            valueAnimator.setFloatValues((float) currentAngle, (float) (normEndAngle - angle));
-        } else {
-            valueAnimator.setFloatValues((float) currentAngle, (float) (maxEndAngle - angle));
-        }
         valueAnimator.setDuration(duration);
         valueAnimator.setInterpolator(new DecelerateInterpolator());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                long time = animationLastTime;
                 animationLastTime = System.nanoTime();
                 applySpin(normalizedAngle((Float) animation.getAnimatedValue()));
             }
@@ -143,10 +136,11 @@ public class RectangleSpin extends NineViewGroup.SpinStrategy {
             public void onAnimationEnd(Animator animation) {
                 if (!isCancelled) {
                     if (isInited) {
-                        isInited = false;
-                        if (normEndAngle == 0) {
-                            valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+                        if (normEndAngle == 0 && normEndAngle - angle != currentAngle) {
+                            // small parking animation
+                            valueAnimator = valueAnimator.clone();
                             valueAnimator.setFloatValues((float) currentAngle, (float) (normEndAngle - angle));
+                            valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
                             valueAnimator.setDuration(Math.min(parkingDuration, 150));
                             valueAnimator.start();
                             return;
@@ -171,7 +165,7 @@ public class RectangleSpin extends NineViewGroup.SpinStrategy {
 
     @Override
     protected boolean isSpinning() {
-        return isInited;
+        return isInited || isAnimating;
     }
 
     private void runAllocationAnimation() {
