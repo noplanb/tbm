@@ -139,6 +139,11 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         bodyLayout.setVisibility(visible ? GONE : VISIBLE);
         emptyIcon.setEnabled(next);
         emptyText.setVisibility(next ? VISIBLE : GONE);
+        if (visible) {
+            setVideoViewed(false);
+            setUnreadCount(false, 0, false);
+            showUploadingMark(false);
+        }
     }
 
     public boolean isEmpty() {
