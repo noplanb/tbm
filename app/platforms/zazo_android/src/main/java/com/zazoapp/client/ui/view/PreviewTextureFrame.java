@@ -116,6 +116,10 @@ public class PreviewTextureFrame extends FrameLayout {
 		textureView.setSurfaceTextureListener(listener);
 	}
 
+    public View getCameraIconView() {
+        return switchCameraIcon;
+    }
+
     public void setTransformMatrix(Matrix matrix) {
         textureView.setTransform(matrix);
     }

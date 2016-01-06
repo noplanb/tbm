@@ -43,6 +43,10 @@ public class VideoRecorder implements SurfaceTextureListener {
         void runtimeErrorOnStart();
     }
 
+    public interface PreviewListener {
+        void onPreviewAvailable();
+    }
+
     private SurfaceTexture holder;
     private boolean isPreviewing = false;
     private boolean isSurfaceAvailable = false;
@@ -51,6 +55,7 @@ public class VideoRecorder implements SurfaceTextureListener {
     private Friend currentFriend;
     private PreviewTextureFrame preview;
     private AudioController audioController;
+    private PreviewListener previewListener;
 
     // Allow registration of a single delegate to handle exceptions.
     private VideoRecorderExceptionHandler videoRecorderExceptionHandler;
@@ -340,6 +345,14 @@ public class VideoRecorder implements SurfaceTextureListener {
             }
 
             try {
+                if (previewListener != null) {
+                    camera.setOneShotPreviewCallback(new Camera.PreviewCallback() {
+                        @Override
+                        public void onPreviewFrame(byte[] data, Camera camera) {
+                            previewListener.onPreviewAvailable();
+                        }
+                    });
+                }
                 camera.startPreview();
             } catch (RuntimeException e){
                 Dispatch.dispatch("Error camera.startPreview: " + e.getLocalizedMessage());
@@ -417,5 +430,9 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     public void setAudioController(AudioController ac) {
         audioController = ac;
+    }
+
+    public void setPreviewListener(PreviewListener listener) {
+        previewListener = listener;
     }
 }

@@ -1,10 +1,12 @@
 package com.zazoapp.client.ui.helpers;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v7.widget.CardView;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
@@ -15,15 +17,18 @@ import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoRecorder;
 import com.zazoapp.client.ui.ZazoManagerProvider;
+import com.zazoapp.client.ui.animations.CameraAnimation;
 import com.zazoapp.client.ui.view.PreviewTextureFrame;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by skamenkovych@codeminders.com on 2/9/2015.
  */
-public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptionHandler, Recorder {
+public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptionHandler, Recorder, VideoRecorder.PreviewListener {
 
     private static final String TAG = VideoRecorderManager.class.getSimpleName();
 
@@ -31,6 +36,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     private final Context context;
     private final ZazoManagerProvider managerProvider;
     private volatile boolean cameraSwitchAllowed = true;
+    private WeakReference<View> containerRef;
 
     public VideoRecorderManager(Context context, ZazoManagerProvider managerProvider) {
         this.context = context;
@@ -80,6 +86,10 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     @Override
     public void unableToSetPreview() {
         DialogShower.showToast(context, R.string.toast_unable_to_set_preview);
+        final View container = containerRef.get();
+        if (container != null && videoRecorder.getView().getAlpha() == 0) {
+            CameraAnimation.animateIn(videoRecorder.getView(), null);
+        }
     }
 
     @Override
@@ -123,18 +133,25 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     @Override
     public void addPreviewTo(ViewGroup container) {
         PreviewTextureFrame vrFrame = (PreviewTextureFrame) videoRecorder.getView();
+        View blackBackground = new View(context);
+        blackBackground.setBackgroundColor(Color.BLACK);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             CardView cardView = new CardView(context);
+            cardView.addView(blackBackground, new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             cardView.addView(vrFrame, new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             container.addView(cardView, new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             container.setBackgroundResource(R.drawable.card_empty);
         } else {
+            container.addView(blackBackground, new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             container.addView(vrFrame, new PreviewTextureFrame.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             container.setBackgroundResource(R.drawable.card);
         }
+        containerRef = new WeakReference<View>(container);
     }
 
     @Override
@@ -142,6 +159,13 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         if (cameraSwitchAllowed && !isRecording()) {
             cameraSwitchAllowed = false;
             AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected void onPreExecute() {
+                    super.onPreExecute();
+                    View switchCameraIcon = ((PreviewTextureFrame) videoRecorder.getView()).getCameraIconView();
+                    switchCameraIcon.animate().setDuration(400).rotationYBy(180).start();
+                }
+
                 @Override
                 protected Void doInBackground(Void... params) {
                     videoRecorder.release(false);
@@ -151,8 +175,17 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
 
                 @Override
                 protected void onPostExecute(Void aVoid) {
-                    videoRecorder.onResume();
-                    cameraSwitchAllowed = true;
+                    final View container = containerRef.get();
+                    if (container != null) {
+                        CameraAnimation.animateOut(videoRecorder.getView(), new Runnable() {
+                            @Override
+                            public void run() {
+                                videoRecorder.setPreviewListener(VideoRecorderManager.this);
+                                videoRecorder.onResume();
+                                cameraSwitchAllowed = true;
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -167,5 +200,14 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     @Override
     public boolean isRecording() {
         return videoRecorder.isRecording();
+    }
+
+    @Override
+    public void onPreviewAvailable() {
+        videoRecorder.setPreviewListener(null);
+        final View container = containerRef.get();
+        if (container != null) {
+            CameraAnimation.animateIn(videoRecorder.getView(), null);
+        }
     }
 }
