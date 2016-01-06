@@ -108,8 +108,11 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment implements O
     }
 
     public void setCalling() {
-        final TextView callBtn = ButterKnife.findById(getView(), R.id.call_btn);
-        callBtn.setText(getString(R.string.enter_code_dlg_button_calling));
+        View view = getView();
+        if (view != null) {
+            final TextView callBtn = ButterKnife.findById(view, R.id.call_btn);
+            callBtn.setText(getString(R.string.enter_code_dlg_button_calling));
+        }
     }
 
 }
