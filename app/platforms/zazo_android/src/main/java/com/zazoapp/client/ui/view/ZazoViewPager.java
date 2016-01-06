@@ -3,10 +3,10 @@ package com.zazoapp.client.ui.view;
 import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 /**
+ * This custom view extends ViewPager to support app specific cases
  * Created by skamenkovych@codeminders.com on 1/5/2016.
  */
 public class ZazoViewPager extends ViewPager {
@@ -20,7 +20,6 @@ public class ZazoViewPager extends ViewPager {
 
     @Override
     protected boolean canScroll(View v, boolean checkV, int dx, int x, int y) {
-        Log.i("ZazoViewPager", "Can scroll view: " + v);
         if (v instanceof NineViewGroup) {
             if (((NineViewGroup) v).getSpinStrategy().isSpinning()) {
                 return true;

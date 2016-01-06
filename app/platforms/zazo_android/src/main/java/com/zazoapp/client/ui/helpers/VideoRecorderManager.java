@@ -139,7 +139,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
 
     @Override
     public void switchCamera() {
-        if (cameraSwitchAllowed) {
+        if (cameraSwitchAllowed && !isRecording()) {
             cameraSwitchAllowed = false;
             AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
                 @Override

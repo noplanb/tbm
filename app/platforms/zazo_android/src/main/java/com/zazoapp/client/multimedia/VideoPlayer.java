@@ -359,6 +359,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     Runnable zoomRollback;
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        if (videoRootLayout.getAlpha() == 0) {
+            return false;
+        }
         switch (v.getId()) {
             case R.id.video_root_layout:
                 if (isPlaying() && event.getAction() == MotionEvent.ACTION_DOWN) {
