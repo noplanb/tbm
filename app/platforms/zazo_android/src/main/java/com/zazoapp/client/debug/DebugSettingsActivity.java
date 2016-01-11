@@ -1,12 +1,12 @@
 package com.zazoapp.client.debug;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -24,21 +24,27 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.google.i18n.phonenumbers.Phonenumber;
+import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.FriendGetter;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.model.OutgoingVideoFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.tutorial.HintType;
-import com.zazoapp.client.ui.MainActivity;
+import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.utilities.DialogShower;
+
+import java.util.List;
 
 /**
  * Created by skamenkovych@codeminders.com on 2/20/2015.
@@ -53,6 +59,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
     @InjectView(R.id.debug_mode) Switch debugMode;
     private DebugConfig config;
     private VoiceRecognitionTestManager voiceRecognitionTestManager;
+    private DialogFragment pd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -273,13 +280,12 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                             Context context = DebugSettingsActivity.this;
                             FriendFactory.getFactoryInstance().destroyAll(context);
                             IncomingVideoFactory.getFactoryInstance().destroyAll(context);
+                            OutgoingVideoFactory.getFactoryInstance().destroyAll(context);
                             GridElementFactory.getFactoryInstance().destroyAll(context);
                             ActiveModelsHandler.getInstance(context).ensureAll();
                             GridManager.getInstance().initGrid(context);
-                            Intent intent = new Intent(context, MainActivity.class);
-                            intent.setAction("_FINISH");
-                            startActivity(intent);
-                            finish();
+                            new Features(DebugSettingsActivity.this).lockAll();
+                            new ClearFriendGetter(context, true).getFriends();
                         }
                     }
                 });
@@ -463,4 +469,78 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
     public void onChange() {
     }
 
+    private class ClearFriendGetter extends FriendGetter {
+        public ClearFriendGetter(Context c, boolean destroyAll) {
+            super(c, destroyAll);
+            showProgressDialog();
+        }
+
+        @Override
+        protected void success() {
+            new ClearSyncWelcomedFriends();
+        }
+
+        @Override
+        protected void failure() {
+            dismissProgressDialog();
+            serverError();
+        }
+    }
+
+    private class ClearSyncWelcomedFriends extends RemoteStorageHandler.GetWelcomedFriends {
+
+        @Override
+        protected void gotWelcomedFriends(List<String> mkeys) {
+            if (mkeys != null && !mkeys.isEmpty()) {
+                List<Friend> friends = FriendFactory.getFactoryInstance().all();
+                for (Friend friend : friends) {
+                    String mkey = friend.getMkey();
+                    if (mkeys.contains(mkey)) {
+                        friend.setEverSent(true);
+                        mkeys.remove(mkey);
+                    } else {
+                        friend.setEverSent(false);
+                    }
+                }
+            }
+            RemoteStorageHandler.setWelcomedFriends();
+            Features features = new Features(DebugSettingsActivity.this);
+            features.checkAndUnlock();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    dismissProgressDialog();
+                    finish();
+                }
+            });
+        }
+
+        @Override
+        protected void failure() {
+            dismissProgressDialog();
+            serverError();
+        }
+    }
+
+    private void showProgressDialog() {
+        dismissProgressDialog();
+        pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
+        pd.show(getSupportFragmentManager(), null);
+    }
+
+    private void dismissProgressDialog() {
+        if (pd != null) {
+            pd.dismissAllowingStateLoss();
+            pd = null;
+        }
+    }
+
+    private void serverError(){
+        showErrorDialog(getString(R.string.dialog_server_error_title),
+                getString(R.string.dialog_server_error_message, Config.appName));
+    }
+
+    private void showErrorDialog(String title, String message) {
+        DialogShower.showInfoDialog(this, title, message);
+    }
 }

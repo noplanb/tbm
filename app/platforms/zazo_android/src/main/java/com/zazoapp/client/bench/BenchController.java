@@ -186,10 +186,12 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        listView.setTranslationY(offset);
-                        listView.setVisibility(View.VISIBLE);
-                        listView.setAlpha(0f);
-                        listView.animate().alpha(1f).translationY(0).start();
+                        if (listView != null) {
+                            listView.setTranslationY(offset);
+                            listView.setVisibility(View.VISIBLE);
+                            listView.setAlpha(0f);
+                            listView.animate().alpha(1f).translationY(0).start();
+                        }
                     }
                 }).start();
     }
@@ -385,7 +387,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         }
 
         public boolean isDataSetReady() {
-            return list != null;
+            return list != null && groups != null;
         }
 
         public void setList(BenchObjectList list) {

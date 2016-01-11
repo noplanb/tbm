@@ -55,7 +55,7 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
     public boolean isOnGrid(Friend f){
         boolean isOnGrid = false;
         for (GridElement ge : GridElementFactory.getFactoryInstance().all()){
-            if (ge.hasFriend() && ge.getFriend().equals(f)) {
+            if (ge.hasFriend() && f != null && f.equals(ge.getFriend())) {
                 isOnGrid = true;
                 break;
             }

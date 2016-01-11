@@ -79,6 +79,12 @@ public class Features {
         notifyCallbacks(feature, false);
     }
 
+    public void lockAll() {
+        for (Feature feature : Feature.values()) {
+            prefs.remove(feature.getPrefName());
+        }
+    }
+
     public boolean isUnlocked(Feature feature) {
         return prefs.getBoolean(feature.getPrefName(), false) || DebugConfig.getInstance(activity).isAllFeaturesEnabled();
     }

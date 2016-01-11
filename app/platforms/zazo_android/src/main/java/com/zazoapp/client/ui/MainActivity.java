@@ -35,10 +35,6 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if ("_FINISH".equals(intent.getAction())) {
-            finish();
-            return;
-        }
         setIntent(intent);
     }
 
