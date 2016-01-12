@@ -30,7 +30,7 @@ public enum HintType {
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
             if (nineViewGroup != null) {
-                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT)));
+                layout.dimExceptForView(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT), nineViewGroup);
             }
         }
     },

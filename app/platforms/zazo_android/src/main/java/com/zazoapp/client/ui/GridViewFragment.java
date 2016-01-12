@@ -228,7 +228,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         Uri data = currentIntent.getData();
 
         if (Intent.ACTION_MAIN.equals(action)) {
-            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
+            //FIXME UI 2.0 currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             getManagerProvider().getTutorial().onLaunch(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT));
             return;
         }

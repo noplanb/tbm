@@ -173,6 +173,7 @@ public class NineViewGroup extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         layoutElementViews();
+        /*Log.i(TAG, "onLayout: " + changed + " " + l + " " + t + " " + r + " " + b);*/
         if (changed) {
             if (layoutCompleteListener != null)
                 layoutCompleteListener.onLayoutComplete();
@@ -212,11 +213,12 @@ public class NineViewGroup extends ViewGroup {
     private void addElementViews() {
         for (int i = 0; i < 9; i++) {
             FrameLayout fl = new FrameLayout(getContext());
+            fl.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
             fl.setClipChildren(false);
             fl.setClipToPadding(false);
             fl.setId(i);
             fl.setTag(R.id.box_id, i);
-            addView(fl, i, new LayoutParams(elementWidth(), elementHeight()));
+            addView(fl, i);
         }
     }
 

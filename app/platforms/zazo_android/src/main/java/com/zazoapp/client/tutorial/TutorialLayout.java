@@ -4,11 +4,10 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.RectF;
-import android.graphics.Region;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -32,9 +31,12 @@ public class TutorialLayout extends FrameLayout {
     private boolean dimmed;
     private int dimValue;
     private Paint dimPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint helpViewPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private ValueAnimator dimAnimator;
+    private Bitmap helpViewBitmap;
 
     private RectF dimExcludedRect = new RectF();
+    private RectF backgroundViewRect = new RectF();
     private RectF arrowAnchorRect;
     private int dimExcludedCircleX;
     private int dimExcludedCircleY;
@@ -121,7 +123,11 @@ public class TutorialLayout extends FrameLayout {
             arrowAnchorRect = dimExcludedRect;
         }
         ArrowPosition arrowPosition;
-        if (dimExcludedRect.intersects(0, 0, getRight(), getHeight() / 3)) {
+        int bWidth = (int) backgroundViewRect.width();
+        int bHeight = (int) backgroundViewRect.height();
+        RectF topThird = new RectF(backgroundViewRect);
+        topThird.bottom = backgroundViewRect.top + bHeight / 3;
+        if (RectF.intersects(dimExcludedRect, topThird)) {
             // TOP part, place just below
             LayoutParams p = (LayoutParams) tutorialHintView.getLayoutParams();
             p.setMargins(0, (int) dimExcludedRect.bottom, 0, 0);
@@ -130,17 +136,17 @@ public class TutorialLayout extends FrameLayout {
             arrowPosition = ArrowPosition.TOP_CENTER;
         } else {
             LayoutParams p = (LayoutParams) tutorialHintView.getLayoutParams();
-            p.setMargins(0, 0, 0, (int) (getHeight() - dimExcludedRect.top));
+            p.setMargins(0, 0, 0, (int) (backgroundViewRect.bottom - dimExcludedRect.top + Convenience.dpToPx(getContext(), 5)));
             tutorialHintView.setLayoutParams(p);
             tutorialHintView.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
             arrowPosition = ArrowPosition.BOTTOM_CENTER;
         }
-        if (dimExcludedRect.right < getWidth() / 2) {
+        if (dimExcludedRect.right < bWidth / 2) {
             arrowPosition = arrowPosition.left();
-        } else if (dimExcludedRect.left > getWidth() / 2) {
+        } else if (dimExcludedRect.left > bWidth / 2) {
             arrowPosition = arrowPosition.right();
         }
-        ArrowPosition.setUpArrowView(arrowView, tutorialHintView, arrowAnchorRect, arrowPosition, getWidth(), getHeight());
+        ArrowPosition.setUpArrowView(arrowView, tutorialHintView, arrowAnchorRect, arrowPosition, bWidth, bHeight);
     }
 
     private void setUpGotItButton() {
@@ -156,6 +162,17 @@ public class TutorialLayout extends FrameLayout {
     public void dimExceptForRect(RectF rect) {
         reset();
         dimExcludedRect.set(rect);
+        dim();
+    }
+
+    public void dimExceptForView(View view, View backgroundView) {
+        reset();
+        dimExcludedRect.set(HintType.getViewRect(view));
+        backgroundViewRect.set(HintType.getViewRect(backgroundView));
+        helpViewBitmap = null;
+        view.destroyDrawingCache();
+        view.buildDrawingCache();
+        helpViewBitmap = view.getDrawingCache();
         dim();
     }
 
@@ -242,13 +259,8 @@ public class TutorialLayout extends FrameLayout {
     protected void dispatchDraw(Canvas canvas) {
         dimPaint.setAlpha(dimValue);
         if (dimmed) {
-            Path path = new Path();
-            path.setFillType(Path.FillType.WINDING);
-            path.addCircle(dimExcludedCircleX, dimExcludedCircleY, dimExcludedCircleRadius, Path.Direction.CCW);
-            path.addRect(dimExcludedRect, Path.Direction.CCW);
-            canvas.clipPath(path, Region.Op.DIFFERENCE);
             canvas.drawRect(0, 0, getRight(), getBottom(), dimPaint);
-            canvas.clipRect(0, 0, getRight(), getBottom(), Region.Op.UNION); // restore clip
+            canvas.drawBitmap(helpViewBitmap, dimExcludedRect.left, dimExcludedRect.top, helpViewPaint);
         }
         super.dispatchDraw(canvas);
     }
@@ -323,7 +335,7 @@ public class TutorialLayout extends FrameLayout {
     }
 
     public enum ArrowPosition {
-        TOP_LEFT(R.drawable.arrow_yellow_top_left, Gravity.BOTTOM | Gravity.LEFT) {
+        TOP_LEFT(R.drawable.tutorial_arrow_top_left, Gravity.BOTTOM | Gravity.LEFT) {
             @Override
             void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
                 int arrowLeftMargin = (int) anchorRect.right;
@@ -331,7 +343,7 @@ public class TutorialLayout extends FrameLayout {
                 arrowParams.setMargins(arrowLeftMargin, 0, 0, arrowBottomMargin);
             }
         },
-        TOP_CENTER(R.drawable.arrow_yellow_top_center, Gravity.BOTTOM | Gravity.LEFT) {
+        TOP_CENTER(R.drawable.tutorial_arrow_top_center, Gravity.BOTTOM | Gravity.LEFT) {
             @Override
             void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
                 int arrowLeftMargin = (int) anchorRect.right;
@@ -339,7 +351,7 @@ public class TutorialLayout extends FrameLayout {
                 arrowParams.setMargins(arrowLeftMargin, 0, 0, arrowBottomMargin);
             }
         },
-        TOP_RIGHT(R.drawable.arrow_yellow_top_right, Gravity.BOTTOM | Gravity.RIGHT) {
+        TOP_RIGHT(R.drawable.tutorial_arrow_top_right, Gravity.BOTTOM | Gravity.RIGHT) {
             @Override
             void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
                 int arrowRightMargin = (int) (width - anchorRect.left);
@@ -347,7 +359,7 @@ public class TutorialLayout extends FrameLayout {
                 arrowParams.setMargins(0, 0, arrowRightMargin, arrowBottomMargin);
             }
         },
-        BOTTOM_LEFT(R.drawable.arrow_yellow_bottom_left, Gravity.TOP | Gravity.LEFT) {
+        BOTTOM_LEFT(R.drawable.tutorial_arrow_bottom_left, Gravity.TOP | Gravity.LEFT) {
             @Override
             void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
                 int arrowLeftMargin = (int) anchorRect.right;
@@ -355,7 +367,7 @@ public class TutorialLayout extends FrameLayout {
                 arrowParams.setMargins(arrowLeftMargin, arrowTopMargin, 0, 0);
             }
         },
-        BOTTOM_CENTER(R.drawable.arrow_yellow_bottom_center, Gravity.TOP | Gravity.LEFT) {
+        BOTTOM_CENTER(R.drawable.tutorial_arrow_bottom_center, Gravity.TOP | Gravity.LEFT) {
             @Override
             void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
                 int arrowLeftMargin = (int) anchorRect.right;
@@ -363,11 +375,11 @@ public class TutorialLayout extends FrameLayout {
                 arrowParams.setMargins(arrowLeftMargin, arrowTopMargin, 0, 0);
             }
         },
-        BOTTOM_RIGHT(R.drawable.arrow_yellow_bottom_right, Gravity.TOP | Gravity.RIGHT) {
+        BOTTOM_RIGHT(R.drawable.tutorial_arrow_bottom_right, Gravity.TOP | Gravity.RIGHT) {
             @Override
             void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
                 int arrowRightMargin = (int) (width - anchorRect.left);
-                int arrowTopMargin = (int) anchorRect.top - baseView.getPaddingBottom();
+                int arrowTopMargin = (int) anchorRect.top/* - baseView.getPaddingBottom()*/;
                 arrowParams.setMargins(0, arrowTopMargin, arrowRightMargin, 0);
             }
         };
