@@ -39,7 +39,6 @@ public class ManagerHolder implements ZazoManagerProvider {
         if (!isInited) {
             inviteManager = new InviteManager(context);
             benchController = new BenchController(context, this);
-            benchController.setBenchListener(fragment);
             audioManager = new AudioManager(context, this);
             sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
             proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
@@ -48,6 +47,7 @@ public class ManagerHolder implements ZazoManagerProvider {
             }
             isInited = true;
         }
+        benchController.setBenchListener(fragment);
         inviteManager.setListener(fragment);
         videoRecorder = new VideoRecorderManager(context, this);
         videoPlayer = new VideoPlayer(activity, this, (TouchBlockScreen) activity.findViewById(R.id.block_screen));
