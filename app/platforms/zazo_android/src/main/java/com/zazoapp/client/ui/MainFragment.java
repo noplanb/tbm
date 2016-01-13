@@ -422,6 +422,16 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             case KeyEvent.KEYCODE_MENU:
                 toggleNavigationPanel();
                 return true;
+            case KeyEvent.KEYCODE_BACK:
+                if (managerHolder.getBenchViewManager().isBenchShown()) {
+                    managerHolder.getBenchViewManager().hideBench();
+                    return true;
+                }
+                if (managerHolder.getTutorial().isShown()) {
+                    managerHolder.getTutorial().dismissHint();
+                    return true;
+                }
+                break;
         }
         return false;
     }
@@ -542,4 +552,5 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             }
         }
     }
+
 }

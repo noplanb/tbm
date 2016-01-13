@@ -228,6 +228,14 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         return false;
     }
 
+    public boolean isShown() {
+        return current != null;
+    }
+
+    public void dismissHint() {
+        tutorialLayout.dismiss();
+    }
+
     @Override
     public void onDismiss() {
         HintType last = current;
