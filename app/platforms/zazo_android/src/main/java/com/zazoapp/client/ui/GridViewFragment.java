@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
@@ -37,7 +38,7 @@ import com.zazoapp.client.utilities.Logger;
 
 import java.util.ArrayList;
 
-public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener, NineViewGroup.SpinChangedListener, Features.FeatureChangedCallback {
+public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener, NineViewGroup.SpinChangedListener, Features.FeatureChangedCallback, ViewTreeObserver.OnGlobalLayoutListener {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
     private static final String PREF_SPIN_OFFSET = "spin_offset";
@@ -48,6 +49,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     private boolean viewLoaded;
     private boolean focused;
+    private boolean globalLayoutComplete;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,6 +67,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
         setupVideoPlayer(v);
         setupNineViewGroup(v);
+        v.getViewTreeObserver().addOnGlobalLayoutListener(this);
         return v;
     }
 
@@ -103,7 +106,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
                     layoutVideoRecorder();
                     viewLoaded = true;
                 }
-                handleIntentAction(getActivity().getIntent());
             }
         });
     }
@@ -218,8 +220,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             Log.i(TAG, "handleIntentAction: no intent. Exiting.");
             return;
         }
-        if (!viewLoaded || !focused) {
-            Log.i(TAG, "View is not loaded yet or showed to user. Ignore for now.");
+        if (!globalLayoutComplete) {
+            Log.i(TAG, "handleIntentAction: View is not loaded yet or showed to user. Ignore for now.");
             return;
         }
         Log.i(TAG, "handleIntentAction: " + currentIntent.toString());
@@ -228,7 +230,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         Uri data = currentIntent.getData();
 
         if (Intent.ACTION_MAIN.equals(action)) {
-            //FIXME UI 2.0 currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
+            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             getManagerProvider().getTutorial().onLaunch(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT));
             return;
         }
@@ -260,9 +262,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     public void onWindowFocusChanged(boolean hasFocus) {
         focused = hasFocus;
-        if (getActivity() != null) { // callback may come when fragment isn't attached to activity yet
-            handleIntentAction(getActivity().getIntent());
-        }
     }
 
     @Override
@@ -285,6 +284,15 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     public void onFeatureChanged(Features.Feature feature, boolean unlocked) {
         if (feature == Features.Feature.CAROUSEL && nineViewGroup != null) {
             nineViewGroup.enableSpin(unlocked);
+        }
+    }
+
+    @Override
+    public void onGlobalLayout() {
+        if (viewLoaded && focused) {
+            Log.i(TAG, "OnGlobalLayout");
+            globalLayoutComplete = true;
+            handleIntentAction(getActivity().getIntent());
         }
     }
 

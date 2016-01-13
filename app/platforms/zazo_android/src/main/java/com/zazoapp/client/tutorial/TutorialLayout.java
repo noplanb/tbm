@@ -136,7 +136,7 @@ public class TutorialLayout extends FrameLayout {
             arrowPosition = ArrowPosition.TOP_CENTER;
         } else {
             LayoutParams p = (LayoutParams) tutorialHintView.getLayoutParams();
-            p.setMargins(0, 0, 0, (int) (backgroundViewRect.bottom - dimExcludedRect.top + Convenience.dpToPx(getContext(), 5)));
+            p.setMargins(0, 0, 0, (int) (backgroundViewRect.bottom - dimExcludedRect.top));
             tutorialHintView.setLayoutParams(p);
             tutorialHintView.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
             arrowPosition = ArrowPosition.BOTTOM_CENTER;
@@ -146,7 +146,7 @@ public class TutorialLayout extends FrameLayout {
         } else if (dimExcludedRect.left > bWidth / 2) {
             arrowPosition = arrowPosition.right();
         }
-        ArrowPosition.setUpArrowView(arrowView, tutorialHintView, arrowAnchorRect, arrowPosition, bWidth, bHeight);
+        ArrowPosition.setUpArrowView(arrowView, tutorialHintView, arrowAnchorRect, arrowPosition, getWidth(), getHeight());
     }
 
     private void setUpGotItButton() {
@@ -167,8 +167,11 @@ public class TutorialLayout extends FrameLayout {
 
     public void dimExceptForView(View view, View backgroundView) {
         reset();
+        RectF tutorialRect = HintType.getViewRect(this);
         dimExcludedRect.set(HintType.getViewRect(view));
         backgroundViewRect.set(HintType.getViewRect(backgroundView));
+        shiftRectVertically(tutorialRect, dimExcludedRect);
+        shiftRectVertically(tutorialRect, backgroundViewRect);
         helpViewBitmap = null;
         view.destroyDrawingCache();
         view.buildDrawingCache();
@@ -186,6 +189,11 @@ public class TutorialLayout extends FrameLayout {
         reset();
         setExcludedCircle(xCenter, yCenter, radius);
         dim();
+    }
+
+    private void shiftRectVertically(RectF src, RectF dst) {
+        dst.top -= src.top;
+        dst.bottom -= src.top;
     }
 
     public void dismiss() {
@@ -379,7 +387,7 @@ public class TutorialLayout extends FrameLayout {
             @Override
             void locate(View baseView, RectF anchorRect, int width, int height, LayoutParams arrowParams) {
                 int arrowRightMargin = (int) (width - anchorRect.left);
-                int arrowTopMargin = (int) anchorRect.top/* - baseView.getPaddingBottom()*/;
+                int arrowTopMargin = (int) anchorRect.top - baseView.getPaddingBottom();
                 arrowParams.setMargins(0, arrowTopMargin, arrowRightMargin, 0);
             }
         };

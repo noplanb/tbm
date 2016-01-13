@@ -135,10 +135,10 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     }
 
     public void showEmpty(boolean visible, boolean next) {
-        mEmptyView.setVisibility(visible ? VISIBLE : GONE);
-        bodyLayout.setVisibility(visible ? GONE : VISIBLE);
+        mEmptyView.setVisibility(visible ? VISIBLE : INVISIBLE);
+        bodyLayout.setVisibility(visible ? INVISIBLE : VISIBLE);
         emptyIcon.setEnabled(next);
-        emptyText.setVisibility(next ? VISIBLE : GONE);
+        emptyText.setVisibility(next ? VISIBLE : INVISIBLE);
         if (visible) {
             setVideoViewed(false);
             setUnreadCount(false, 0, false);
@@ -209,7 +209,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     }
 
     public void showButtons(boolean visible) {
-        holdToRecordView.setVisibility(visible ? VISIBLE : GONE);
+        holdToRecordView.setVisibility(visible ? VISIBLE : INVISIBLE);
     }
 
     public void showUploadingMark(boolean visible) {
