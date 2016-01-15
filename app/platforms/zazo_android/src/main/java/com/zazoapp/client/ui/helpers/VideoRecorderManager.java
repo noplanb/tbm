@@ -150,6 +150,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
             container.addView(vrFrame, new PreviewTextureFrame.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             container.setBackgroundResource(R.drawable.card);
+            vrFrame.setOuterRecordingBorder(container);
         }
         containerRef = new WeakReference<View>(container);
     }

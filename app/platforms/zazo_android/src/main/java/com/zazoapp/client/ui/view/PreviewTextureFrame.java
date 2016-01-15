@@ -3,6 +3,7 @@ package com.zazoapp.client.ui.view;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.TextureView;
@@ -16,6 +17,8 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.utilities.Convenience;
 
+import java.lang.ref.WeakReference;
+
 public class PreviewTextureFrame extends FrameLayout {
 
     private static final String TAG = "PreviewTextureFrame";
@@ -27,6 +30,7 @@ public class PreviewTextureFrame extends FrameLayout {
     private View recordingMarkerLayout;
     private TextView recordingLabel;
     private ValueAnimator labelAnimator;
+    private WeakReference<View> outerBorderRef;
 
     private static final float SWITCH_ICON_ALPHA = 0.7f;
 
@@ -77,7 +81,16 @@ public class PreviewTextureFrame extends FrameLayout {
     public void setRecording(boolean isRecording) {
         this.isRecording = isRecording;
         recordingMarkerLayout.animate().alpha(isRecording ? 1f : 0f).start();
-        recordBorder.animate().alpha(isRecording ? 1f : 0f).start();
+        final View outerRecordingBorder = outerBorderRef.get();
+        if (outerRecordingBorder != null) {
+            if (isRecording) {
+                outerRecordingBorder.getBackground().setColorFilter(getResources().getColor(R.color.recording_border_color), PorterDuff.Mode.SRC_IN);
+            } else {
+                outerRecordingBorder.getBackground().setColorFilter(null);
+            }
+        } else {
+            recordBorder.animate().alpha(isRecording ? 1f : 0f).start();
+        }
         animateRecordingMarker();
         if (Features.Feature.SWITCH_CAMERA.isUnlocked(getContext())) {
             switchCameraIcon.setVisibility(VISIBLE);
@@ -86,6 +99,10 @@ public class PreviewTextureFrame extends FrameLayout {
             switchCameraIcon.setVisibility(INVISIBLE);
         }
         invalidate();
+    }
+
+    public void setOuterRecordingBorder(View outerRecordingBorder) {
+        outerBorderRef = new WeakReference<View>(outerRecordingBorder);
     }
 
     private void animateRecordingMarker() {
