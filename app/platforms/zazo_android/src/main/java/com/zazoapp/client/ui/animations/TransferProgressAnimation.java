@@ -61,14 +61,15 @@ public class TransferProgressAnimation {
         endAnimation.setDuration(START_END_DURATION);
         endAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             float size = Math.min(getWidth(), getHeight()) * 0.5f;
-            int contentRadius = getSize(R.dimen.grid_item_status_icon_content_radius);
+            int padding = getSize(R.dimen.grid_item_status_icon_padding);
+            int contentRadius = anchorLayout.getWidth() / 2 - padding;
             float endSize = contentRadius * 2;
-            float targetX = anchorLayout.getX() + contentRadius;
-            float targetY = anchorLayout.getY() + contentRadius;
+            float targetCenterX = anchorLayout.getX() + anchorLayout.getPivotX() - padding;
+            float targetCenterY = anchorLayout.getY() + anchorLayout.getPivotY() - padding;
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value = (float) animation.getAnimatedValue();
-                setProgressFinishAnimation(transferView, (int) Math.abs((size - endSize) * value + endSize), 1 - value, targetX, targetY);
+                setProgressFinishAnimation(transferView, (int) Math.abs((size - endSize) * value + endSize), 1 - value, targetCenterX, targetCenterY);
                 animationBackground.setAlpha(value * 0.5f);
             }
         });
@@ -150,8 +151,9 @@ public class TransferProgressAnimation {
         int radius = size / 2;
         int cX = getWidth() / 2;
         int cY = 2 * getHeight() / 5;
-        v.setX(cX - radius + (targetX - cX) * fraction);
-        v.setY(cY - radius + (targetY - cY) * fraction);
+        // move along the line between two center points
+        v.setX(cX + (targetX - cX) * fraction - radius);
+        v.setY(cY + (targetY - cY) * fraction - radius);
         v.setVisibility(View.VISIBLE);
     }
 }

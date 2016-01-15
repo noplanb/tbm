@@ -15,7 +15,7 @@ import com.zazoapp.client.R;
  * Created by Serhii on 31.12.2015.
  */
 public class UnreadCountAnimation {
-    public static void animate(final View parent, final Runnable changeAction) {
+    public static void animate(final View parent, final Runnable changeAction, final Runnable endAction) {
         final Holder h = new Holder(parent);
         ValueAnimator.AnimatorUpdateListener updateListener = new ValueAnimator.AnimatorUpdateListener() {
             float scaleFactor = 0.33f;
@@ -39,6 +39,15 @@ public class UnreadCountAnimation {
         anim2.setInterpolator(new AccelerateInterpolator());
         anim2.setDuration(anim1.getDuration());
         anim2.addUpdateListener(updateListener);
+        anim2.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                if (endAction != null) {
+                    parent.post(endAction);
+                }
+            }
+        });
         anim1.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {

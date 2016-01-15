@@ -6,18 +6,25 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.utilities.Convenience;
 
@@ -31,50 +38,54 @@ public class TutorialLayout extends FrameLayout {
     private boolean dimmed;
     private int dimValue;
     private Paint dimPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private Paint helpViewPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private Paint bitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private Paint additionalBitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private ValueAnimator dimAnimator;
     private Bitmap helpViewBitmap;
+    private Bitmap additionalViewBitmap;
 
     private RectF dimExcludedRect = new RectF();
     private RectF backgroundViewRect = new RectF();
     private RectF arrowAnchorRect;
-    private int dimExcludedCircleX;
-    private int dimExcludedCircleY;
-    private int dimExcludedCircleRadius;
+    private RectF tutorialRect;
+    private RectF additionalViewRect;
 
     private String hintText;
     private String buttonText;
     private OnTutorialEventListener onTutorialEventListener;
 
-    private ImageView arrowView;
-    private TextView tutorialHintView;
-    private Button gotItButton;
+    @InjectView(R.id.tutorial_arrow) ImageView arrowView;
+    @InjectView(R.id.tutorial_hint) TextView tutorialHintView;
+    @InjectView(R.id.tutorial_btn) Button gotItButton;
 
     public TutorialLayout(Context context) {
-        super(context);
-        // we set it to software because of clipPath that doesn't work on hardware accelerated canvas before API 18
-        setLayerType(LAYER_TYPE_SOFTWARE, null);
+        this(context, null);
     }
 
     public TutorialLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        setLayerType(LAYER_TYPE_SOFTWARE, null);
+        this(context, attrs, 0);
     }
 
     public TutorialLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        setLayerType(LAYER_TYPE_SOFTWARE, null);
+        init();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public TutorialLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        init();
+    }
+
+    private void init() {
+        LayoutInflater.from(getContext()).inflate(R.layout.tutorial_layout, this, true);
+        ButterKnife.inject(this);
+        // we set it to software because of clipPath that doesn't work on hardware accelerated canvas before API 18
         setLayerType(LAYER_TYPE_SOFTWARE, null);
     }
 
     public void dim() {
         dimmed = true;
-        arrowView = (ImageView) findViewById(R.id.tutorial_arrow);
         setUpHintText();
         setUpGotItButton();
         setVisibility(VISIBLE);
@@ -115,18 +126,23 @@ public class TutorialLayout extends FrameLayout {
     }
 
     private void setUpHintText() {
-        tutorialHintView = (TextView) findViewById(R.id.tutorial_hint);
         tutorialHintView.setText(hintText);
         Typeface tf = Convenience.getTutorialTypeface(getContext());
         tutorialHintView.setTypeface(tf);
         if (arrowAnchorRect == null) {
+            bitmapPaint.setColorFilter(null);
             arrowAnchorRect = dimExcludedRect;
+        } else {
+            bitmapPaint.setColorFilter(new PorterDuffColorFilter(Color.parseColor("#A8A8A8"), PorterDuff.Mode.MULTIPLY));
         }
-        ArrowPosition arrowPosition;
+        if (backgroundViewRect.height() == 0) {
+            setBackgroundViewRect(getTutorialRect());
+        }
         int bWidth = (int) backgroundViewRect.width();
         int bHeight = (int) backgroundViewRect.height();
         RectF topThird = new RectF(backgroundViewRect);
         topThird.bottom = backgroundViewRect.top + bHeight / 3;
+        ArrowPosition arrowPosition;
         if (RectF.intersects(dimExcludedRect, topThird)) {
             // TOP part, place just below
             LayoutParams p = (LayoutParams) tutorialHintView.getLayoutParams();
@@ -150,7 +166,6 @@ public class TutorialLayout extends FrameLayout {
     }
 
     private void setUpGotItButton() {
-        gotItButton = (Button) findViewById(R.id.tutorial_btn);
         gotItButton.setTypeface(tutorialHintView.getTypeface());
         if (buttonText == null) {
             gotItButton.setVisibility(INVISIBLE);
@@ -159,36 +174,33 @@ public class TutorialLayout extends FrameLayout {
         }
     }
 
-    public void dimExceptForRect(RectF rect) {
-        reset();
-        dimExcludedRect.set(rect);
-        dim();
-    }
-
+    /**
+     * Helper method to call dim() except for specified view
+     */
     public void dimExceptForView(View view, View backgroundView) {
         reset();
-        RectF tutorialRect = HintType.getViewRect(this);
-        dimExcludedRect.set(HintType.getViewRect(view));
-        backgroundViewRect.set(HintType.getViewRect(backgroundView));
-        shiftRectVertically(tutorialRect, dimExcludedRect);
-        shiftRectVertically(tutorialRect, backgroundViewRect);
-        helpViewBitmap = null;
-        view.destroyDrawingCache();
+        setBackgroundViewRect(Convenience.getViewRect(backgroundView));
+        setHelpView(view);
+        dim();
+    }
+
+    public void setHelpView(View view) {
+        setExcludedRect(Convenience.getViewRect(view));
         view.buildDrawingCache();
-        helpViewBitmap = view.getDrawingCache();
-        dim();
+        helpViewBitmap = Bitmap.createBitmap(view.getDrawingCache());
+        view.destroyDrawingCache();
     }
 
-    public void dimExceptForRect(int left, int top, int right, int bottom) {
-        reset();
-        dimExcludedRect.set(left, top, right, bottom);
-        dim();
-    }
-
-    public void dimExceptForCircle(int xCenter, int yCenter, int radius) {
-        reset();
-        setExcludedCircle(xCenter, yCenter, radius);
-        dim();
+    public void setAdditionalView(@Nullable View view) {
+        if (view != null) {
+            additionalViewRect = Convenience.getViewRect(view);
+            shiftRectVertically(getTutorialRect(), additionalViewRect);
+            view.buildDrawingCache();
+            additionalViewBitmap = Bitmap.createBitmap(view.getDrawingCache());
+            view.destroyDrawingCache();
+        } else {
+            additionalViewBitmap = null;
+        }
     }
 
     private void shiftRectVertically(RectF src, RectF dst) {
@@ -268,7 +280,12 @@ public class TutorialLayout extends FrameLayout {
         dimPaint.setAlpha(dimValue);
         if (dimmed) {
             canvas.drawRect(0, 0, getRight(), getBottom(), dimPaint);
-            canvas.drawBitmap(helpViewBitmap, dimExcludedRect.left, dimExcludedRect.top, helpViewPaint);
+            if (helpViewBitmap != null) {
+                canvas.drawBitmap(helpViewBitmap, dimExcludedRect.left, dimExcludedRect.top, bitmapPaint);
+            }
+            if (additionalViewBitmap != null && additionalViewRect != null) {
+                canvas.drawBitmap(additionalViewBitmap, additionalViewRect.left, additionalViewRect.top, additionalBitmapPaint);
+            }
         }
         super.dispatchDraw(canvas);
     }
@@ -282,25 +299,25 @@ public class TutorialLayout extends FrameLayout {
     }
 
     public void setExcludedRect(RectF rect) {
-        dimExcludedRect.set(rect);
+        setExcludedRect(rect.left, rect.top, rect.right, rect.bottom);
     }
 
-    public void setExcludedRect(int left, int top, int right, int bottom) {
+    public void setExcludedRect(float left, float top, float right, float bottom) {
         dimExcludedRect.set(left, top, right, bottom);
+        shiftRectVertically(getTutorialRect(), dimExcludedRect);
+    }
+
+    /**
+     * Set location rect of View on which tutorial will be shown
+     * @param rect
+     */
+    public void setBackgroundViewRect(RectF rect) {
+        backgroundViewRect.set(rect);
+        shiftRectVertically(getTutorialRect(), backgroundViewRect);
     }
 
     public void setHintText(String text) {
         hintText = text;
-    }
-
-    public int[] getDimExcludedCircle() {
-        return new int[] {dimExcludedCircleX, dimExcludedCircleY, dimExcludedCircleRadius};
-    }
-
-    public void setExcludedCircle(int... data) {
-        dimExcludedCircleX = data[0];
-        dimExcludedCircleY = data[1];
-        dimExcludedCircleRadius = data[2];
     }
 
     public void setArrowAnchorRect(RectF rect) {
@@ -308,7 +325,7 @@ public class TutorialLayout extends FrameLayout {
     }
 
     public void hideButton() {
-        findViewById(R.id.tutorial_btn).setVisibility(INVISIBLE);
+        gotItButton.setVisibility(INVISIBLE);
     }
 
     public void setButtonText(String gotItText) {
@@ -324,17 +341,25 @@ public class TutorialLayout extends FrameLayout {
         }
     }
 
+    private RectF getTutorialRect() {
+        if (tutorialRect == null) {
+            tutorialRect = Convenience.getViewRect(this);
+        }
+        return tutorialRect;
+    }
+
     private void reset() {
         setVisibility(INVISIBLE);
-        findViewById(R.id.tutorial_btn).setVisibility(VISIBLE);
+        gotItButton.setVisibility(VISIBLE);
         setIcon(0);
         dimmed = false;
         dimValue = 0;
-        dimExcludedCircleX = 0;
-        dimExcludedCircleY = 0;
-        dimExcludedCircleRadius = 0;
         dimExcludedRect.set(0, 0, 0, 0);
+        backgroundViewRect.set(0, 0, 0, 0);
         arrowAnchorRect = null;
+        tutorialRect = null;
+        helpViewBitmap = null;
+        additionalViewBitmap = null;
     }
 
     public interface OnTutorialEventListener {

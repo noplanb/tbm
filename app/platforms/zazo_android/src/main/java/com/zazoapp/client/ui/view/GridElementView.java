@@ -162,13 +162,18 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         viewedLayout.setVisibility(visible ? VISIBLE : INVISIBLE);
     }
 
-    public void setUnreadCount(boolean visible, int unreadMsgCount, boolean animate) {
+    public void setUnreadCountWithAnimation(boolean visible, int unreadMsgCount, Runnable endAction) {
+        setUnreadCount(visible, unreadMsgCount, true);
+        if (visible) {
+            animateUnreadCountChanging(unreadMsgCount, endAction);
+        }
+    }
+
+    public void setUnreadCount(boolean visible, int unreadMsgCount, boolean willAnimate) {
         if (visible) {
             unreadCountLayout.setVisibility(VISIBLE);
             cardLayout.getBackground().setColorFilter(getResources().getColor(R.color.primary), PorterDuff.Mode.SRC_IN);
-            if (animate) {
-                animateUnreadCountChanging(unreadMsgCount);
-            } else {
+            if (!willAnimate) {
                 twUnreadCount.setText(String.valueOf(unreadMsgCount));
             }
         } else {
@@ -176,16 +181,15 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             twUnreadCount.setText((unreadMsgCount <= 0) ? "" : String.valueOf(unreadMsgCount));
             unreadCountLayout.setVisibility(INVISIBLE);
         }
-
     }
 
-    private void animateUnreadCountChanging(final int unreadMsgCount) {
+    private void animateUnreadCountChanging(final int unreadMsgCount, Runnable endAction) {
         UnreadCountAnimation.animate(this, new Runnable() {
             @Override
             public void run() {
                 twUnreadCount.setText(String.valueOf(unreadMsgCount));
             }
-        });
+        }, endAction);
     }
 
     public void setThumbnail(Bitmap bitmap, int visibility) {

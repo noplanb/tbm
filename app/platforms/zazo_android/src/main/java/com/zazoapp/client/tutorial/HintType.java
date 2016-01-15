@@ -1,7 +1,6 @@
 package com.zazoapp.client.tutorial;
 
 import android.content.Context;
-import android.graphics.RectF;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewParent;
@@ -13,6 +12,7 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.ui.view.NineViewGroup;
+import com.zazoapp.client.utilities.Convenience;
 
 import java.util.Random;
 
@@ -28,10 +28,7 @@ public enum HintType {
 
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
-            NineViewGroup nineViewGroup = getNineViewGroup(view);
-            if (nineViewGroup != null) {
-                layout.dimExceptForView(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT), nineViewGroup);
-            }
+            dimForFrame(layout, view, NineViewGroup.Box.CENTER_RIGHT, true);
         }
     },
     FEATURE_SWITCH_CAMERA(R.string.feature_switch_camera_hint, 0, Features.Feature.SWITCH_CAMERA) {
@@ -39,17 +36,14 @@ public enum HintType {
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             NineViewGroup nineViewGroup = getNineViewGroup(view);
             if (nineViewGroup != null) {
-                layout.dimExceptForRect(getViewRect(nineViewGroup.getCenterFrame()));
+                layout.dimExceptForView(nineViewGroup.getCenterFrame(), nineViewGroup);
             }
         }
     },
     FEATURE_ABORT_RECORDING(R.string.feature_abort_recording_hint, R.string.tutorial_try_it, Features.Feature.ABORT_RECORDING) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
-            NineViewGroup nineViewGroup = getNineViewGroup(view);
-            if (nineViewGroup != null) {
-                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT)));
-            }
+            dimForFrame(layout, view, NineViewGroup.Box.CENTER_RIGHT, true);
         }
     },
     FEATURE_DELETE_FRIEND(R.string.feature_delete_friend_hint, R.string.tutorial_got_it, Features.Feature.DELETE_FRIEND) {
@@ -59,7 +53,7 @@ public enum HintType {
             if (parent != null) {
                 View button = parent.findViewById(R.id.menu_view);
                 if (button != null) {
-                    layout.dimExceptForRect(getViewRect(button));
+                    layout.dimExceptForView(button, parent);
                 }
             }
         }
@@ -67,19 +61,13 @@ public enum HintType {
     FEATURE_EARPIECE(R.string.feature_earpiece_hint, R.string.tutorial_try_it, Features.Feature.EARPIECE) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
-            NineViewGroup nineViewGroup = getNineViewGroup(view);
-            if (nineViewGroup != null) {
-                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT)));
-            }
+            dimForFrame(layout, view, NineViewGroup.Box.CENTER_RIGHT, true);
         }
     },
     FEATURE_CAROUSEL(R.string.feature_carousel_hint, R.string.tutorial_try_it, Features.Feature.CAROUSEL) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
-            NineViewGroup nineViewGroup = getNineViewGroup(view);
-            if (nineViewGroup != null) {
-                layout.dimExceptForRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.BOTTOM_LEFT)));
-            }
+            dimForFrame(layout, view, NineViewGroup.Box.TOP_RIGHT, true);
         }
     },
     PLAY_RECORD(R.string.tutorial_hint_play_record, 0) {
@@ -110,6 +98,10 @@ public enum HintType {
                 case LAUNCH:
                 case NEW_MESSAGE:
                     int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
+                    if (event == TutorialEvent.LAUNCH) {
+                        return hasOneFriend() && unviewedCount > 0 &&
+                                ((prefs.getBoolean(getPrefName(), true) && current == null) || current == PLAY);
+                    }
                     return hasOneFriend() && unviewedCount > 0 && prefs.getBoolean(getPrefName(), true) && current == null;
             }
             return false;
@@ -145,6 +137,10 @@ public enum HintType {
                 case VIDEO_VIEWED:
                     boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
                     int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
+                    if (event == TutorialEvent.LAUNCH) {
+                        return hasOneFriend() && unviewedCount == 0 &&
+                                ((firstInSession && current == null) || current == RECORD) && prefs.getBoolean(getPrefName(), true);
+                    }
                     return hasOneFriend() && unviewedCount == 0 && firstInSession && current == null && prefs.getBoolean(getPrefName(), true);
             }
             return false;
@@ -152,13 +148,9 @@ public enum HintType {
 
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
-            NineViewGroup nineViewGroup = getNineViewGroup(view);
-            if (nineViewGroup != null) {
-                view = nineViewGroup.getFrame(NineViewGroup.Box.CENTER_RIGHT);
+            if (dimForFrame(layout, view, NineViewGroup.Box.CENTER_RIGHT, true)) {
+                markHintAsShowedForSession(prefs);
             }
-            setExcludedBox(layout, view);
-            layout.dim();
-            markHintAsShowedForSession(prefs);
         }
     },
     SEND_WELCOME(R.string.tutorial_hint_send_welcome, 0) {
@@ -169,7 +161,10 @@ public enum HintType {
 
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
-            layout.dimExceptForRect(getViewRect(view));
+            NineViewGroup nineViewGroup = getNineViewGroup(view);
+            if (nineViewGroup != null) {
+                layout.dimExceptForView(view, nineViewGroup);
+            }
         }
     },
     SENT(R.string.tutorial_hint_sent, R.string.tutorial_got_it) {
@@ -182,8 +177,8 @@ public enum HintType {
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
             View indicator = view.findViewById(R.id.img_viewed); // we use viewed due to animation of uploading indicator at this moment
             layout.clear();
-            layout.setArrowAnchorRect(getViewRect(indicator));
-            layout.setExcludedRect(getViewRect(view));
+            layout.setArrowAnchorRect(Convenience.getViewRect(indicator));
+            setExcludedBox(layout, view);
             layout.dim();
             delayedDismiss(layout, this, tutorial);
             markHintAsShowed(prefs);
@@ -202,10 +197,10 @@ public enum HintType {
 
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
-            View indicator = view.findViewById(R.id.img_viewed);
+            View indicator = view.findViewById(R.id.viewed_layout);
             layout.clear();
-            layout.setArrowAnchorRect(getViewRect(indicator));
-            layout.setExcludedRect(getViewRect(view));
+            layout.setArrowAnchorRect(Convenience.getViewRect(indicator));
+            setExcludedBox(layout, view);
             layout.dim();
             delayedDismiss(layout, this, tutorial);
             markHintAsShowed(prefs);
@@ -231,12 +226,9 @@ public enum HintType {
 
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
-            NineViewGroup nineViewGroup = getNineViewGroup(view);
-            if (nineViewGroup != null) {
-                layout.clear();
-                layout.setExcludedRect(getViewRect(nineViewGroup.getFrame(NineViewGroup.Box.TOP_RIGHT)));
-                layout.setIcon(R.drawable.ic_feature_gift);
-                layout.dim();
+            layout.clear();
+            layout.setIcon(R.drawable.ic_feature_gift);
+            if (dimForFrame(layout, view, NineViewGroup.Box.TOP_RIGHT, false)) {
                 markHintAsShowedForSession(prefs);
             }
         }
@@ -352,36 +344,6 @@ public enum HintType {
 
     abstract void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs);
 
-    static RectF getViewRect(View view) {
-        int[] location = new int[2];
-        view.getLocationInWindow(location);
-        int left = location[0];
-        int top = location[1];
-        int right = left + view.getWidth();
-        int bottom = top + view.getHeight();
-        return new RectF(left, top, right, bottom);
-    }
-
-    static int[] getViewInnerCircle(View view) {
-        int[] circleData = new int[3];
-        int[] location = new int[2];
-        view.getLocationInWindow(location);
-        circleData[0] = location[0] + view.getWidth() / 2;
-        circleData[1] = location[1] + view.getHeight() / 2;
-        circleData[2] = Math.min(view.getWidth(), view.getHeight()) / 2;
-        return circleData;
-    }
-
-    static int[] getViewOuterCircle(View view) {
-        int[] circleData = new int[3];
-        int[] location = new int[2];
-        view.getLocationInWindow(location);
-        circleData[0] = location[0] + view.getWidth() / 2;
-        circleData[1] = location[1] + view.getHeight() / 2;
-        circleData[2] = (int) (Math.max(view.getWidth(), view.getHeight()) * 0.8);
-        return circleData;
-    }
-
     public static HintType shouldShowHintByPriority(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
         for (HintType hint : values()) {
             if (hint.shouldShow(event, current, prefs, params)) {
@@ -403,14 +365,46 @@ public enum HintType {
         }
     }
 
-    private static void setExcludedBox(TutorialLayout layout, View view) {
-        View indicator = view.findViewById(R.id.tw_unread_count);
-        if (indicator.getVisibility() == View.VISIBLE) {
-            layout.setExcludedCircle(getViewInnerCircle(indicator));
-        } else {
-            layout.setExcludedCircle(0, 0, 0);
+    private static boolean dimForFrame(TutorialLayout layout, View baseView, NineViewGroup.Box frameBox, boolean clear) {
+        NineViewGroup nineViewGroup = getNineViewGroup(baseView);
+        if (nineViewGroup != null) {
+            if (clear) {
+                layout.clear();
+            }
+            View view = nineViewGroup.getFrame(frameBox);
+            setAdditionalView(layout, view);
+            layout.setExcludedRect(Convenience.getViewRect(view));
+            layout.setBackgroundViewRect(Convenience.getViewRect(nineViewGroup));
+            layout.setHelpView(view);
+            layout.dim();
+            return true;
         }
-        layout.setExcludedRect(getViewRect(view));
+        return false;
+    }
+
+    private static void setExcludedBox(TutorialLayout layout, View view) {
+        setAdditionalView(layout, view);
+        layout.setExcludedRect(Convenience.getViewRect(view));
+        NineViewGroup nineViewGroup = getNineViewGroup(view);
+        if (nineViewGroup != null) {
+            layout.setBackgroundViewRect(Convenience.getViewRect(nineViewGroup));
+        }
+        layout.setHelpView(view);
+    }
+
+    private static void setAdditionalView(TutorialLayout layout, View view) {
+        View[] indicators = new View[] {
+                view.findViewById(R.id.unread_count_layout),
+                view.findViewById(R.id.viewed_layout),
+                view.findViewById(R.id.uploading_layout),
+        };
+        layout.setAdditionalView(null);
+        for (View indicator : indicators) {
+            if (indicator.getVisibility() == View.VISIBLE) {
+                layout.setAdditionalView(indicator);
+                break;
+            }
+        }
     }
 
     private static void delayedDismiss(final TutorialLayout layout, final HintType hint, final Tutorial tutorial) {

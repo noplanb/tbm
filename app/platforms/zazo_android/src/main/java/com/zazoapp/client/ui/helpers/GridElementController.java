@@ -210,14 +210,14 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         container.setVisibility(View.VISIBLE); // as content is loaded, display view
     }
 
-    private void animateUnreadCountChanging() {
+    private void animateUnreadCountChanging(Runnable endAction) {
         Friend friend = gridElement.getFriend();
         if (friend == null) {
             return;
         }
         int unreadMsgCount = friend.incomingVideoNotViewedCount();
         boolean showNewMessages = unreadMsgCount > 0 && !isVideoPlaying;
-        gridElementView.setUnreadCount(showNewMessages, unreadMsgCount, true);
+        gridElementView.setUnreadCountWithAnimation(showNewMessages, unreadMsgCount, endAction);
     }
 
     private void updateVideoStatus(boolean statusChanged, boolean force) {
@@ -262,8 +262,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                                 @Override
                                 public void run() {
                                     updateContent(true, force);
-                                    animateUnreadCountChanging();
-                                    managerProvider.getTutorial().onNewMessage(gridElementView);
+                                    animateUnreadCountChanging(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            managerProvider.getTutorial().onNewMessage(gridElementView);
+                                        }
+                                    });
                                 }
                             });
                         } else {

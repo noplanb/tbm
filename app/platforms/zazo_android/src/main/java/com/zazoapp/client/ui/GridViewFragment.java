@@ -261,6 +261,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     public void onWindowFocusChanged(boolean hasFocus) {
+        Log.i(TAG, "onWindowFocusChanged " + hasFocus);
         focused = hasFocus;
     }
 
@@ -289,8 +290,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     @Override
     public void onGlobalLayout() {
+        Log.i(TAG, "OnGlobalLayout " + viewLoaded + " " + focused);
         if (viewLoaded && focused) {
-            Log.i(TAG, "OnGlobalLayout");
             globalLayoutComplete = true;
             handleIntentAction(getActivity().getIntent());
         }

@@ -308,7 +308,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public void onShowProgressDialog(String title, String msg) {
         dismissProgressDialog();
         pd = ProgressDialogFragment.getInstance(title, msg);
-        DialogShower.showDialog(getActivity(), pd, null);
+        DialogShower.showDialog(getActivity().getSupportFragmentManager(), pd, null);
     }
 
     @Override
@@ -398,6 +398,8 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         int newTabId = visible ? TAB_FRIENDS : TAB_MAIN;
         if (newTabId != tabsLayout.getSelectedTabPosition()) {
             selectTab(newTabId);
+        } else {
+            managerHolder.getBenchViewManager().setBenchShown(visible);
         }
     }
 
@@ -423,13 +425,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                 toggleNavigationPanel();
                 return true;
             case KeyEvent.KEYCODE_BACK:
-                if (managerHolder.getBenchViewManager().isBenchShown()) {
-                    managerHolder.getBenchViewManager().hideBench();
-                    return true;
-                }
                 if (managerHolder.getTutorial().isShown()) {
                     managerHolder.getTutorial().dismissHint();
                     return true;
+                }
+                if (managerHolder.getBenchViewManager().isBenchShown()) {
+                    boolean result = tabsLayout.getSelectedTabPosition() != TAB_MAIN;
+                    managerHolder.getBenchViewManager().hideBench();
+                    return result;
                 }
                 break;
         }

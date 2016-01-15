@@ -66,13 +66,13 @@ public class DialogShower {
                                             boolean needCancel, boolean editable, int actionId, AbstractDialogFragment.DialogListener listener) {
         DialogFragment d = ActionInfoDialogFragment.getInstance(title, message, action, actionId,
                 needCancel, editable, listener);
-        showDialog(activity, d, null);
+        showDialog(getFragmentManager(activity, listener), d, null);
     }
 
     public static void showDoubleActionDialog(FragmentActivity activity, String title, String message, String actionPositive,
                                               String actionNegative, int dialogId, boolean editable, DoubleActionDialogListener listener) {
         DialogFragment d = DoubleActionDialogFragment.getInstance(dialogId, title, message, actionPositive, actionNegative, editable, listener);
-        showDialog(activity, d, null);
+        showDialog(getFragmentManager(activity, listener), d, null);
     }
 
     public static void showCameraException(final FragmentActivity activity, CameraException cameraException, final DoubleActionDialogListener listener, final int id) {
@@ -88,45 +88,51 @@ public class DialogShower {
             public void run() {
                 DialogFragment d = DoubleActionDialogFragment.getInstance(id, title, message, positiveText,
                         negativeText, listener);
-                showDialog(activity, d, null);
+                showDialog(getFragmentManager(activity, listener), d, null);
             }
         });
     }
 
     public static void showInfoDialog(FragmentActivity activity, String title, String message) {
         DialogFragment d = InfoDialogFragment.getInstance(title, message);
-        showDialog(activity, d, null);
+        showDialog(activity.getSupportFragmentManager(), d, null);
     }
 
     public static void showHintDialog(FragmentActivity activity, String title, String message) {
         if (activity.getSupportFragmentManager().findFragmentByTag("hint") == null) {
             DialogFragment d = InfoDialogFragment.getInstance(title, message);
-            showDialog(activity, d, "hint");
+            showDialog(activity.getSupportFragmentManager(), d, "hint");
         }
     }
 
     public static void showVersionHandlerDialog(FragmentActivity activity, String message, boolean negativeButton) {
         if (activity.getSupportFragmentManager().findFragmentByTag("compatibility") == null) {
             DialogFragment d = VersionDialogFragment.getInstance(message, negativeButton);
-            showDialog(activity, d, "compatibility");
+            showDialog(activity.getSupportFragmentManager(), d, "compatibility");
         }
     }
 
     public static void showSelectPhoneNumberDialog(FragmentActivity activity, Contact contact, SelectPhoneNumberDialog.Callbacks callbacks) {
         DialogFragment d = SelectPhoneNumberDialog.getInstance(contact, callbacks);
-        showDialog(activity, d, null);
+        showDialog(getFragmentManager(activity, callbacks), d, null);
     }
 
-    public static void showDialog(FragmentActivity activity, Fragment dialog, String tag) {
-        FragmentManager manager = activity.getSupportFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
+    public static void showDialog(FragmentManager fragmentManager, Fragment dialog, String tag) {
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(dialog, tag);
         transaction.commitAllowingStateLoss();
     }
 
+    private static FragmentManager getFragmentManager(FragmentActivity activity, AbstractDialogFragment.DialogListener listener) {
+        if (listener instanceof Fragment) {
+            return ((Fragment) listener).getChildFragmentManager();
+        }
+        return activity.getSupportFragmentManager();
+    }
+
     public static void showSendLinkDialog(FragmentActivity activity, int dialogId, String phone, String message, DoubleActionDialogListener callbacks) {
         DialogFragment d = SendLinkThroughDialog.getInstance(dialogId, phone, activity, message, callbacks);
-        showDialog(activity, d, null);
+        showDialog(getFragmentManager(activity, callbacks), d, null);
     }
 
     public static void showFeatureAwardDialog(FragmentActivity activity, Features.Feature feature) {
@@ -165,11 +171,11 @@ public class DialogShower {
     }
 
     public static void showBlockingDialog(FragmentActivity activity, int titleId, int messageId) {
-        if (activity.getFragmentManager().findFragmentByTag("blocking") == null) {
+        if (activity.getSupportFragmentManager().findFragmentByTag("blocking") == null) {
             String title = activity.getString(titleId);
             String message = activity.getString(messageId);
             DialogFragment d = BlockingInfoDialog.getInstance(title, message);
-            showDialog(activity, d, "blocking");
+            showDialog(activity.getSupportFragmentManager(), d, "blocking");
         }
     }
 }

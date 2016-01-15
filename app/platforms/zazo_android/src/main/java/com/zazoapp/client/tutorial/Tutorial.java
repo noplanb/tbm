@@ -18,6 +18,7 @@ import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.ui.view.NineViewGroup;
+import com.zazoapp.client.utilities.Convenience;
 
 /**
  * Created by skamenkovych@codeminders.com on 5/7/2015.
@@ -36,6 +37,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     private HintType current;
     private Runnable onNewMessageAction;
     private Runnable onNextHintAction;
+    private boolean isLaunched;
 
     public Tutorial(Activity activity, ZazoManagerProvider managerProvider) {
         this.activity = activity;
@@ -64,27 +66,15 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         int friendsCount = FriendFactory.getFactoryInstance().count();
         int unviewedMessages = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
         Log.i(TAG, "onLaunch: friends " + friendsCount + " unviewed " + unviewedMessages);
-
+        isLaunched = true;
         if (managers.getFeatures().shouldShowAwardDialog()) {
             managers.getFeatures().showFeatureAwardDialog(managers, managers.getFeatures().lastUnlockedFeature());
         } else {
             HintType hint = getHintToShow(TutorialEvent.LAUNCH, null);
             if (hint != null) {
-                if (hint == HintType.PLAY) {
-                    // FIX for https://zazo.fogbugz.com/f/cases/443/ caused by long view layout
-                    // Do not show this hint at all if it is still not loaded after some time
-                    onNewMessageAction = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (shouldShow(TutorialEvent.LAUNCH, HintType.PLAY, null) && view.getWidth() != 0) {
-                                showHint(HintType.PLAY, view);
-                            }
-                        }
-                    };
-                    tutorialLayout.postDelayed(onNewMessageAction, 2000);
-                } else {
-                    showHint(hint, view);
-                }
+                showHint(hint, view);
+            } else if (onNextHintAction != null) {
+                onNextHintAction.run();
             }
         }
     }
@@ -97,8 +87,8 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         }
     }
 
-    public void onVideoViewed(View view) {
-        Log.i(TAG, "onVideoViewed");
+    public void onVideoViewed(final View view) {
+        Log.i(TAG, "onVideoViewed " + isLaunched);
         HintType hint = getHintToShow(TutorialEvent.VIDEO_VIEWED, null);
         if (hint != null) {
             showHint(hint, view);
@@ -138,16 +128,26 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         HintType.RECORD.markHintAsShowed(preferences);
     }
 
-    public void onVideoViewedIndicatorShowed(View view) {
+    public void onVideoViewedIndicatorShowed(final View view) {
         Log.i(TAG, "onVideoViewedIndicatorShowed");
-        Bundle params = new Bundle();
+        final Bundle params = new Bundle();
         if (view instanceof GridElementView) {
             NineViewGroup.Box box = NineViewGroup.Box.values()[((View) view.getParent()).getId()];
             params.putInt(Tutorial.BOX_KEY, box.ordinal());
         }
-        HintType hint = getHintToShow(TutorialEvent.VIEWED_INDICATOR_SHOWED, params);
-        if (hint != null) {
-            showHint(hint, view);
+        Runnable showVideoViewedIndicatorHintTask = new Runnable() {
+            @Override
+            public void run() {
+                HintType hint = getHintToShow(TutorialEvent.VIEWED_INDICATOR_SHOWED, params);
+                if (hint != null) {
+                    showHint(hint, view);
+                }
+            }
+        };
+        if (isLaunched) {
+            showVideoViewedIndicatorHintTask.run();
+        } else if (onNextHintAction == null) {
+            onNextHintAction = showVideoViewedIndicatorHintTask;
         }
     }
 
@@ -206,7 +206,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     }
 
     private void showHint(HintType hint, View view, String text) {
-        Log.i(TAG, "Show hint " + hint + " " + HintType.getViewRect(view));
+        Log.i(TAG, "Show hint " + hint + " " + Convenience.getViewRect(view));
         if (managers.getBenchViewManager().isBenchShown()) {
             managers.getBenchViewManager().hideBench();
         }

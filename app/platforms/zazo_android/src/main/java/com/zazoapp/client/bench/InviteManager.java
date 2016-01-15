@@ -195,13 +195,6 @@ public class InviteManager implements InviteHelper {
         params.put(FriendFactory.ServerParamKeys.MOBILE_NUMBER, benchObject.mobileNumber);
         params.put(FriendFactory.ServerParamKeys.FIRST_NAME, benchObject.firstName);
         params.put(FriendFactory.ServerParamKeys.LAST_NAME, benchObject.lastName);
-        // TODO send emails to server
-        //Set<String> emails = ContactsManager.getEmailsForPhone(context, benchObject.mobileNumber);
-        //JSONArray jsonEmails = new JSONArray(emails);
-        ////for (String email : emails) {
-        ////
-        ////}
-        //params.put(FriendFactory.ServerParamKeys.EMAILS, jsonEmails.toString());
         new InviteFriendRequest(uri, params);
     }
 

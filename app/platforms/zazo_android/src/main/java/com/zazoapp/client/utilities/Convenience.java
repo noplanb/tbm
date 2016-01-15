@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
+import android.view.View;
 import android.view.WindowManager;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
@@ -394,5 +396,35 @@ public class Convenience {
 
     public static <T> T getStringDependentItem(@NonNull CharSequence base, @NonNull T[] items) {
         return items[Math.abs(base.hashCode() % items.length)];
+    }
+
+    public static RectF getViewRect(View view) {
+        int[] location = new int[2];
+        view.getLocationInWindow(location);
+        int left = location[0];
+        int top = location[1];
+        int right = left + view.getWidth();
+        int bottom = top + view.getHeight();
+        return new RectF(left, top, right, bottom);
+    }
+
+    public static int[] getViewInnerCircle(View view) {
+        int[] circleData = new int[3];
+        int[] location = new int[2];
+        view.getLocationInWindow(location);
+        circleData[0] = location[0] + view.getWidth() / 2;
+        circleData[1] = location[1] + view.getHeight() / 2;
+        circleData[2] = Math.min(view.getWidth(), view.getHeight()) / 2;
+        return circleData;
+    }
+
+    public static int[] getViewOuterCircle(View view) {
+        int[] circleData = new int[3];
+        int[] location = new int[2];
+        view.getLocationInWindow(location);
+        circleData[0] = location[0] + view.getWidth() / 2;
+        circleData[1] = location[1] + view.getHeight() / 2;
+        circleData[2] = (int) (Math.max(view.getWidth(), view.getHeight()) * 0.8);
+        return circleData;
     }
 }
