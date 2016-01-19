@@ -76,7 +76,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
             Friend f = videoRecorder.getCurrentFriend();
             Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
             f.requestUpload(f.getOutgoingVideoId());
-            managerProvider.getTutorial().onVideoRecorded();
+            managerProvider.getTutorial().onVideoRecorded(f);
         }
     }
 

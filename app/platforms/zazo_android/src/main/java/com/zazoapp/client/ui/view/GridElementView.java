@@ -24,7 +24,6 @@ import com.zazoapp.client.utilities.Convenience;
 public class GridElementView extends RelativeLayout implements View.OnClickListener, View.OnLongClickListener {
 
     public interface ClickListener {
-		void onNudgeClicked();
 		void onRecordClicked();
         void onEmptyViewClicked();
         void onThumbViewClicked();
@@ -121,7 +120,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             case R.id.img_thumb:
                 mClickListener.onThumbViewClicked();
         }
-        //mClickListener.onNudgeClicked(); // TODO UI 2.0. Do after recording a video
     }
 
     @Override

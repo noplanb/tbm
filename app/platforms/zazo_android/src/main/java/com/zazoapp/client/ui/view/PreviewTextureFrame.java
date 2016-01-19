@@ -81,7 +81,7 @@ public class PreviewTextureFrame extends FrameLayout {
     public void setRecording(boolean isRecording) {
         this.isRecording = isRecording;
         recordingMarkerLayout.animate().alpha(isRecording ? 1f : 0f).start();
-        final View outerRecordingBorder = outerBorderRef.get();
+        final View outerRecordingBorder = (outerBorderRef != null) ? outerBorderRef.get() : null;
         if (outerRecordingBorder != null) {
             if (isRecording) {
                 outerRecordingBorder.getBackground().setColorFilter(getResources().getColor(R.color.recording_border_color), PorterDuff.Mode.SRC_IN);
