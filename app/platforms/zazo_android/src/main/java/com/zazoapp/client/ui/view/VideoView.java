@@ -66,6 +66,7 @@ public class VideoView extends TextureView
     private Context mContext;
     private final VideoSizeCalculator videoSizeCalculator;
     private VideoStateListener onPlayStateListener;
+    private VideoPositionListener videoPositionListener;
 
     // all possible internal states
     private static final int STATE_ERROR              = -1;
@@ -693,6 +694,16 @@ public class VideoView extends TextureView
         this.onPlayStateListener = onPlayStateListener;
     }
 
+    public void setVideoPositionListener(VideoPositionListener listener) {
+        videoPositionListener = listener;
+        lastPosition = 0;
+        if (videoPositionListener != null && isPlaying()) {
+            post(checkVideoPositionChangedTask);
+        } else {
+            removeCallbacks(checkVideoPositionChangedTask);
+        }
+    }
+
     private final MediaPlayer.OnInfoListener onInfoToPlayStateListener = new MediaPlayer.OnInfoListener() {
 
         @Override
@@ -839,4 +850,25 @@ public class VideoView extends TextureView
         void onPlay();
         void onBuffer();
     }
+
+    public interface VideoPositionListener {
+        void onVideoPositionChanged(int position, int duration);
+    }
+
+    private int lastPosition = 0;
+    private final Runnable checkVideoPositionChangedTask = new Runnable() {
+        @Override
+        public void run() {
+            final int current = getCurrentPosition();
+            if (lastPosition != current) {
+                lastPosition = current;
+                if (videoPositionListener != null) {
+                    videoPositionListener.onVideoPositionChanged(current, getDuration());
+                }
+            }
+            if (videoPositionListener != null && isPlaying()) {
+                postDelayed(this, 250);
+            }
+        }
+    };
 }

@@ -336,7 +336,7 @@ public class Friend extends ActiveModel{
     //--------------------------------
     // Private helpers for above lists
     //--------------------------------
-    private String getNextVideoIdInList(String videoId, List<IncomingVideo> videoList){
+    public static String getNextVideoIdInList(String videoId, List<IncomingVideo> videoList){
         boolean found = false;
         for (IncomingVideo v : videoList){
             if (found) {
@@ -352,14 +352,27 @@ public class Friend extends ActiveModel{
         }
         return null;
     }
-    
-    private String getFirstVideoIdInList(List<IncomingVideo> videoList){
+
+    public static String getFirstVideoIdInList(List<IncomingVideo> videoList){
         if(videoList.size()==0)
             return null;
         else 
             return videoList.get(0).getId();
     }
-    
+
+    public static int getNextVideoPositionInList(String videoId, List<IncomingVideo> videoList) {
+        if (videoList.size() == 0 || videoList.get(videoList.size() - 1).getId().equals(videoId)) {
+            return -1;
+        }
+        for (int i = 0; i < videoList.size() - 1; i++) {
+            IncomingVideo v = videoList.get(i);
+            if (v.getId().equals(videoId)) {
+                return i + 1;
+            }
+        }
+        return 0;
+    }
+
     private ArrayList<IncomingVideo> sortVideosByTimeStamp(ArrayList<IncomingVideo> videos){
         Collections.sort(videos, new Video.VideoTimestampComparator<IncomingVideo>());
         return videos;

@@ -83,6 +83,7 @@ public class AutoResizeTextView extends TextView {
     public AutoResizeTextView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mTextSize = getTextSize();
+        mMinTextSize = 8;
     }
 
     /**

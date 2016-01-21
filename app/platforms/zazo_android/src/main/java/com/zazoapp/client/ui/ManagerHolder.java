@@ -5,7 +5,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import com.zazoapp.client.R;
 import com.zazoapp.client.bench.BenchController;
 import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.features.Features;
@@ -16,7 +15,6 @@ import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.tutorial.Tutorial;
 import com.zazoapp.client.ui.helpers.VideoRecorderManager;
-import com.zazoapp.client.ui.view.TouchBlockScreen;
 
 /**
  * Created by skamenkovych@codeminders.com on 5/6/2015.
@@ -50,7 +48,7 @@ public class ManagerHolder implements ZazoManagerProvider {
         benchController.setBenchListener(fragment);
         inviteManager.setListener(fragment);
         videoRecorder = new VideoRecorderManager(context, this);
-        videoPlayer = new VideoPlayer(activity, this, (TouchBlockScreen) activity.findViewById(R.id.block_screen));
+        videoPlayer = new VideoPlayer(activity, this);
         tutorial = new Tutorial(activity, this);
         features = new Features(activity);
     }

@@ -77,7 +77,13 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/zazo_action_bar"
                         android:background="@drawable/toolbar_shadow"/>
-
+                <com.zazoapp.client.ui.view.VideoProgressBar
+                        android:id="@+id/video_progress_bar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:alpha="0"
+                        android:layout_below="@id/zazo_action_bar"
+                        android:translationY="@dimen/video_indicator_offset"/>
             </RelativeLayout>
             <FrameLayout
                     android:id="@+id/top_frame"

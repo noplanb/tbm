@@ -24,28 +24,33 @@ import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.view.TouchBlockScreen;
+import com.zazoapp.client.ui.view.VideoProgressBar;
 import com.zazoapp.client.ui.view.VideoView;
 import com.zazoapp.client.utilities.DialogShower;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Player, View.OnTouchListener {
 
-	private static final String TAG = VideoPlayer.class.getSimpleName();
+    private static final String TAG = VideoPlayer.class.getSimpleName();
 
     private FragmentActivity activity;
-	private String videoId;
-	private String friendId;
-	private Friend friend;
+    private String videoId;
+    private String friendId;
+    private Friend friend;
+    private int currentVideoNumber = 0;
+    private int numberOfVideos = 0;
     @InjectView(R.id.video_view) VideoView videoView;
     @InjectView(R.id.video_body) ViewGroup videoBody;
     @InjectView(R.id.video_root_layout) ViewGroup videoRootLayout;
     @InjectView(R.id.zoom) View zoomView;
     private TouchBlockScreen blockScreen;
+    private VideoProgressBar progressBar;
 	private boolean videosAreDownloading;
     private ZazoManagerProvider managerProvider;
     private Timer timer = new Timer();
@@ -53,10 +58,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
 	private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
 
-    public VideoPlayer(FragmentActivity activity, ZazoManagerProvider managerProvider, TouchBlockScreen blockScreen) {
+
+    public VideoPlayer(FragmentActivity activity, ZazoManagerProvider managerProvider) {
         this.activity = activity;
         this.managerProvider = managerProvider;
-        this.blockScreen = blockScreen;
+        blockScreen = ButterKnife.findById(activity, R.id.block_screen);
+        progressBar = ButterKnife.findById(activity, R.id.video_progress_bar);
     }
 
     @Override
@@ -132,6 +139,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         Log.i(TAG, "stop");
         if (videoView != null && videoBody != null) {
             videoRootLayout.animate().alpha(0f).start();
+            progressBar.doDisappearing();
             //need to clear videoView because of last frame of already viewed video appear before new one start playing
             //TODO need to fix delay with black frame (or first video frame)
             //videoView.setVisibility(View.INVISIBLE);
@@ -252,23 +260,24 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         videosAreDownloading = friend.hasDownloadingVideo();
     }
 
-	private void setCurrentVideoToFirst(){
-	    if (videosAreDownloading)
-	        setCurrentVideoId(friend.getFirstUnviewedVideoId());
-	    else
-	        setCurrentVideoId(friend.getFirstPlayableVideoId());
-	}
+    private void setCurrentVideoToFirst() {
+        List<IncomingVideo> videos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
+        setCurrentVideoId(Friend.getFirstVideoIdInList(videos));
+        currentVideoNumber = (videoId != null) ? 1 : 0;
+        numberOfVideos = videos.size();
+    }
 
-	private void setCurrentVideoToNext(){
-	    if (videosAreDownloading)
-	        setCurrentVideoId(friend.getNextUnviewedVideoId(videoId));
-	    else
-	        setCurrentVideoId(friend.getNextPlayableVideoId(videoId));
-	}
+    private void setCurrentVideoToNext() {
+        List<IncomingVideo> videos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
+        int posId = Friend.getNextVideoPositionInList(videoId, videos);
+        currentVideoNumber = posId + 1;
+        numberOfVideos = videos.size();
+        setCurrentVideoId((posId >= 0) ? videos.get(posId).getId() : null);
+    }
 
-	private void setCurrentVideoId(String videoId){
-	    this.videoId = videoId;
-	}
+    private void setCurrentVideoId(String videoId) {
+        this.videoId = videoId;
+    }
 
     public boolean isPlaying(){
         return videoView != null && videoView.isPlaying();
@@ -334,6 +343,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                     // checks if it is playing to eliminate the case of released player
                                     if (videoView.isPlaying()) {
                                         videoRootLayout.animate().alpha(1).start();
+                                        progressBar.doAppearing();
+                                        progressBar.setCurrent(currentVideoNumber, true);
+                                        int duration = videoView.getDuration() - videoView.getCurrentPosition();
+                                        progressBar.animateProgress((currentVideoNumber - 1) / (float) numberOfVideos,
+                                                currentVideoNumber / (float) numberOfVideos, duration);
                                         notifyStartPlaying();
                                     }
                                 }
