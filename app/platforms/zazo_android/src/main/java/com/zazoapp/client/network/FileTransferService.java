@@ -7,11 +7,13 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.debug.DebugConfig;
+import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.model.OutgoingVideoFactory;
 import com.zazoapp.client.network.aws.S3FileTransferAgent;
+import com.zazoapp.client.utilities.Logger;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -96,7 +98,7 @@ public abstract class FileTransferService extends IntentService {
     @Override
     public void onStart(Intent intent, int startId) {
         if (RESET_ACTION.equals(intent.getAction())) {
-            Log.i(TAG, OTAG + "Reset retries");
+            Logger.i(TAG, OTAG + "Reset retries");
             retryCount.set(0);
             if (lock.tryLock()) {
                 try {
@@ -113,7 +115,7 @@ public abstract class FileTransferService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         lock.lock();
         try {
-            Log.i(TAG, OTAG + "onHandleIntent");
+            Logger.i(TAG, OTAG + "onHandleIntent action " + RESET_ACTION);
             if (RESET_ACTION.equals(intent.getAction())) {
                 return;
             }
@@ -130,31 +132,49 @@ public abstract class FileTransferService extends IntentService {
                     maxRetriesReached(intent);
                     break;
                 }
+                Logger.i(TAG, OTAG + "before doTransfer. RC: " + retryCount.get());
                 if (doTransfer(intent))
                     break;
                 retrySleep(intent);
             }
         } catch (InterruptedException e) {
+            Logger.e(TAG, OTAG + "Interrupted", e);
         } finally {
             lock.unlock();
         }
     }
 
     public void reportStatus(Intent intent, int status) {
-        Log.i(TAG, OTAG + "reportStatus: " + status);
+        Logger.i(TAG, OTAG + "reportStatus: " + status + " " + intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY));
+        if (intent.hasExtra(IntentFields.VIDEO_ID_KEY)) {
+            String videoId = intent.getStringExtra(IntentFields.VIDEO_ID_KEY);
+            if (isDownload(intent)) {
+                Logger.i(TAG, "reportStatus D " + IncomingVideoFactory.getFactoryInstance().find(videoId));
+            } else if (isUpload(intent)) {
+                Logger.i(TAG, "reportStatus U " + OutgoingVideoFactory.getFactoryInstance().find(videoId));
+            }
+        }
         Intent newIntent = new Intent(intent);
         newIntent.setClass(getApplicationContext(), IntentHandlerService.class);
         newIntent.putExtra(IntentFields.STATUS_KEY, status);
         getApplicationContext().startService(newIntent);
     }
 
+    private boolean isUpload(Intent intent) {
+        return IntentFields.TRANSFER_TYPE_UPLOAD.equalsIgnoreCase(intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY));
+    }
+
+    private boolean isDownload(Intent intent) {
+        return IntentFields.TRANSFER_TYPE_DOWNLOAD.equalsIgnoreCase(intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY));
+    }
+
     private void retrySleep(Intent intent) throws InterruptedException {
         intent.putExtra(IntentFields.RETRY_COUNT_KEY, retryCount.incrementAndGet());
-        Log.i(TAG, OTAG + "retry: " + retryCount.get());
+        Logger.i(TAG, OTAG + "retry: " + retryCount.get());
 
         long sleepTime = (DebugConfig.getInstance(this).isDebugEnabled()) ? 1000L : sleepTime(retryCount.get());
 
-        Log.i(TAG, OTAG + "Sleeping for: " + sleepTime + "ms");
+        Logger.i(TAG, OTAG + "Sleeping for: " + sleepTime + "ms");
         if (reset.await(sleepTime, TimeUnit.MILLISECONDS)) {
             intent.putExtra(IntentFields.RETRY_COUNT_KEY, retryCount.get());
         }
@@ -168,6 +188,7 @@ public abstract class FileTransferService extends IntentService {
     }
 
     public static void reset(Context context, Class<? extends FileTransferService> clazz) {
+        Logger.i(TAG, "reset " + clazz.getSimpleName());
         Intent i = new Intent(context, clazz);
         i.setAction(FileUploadService.RESET_ACTION);
         context.startService(i);

@@ -9,6 +9,7 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.utilities.AsyncTaskManager;
+import com.zazoapp.client.utilities.Logger;
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.auth.AuthScope;
@@ -151,6 +152,7 @@ public class HttpRequest {
     }
 
     public String httpReq() throws IOException{
+        Logger.i(TAG, toString());
         String sUrl = Config.fullUrl(uri);
         String result = "";
 
@@ -252,4 +254,10 @@ public class HttpRequest {
 
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(method).append(" ").append(uri);
+        return builder.toString();
+    }
 }

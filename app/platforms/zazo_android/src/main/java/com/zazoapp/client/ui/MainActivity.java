@@ -15,6 +15,7 @@ import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.dispatch.ZazoAnalytics;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.notification.NotificationAlertManager;
+import com.zazoapp.client.utilities.Logger;
 
 public class MainActivity extends FragmentActivity implements TaskFragmentListener {
 
@@ -29,6 +30,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Logger.i(TAG, "onCreate");
         ZazoAnalytics.start();
         setContentView(R.layout.main_activity);
         setupFragment();
@@ -37,29 +39,34 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        Logger.i(TAG, "onNewIntent");
         setIntent(intent);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        Logger.i(TAG, "onStart");
         setupWindowParams();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        Logger.i(TAG, "onStop");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Logger.i(TAG, "onResume");
         ZazoAnalytics.onActivityResume(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Logger.i(TAG, "onPause");
         ZazoAnalytics.onActivityPause(this);
     }
 

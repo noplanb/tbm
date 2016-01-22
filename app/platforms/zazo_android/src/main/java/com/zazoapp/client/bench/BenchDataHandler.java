@@ -88,7 +88,9 @@ public class BenchDataHandler {
 
             addPhoneData(getMessagesPhoneData(), rankedPhoneData);
             addPhoneData(getContactsPhoneData(), rankedPhoneData);
-            Logger.d(TAG, "rankedPhoneData: " + rankedPhoneData);
+            if (DebugConfig.DEBUG_LOG) {
+                Log.d(TAG, "rankedPhoneData: " + rankedPhoneData);
+            }
             printRankedPhoneData(rankedPhoneData);
             return null;
         }
@@ -186,7 +188,9 @@ public class BenchDataHandler {
             map.put(Keys.NUM_MESSAGES, entry.getValue());
             smsPhoneData.add(map);
         }
-        Logger.d(TAG, "numMessages: " + smsPhoneData);
+        if (DebugConfig.DEBUG_LOG) {
+            Log.d(TAG, "numMessages: " + smsPhoneData);
+        }
         return smsPhoneData;
     }
 

@@ -8,11 +8,13 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.debug.DebugConfig;
+import com.zazoapp.client.debug.DebugUtils;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.notification.NotificationHandler;
+import com.zazoapp.client.utilities.Logger;
 
 /**
  * This IntentService handles push notifications. It is called by
@@ -40,6 +42,7 @@ public class GcmIntentService extends IntentService {
 			 * ignore any message types you're not interested in, or that you
 			 * don't recognize.
 			 */
+            Logger.i(TAG, "" + messageType + " " + extras);
 			if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
 				// Not used
 			} else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
@@ -49,10 +52,14 @@ public class GcmIntentService extends IntentService {
                 if (extras.containsKey(NotificationHandler.DataKeys.SERVER_HOST)) {
                     // filter messages addressed to another server
                     if (Config.getServerHost().equalsIgnoreCase(extras.getString(NotificationHandler.DataKeys.SERVER_HOST))) {
-                        if (extras.getString(NotificationHandler.DataKeys.TYPE).equalsIgnoreCase(NotificationHandler.TypeEnum.VIDEO_RECEIVED)) {
+                        String type = extras.getString(NotificationHandler.DataKeys.TYPE);
+                        if (NotificationHandler.TypeEnum.VIDEO_RECEIVED.equalsIgnoreCase(type)) {
                             handleVideoReceived(intent);
-                        } else if (extras.getString(NotificationHandler.DataKeys.TYPE).equalsIgnoreCase(NotificationHandler.TypeEnum.VIDEO_STATUS_UPDATE)) {
+                        } else if (NotificationHandler.TypeEnum.VIDEO_STATUS_UPDATE.equalsIgnoreCase(type)) {
                             handleVideoStatusUpdate(intent);
+                        }else if (NotificationHandler.TypeEnum.LOG_REQUEST.equalsIgnoreCase(type)) {
+                            DebugUtils.dispatchExtendedLogs(extras.getString(NotificationHandler.DataKeys.DATE_START),
+                                    extras.getString(NotificationHandler.DataKeys.DATE_END));
                         } else {
                             Dispatch.dispatch("onHandleIntent: ERROR: unknown intent type in notification payload.");
                         }

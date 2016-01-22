@@ -54,14 +54,14 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate");
+        Logger.i(TAG, "onCreate");
         CameraManager.addExceptionHandlerDelegate(this);
         viewControllers = new ArrayList<>(GridManager.GRID_ELEMENTS_COUNT);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.i(TAG, "onCreateView");
+        Logger.i(TAG, "onCreateView");
         viewLoaded = false;
         View v = inflater.inflate(R.layout.nineviewgroup_fragment, container, false);
 

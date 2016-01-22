@@ -24,6 +24,7 @@ import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileTransferService.IntentFields;
 import com.zazoapp.client.network.IFileTransferAgent;
 import com.zazoapp.client.network.NetworkConfig;
+import com.zazoapp.client.utilities.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,6 +52,8 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	@Override
 	public void setInstanceVariables(Intent intent) throws InterruptedException {
 		filename = intent.getStringExtra(IntentFields.FILE_NAME_KEY);
+        String videoId = intent.getStringExtra(IntentFields.VIDEO_ID_KEY);
+        Logger.i(TAG, "setInstanceVariables: " + filename + " id " + videoId);
 		this.intent = intent;
 		String filePath = intent.getStringExtra(IntentFields.FILE_PATH_KEY);
 		this.file = new File(filePath);
@@ -89,6 +92,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	public boolean upload() throws InterruptedException {
 		try {
             PutObjectRequest _putObjectRequest = new PutObjectRequest(s3Bucket, filename, file);
+            Bundle data1 = intent.getBundleExtra(IntentFields.METADATA); // FIXME TEST
             if (intent.hasExtra(IntentFields.METADATA)) {
                 Bundle data = intent.getBundleExtra(IntentFields.METADATA);
                 ObjectMetadata metadata = new ObjectMetadata();
@@ -97,8 +101,10 @@ public class S3FileTransferAgent implements IFileTransferAgent {
                 }
                 _putObjectRequest.setMetadata(metadata);
             }
+            Logger.i(TAG, "upload() Before upload " + data1);
 			Upload upload = tm.upload(_putObjectRequest);
 			upload.waitForUploadResult();
+            Logger.i(TAG, "upload() After upload " + data1);
 		} catch (AmazonServiceException e) {
 			handleServiceException(e);
 			return notRetryableServiceException(e);
@@ -116,8 +122,10 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		Log.i(TAG, "Starting S3 download for filename: " + filename);
 		try {
             GetObjectRequest _getObjectRequest = new GetObjectRequest(s3Bucket, filename);
+            Logger.i(TAG, "download() Before download " + filename);
 			Download download = tm.download(_getObjectRequest,	file);
 			download.waitForCompletion();
+            Logger.i(TAG, "download() After download " + filename);
 		} catch (AmazonServiceException e) {
 			handleServiceException(e);
 			return notRetryableServiceException(e);
@@ -133,8 +141,10 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	@Override
 	public boolean delete() throws InterruptedException{
 		try {
+            Logger.i(TAG, "delete() Before delete " + filename);
             DeleteObjectRequest _deleteObjectRequest = new DeleteObjectRequest(s3Bucket, filename);
 			tm.getAmazonS3Client().deleteObject(_deleteObjectRequest);
+            Logger.i(TAG, "delete() After delete " + filename);
 		} catch (AmazonServiceException e) {
 			handleServiceException(e);
 			return notRetryableServiceException(e);
@@ -169,7 +179,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	}
 
 	private void logClientException(AmazonClientException e) {
-		Log.e(TAG, "ERROR in transfer type: " + intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY) + " AmazonClientException: " + e.toString());
+        Logger.e(TAG, "ERROR in transfer type: " + intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY) + " AmazonClientException: " + e.toString());
         return;
 	}
 
@@ -220,6 +230,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
     }
 
     private void dispatchServiceException(AmazonServiceException e) {
+        Logger.e(TAG, "dispatchServiceException " + e.getErrorType() + " " + e.getStatusCode(), e);
 		switch(e.getErrorType()){
 		case Client:
 			if (e.getStatusCode() / 100 == 3)

@@ -12,9 +12,15 @@ import com.google.gson.Gson;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.model.User;
+import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
+import com.zazoapp.client.utilities.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +28,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -198,6 +207,36 @@ public final class DebugUtils {
             }
         });
         builder.show();
+    }
+
+    public static int dispatchExtendedLogs(CharSequence start, CharSequence end) {
+        JSONObject object = new JSONObject();
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+        int days = 0;
+        try {
+            Date startDate = format.parse(String.valueOf(start));
+            Date endDate = format.parse(String.valueOf(end));
+            Date date = new Date(startDate.getTime());
+
+            while (date.compareTo(endDate) <= 0) {
+                object.put("log_from_" + format.format(date), Logger.getLogsForDate(date));
+                date.setTime(date.getTime() + 86400000);
+                days++;
+            }
+            String userName;
+            User user = UserFactory.current_user();
+            if (user != null) {
+                userName = user.getFullName();
+            } else {
+                userName = "Unknown";
+            }
+            object.put("body", "Extended logs from " + userName);
+        } catch (ParseException | JSONException e) {
+            Dispatch.dispatch(e, "Couldn't load logs. Dispatching...");
+            return 0;
+        }
+        Dispatch.dispatch(object, null);
+        return days;
     }
 
     public interface InputDialogCallback {

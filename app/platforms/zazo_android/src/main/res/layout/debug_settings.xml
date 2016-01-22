@@ -50,6 +50,48 @@
                         android:text="Dispatch"/>
             </TableRow>
             <TableRow>
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_span="3"
+                        android:weightSum="4"
+                        android:gravity="center">
+
+                    <EditText
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:ems="10"
+                            android:id="@+id/dispatch_logs_date_start"
+                            android:focusable="false"
+                            android:layout_weight="1"
+                            android:singleLine="true"
+                            android:text="12/21/2015"
+                            android:textSize="@dimen/text_small"
+                            android:textColor="@android:color/white"/>
+                    <EditText
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:ems="10"
+                            android:id="@+id/dispatch_logs_date_end"
+                            android:focusable="false"
+                            android:layout_weight="1"
+                            android:singleLine="true"
+                            android:text="12/21/2015"
+                            android:textSize="@dimen/text_small"
+                            android:textColor="@android:color/white"/>
+
+                    <Button
+                            android:id="@+id/dispatch_extended_logs"
+                            style="@style/DevButton"
+                            android:layout_width="match_parent"
+                            android:text="Dispatch Extended Logs"
+                            android:layout_weight="2"
+                            />
+                </LinearLayout>
+            </TableRow>
+            <TableRow>
                 <View
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

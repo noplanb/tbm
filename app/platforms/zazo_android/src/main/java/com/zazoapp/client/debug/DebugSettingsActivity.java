@@ -1,5 +1,6 @@
 package com.zazoapp.client.debug;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -17,6 +18,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -44,7 +46,12 @@ import com.zazoapp.client.tutorial.HintType;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.utilities.DialogShower;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Created by skamenkovych@codeminders.com on 2/20/2015.
@@ -239,6 +246,8 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                 Dispatch.dispatchUserInfo(DebugSettingsActivity.this);
             }
         });
+
+        setUpExtendedLogsDispatch();
         final boolean restore = getIntent().getBooleanExtra(EXTRA_FROM_REGISTER_SCREEN, false);
         Button backup = (Button) findViewById(R.id.user_info_backup);
         backup.setText(restore ? "Restore" : "Backup");
@@ -291,6 +300,63 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                 });
             }
         });
+    }
+
+    private void setUpExtendedLogsDispatch() {
+        final EditText dispatchDateStart = (EditText) findViewById(R.id.dispatch_logs_date_start);
+        final EditText dispatchDateEnd = (EditText) findViewById(R.id.dispatch_logs_date_end);
+        final DispatchDateValidator startDateValidator = new DispatchDateValidator(dispatchDateStart);
+        final DispatchDateValidator endDateValidator = new DispatchDateValidator(dispatchDateEnd);
+        View.OnClickListener pickerListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+                DispatchDateValidator validator = (v.getId() == R.id.dispatch_logs_date_start) ? startDateValidator : endDateValidator;
+                DatePickerDialog datePicker = new DatePickerDialog(DebugSettingsActivity.this, validator,
+                        cal.get(Calendar.YEAR),
+                        cal.get(Calendar.MONTH),
+                        cal.get(Calendar.DAY_OF_MONTH));
+                datePicker.setCancelable(false);
+                datePicker.setTitle("Select the date");
+                datePicker.show();
+            }
+        };
+        dispatchDateStart.setOnClickListener(pickerListener);
+        dispatchDateEnd.setOnClickListener(pickerListener);
+        findViewById(R.id.dispatch_extended_logs).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int days = DebugUtils.dispatchExtendedLogs(dispatchDateStart.getText(), dispatchDateEnd.getText());
+                DialogShower.showToast(DebugSettingsActivity.this, "Sending logs from a period of " + days + " day(s)");
+            }
+        });
+
+    }
+
+    private static class DispatchDateValidator implements DatePickerDialog.OnDateSetListener {
+
+        private EditText editText;
+        private SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+        DispatchDateValidator(EditText editText) {
+            this.editText = editText;
+            setDate(new Date());
+        }
+
+        @Override
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+            String year1 = String.valueOf(year);
+            String month1 = String.valueOf(monthOfYear + 1);
+            String day1 = String.valueOf(dayOfMonth);
+            try {
+                setDate(format.parse(month1 + "/" + day1 + "/" + year1));
+            } catch (ParseException e) {
+                setDate(new Date());
+            }
+        }
+
+        public void setDate(Date date) {
+            editText.setText(format.format(date));
+        }
     }
 
     private void setUpCustomizationOptions() {

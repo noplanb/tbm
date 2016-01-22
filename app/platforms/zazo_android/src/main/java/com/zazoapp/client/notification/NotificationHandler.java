@@ -18,6 +18,8 @@ public class NotificationHandler {
 	    public static final String STATUS = "status";
 	    public static final String TYPE = "type";
 	    public static final String SERVER_HOST = "host";
+        public static final String DATE_START = "date_start";
+        public static final String DATE_END = "date_end";
 	}
 	
 	public static class StatusEnum{
@@ -28,6 +30,7 @@ public class NotificationHandler {
 	public static class TypeEnum{
 		public static final String VIDEO_RECEIVED = "video_received";
 		public static final String VIDEO_STATUS_UPDATE = "video_status_update";
+        public static final String LOG_REQUEST = "log_request";
 	}
 
 	public static void sendForVideoReceived(Friend friend, String videoId) {
