@@ -103,6 +103,19 @@
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
             </intent-filter>
         </receiver>
+        <receiver
+                android:name="com.appsflyer.MultipleInstallBroadcastReceiver"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.appsflyer.AppsFlyerLib">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_REMOVED"/>
+                <data android:scheme="package"/>
+            </intent-filter>
+        </receiver>
         <!-- For tests -->
         <!--<activity android:name=".tests.TestActivity" android:screenOrientation="portrait" android:launchMode="singleTask"/>-->
         <!--<service android:name=".tests.FileDownloadServiceTest"/>-->

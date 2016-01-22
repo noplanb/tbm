@@ -8,6 +8,7 @@ import android.util.Log;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.dispatch.RollbarTracker;
+import com.zazoapp.client.dispatch.ZazoAnalytics;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.ui.LockScreenAlertActivity;
@@ -39,6 +40,7 @@ public class TbmApplication extends Application {
         application = this;
         unexpectedTerminationHelper.init();
         DebugConfig.getInstance(this);
+        ZazoAnalytics.init(this);
         loadDataModel();
 
         Dispatch.registerTracker(this, new RollbarTracker());

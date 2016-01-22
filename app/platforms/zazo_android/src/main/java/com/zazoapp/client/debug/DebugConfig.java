@@ -12,19 +12,19 @@ import java.util.Set;
 */
 public class DebugConfig {
     public static final String DEBUG_SETTINGS = "zazo_debug";
-    private static final String KEY_MODE = "mode";
-    private static final String KEY_SEND_SMS = "send_sms";
-    private static final String KEY_CUSTOM_HOST = "custom_host";
-    private static final String KEY_CUSTOM_URI = "custom_uri";
-    private static final String KEY_USE_CUSTOM_SERVER = "use_custom_server";
-    private static final String KEY_USE_REAR_CAMERA = "use_rear_camera";
-    private static final String KEY_SEND_BROKEN_VIDEO = "send_broken_video";
-    private static final String KEY_DISABLE_GCM_NOTIFICATIONS = "disable_gcm_notifications";
-    private static final String KEY_ENABLE_ALL_FEATURES = "enable_all_features";
-    private static final String KEY_FEATURE_OPTIONS_OPENED = "feature_options_opened";
-    private static final String KEY_FORCE_CONFIRMATION_SMS = "force_confirmation_sms";
-    private static final String KEY_FORCE_CONFIRMATION_CALL = "force_confirmation_call";
-    private static final String KEY_MIN_ROOM_SPACE_RESTRICTION = "min_room_space_restriction";
+    /*int*/ private static final String KEY_MODE = "mode";
+    /*bol*/ private static final String KEY_SEND_SMS = "send_sms";
+    /*str*/ private static final String KEY_CUSTOM_HOST = "custom_host";
+    /*str*/ private static final String KEY_CUSTOM_URI = "custom_uri";
+    /*bol*/ private static final String KEY_USE_CUSTOM_SERVER = "use_custom_server";
+    /*bol*/ private static final String KEY_USE_REAR_CAMERA = "use_rear_camera";
+    /*bol*/ private static final String KEY_SEND_BROKEN_VIDEO = "send_broken_video";
+    /*bol*/ private static final String KEY_DISABLE_GCM_NOTIFICATIONS = "disable_gcm_notifications";
+    /*bol*/ private static final String KEY_ENABLE_ALL_FEATURES = "enable_all_features";
+    /*bol*/ private static final String KEY_FEATURE_OPTIONS_OPENED = "feature_options_opened";
+    /*bol*/ private static final String KEY_FORCE_CONFIRMATION_SMS = "force_confirmation_sms";
+    /*bol*/ private static final String KEY_FORCE_CONFIRMATION_CALL = "force_confirmation_call";
+    /*int*/ private static final String KEY_MIN_ROOM_SPACE_RESTRICTION = "min_room_space_restriction";
 
     public static final boolean DEBUG_LOG = false;
 

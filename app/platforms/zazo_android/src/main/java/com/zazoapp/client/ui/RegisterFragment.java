@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+import com.appsflyer.AFInAppEventType;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
@@ -32,6 +33,7 @@ import com.zazoapp.client.core.FriendGetter;
 import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.debug.DebugSettingsActivity;
+import com.zazoapp.client.dispatch.ZazoAnalytics;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
@@ -637,6 +639,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         user.set(User.Attributes.REGISTERED, "true");
         ActiveModelsHandler.getInstance(getContext()).saveAll();
         dismissProgressDialog();
+        ZazoAnalytics.trackEvent(AFInAppEventType.COMPLETE_REGISTRATION);
         publishResult(0, null);
     }
 

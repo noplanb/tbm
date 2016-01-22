@@ -12,6 +12,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.dispatch.ZazoAnalytics;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.notification.NotificationAlertManager;
 
@@ -28,6 +29,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ZazoAnalytics.start();
         setContentView(R.layout.main_activity);
         setupFragment();
     }
@@ -52,11 +54,13 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
     @Override
     protected void onResume() {
         super.onResume();
+        ZazoAnalytics.onActivityResume(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        ZazoAnalytics.onActivityPause(this);
     }
 
     private void setupFragment() {
@@ -65,6 +69,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
             currentFragmentId = REGISTER_FRAGMENT;
         } else {
             currentFragmentId = MAIN_FRAGMENT;
+            ZazoAnalytics.setUser();
         }
         currentFragment = (ZazoFragment) getSupportFragmentManager().findFragmentByTag("main" + currentFragmentId);
         if (currentFragment == null) {
