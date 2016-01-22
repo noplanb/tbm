@@ -134,7 +134,7 @@ public class Features {
                 NotificationAlertManager.alert(activity,
                         activity.getString(R.string.feature_unlock_message),
                         activity.getString(R.string.feature_unlock_discover_message),
-                        awardVibrationPattern, -1);
+                        awardVibrationPattern, NotificationAlertManager.NotificationType.FEATURE_AWARD.id());
             }
         }
     }

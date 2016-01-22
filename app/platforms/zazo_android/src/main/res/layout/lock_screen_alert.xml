@@ -60,7 +60,7 @@
             android:layout_marginTop="18dp"
             android:layout_toRightOf="@+id/thumbImage"
             android:background="@drawable/red_button_background_shape"
-            android:text="Dismiss"
+            android:text="@string/action_dismiss"
             android:textColor="#ff0000" />
 
         <Button
@@ -72,7 +72,7 @@
             android:layout_marginTop="18dp"
             android:layout_toRightOf="@+id/btnDismiss"
             android:background="@drawable/green_button_background_shape"
-            android:text="View"
+            android:text="@string/action_view"
             android:textColor="#00ff00" />
     </RelativeLayout>
 

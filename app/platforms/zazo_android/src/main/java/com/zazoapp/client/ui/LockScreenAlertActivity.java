@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.notification.NotificationAlertManager;
@@ -105,13 +106,22 @@ public class LockScreenAlertActivity extends Activity {
 		((TextView) this.findViewById(R.id.titleTextView)).setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));
 		((TextView) this.findViewById(R.id.subtitleTextView)).setText(i.getStringExtra(NotificationAlertManager.SUB_TITLE_KEY));
 		((ImageView) this.findViewById(R.id.logoImage)).setBackgroundResource(i.getIntExtra(NotificationAlertManager.SMALL_ICON_KEY, 0));
-		Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
-		ImageView thumbImage = (ImageView) this.findViewById(R.id.thumbImage);
-		if (friend.thumbExists()) {
-			thumbImage.setImageBitmap(friend.thumbBitmap());
-		} else {
-			thumbImage.setImageResource(R.drawable.ic_no_pic_z);
-		}
+        ImageView thumbImage = (ImageView) this.findViewById(R.id.thumbImage);
+        if (IntentHandlerService.IntentActions.PLAY_VIDEO.equals(i.getAction())) {
+            Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
+
+            if (friend.thumbExists()) {
+                thumbImage.setImageBitmap(friend.thumbBitmap());
+            } else {
+                thumbImage.setImageResource(R.drawable.ic_no_pic_z);
+            }
+            ((Button) findViewById(R.id.btnDismiss)).setText(R.string.action_dismiss);
+            ((Button) findViewById(R.id.btnView)).setText(R.string.action_view);
+        } else if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(i.getAction())) {
+            thumbImage.setImageResource(R.drawable.ic_launcher);
+            ((Button) findViewById(R.id.btnDismiss)).setText(R.string.action_ignore_joined_friend);
+            ((Button) findViewById(R.id.btnView)).setText(R.string.action_add_joined_friend);
+        }
 	}
 
 
@@ -147,6 +157,11 @@ public class LockScreenAlertActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				dismiss();
+                if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction())) {
+                    Intent i = new Intent(getIntent());
+                    i.setClass(getApplicationContext(), IntentHandlerService.class);
+                    i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.IGNORE);
+                }
 			}
 		});
 
@@ -154,7 +169,14 @@ public class LockScreenAlertActivity extends Activity {
 		btnView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				startHomeActivity();
+                if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction())) {
+                    dismiss();
+                    Intent i = new Intent(getIntent());
+                    i.setClass(getApplicationContext(), IntentHandlerService.class);
+                    i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.ADD);
+                } else {
+                    startHomeActivity();
+                }
 			}
 		});
 	}

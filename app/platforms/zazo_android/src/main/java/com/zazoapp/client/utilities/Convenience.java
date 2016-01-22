@@ -384,7 +384,7 @@ public class Convenience {
             Log.d(TAG, "Not enough space");
             String title = context.getString(R.string.alert_not_enough_space_title);
             String message = context.getString(R.string.alert_not_enough_space_message);
-            NotificationAlertManager.alert(context, title, message, null, 3);
+            NotificationAlertManager.alert(context, title, message, null, NotificationAlertManager.NotificationType.NO_SPACE_LEFT.id());
             LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(ON_NOT_ENOUGH_SPACE_ACTION));
         }
         return result;

@@ -47,21 +47,27 @@ public class Config {
 		return context.getFilesDir().getAbsolutePath();
 	}
 
-	public static String fullUrl(String uri){
+    public static String fullUrl(String uri) {
+        return fullUrl(getServerUri(), uri);
+    }
 
-		String slash = "";
-		if(uri.charAt(0) != '/')
-			slash = "/";
+    public static String fullUrl(String serverUri, String uri){
 
-		String url;
-		if (Pattern.compile("http:").matcher(uri).find()){
-			url = uri;
-		} else {
-			url = getServerUri() + slash + uri;
-		}
-		return url;
-	}
-	
+        String slash = "";
+        if(uri.charAt(0) != '/')
+            slash = "/";
+
+        String url;
+        if (Pattern.compile("http:").matcher(uri).find()){
+            url = uri;
+        } else if (Pattern.compile("https:").matcher(uri).find()){
+            url = uri;
+        } else {
+            url = serverUri + slash + uri;
+        }
+        return url;
+    }
+
 	public static String fileDownloadUrl() {
 		return fullUrl("/videos/get");
 	}
