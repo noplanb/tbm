@@ -178,6 +178,9 @@
     <string name="ff_ignore_success_message">Ignored!</string>
     <string name="ff_ignore_error_message">Couldn\'t ignore friend</string>
 
+    <string name="settings_allow_data_in_roaming">Transfer Zazos in roaming</string>
+    <string name="settings_allow_data_in_roaming_hint">Allow transfer videos when roaming</string>
+
     <string name="dev_previous"><![CDATA[<]]></string>
     <string name="dev_next"><![CDATA[>]]></string>
 </resources>

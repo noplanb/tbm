@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.core.Settings;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.User;
@@ -61,6 +62,13 @@ public final class DebugUtils {
         Gson gson = new Gson();
         String json = gson.toJson(preferences);
         Convenience.saveJsonToFile(json, backupFolder() + File.separator + DebugConfig.DEBUG_SETTINGS + ".json");
+
+        p = new PreferencesHelper(context, Settings.FILE_NAME);
+        preferences = new Preferences();
+        preferences.prefs = p.getAll();
+        json = gson.toJson(preferences);
+        Convenience.saveJsonToFile(json, backupFolder() + File.separator + Settings.FILE_NAME + ".json");
+
         p = new PreferencesHelper(context);
         int version = p.getInt(ActiveModelsHandler.MODEL_VERSION_PREF, 1);
         preferences.prefs.clear();
@@ -77,6 +85,14 @@ public final class DebugUtils {
             Gson gson = new Gson();
             Preferences preferences = gson.fromJson(json, Preferences.class);
             PreferencesHelper p = new PreferencesHelper(context, DebugConfig.DEBUG_SETTINGS);
+            p.putAll(preferences.prefs);
+            DebugConfig.getInstance(context).reloadPrefs();
+        }
+        json = Convenience.getJsonFromFile(backupFolder() + File.separator + Settings.FILE_NAME + ".json");
+        if (json != null) {
+            Gson gson = new Gson();
+            Preferences preferences = gson.fromJson(json, Preferences.class);
+            PreferencesHelper p = new PreferencesHelper(context, Settings.FILE_NAME);
             p.putAll(preferences.prefs);
             DebugConfig.getInstance(context).reloadPrefs();
         }
