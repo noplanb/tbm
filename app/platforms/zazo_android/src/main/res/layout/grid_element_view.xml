@@ -89,6 +89,15 @@
                     android:visibility="invisible"/>
         </FrameLayout>
 
+        <ImageView
+                android:id="@+id/resend_last"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:src="@drawable/ic_cached_black_36dp"
+                android:visibility="invisible"
+                android:tint="@color/light_grey"/>
         <com.zazoapp.client.ui.view.ShadowedStatusLayout
                 android:id="@+id/unread_count_layout"
                 android:layout_width="@dimen/grid_item_status_icon_size"

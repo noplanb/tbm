@@ -27,6 +27,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 		void onRecordClicked();
         void onEmptyViewClicked();
         void onThumbViewClicked();
+        void onResendClicked();
 	}
 
     public interface FriendViewListener {
@@ -50,6 +51,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     @InjectView(R.id.card_empty_icon) ImageView emptyIcon;
     @InjectView(R.id.card_empty_text) TextView emptyText;
     @InjectView(R.id.card_layout) RelativeLayout cardLayout;
+    @InjectView(R.id.resend_last) ImageView btnResend;
 
 	private ClickListener mClickListener;
 
@@ -89,6 +91,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         mEmptyView.setOnClickListener(this);
         mEmptyView.setOnLongClickListener(this);
         imgThumb.setOnClickListener(this);
+        btnResend.setOnClickListener(this);
     }
 
     @Override
@@ -119,6 +122,11 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
                 break;
             case R.id.img_thumb:
                 mClickListener.onThumbViewClicked();
+                break;
+            case R.id.resend_last:
+                mClickListener.onResendClicked();
+                v.animate().rotationBy(-180).setDuration(400).start();
+                break;
         }
     }
 
@@ -231,6 +239,10 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         if (!visible) {
             downloadingView.getAnimationController().cancel();
         }
+    }
+
+    public void showResendButton(boolean visible) {
+        btnResend.setVisibility(visible ? VISIBLE : INVISIBLE);
     }
 
     public void animateUploading(final Runnable task) {

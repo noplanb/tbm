@@ -203,6 +203,15 @@
                     android:textColor="@android:color/white"/>
         </LinearLayout>
 
+        <Switch
+                android:id="@+id/send_incorrect_file_size"
+                style="@style/DevSwitch"
+                android:text="Send incorrect file size"/>
+        <Switch
+                android:id="@+id/allow_resend"
+                style="@style/DevSwitch"
+                android:text="Allow resend"/>
+
         <LinearLayout style="@style/DevDivider.Layout">
             <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Registration options"/><View style="@style/DevDivider.Line"/>
         </LinearLayout>

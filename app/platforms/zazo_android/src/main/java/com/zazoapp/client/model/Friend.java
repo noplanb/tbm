@@ -526,7 +526,7 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(videoId));
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this, videoId));
-        i.putExtra(FileTransferService.IntentFields.METADATA, FileTransferService.MetaData.getMetadata(videoId, UserFactory.getCurrentUserMkey(), getMkey()));
+        i.putExtra(FileTransferService.IntentFields.METADATA, FileTransferService.MetaData.getMetadata(videoId, UserFactory.getCurrentUserMkey(), getMkey(), videoToFile(videoId)));
         // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this, videoId));

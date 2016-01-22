@@ -25,6 +25,8 @@ public class DebugConfig {
     /*bol*/ private static final String KEY_FORCE_CONFIRMATION_SMS = "force_confirmation_sms";
     /*bol*/ private static final String KEY_FORCE_CONFIRMATION_CALL = "force_confirmation_call";
     /*int*/ private static final String KEY_MIN_ROOM_SPACE_RESTRICTION = "min_room_space_restriction";
+    /*bol*/ private static final String KEY_SEND_INCORRECT_FILE_SIZE = "send_incorrect_file_size";
+    /*bol*/ private static final String KEY_ALLOW_RESEND = "allow_resend";
 
     public static final boolean DEBUG_LOG = false;
 
@@ -57,6 +59,8 @@ public class DebugConfig {
     private boolean forceConfirmationSms;
     private boolean forceConfirmationCall;
     private int minRoomSpace;
+    private boolean sendIncorrectFileSize;
+    private boolean allowResend;
 
     private DebugConfig() {
     }
@@ -101,6 +105,8 @@ public class DebugConfig {
         forceConfirmationSms = prefs.getBoolean(KEY_FORCE_CONFIRMATION_SMS, false);
         forceConfirmationCall = prefs.getBoolean(KEY_FORCE_CONFIRMATION_CALL, false);
         minRoomSpace = prefs.getInt(KEY_MIN_ROOM_SPACE_RESTRICTION, DEFAULT_MIN_ROOM_SPACE_RESTRICTION);
+        sendIncorrectFileSize = prefs.getBoolean(KEY_SEND_INCORRECT_FILE_SIZE, false);
+        allowResend = prefs.getBoolean(KEY_ALLOW_RESEND, false);
     }
 
     public boolean isDebugEnabled() {
@@ -153,6 +159,14 @@ public class DebugConfig {
 
     public int getMinRoomSpace() {
         return minRoomSpace;
+    }
+
+    public boolean shouldSendIncorrectFileSize() {
+        return sendIncorrectFileSize;
+    }
+
+    public boolean isResendAllowed() {
+        return allowResend;
     }
 
     public void enableSendSms(boolean sendSms) {
@@ -236,6 +250,18 @@ public class DebugConfig {
         notifyChanges();
     }
 
+    public void setSendIncorrectFileSize(boolean send) {
+        sendIncorrectFileSize = send;
+        prefs.putBoolean(KEY_SEND_INCORRECT_FILE_SIZE, send);
+        notifyChanges();
+    }
+
+    public void allowResend(boolean allow) {
+        allowResend = allow;
+        prefs.putBoolean(KEY_ALLOW_RESEND, allow);
+        notifyChanges();
+    }
+
     public void savePrefs() {
         prefs.putInt(KEY_MODE, mode);
         prefs.putBoolean(KEY_SEND_SMS, shouldSendSms);
@@ -250,6 +276,8 @@ public class DebugConfig {
         prefs.putBoolean(KEY_FORCE_CONFIRMATION_SMS, forceConfirmationSms);
         prefs.putBoolean(KEY_FORCE_CONFIRMATION_CALL, forceConfirmationCall);
         prefs.putInt(KEY_MIN_ROOM_SPACE_RESTRICTION, minRoomSpace);
+        prefs.putBoolean(KEY_SEND_INCORRECT_FILE_SIZE, sendIncorrectFileSize);
+        prefs.putBoolean(KEY_ALLOW_RESEND, allowResend);
     }
 
     public void reloadPrefs() {
@@ -266,6 +294,8 @@ public class DebugConfig {
         forceConfirmationSms = prefs.getBoolean(KEY_FORCE_CONFIRMATION_SMS, false);
         forceConfirmationCall = prefs.getBoolean(KEY_FORCE_CONFIRMATION_CALL, false);
         minRoomSpace = prefs.getInt(KEY_MIN_ROOM_SPACE_RESTRICTION, DEFAULT_MIN_ROOM_SPACE_RESTRICTION);
+        sendIncorrectFileSize = prefs.getBoolean(KEY_SEND_INCORRECT_FILE_SIZE, false);
+        allowResend = prefs.getBoolean(KEY_ALLOW_RESEND, false);
     }
 
     public void addCallback(DebugConfigChangesCallback callback) {

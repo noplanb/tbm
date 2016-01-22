@@ -1,5 +1,6 @@
 package com.zazoapp.client.model;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -28,6 +29,13 @@ public class OutgoingVideoFactory extends ActiveModelFactory<OutgoingVideo>  {
         ArrayList<OutgoingVideo> videos = allWithFriendId(friendId);
         for (OutgoingVideo video : videos) {
             if (video.isSent() || video.getVideoStatus() == OutgoingVideo.Status.FAILED_PERMANENTLY) {
+                Friend friend = FriendFactory.getFactoryInstance().find(friendId);
+                if (friend != null) {
+                    File videoFile = friend.videoToFile(video.getId());
+                    if (videoFile.exists()) {
+                        videoFile.delete();
+                    }
+                }
                 delete(video.getId());
             }
         }

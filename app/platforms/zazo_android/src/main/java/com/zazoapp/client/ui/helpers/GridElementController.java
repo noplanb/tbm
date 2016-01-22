@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import com.zazoapp.client.R;
+import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.model.ActiveModel;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -114,6 +115,14 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     @Override
+    public void onResendClicked() {
+        Friend friend = gridElement.getFriend();
+        if (friend != null && friend.videoToFile(friend.getOutgoingVideoId()).exists()) {
+            friend.requestUpload(friend.getOutgoingVideoId());
+        }
+    }
+
+    @Override
     public void onVideoPlaying(String friendId, String videoId) {
         if (isForMe(friendId)) {
             Log.d(TAG, "onVideoPlaying " + friendId);
@@ -201,6 +210,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         gridElementView.setName(friend.getDisplayName());
 
+        gridElementView.showResendButton(DebugConfig.getInstance().isResendAllowed() && friend.videoToFile(friend.getOutgoingVideoId()).exists());
         ((View) container.getParent()).invalidate();
         container.setVisibility(View.VISIBLE); // as content is loaded, display view
     }

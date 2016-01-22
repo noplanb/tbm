@@ -132,9 +132,11 @@ public class VideoRecorder implements SurfaceTextureListener {
             try {
                 mediaRecorder.stop();
                 rval = true;
-                Logger.i(TAG,
-                        String.format("Recorded file %s : %d", Config.recordingFilePath(context),
-                                Config.recordingFile(context).length()));
+                long fileLength = Config.recordingFile(context).length();
+                Logger.i(TAG, String.format("Recorded file %s : %d", Config.recordingFilePath(context), fileLength));
+                if (fileLength < 100) {
+                    throw new RuntimeException("File is too short");
+                }
                 if (currentFriend != null)
                     moveRecordingToFriend(currentFriend);
             } catch (IllegalStateException e) {
@@ -142,7 +144,7 @@ public class VideoRecorder implements SurfaceTextureListener {
 
                 rval = false;
             } catch (RuntimeException e) {
-                Log.d(TAG, "stopRecording: Recording to short. No output file " + e.toString());
+                Logger.d(TAG, "stopRecording: Recording too short. No output file " + e.toString());
                 if (videoRecorderExceptionHandler != null) {
                     videoRecorderExceptionHandler.recordingTooShort();
                 }

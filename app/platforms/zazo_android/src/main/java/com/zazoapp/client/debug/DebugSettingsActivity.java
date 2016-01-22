@@ -407,6 +407,24 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                 return false;
             }
         });
+
+        Switch sendIncorrectFileSizeSwitch = (Switch) findViewById(R.id.send_incorrect_file_size);
+        sendIncorrectFileSizeSwitch.setChecked(config.shouldSendIncorrectFileSize());
+        sendIncorrectFileSizeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                config.setSendIncorrectFileSize(isChecked);
+            }
+        });
+
+        Switch allowResendSwitch = (Switch) findViewById(R.id.allow_resend);
+        allowResendSwitch.setChecked(config.isResendAllowed());
+        allowResendSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                config.allowResend(isChecked);
+            }
+        });
     }
 
     private void setMinRoomSpace(CharSequence space) {

@@ -17,6 +17,7 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.OutgoingVideo;
@@ -91,6 +92,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	@Override
 	public boolean upload() throws InterruptedException {
 		try {
+            if (file.length() == 0) { // FIXME Temporary check for 0 size uploads
+                Dispatch.dispatch(filename + " has 0 size");
+            }
             PutObjectRequest _putObjectRequest = new PutObjectRequest(s3Bucket, filename, file);
             Bundle data1 = intent.getBundleExtra(IntentFields.METADATA); // FIXME TEST
             if (intent.hasExtra(IntentFields.METADATA)) {
@@ -112,7 +116,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			handleClientException(e);
 			return notRetryableClientException(e);
 		}
-        file.delete(); // remove uploaded file
+        if (!DebugConfig.getInstance().isResendAllowed()) {
+            file.delete(); // remove uploaded file
+        }
 		fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADED);
 		return true;
 	}

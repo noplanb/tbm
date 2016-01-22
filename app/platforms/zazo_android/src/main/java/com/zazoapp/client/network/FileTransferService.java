@@ -15,6 +15,7 @@ import com.zazoapp.client.model.OutgoingVideoFactory;
 import com.zazoapp.client.network.aws.S3FileTransferAgent;
 import com.zazoapp.client.utilities.Logger;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -57,6 +58,7 @@ public abstract class FileTransferService extends IntentService {
         private static final String FIELD_RECEIVER_MKEY = "receiver-mkey";
         private static final String FIELD_CLIENT_VERSION = "client-version";
         private static final String FIELD_CLIENT_PLATFORM = "client-platform";
+        private static final String FIELD_FILE_SIZE = "file-size";
 
         private static final String PLATFORM = "android";
         /**
@@ -64,15 +66,18 @@ public abstract class FileTransferService extends IntentService {
          * @param videoId video ID
          * @param sender sender MKEY
          * @param receiver receiver MKEY
+         * @param videoFile video file
          * @return metadata
          */
-        public static Bundle getMetadata(@NonNull String videoId, @NonNull String sender, @NonNull String receiver) {
+        public static Bundle getMetadata(@NonNull String videoId, @NonNull String sender, @NonNull String receiver, @NonNull File videoFile) {
             Bundle metadata = new Bundle();
             metadata.putString(FIELD_VIDEO_ID, videoId);
             metadata.putString(FIELD_SENDER_MKEY, sender);
             metadata.putString(FIELD_RECEIVER_MKEY, receiver);
             metadata.putString(FIELD_CLIENT_VERSION, TbmApplication.getVersionNumber());
             metadata.putString(FIELD_CLIENT_PLATFORM, PLATFORM);
+            long fileSize = DebugConfig.getInstance().shouldSendIncorrectFileSize() ? 987654321L : videoFile.length();
+            metadata.putString(FIELD_FILE_SIZE, String.valueOf(fileSize));
             return metadata;
         }
     }
