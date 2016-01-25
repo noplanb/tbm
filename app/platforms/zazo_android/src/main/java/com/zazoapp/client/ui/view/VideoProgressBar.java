@@ -9,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.Shader;
 import android.support.annotation.FloatRange;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
@@ -68,7 +67,6 @@ public class VideoProgressBar extends FrameLayout {
     }
 
     public void setProgress(@FloatRange(from = 0f, to = 1f) float progress) {
-        Log.i(TAG, "Video progress: " + progress);
         this.progress = progress;
         setSliderPosition();
         invalidate();

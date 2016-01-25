@@ -42,6 +42,7 @@ public class TbmApplication extends Application {
         unexpectedTerminationHelper.init();
         DebugConfig.getInstance(this);
         ZazoAnalytics.init(this);
+        Settings.init(this);
         loadDataModel();
 
         Dispatch.registerTracker(this, new RollbarTracker());

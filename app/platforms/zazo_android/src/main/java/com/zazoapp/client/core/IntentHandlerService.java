@@ -543,8 +543,10 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     Log.i(TAG, "Wi-Fi connection lost");
                 }
                 Logger.i(TAG, networkInfo.toString());
-                FileTransferService.reset(context, FileUploadService.class);
-                FileTransferService.reset(context, FileDownloadService.class);
+                if (!networkInfo.isRoaming() || Settings.Bool.ALLOW_DATA_IN_ROAMING.isSet()) {
+                    FileTransferService.reset(context, FileUploadService.class);
+                    FileTransferService.reset(context, FileDownloadService.class);
+                }
             } else {
                 Logger.i(TAG, "Connection lost");
             }

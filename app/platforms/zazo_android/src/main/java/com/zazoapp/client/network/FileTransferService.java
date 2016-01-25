@@ -8,6 +8,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.Settings;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.model.IncomingVideoFactory;
@@ -120,8 +121,9 @@ public abstract class FileTransferService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         lock.lock();
         try {
-            Logger.i(TAG, OTAG + "onHandleIntent action " + RESET_ACTION);
+            Logger.i(TAG, OTAG + "onHandleIntent");
             if (RESET_ACTION.equals(intent.getAction())) {
+                Logger.i(TAG, OTAG + "onHandleIntent action " + RESET_ACTION);
                 return;
             }
             fileTransferAgent.setInstanceVariables(intent);
@@ -202,6 +204,6 @@ public abstract class FileTransferService extends IntentService {
     private boolean isConnected() {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        return networkInfo != null && networkInfo.isConnected();
+        return networkInfo != null && networkInfo.isConnected() && (!networkInfo.isRoaming() || Settings.Bool.ALLOW_DATA_IN_ROAMING.isSet());
     }
 }

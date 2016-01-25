@@ -358,6 +358,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         tr.commit();
     }
 
+    private void showSettings() {
+        FragmentTransaction tr = getFragmentManager().beginTransaction();
+        tr.setCustomAnimations(R.anim.slide_left_fade_in, R.anim.slide_right_fade_out, R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
+        tr.add(R.id.top_frame, new SettingsFragment());
+        tr.addToBackStack(null);
+        tr.commit();
+    }
+
     private void toggleNavigationPanel() {
         if (managerHolder.getPlayer().isPlaying()) {
             managerHolder.getPlayer().stop();
@@ -384,6 +392,9 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                 break;
             case R.id.navigation_item_help:
                 sendFeedback();
+                break;
+            case R.id.navigation_item_settings:
+                showSettings();
                 break;
             default:
                 DialogShower.showToast(context, String.valueOf(item.getTitle()));

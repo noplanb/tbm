@@ -1,6 +1,7 @@
 package com.zazoapp.client.core;
 
 import android.content.Context;
+import android.support.annotation.StringRes;
 import com.zazoapp.client.R;
 
 import java.util.HashSet;
@@ -20,7 +21,7 @@ public class Settings {
         private int labelId;
         private int hintId;
 
-        Bool(boolean defaultValue, int labelId, int hintId) {
+        Bool(boolean defaultValue, @StringRes int labelId, @StringRes int hintId) {
             value = defaultValue;
             this.labelId = labelId;
             this.hintId = hintId;
@@ -28,6 +29,14 @@ public class Settings {
 
         public boolean isSet() {
             return value;
+        }
+
+        public @StringRes int getLabel() {
+            return labelId;
+        }
+
+        public @StringRes int getHint() {
+            return hintId;
         }
     }
 
