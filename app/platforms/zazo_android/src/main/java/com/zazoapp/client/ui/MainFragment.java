@@ -32,6 +32,7 @@ import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.bench.BenchController;
+import com.zazoapp.client.bench.GeneralContactsGroup;
 import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.TbmApplication;
@@ -366,6 +367,12 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         tr.commit();
     }
 
+    private void inviteFriends() {
+        BenchController bench = managerHolder.getBenchViewManager();
+        bench.showBench();
+        bench.selectGroup(GeneralContactsGroup.CONTACTS);
+    }
+
     private void toggleNavigationPanel() {
         if (managerHolder.getPlayer().isPlaying()) {
             managerHolder.getPlayer().stop();
@@ -395,6 +402,9 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                 break;
             case R.id.navigation_item_settings:
                 showSettings();
+                break;
+            case R.id.navigation_item_invite_friends:
+                inviteFriends();
                 break;
             default:
                 DialogShower.showToast(context, String.valueOf(item.getTitle()));

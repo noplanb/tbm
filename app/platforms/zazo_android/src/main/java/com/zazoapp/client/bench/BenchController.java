@@ -366,6 +366,16 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
     }
 
+    public void selectGroup(GeneralContactsGroup group) {
+        if (groupSelector != null) {
+            List<GeneralContactsGroup> activeGroups = GeneralContactsGroup.getActive();
+            int index;
+            if ((index = activeGroups.indexOf(group)) >= 0) {
+                groupSelector.setSelection(index);
+            }
+        }
+    }
+
     public void setBenchListener(BenchListener benchListener) {
         this.benchListener = benchListener;
     }
