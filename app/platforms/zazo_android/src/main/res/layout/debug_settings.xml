@@ -15,7 +15,9 @@
                 <TextView
                         android:id="@+id/version_label"
                         style="@style/DevText"
-                        android:text="Version: "/>
+                        android:text="Version: "
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"/>
 
                 <LinearLayout
                         android:layout_width="wrap_content"
@@ -57,7 +59,7 @@
                         android:weightSum="4"
                         android:gravity="center">
 
-                    <EditText
+                    <android.support.v7.widget.AppCompatEditText
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:inputType="none"
@@ -68,8 +70,8 @@
                             android:singleLine="true"
                             android:text="12/21/2015"
                             android:textSize="@dimen/text_small"
-                            android:textColor="@android:color/white"/>
-                    <EditText
+                            style="@style/DevEditText"/>
+                    <android.support.v7.widget.AppCompatEditText
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:inputType="none"
@@ -80,7 +82,7 @@
                             android:singleLine="true"
                             android:text="12/21/2015"
                             android:textSize="@dimen/text_small"
-                            android:textColor="@android:color/white"/>
+                            style="@style/DevEditText"/>
 
                     <Button
                             android:id="@+id/dispatch_extended_logs"
@@ -190,7 +192,7 @@
                     android:text="Min room space restriction, MB"
                     android:layout_weight="1"
                     android:layout_gravity="center_vertical"/>
-            <EditText
+            <android.support.v7.widget.AppCompatEditText
                     android:id="@+id/min_room_space"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -200,7 +202,7 @@
                     android:inputType="number"
                     android:imeOptions="actionDone"
                     android:digits="0123456789"
-                    android:textColor="@android:color/white"/>
+                    style="@style/DevEditText"/>
         </LinearLayout>
 
         <Switch
@@ -242,13 +244,13 @@
                     style="@style/DevText"
                     android:text="Server host: "/>
 
-            <EditText
+            <android.support.v7.widget.AppCompatEditText
                     android:id="@+id/server_host"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
-                    android:inputType="textNoSuggestions"
-                    android:textColor="@android:color/white"/>
+                    android:inputType="textUri"
+                    style="@style/DevEditText"/>
         </LinearLayout>
         <LinearLayout
                 android:id="@+id/server_uri_layout"
@@ -260,13 +262,13 @@
                     style="@style/DevText"
                     android:text="Server uri: "/>
 
-            <EditText
+            <android.support.v7.widget.AppCompatEditText
                     android:id="@+id/server_uri"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
-                    android:inputType="textNoSuggestions"
-                    android:textColor="@android:color/white"/>
+                    android:inputType="textUri"
+                    style="@style/DevEditText"/>
         </LinearLayout>
 
         <LinearLayout style="@style/DevDivider.Layout">

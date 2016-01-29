@@ -32,6 +32,8 @@
 
     <style name="DebugTheme" parent="AppTheme">
         <item name="android:windowBackground">@color/light_grey_new</item>
+        <item name="android:dialogTheme">@style/DevDialog</item>
+        <item name="android:editTextStyle">@style/DevEditText</item>
     </style>
 
     <style name="ZazoActionBar" parent="@android:style/Widget.Holo.ActionBar">
@@ -111,6 +113,10 @@
         <item name="android:layout_centerVertical">true</item>
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
     </style>
+    <style name="DialogTextInput">
+        <item name="android:textColor">@color/dialog_text_content</item>
+        <item name="android:textSize">@dimen/text_very_small</item>
+    </style>
 
     <style name="DevDivider"/>
     <style name="DevDivider.Layout">
@@ -153,6 +159,15 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/dev_color</item>
         <item name="android:layout_marginTop">@dimen/debug_options_margin</item>
+    </style>
+    <style name="DevEditText" parent="EditTextStyle">
+        <item name="android:background">@drawable/input_field_bgn</item>
+        <item name="backgroundTint">@color/white</item>
+        <item name="android:textSize">@dimen/text_normal</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+    <style name="DevDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/green</item>
     </style>
 
 </resources>

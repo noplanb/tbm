@@ -1,94 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:focusable="true"
+              android:focusableInTouchMode="true"
+              android:background="@drawable/abc_popup_background_mtrl_mult"
+              android:paddingTop="@dimen/abc_dialog_padding_material">
 
     <TextView
-        android:id="@+id/dlg_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/dialog_title_bg"
-        android:gravity="center"
-        android:paddingBottom="20dp"
-        android:paddingTop="20dp"
-        android:text="TextView"
-        android:textStyle="bold"
-        android:textSize="@dimen/text_large"
-        android:visibility="gone"
-        android:textColor="@android:color/white" />
+            android:id="@+id/dlg_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:paddingLeft="@dimen/abc_dialog_padding_material"
+            android:paddingRight="@dimen/abc_dialog_padding_material"
+            android:paddingBottom="@dimen/abc_select_dialog_padding_start_material"
+            android:text="TextView"
+            android:textStyle="bold"
+            android:textColor="@color/dialog_textcolor"
+            android:textSize="@dimen/text_large"
+            android:visibility="gone"/>
 
     <LinearLayout
-        android:id="@+id/dlg_body"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/dialog_body_bg"
-        android:padding="20dp"
-        android:orientation="vertical" >
+            android:id="@+id/dlg_body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/abc_dialog_padding_material"
+            android:paddingRight="@dimen/abc_dialog_padding_material"
+            android:paddingBottom="@dimen/abc_select_dialog_padding_start_material"
+            android:orientation="vertical">
 
         <TextView
-            android:id="@+id/dlg_msg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-         	android:visibility="gone"
-            android:textColor="@color/dialog_textcolor"
-            android:gravity="center"
-            android:text="TextView" />
+                android:id="@+id/dlg_msg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:visibility="gone"
+                android:textColor="@color/dialog_text_content"
+                android:textSize="@dimen/text_normal"
+                android:text="TextView"/>
 
-        <EditText
-                android:id="@+id/dlg_edit_msg"
+        <android.support.design.widget.TextInputLayout
+                android:id="@+id/dlg_edit_msg_floating_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:visibility="gone"
-                android:background="@drawable/dlg_input_bg"
-                android:padding="5dp"
-                android:textColor="@color/dialog_textcolor"
-                android:gravity="start"
-                android:text="EditText" />
+                android:textColorHint="@color/dialog_text_content"
+                android:hint="@string/dialog_enter_text_hint"
+                app:hintTextAppearance="@style/DialogTextInput"
+                >
+            <android.support.v7.widget.AppCompatEditText
+                    android:id="@+id/dlg_edit_msg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:visibility="gone"
+                    android:background="@drawable/input_field_bgn"
+                    app:backgroundTint="@color/primary"
+                    android:inputType="textMultiLine"
+                    android:paddingLeft="5dp"
+                    android:paddingRight="5dp"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="10dp"
+                    android:gravity="start"
+                    android:textCursorDrawable="@null"
+                    android:textColor="@color/dialog_textcolor"
+                    />
+        </android.support.design.widget.TextInputLayout>
 
     </LinearLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/dialog_border" />
-
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/dialog_btn_body_bg" >
+            android:id="@+id/dlg_buttons_layout"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:orientation="horizontal"
+            android:gravity="end|center_vertical"
+            android:paddingLeft="@dimen/abc_button_padding_horizontal_material"
+            android:paddingRight="@dimen/abc_button_padding_horizontal_material">
 
         <Button
-            android:id="@+id/btn_dialog_cancel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:text="@string/dialog_action_cancel"
-            android:textColor="@color/dialog_action_text"
-            android:textSize="@dimen/text_large"
-            android:visibility="gone"/>
-
-        <View
-            android:id="@+id/divider"
-            android:layout_width="1dp"
-            android:layout_height="45dp"
-            android:background="@color/dialog_border" 
-            android:visibility="invisible"/>
+                android:id="@+id/btn_dialog_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minWidth="64dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:background="@drawable/dialog_action_btn_bg"
+                android:text="@string/dialog_action_cancel"
+                android:textColor="@color/dialog_action_text"
+                android:textSize="@dimen/text_small"
+                android:textAllCaps="true"
+                android:visibility="gone"
+                android:layout_marginRight="8dp"
+                />
 
         <Button
-            android:id="@+id/btn_dialog_ok"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:text="@string/dialog_action_ok"
-            android:textColor="@color/dialog_action_text"
-            android:textStyle="bold"
-            android:textSize="@dimen/text_large"
-            android:visibility="gone"/>
+                android:id="@+id/btn_dialog_ok"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minWidth="64dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:background="@drawable/dialog_action_btn_bg"
+                android:text="@string/dialog_action_ok"
+                android:textColor="@color/dialog_action_text"
+                android:textAllCaps="true"
+                android:textSize="@dimen/text_small"
+                android:visibility="gone"/>
     </LinearLayout>
 
 </LinearLayout>

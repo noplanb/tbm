@@ -7,16 +7,20 @@
     <string name="enter_code_dlg_helper">Enter Code</string>
     <string name="enter_code_dlg_button_call"><u>Call Me Instead</u></string>
     <string name="enter_code_dlg_button_calling">Calling you...</string>
+    <string name="enter_code_dlg_hint">Code</string>
 
     <!-- Dialogs -->
     <string name="dialog_action_quit">Quit</string>
     <string name="dialog_action_try_again">Try Again</string>
     <string name="dialog_action_cancel">Cancel</string>
     <string name="dialog_action_ok">OK</string>
+    <string name="dialog_action_invite">Invite</string>
     <string name="dialog_action_enter">Enter</string>
     <string name="dialog_action_update">Update</string>
     <string name="dialog_action_later">Later</string>
-    <string name="dialog_checking_title">Checking</string>
+    <string name="dialog_checking_title">Checking…</string>
+    <string name="dialog_verifying_title">Verifying…</string>
+    <string name="dialog_syncing_title">Syncing…</string>
     <string name="dialog_bad_connection_title">Bad Connection</string>
     <string name="dialog_bad_connection_message">Trouble downloading. Check your connection</string>
     <string name="dialog_camera_exception_no_camera_title">No Camera</string>
@@ -50,22 +54,23 @@
     <string name="dialog_invite_sms_message">I sent you a message on %1$s. Get the app: %2$s%3$s</string>
     <string name="dialog_invite_sms_action">Send</string>
     <string name="dialog_invite_send_through_sms">Send as SMS</string>
-    <string name="dialog_invite_send_through_other">Send via...</string>
+    <string name="dialog_invite_send_through_other">Send via…</string>
     <string name="dialog_invite_send_through_other_selected">Send via %1$s</string>
     <string name="dialog_hint_title">Hint</string>
-    <string name="dialog_play_hint_message">Hint: Tap a friend to play.</string>
-    <string name="dialog_record_hint_message">Hint: Press and hold a friend to record.</string>
+    <string name="dialog_play_hint_message">Tap a friend to play</string>
+    <string name="dialog_record_hint_message">Press and hold a friend to record</string>
     <string name="dialog_already_connected_title">Send a Zazo</string>
     <string name="dialog_already_connected_message">It seems that %1$s is already connected with you.\n\nRecord %2$s to %3$s now.</string>
     <string name="dialog_nudge_friend_title">Nudge %1$s</string>
     <string name="dialog_nudge_friend_message">%1$s still hasn\'t installed %2$s.\n\nDo you want to send them a link again?</string>
-    <string name="dialog_invite_friend_title">Invite %1$s</string>
+    <string name="dialog_invite_friend_title">Invite %1$s?</string>
     <string name="dialog_invite_friend_message">%1$s  has not installed %2$s.\n\nDo you want to send them a link?</string>
     <string name="dialog_update_title">Update Available</string>
     <string name="dialog_update_obsolete_message">Your %1$s app is obsolete. It must be updated for use.</string>
     <string name="dialog_update_out_of_date_message">Your %1$s app is out of date. Please update.</string>
+    <string name="dialog_enter_text_hint">Enter text</string>
 
-    <string name="toast_downloading">Downloading...</string>
+    <string name="toast_downloading">Downloading…</string>
     <string name="toast_not_sent">Not sent</string>
     <string name="toast_unable_to_set_preview">Unable to set preview</string>
     <string name="toast_unable_to_prepare_media_recorder">Unable to prepare MediaRecorder</string>

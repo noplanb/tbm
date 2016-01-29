@@ -1,43 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" 
-    android:padding="5dp">
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:paddingTop="@dimen/abc_select_dialog_padding_start_material">
 
-    <TextView
-        android:id="@+id/tw_msg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center"
-        android:textColor="@color/dialog_textcolor"
-        android:text="@string/enter_code_dlg_msg" />
+    <android.support.design.widget.TextInputLayout
+            android:id="@+id/dlg_edit_code_floating_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="@color/dialog_text_content"
+            android:hint="@string/enter_code_dlg_hint"
+            app:hintTextAppearance="@style/DialogTextInput"
+            >
 
-    <TextView
-        android:id="@+id/tw_helper"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="20dp"
-        android:textColor="@color/dialog_textcolor"
-        android:text="@string/enter_code_dlg_helper"
-        android:textStyle="bold" />
+        <android.support.v7.widget.AppCompatEditText
+                android:id="@+id/edt_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/input_field_bgn"
+                app:backgroundTint="@color/primary"
+                android:inputType="number"
+                android:digits="0123456789"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="10dp"
+                android:gravity="start"
+                android:textCursorDrawable="@null"
+                android:textColor="@color/dialog_textcolor"
+                >
 
-    <EditText
-        android:id="@+id/edt_code"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:background="@drawable/dlg_input_bg"
-        android:textColor="@color/dialog_textcolor"
-        android:padding="5dp"
-        android:inputType="number"
-        android:textCursorDrawable="@null">
-
-        <requestFocus />
-    </EditText>
+            <requestFocus/>
+        </android.support.v7.widget.AppCompatEditText>
+    </android.support.design.widget.TextInputLayout>
 
     <TextView
             android:id="@+id/call_btn"

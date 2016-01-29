@@ -164,7 +164,7 @@ public class InviteManager implements InviteHelper {
                     listener.onDismissProgressDialog();
                 }
             });
-            listener.onShowProgressDialog(context.getString(R.string.dialog_checking_title), null);
+            listener.onShowProgressDialog(null, context.getString(R.string.dialog_checking_title));
 		}
 
     }
@@ -219,7 +219,7 @@ public class InviteManager implements InviteHelper {
                 }
             });
             Logger.d(TAG, "Invitation: " + uri + " " + params);
-            listener.onShowProgressDialog(context.getString(R.string.dialog_checking_title), null);
+            listener.onShowProgressDialog(null, context.getString(R.string.dialog_syncing_title));
         }
     }
 
@@ -293,7 +293,7 @@ public class InviteManager implements InviteHelper {
         String name = friend.get(Friend.Attributes.FIRST_NAME);
         String msg = context.getString(R.string.dialog_nudge_friend_message, name, Config.appName);
         String title = context.getString(R.string.dialog_nudge_friend_title, name);
-        String action = context.getString(R.string.dialog_action_ok);
+        String action = context.getString(R.string.dialog_action_invite);
         listener.onShowActionInfoDialog(title, msg, action, true, false, MainFragment.NUDGE_DIALOG);
     }
 
@@ -301,7 +301,7 @@ public class InviteManager implements InviteHelper {
         String name = benchObject.firstName;
         String msg = context.getString(R.string.dialog_invite_friend_message, name, Config.appName);
         String title = context.getString(R.string.dialog_invite_friend_title, name);
-        String action = context.getString(R.string.dialog_action_ok);
+        String action = context.getString(R.string.dialog_action_invite);
         listener.onShowActionInfoDialog(title, msg, action, true, false, MainFragment.SMS_DIALOG);
     }
 

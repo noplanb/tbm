@@ -23,6 +23,8 @@
         <!-- To Make Navigation Drawer Fill Status Bar and become Transparent Too -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@color/status_bar_dev_color</item>
+        <item name="android:dialogTheme">@style/DevDialog</item>
+        <item name="android:editTextStyle">@style/DevEditText</item>
     </style>
     <style name="EditTextStyle" parent="Widget.AppCompat.EditText">
         <item name="android:textColorHint">@color/search_hint</item>

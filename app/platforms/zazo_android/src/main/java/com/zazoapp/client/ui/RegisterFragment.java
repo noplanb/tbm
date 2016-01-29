@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -303,7 +304,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
                     serverError();
                 }
             });
-            showProgressDialog();
+            showProgressDialog(R.string.dialog_checking_title);
         }
     }
 
@@ -390,7 +391,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
                 }
 
             });
-            showProgressDialog();
+            showProgressDialog(R.string.dialog_verifying_title);
         }
     }
 
@@ -408,36 +409,6 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
             gotUser(params);
         } else {
             showErrorDialog(getString(R.string.dialog_register_bad_code_title), getString(R.string.dialog_register_bad_code_message));
-        }
-    }
-
-    //---------------
-    // Debug_get_user
-    //---------------
-    private void debugGetUser(){
-        LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-        params.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, cleanNumber(mobileNumberTxt.getText().toString()));
-        params.put("country_code", cleanNumber(countryCodeTxt.getText().toString()));
-        Uri.Builder ub = new Uri.Builder();
-        ub.appendPath("reg").appendPath("debug_get_user");
-        new DebugGetUser(ub.build().toString(), params);
-    }
-
-    private class DebugGetUser extends HttpRequest{
-        public DebugGetUser(String uri, LinkedTreeMap<String, String> params) {
-            super(uri, params, new Callbacks() {
-                @Override
-                public void success(String response) {
-                    dismissProgressDialog();
-                    didReceiveCodeResponse(response);
-                }
-                @Override
-                public void error(String errorString) {
-                    dismissProgressDialog();
-                    serverError();
-                }
-            });
-            showProgressDialog();
         }
     }
 
@@ -540,9 +511,9 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         getContext().sendBroadcast(addIntent);
     }
 
-    private void showProgressDialog() {
+    private void showProgressDialog(@StringRes int message) {
         dismissProgressDialog();
-        pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
+        pd = ProgressDialogFragment.getInstance(null, getString(message));
         pd.show(getChildFragmentManager(), null);
     }
 
@@ -598,7 +569,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     private class RegFriendGetter extends FriendGetter {
         public RegFriendGetter(Context c, boolean destroyAll) {
             super(c, destroyAll);
-            showProgressDialog();
+            showProgressDialog(R.string.dialog_syncing_title);
         }
 
         @Override

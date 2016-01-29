@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:paddingTop="10dp">
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp">
 
-    <RadioButton
+    <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/send_through_sms"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -13,9 +14,10 @@
             android:textColor="@color/dialog_textcolor"
             android:textSize="@dimen/text_normal"
             android:button="@drawable/rbtn_selector"
+            app:buttonTint="@color/primary"
             />
 
-    <RadioButton
+    <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/send_through_other"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -23,5 +25,6 @@
             android:textColor="@color/dialog_textcolor"
             android:textSize="@dimen/text_normal"
             android:button="@drawable/rbtn_selector"
+            app:buttonTint="@color/primary"
             />
 </RadioGroup>

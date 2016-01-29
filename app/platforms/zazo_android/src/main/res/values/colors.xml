@@ -1,6 +1,7 @@
 <resources>
 
-    <color name="black_overlay">#66000000</color>
+    <color name="black_overlay">#33000000</color>
+    <color name="video_background">#66000000</color>
     <color name="dark_grey">#f555</color>
     <color name="yellow">#ffFAF538</color>
     
@@ -31,13 +32,14 @@
     <color name="light_grey">#a8a294</color>
     <color name="dialog_title_bg">@color/orange</color>
     <color name="dialog_body_bg">#f1efe9</color>
-    <color name="dialog_btn_body_bg">#ddd9ce</color>
+    <color name="dialog_btn_body_bg">#eeeeee</color>
     <color name="dialog_border">#86837b</color>
     <color name="dialog_textcolor">#2f2e28</color>
+    <color name="dialog_text_content">#757575</color>
     <color name="dialog_textcolor_disabled">#422f2e28</color>
-    <color name="dialog_textcolor_link">#ff2a80c6</color>
+    <color name="dialog_textcolor_link">#a63385dc</color>
 
-    <color name="register_bg">#9ac23b</color>
+    <color name="register_bg">@color/green</color>
     <color name="register_input_border">#c2e179</color>
     <color name="register_input_bg">#a9cb58</color>
     <color name="register_btn_bg">#2f2e28</color>

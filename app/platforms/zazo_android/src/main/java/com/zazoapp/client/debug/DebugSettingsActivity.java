@@ -608,7 +608,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
 
     private void showProgressDialog() {
         dismissProgressDialog();
-        pd = ProgressDialogFragment.getInstance(getString(R.string.dialog_checking_title), null);
+        pd = ProgressDialogFragment.getInstance(null, getString(R.string.dialog_syncing_title));
         pd.show(getSupportFragmentManager(), null);
     }
 

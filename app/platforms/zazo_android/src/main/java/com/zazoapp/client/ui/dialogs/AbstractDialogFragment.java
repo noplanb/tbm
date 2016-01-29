@@ -1,7 +1,9 @@
 package com.zazoapp.client.ui.dialogs;
 
 import android.app.Activity;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -17,6 +19,7 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.utilities.Convenience;
 
 abstract public class AbstractDialogFragment extends DialogFragment implements TextWatcher {
 
@@ -29,9 +32,11 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
     @InjectView(R.id.btn_dialog_ok) Button btnOk;
     @InjectView(R.id.dlg_title) TextView twTitle;
     @InjectView(R.id.dlg_msg) TextView twMsg;
+    @InjectView(R.id.dlg_edit_msg_floating_label) TextInputLayout textInputLayout;
     @InjectView(R.id.dlg_edit_msg) EditText editMsg;
     @InjectView(R.id.dlg_body) LinearLayout body;
-    @InjectView(R.id.divider) View btnsDivider;
+    @InjectView(R.id.dlg_buttons_layout) ViewGroup buttonsLayout;
+
     private DialogListener listener;
 
     public interface DialogListener {
@@ -61,6 +66,13 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
                 dismiss();
             }
         });
+        Typeface tf = Convenience.getTypeface(v.getContext());
+        btnOk.setTypeface(tf);
+        btnCancel.setTypeface(tf);
+        tf = Convenience.getTypeface(v.getContext(), "Roboto-Regular");
+        editMsg.setTypeface(tf);
+        twTitle.setTypeface(tf, Typeface.BOLD);
+        twMsg.setTypeface(tf);
         return v;
     }
 
@@ -126,7 +138,6 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
 	
 	protected void setNegativeButton(String name, OnClickListener clickListener){
 		if(name != null){
-			btnsDivider.setVisibility(View.VISIBLE);
 			btnCancel.setVisibility(View.VISIBLE);
 			btnCancel.setText(name);
 		}
@@ -193,7 +204,7 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
     @Override
     public void afterTextChanged(Editable s) {
         int textLength = s.toString().length();
-        btnOk.setEnabled(textLength != 0 && positiveButtonMightBeEnabled());
+        btnOk.setEnabled(!isEditable() || textLength != 0 && positiveButtonMightBeEnabled());
     }
 
     protected boolean positiveButtonMightBeEnabled() {

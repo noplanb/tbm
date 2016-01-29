@@ -16,6 +16,7 @@
         <item
                 android:id="@+id/navigation_item_new_group"
                 android:icon="@drawable/ic_navigation_groups"
+                android:visible="false"
                 android:title="@string/navigation_new_group" />
         <item
                 android:id="@+id/navigation_item_contacts"

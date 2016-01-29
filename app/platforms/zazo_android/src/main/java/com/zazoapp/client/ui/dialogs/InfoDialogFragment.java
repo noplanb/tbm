@@ -3,6 +3,7 @@ package com.zazoapp.client.ui.dialogs;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.View;
+import com.zazoapp.client.R;
 
 public class InfoDialogFragment extends AbstractDialogFragment {
 
@@ -25,6 +26,6 @@ public class InfoDialogFragment extends AbstractDialogFragment {
 		String msg = getArguments().getString(MSG);
 		setTitle(title);
 		setMessage(msg);
-		setPositiveButton("OK", null);
+		setPositiveButton(getString(R.string.dialog_action_ok), null);
 	}
 }

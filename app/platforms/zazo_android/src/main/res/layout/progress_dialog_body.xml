@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    android:orientation="vertical"
-    xmlns:android="http://schemas.android.com/apk/res/android" >
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:background="@drawable/abc_popup_background_mtrl_mult"
+              android:padding="@dimen/abc_dialog_padding_material">
 
     <TextView
         android:id="@+id/dlg_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/dialog_title_bg"
         android:gravity="center"
         android:paddingBottom="20dp"
         android:paddingTop="20dp"
@@ -19,21 +19,11 @@
         android:visibility="gone"
         android:textColor="@android:color/white" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/dialog_border" />
-
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:baselineAligned="false"
-        android:background="@drawable/dialog_btn_body_bg"
-        android:paddingStart="8dip"
-        android:paddingTop="10dip"
-        android:paddingEnd="8dip"
-        android:paddingBottom="10dip">
+        android:baselineAligned="false">
 
         <com.github.rahatarmanahmed.cpv.CircularProgressView
                 xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -42,14 +32,15 @@
                 android:layout_height="48dp"
                 app:cpv_animAutostart="true"
                 app:cpv_indeterminate="true"
-                app:cpv_color="@color/orange"
-                app:cpv_thickness="5dp"
-                android:layout_marginLeft="12dip"/>
+                app:cpv_color="@color/primary"
+                app:cpv_thickness="4dp"/>
 
         <TextView android:id="@+id/message"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:layout_gravity="center_vertical"
-                  android:textColor="@color/dialog_textcolor"/>
+                  android:layout_marginLeft="@dimen/abc_select_dialog_padding_start_material"
+                  android:layout_marginRight="@dimen/abc_select_dialog_padding_start_material"
+                  android:textColor="@color/dialog_text_content"/>
     </LinearLayout>
 </LinearLayout>
