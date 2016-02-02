@@ -1,5 +1,6 @@
 package com.zazoapp.client.ui.view;
 
+import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -32,6 +33,7 @@ public class VideoProgressBar extends FrameLayout {
     private Paint primaryPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private Paint secondaryPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private ValueAnimator progressAnimator;
+    private Animator appearingAnimation;
 
     public VideoProgressBar(Context context) {
         this(context, null);
@@ -133,17 +135,21 @@ public class VideoProgressBar extends FrameLayout {
     }
 
     public void doAppearing() {
-        if (getAlpha() == 0) {
-            setProgress(0);
-            VideoProgressBarAnimation.animateTerminal(this, true);
+        if (appearingAnimation != null) {
+            appearingAnimation.cancel();
         }
+        setProgress(0);
+        appearingAnimation = VideoProgressBarAnimation.getTerminalAnimation(this, true);
+        appearingAnimation.start();
     }
 
     public void doDisappearing() {
-        if (getAlpha() > 0) {
-            VideoProgressBarAnimation.animateTerminal(this, false);
-            setCurrent(0, false);
+        if (appearingAnimation != null) {
+            appearingAnimation.cancel();
         }
+        appearingAnimation = VideoProgressBarAnimation.getTerminalAnimation(this, false);
+        appearingAnimation.start();
+        setCurrent(0, false);
     }
 
 }

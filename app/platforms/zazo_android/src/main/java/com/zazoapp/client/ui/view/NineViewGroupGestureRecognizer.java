@@ -18,7 +18,7 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
     private ZazoManagerProvider managerProvider;
 
     public NineViewGroupGestureRecognizer(Activity a, NineViewGroup group, ArrayList<View> tvs, ZazoManagerProvider provider) {
-        super(a, group, tvs);
+        super(a, tvs);
         this.nineViewGroup = group;
         this.managerProvider = provider;
     }

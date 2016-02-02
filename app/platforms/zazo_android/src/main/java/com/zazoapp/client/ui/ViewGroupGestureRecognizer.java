@@ -5,7 +5,6 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import com.zazoapp.client.R;
 
 import java.util.ArrayList;
@@ -37,6 +36,67 @@ public abstract class ViewGroupGestureRecognizer {
 
     public abstract boolean isSlidingSupported();
 
+    public static class Stub extends ViewGroupGestureRecognizer {
+
+        public Stub(Activity a, ArrayList<View> tvs) {
+            super(a, tvs);
+        }
+
+        @Override
+        public boolean click(View v) {
+            return false;
+        }
+
+        @Override
+        public boolean startLongpress(View v) {
+            return false;
+        }
+
+        @Override
+        public boolean endLongpress(View v) {
+            return false;
+        }
+
+        @Override
+        public boolean bigMove(View v) {
+            return false;
+        }
+
+        @Override
+        public boolean abort(View v, int reason) {
+            return false;
+        }
+
+        @Override
+        public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY) {
+
+        }
+
+        @Override
+        public void startMove(View target, double startX, double startY, double offsetX, double offsetY) {
+
+        }
+
+        @Override
+        public void endMove(double startX, double startY, double offsetX, double offsetY) {
+
+        }
+
+        @Override
+        public void onTouch(double startX, double startY) {
+
+        }
+
+        @Override
+        public boolean isSliding() {
+            return false;
+        }
+
+        @Override
+        public boolean isSlidingSupported() {
+            return false;
+        }
+    }
     // ---------
     // Constants
     // ---------
@@ -57,7 +117,6 @@ public abstract class ViewGroupGestureRecognizer {
     // Fields
     // ------
     private Activity activity;
-    private ViewGroup viewGroup;
     private ArrayList<View> targetViews = new ArrayList<View>();
     private int state = State.IDLE;
     private View targetView;
@@ -70,9 +129,8 @@ public abstract class ViewGroupGestureRecognizer {
     // -------------------
     // Constructor related
     // -------------------
-    public ViewGroupGestureRecognizer(Activity a, ViewGroup vg, ArrayList<View> tvs) {
+    public ViewGroupGestureRecognizer(Activity a, ArrayList<View> tvs) {
         activity = a;
-        viewGroup = vg;
         addTargetViews(tvs);
     }
 
@@ -99,7 +157,7 @@ public abstract class ViewGroupGestureRecognizer {
     // The viewGroup that instantiates this gesture recognizer must call these methods from its
     // equivalent overriden methods.
 
-    public void dispatchTouchEvent(MotionEvent ev) {
+    public boolean dispatchTouchEvent(MotionEvent ev) {
         if (state == State.LONGPRESS)
             intercept = true;
 
@@ -115,6 +173,7 @@ public abstract class ViewGroupGestureRecognizer {
         if (state == State.SLIDING) {
             intercept = true;
         }
+        return enabled;
     }
 
     public boolean onInterceptTouchEvent(MotionEvent ev) {

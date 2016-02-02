@@ -15,7 +15,7 @@
         android:clipToPadding="false"
         android:visibility="visible"/>
 
-    <FrameLayout
+    <com.zazoapp.client.ui.view.GestureControlledLayout
             android:id="@+id/video_root_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -33,13 +33,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
         </FrameLayout>
-        <ImageView
-                android:id="@+id/zoom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@android:drawable/ic_menu_zoom"
-                android:layout_gravity="center"
-                android:alpha="0.5"/>
-    </FrameLayout>
+    </com.zazoapp.client.ui.view.GestureControlledLayout>
 
 </FrameLayout>

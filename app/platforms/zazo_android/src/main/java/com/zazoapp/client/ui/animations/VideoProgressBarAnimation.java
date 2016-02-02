@@ -63,10 +63,10 @@ public class VideoProgressBarAnimation {
         anim1.start();
     }
 
-    public static void animateTerminal(VideoProgressBar view, boolean start) {
+    public static Animator getTerminalAnimation(VideoProgressBar view, boolean start) {
         final Holder h = new Holder(view);
         float valueOffset = (start) ? 0f : 1f;
-        ValueAnimator animator = ValueAnimator.ofFloat(0 + valueOffset, 1f - valueOffset);
+        ValueAnimator animator = ValueAnimator.ofFloat(view.getAlpha(), 1f - valueOffset);
         animator.setDuration(400);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -78,7 +78,7 @@ public class VideoProgressBarAnimation {
                 h.progressBar.setSecondaryProgress(value);
             }
         });
-        animator.start();
+        return animator;
     }
 
     static class Holder {
