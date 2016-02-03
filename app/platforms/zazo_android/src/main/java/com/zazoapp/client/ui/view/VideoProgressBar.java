@@ -74,6 +74,10 @@ public class VideoProgressBar extends FrameLayout {
         invalidate();
     }
 
+    public @FloatRange(from = 0f, to = 1f) float getProgress() {
+        return progress;
+    }
+
     public void animateProgress(@FloatRange(from = 0f, to = 1f) float startProgress, @FloatRange(from = 0f, to = 1f) float endProgress, int duration) {
         if (progressAnimator != null) {
             progressAnimator.cancel();
@@ -152,4 +156,9 @@ public class VideoProgressBar extends FrameLayout {
         setCurrent(0, false);
     }
 
+    public void pause() {
+        if (progressAnimator != null) {
+            progressAnimator.cancel();
+        }
+    }
 }

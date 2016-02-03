@@ -425,8 +425,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (videoBody.equals(v)) {
                     if (videoView.isPlaying()) {
                         videoView.pause();
+                        progressBar.pause();
                     } else {
                         videoView.start();
+                        int duration = videoView.getDuration() - videoView.getCurrentPosition();
+                        progressBar.animateProgress(progressBar.getProgress(),
+                                currentVideoNumber / (float) numberOfVideos, duration);
                     }
                 }
                 return false;
