@@ -90,7 +90,7 @@ public class VideoProgressBar extends FrameLayout {
                 setProgress((float) animation.getAnimatedValue());
             }
         });
-        progressAnimator.setDuration(duration);
+        progressAnimator.setDuration(Math.max(duration, 0));
         progressAnimator.start();
     }
 

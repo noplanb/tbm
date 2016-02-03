@@ -4,14 +4,15 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import butterknife.ButterKnife;
@@ -285,7 +286,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     public boolean isPlaying(){
-        return videoView != null && videoView.isPlaying();
+        return videoView != null && (videoView.isPlaying() || videoView.isPaused());
     }
 
     @Override
@@ -409,6 +410,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         }
 
         private class ZoomGestureRecognizer extends ViewGroupGestureRecognizer.Stub {
+            private long lastTime;
+            private long previousLastTime;
+            private boolean isInited;
+            private double startOffsetX;
+            private double startOffsetY;
+
             public ZoomGestureRecognizer(Activity a, ViewGroup vg, ArrayList<View> tvs) {
                 super(a, tvs);
             }
@@ -417,7 +424,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             public boolean click(View v) {
                 if (videoRootLayout.equals(v)) {
                     if (isPlaying()) {
-                        zoomOut();
+                        animateZoom(false);
                         stop();
                         return true;
                     }
@@ -443,23 +450,35 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
             @Override
             public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY) {
-
+                if (!videoBody.equals(target)) {
+                    return;
+                }
+                previousLastTime = lastTime;
+                lastTime = System.nanoTime();
             }
 
             @Override
             public void startMove(View target, double startX, double startY, double offsetX, double offsetY) {
                 if (videoBody.equals(target) && !(zoomAnimator != null && zoomAnimator.isStarted())) {
-                    if (zoomed) {
-                        zoomOut();
-                    } else {
-                        zoomIn();
+                    startOffsetX = offsetX;
+                    startOffsetY = offsetY;
+                    isInited = true;
+                    if (!zoomed) {
+                        initialWidth = videoBody.getWidth();
+                        initialHeight = videoBody.getHeight();
+                        initialX = videoBody.getTranslationX();
+                        initialY = videoBody.getTranslationY();
                     }
+                    animateZoom(!zoomed);
                 }
             }
 
             @Override
             public void endMove(double startX, double startY, double offsetX, double offsetY) {
-
+                if (!isInited) {
+                    return;
+                }
+                isInited = false; // TODO after parking animation
             }
 
             @Override
@@ -473,105 +492,43 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             }
         }
 
-        ;
-
-        private boolean handleZoom(MotionEvent event) {
-            int action = event.getAction();
-
-            if (zoomed) {
-                zoomOut();
-            } else {
-                if (zoomRollback == null) {
-                    zoomRollback = new Runnable() {
-                        float x = videoBody.getTranslationX();
-                        float y = videoBody.getTranslationY();
-                        int w = videoBody.getWidth();
-                        int h = videoBody.getHeight();
-
-                        @Override
-                        public void run() {
-                            videoBody.setTranslationX(x);
-                            videoBody.setTranslationY(y);
-                            videoView.setCropFraction(1);
-                            ViewGroup.LayoutParams p = videoBody.getLayoutParams();
-                            p.width = w;
-                            p.height = h;
-                            videoBody.setLayoutParams(p);
-                        }
-                    };
-                }
-            }
-            return true;
-        }
-
-        private void zoomIn() {
-            initialWidth = videoBody.getWidth();
-            initialHeight = videoBody.getHeight();
-            initialX = videoBody.getTranslationX();
-            initialY = videoBody.getTranslationY();
-            zoomAnimator = ValueAnimator.ofFloat(zoomRatio, 1);
+        private void animateZoom(final boolean zoomIn) {
+            zoomAnimator = ValueAnimator.ofFloat(zoomRatio, (zoomIn) ? 1 : 0);
+            zoomAnimator.setInterpolator(new DecelerateInterpolator());
             zoomAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 int w = initialWidth;
                 int h = initialHeight;
                 float trX = initialX;
                 float trY = initialY;
+                Point maxVideoSize = videoView.getMaxVideoSize(
+                        videoRootLayout.getWidth() - videoView.getLeft() - videoBody.getWidth() + videoView.getRight(),
+                        videoRootLayout.getHeight() - videoView.getTop() - videoBody.getHeight() + videoView.getBottom());
+                int maxVideoBodyWidth = maxVideoSize.x + videoView.getLeft() + videoBody.getWidth() - videoView.getRight();
+                int maxVideoBodyHeight = maxVideoSize.y + videoView.getTop() + videoBody.getHeight() - videoView.getBottom();
+                int zoomInHorizontalPadding = (videoRootLayout.getWidth() - maxVideoBodyWidth) / 2;
+                int zoomInVerticalPadding = (videoRootLayout.getHeight() - maxVideoBodyHeight) / 2;
 
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
                     float value = (float) animation.getAnimatedValue();
                     videoView.setCropFraction(1 - value);
-                    videoBody.setTranslationX(trX * (1 - value));
-                    videoBody.setTranslationY(trY * (1 - value));
+                    videoBody.setTranslationX(trX * (1 - value) + zoomInHorizontalPadding * value);
+                    videoBody.setTranslationY(trY * (1 - value) + zoomInVerticalPadding * value);
                     ViewGroup.LayoutParams p = videoBody.getLayoutParams();
-                    p.width = (int) (w + (videoRootLayout.getWidth() - w) * value);
-                    p.height = (int) (h + (videoRootLayout.getHeight() - h) * value);
-                    Log.i(TAG, "" + w + " " + h + " " + p.width + " " + p.height);
+                    p.width = (int) (w + (maxVideoBodyWidth - w) * value);
+                    p.height = (int) (h + (maxVideoBodyHeight - h) * value);
                     videoBody.setLayoutParams(p);
                     zoomRatio = value;
-                    Log.i(TAG, String.valueOf(zoomRatio));
                 }
             });
             zoomAnimator.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
-                    zoomed = true;
+                    zoomed = zoomIn;
                 }
             });
-            zoomAnimator.setDuration(1000);
-            zoomAnimator.start();
-        }
-
-        private void zoomOut() {
-            zoomAnimator = ValueAnimator.ofFloat(zoomRatio, 0);
-            zoomAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                int w = initialWidth;
-                int h = initialHeight;
-                float trX = initialX;
-                float trY = initialY;
-
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    float value = (float) animation.getAnimatedValue();
-                    videoView.setCropFraction(1 - value);
-                    videoBody.setTranslationX(trX * (1 - value));
-                    videoBody.setTranslationY(trY * (1 - value));
-                    ViewGroup.LayoutParams p = videoBody.getLayoutParams();
-                    p.width = (int) (w + (videoRootLayout.getWidth() - w) * value);
-                    p.height = (int) (h + (videoRootLayout.getHeight() - h) * value);
-                    videoBody.setLayoutParams(p);
-                    zoomRatio = value;
-                    Log.i(TAG, String.valueOf(zoomRatio));
-                }
-            });
-            zoomAnimator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    zoomed = false;
-                }
-            });
-            zoomAnimator.setDuration(1000);
+            zoomAnimator.setDuration(500);
             zoomAnimator.start();
         }
     }

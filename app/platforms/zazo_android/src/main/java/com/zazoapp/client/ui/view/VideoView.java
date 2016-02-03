@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -145,6 +146,13 @@ public class VideoView extends TextureView
 
     public int resolveAdjustedSize(int desiredSize, int measureSpec) {
         return getDefaultSize(desiredSize, measureSpec);
+    }
+
+    public Point getMaxVideoSize(int parentWidth, int parentHeight) {
+        int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(parentWidth, MeasureSpec.EXACTLY);
+        int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(parentHeight, MeasureSpec.EXACTLY);
+        VideoSizeCalculator.Dimens dimens = videoSizeCalculator.measure(widthMeasureSpec, heightMeasureSpec, 0f);
+        return new Point(dimens.width, dimens.height);
     }
 
     private void initVideoView() {
@@ -626,6 +634,10 @@ public class VideoView extends TextureView
     @Override
     public boolean isPlaying() {
         return isInPlaybackState() && mMediaPlayer.isPlaying();
+    }
+
+    public boolean isPaused() {
+        return mMediaPlayer != null && mCurrentState == STATE_PAUSED;
     }
 
     @Override

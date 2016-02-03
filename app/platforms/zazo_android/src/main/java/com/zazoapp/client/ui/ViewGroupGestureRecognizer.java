@@ -222,7 +222,7 @@ public abstract class ViewGroupGestureRecognizer {
                 case MotionEvent.ACTION_DOWN:
                     int x = (int) event.getX();
                     int y = (int) event.getY();
-                    targetView = pointToTargetView(x, y);
+                    targetView = pointToTargetView((int) event.getRawX(), (int) event.getRawY());
                     setDownPosition(event);
                     if (isSliding()) {
                         state = State.SLIDING;
@@ -465,7 +465,7 @@ public abstract class ViewGroupGestureRecognizer {
     public View pointToTargetView(int x, int y) {
         Rect rect = new Rect();
         for (View v : targetViews) {
-            v.getHitRect(rect);
+            v.getGlobalVisibleRect(rect);
             if (rect.contains(x, y))
                 return v;
         }

@@ -92,7 +92,7 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
                 //    return;
                 //}
             }
-            if (nineViewGroup.getSpinStrategy() != null && checkTouch(startX, startY)) {
+            if (nineViewGroup.getSpinStrategy() != null && checkTouch(startX, startY) && !managerProvider.getPlayer().isPlaying()) {
                 nineViewGroup.getSpinStrategy().initSpin(startX, startY, offsetX, offsetY);
             }
         }
