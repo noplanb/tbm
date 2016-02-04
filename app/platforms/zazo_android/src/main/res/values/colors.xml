@@ -49,7 +49,7 @@
     <color name="spinner_ring_middle">#DDF48A31</color>
 
     <color name="feature_unlock_dialog_bg">#CC2f2e28</color>
-    <color name="feature_unlock_popup_bg">#CC1c1c19</color>
+    <color name="feature_unlock_popup_bg">#323232</color>
 
     <color name="primary">#1976D2</color>
     <color name="primary_dark">#195fbc</color>

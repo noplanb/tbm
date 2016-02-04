@@ -46,6 +46,7 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.feature_unlock_another, container, false);
         v.findViewById(R.id.body).setOnClickListener(this);
+        v.findViewById(R.id.action_btn).setOnClickListener(this);
         v.setOnTouchListener(this);
         TextView message = ButterKnife.findById(v, R.id.message);
         String[] messageList = getResources().getStringArray(R.array.unlock_another_feature);
@@ -82,6 +83,9 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.body:
+                dismissAnimated();
+                break;
+            case R.id.action_btn:
                 dismiss();
                 TbmApplication.getInstance().getManagerProvider().getBenchViewManager().showBench();
                 break;
@@ -116,10 +120,6 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
             public void onAnimationEnd(Animation animation) {
                 if (nextAnim == R.anim.slide_down) {
                     dismissAllowingStateLoss();
-                    ZazoManagerProvider managers = TbmApplication.getInstance().getManagerProvider();
-                    if (managers != null) {
-                        managers.getTutorial().onDismiss();
-                    }
                 }
             }
 
@@ -131,4 +131,22 @@ public class NextFeatureDialogFragment extends DialogFragment implements View.On
         return anim;
     }
 
+    @Override
+    public void dismiss() {
+        super.dismiss();
+        dismissHint();
+    }
+
+    @Override
+    public void dismissAllowingStateLoss() {
+        super.dismissAllowingStateLoss();
+        dismissHint();
+    }
+
+    private void dismissHint() {
+        ZazoManagerProvider managers = TbmApplication.getInstance().getManagerProvider();
+        if (managers != null) {
+            managers.getTutorial().onDismiss();
+        }
+    }
 }
