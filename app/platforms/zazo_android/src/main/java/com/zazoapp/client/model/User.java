@@ -3,6 +3,7 @@ package com.zazoapp.client.model;
 import android.content.Context;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import java.util.ArrayList;
@@ -65,6 +66,11 @@ public class User extends ActiveModel{
 	
     public String getFullName(){
     	return getFirstName() + " " + getLastName();
+    }
+
+    public String getPhoneNumber(PhoneNumberUtil.PhoneNumberFormat format) {
+        Phonenumber.PhoneNumber phone = getPhoneNumberObj();
+        return PhoneNumberUtil.getInstance().format(phone, format);
     }
 
     public boolean isInvitee() {

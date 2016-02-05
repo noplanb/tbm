@@ -26,10 +26,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.zazoapp.client.R;
 import com.zazoapp.client.bench.BenchController;
 import com.zazoapp.client.bench.GeneralContactsGroup;
@@ -41,6 +43,8 @@ import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Contact;
+import com.zazoapp.client.model.User;
+import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
@@ -193,6 +197,17 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         });
         drawerLayout.setDrawerListener(this);
         navigationView.setNavigationItemSelectedListener(this);
+
+        TextView accountName = ButterKnife.findById(navigationView.getHeaderView(0), R.id.account_name);
+        TextView accountId = ButterKnife.findById(navigationView.getHeaderView(0), R.id.account_id);
+        User user = UserFactory.current_user();
+        if (user != null) {
+            accountName.setText(user.getFullName());
+            accountId.setText(user.getPhoneNumber(PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL));
+        } else {
+            accountName.setText("");
+            accountId.setText("");
+        }
     }
 
     private void releaseManagers() {
@@ -406,6 +421,8 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             case R.id.navigation_item_invite_friends:
                 inviteFriends();
                 break;
+            case R.id.navigation_item_contacts:
+                selectTab(TAB_FRIENDS);
             default:
                 DialogShower.showToast(context, String.valueOf(item.getTitle()));
                 break;

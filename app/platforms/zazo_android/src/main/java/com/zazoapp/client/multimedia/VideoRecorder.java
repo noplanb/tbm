@@ -351,7 +351,9 @@ public class VideoRecorder implements SurfaceTextureListener {
                     camera.setOneShotPreviewCallback(new Camera.PreviewCallback() {
                         @Override
                         public void onPreviewFrame(byte[] data, Camera camera) {
-                            previewListener.onPreviewAvailable();
+                            if (previewListener != null) {
+                                previewListener.onPreviewAvailable();
+                            }
                         }
                     });
                 }
