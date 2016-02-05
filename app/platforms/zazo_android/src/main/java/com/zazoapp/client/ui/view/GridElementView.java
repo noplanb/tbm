@@ -183,7 +183,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
                 twUnreadCount.setText(String.valueOf(unreadMsgCount));
             }
         } else {
-            cardLayout.getBackground().setColorFilter(null);
+            cardLayout.getBackground().setColorFilter(getResources().getColor(android.R.color.white), PorterDuff.Mode.DST_IN);
             twUnreadCount.setText((unreadMsgCount <= 0) ? "" : String.valueOf(unreadMsgCount));
             unreadCountLayout.setVisibility(INVISIBLE);
         }
