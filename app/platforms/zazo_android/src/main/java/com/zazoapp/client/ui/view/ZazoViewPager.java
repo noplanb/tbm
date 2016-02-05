@@ -23,7 +23,7 @@ public class ZazoViewPager extends ViewPager {
     @Override
     protected boolean canScroll(View v, boolean checkV, int dx, int x, int y) {
         ZazoManagerProvider managers = TbmApplication.getInstance().getManagerProvider();
-        if (managers.getPlayer().isPlaying()) {
+        if (managers.getPlayer().isPlaying() || managers.getRecorder().isRecording()) {
             return true;
         }
         if (v instanceof NineViewGroup) {
