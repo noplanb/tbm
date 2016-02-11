@@ -258,7 +258,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             // sound only if activity is really visible to user
                             if (!(NotificationAlertManager.screenIsLocked(activity) ||
                                     NotificationAlertManager.screenIsOff(activity))) {
-                                if (!managerProvider.getRecorder().isRecording()) {
+                                if (!managerProvider.getRecorder().isRecording() && !managerProvider.getPlayer().isPlaying()) {
                                     NotificationAlertManager.playTone(NotificationAlertManager.Tone.BEEP, 0.3f);
                                 }
                             }
