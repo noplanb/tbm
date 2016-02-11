@@ -50,6 +50,29 @@
                     android:textSize="@dimen/text_xlarge"
                     android:gravity="center"
             />
+            <com.zazoapp.client.ui.view.ShadowedStatusLayout
+                    android:id="@+id/unread_count_layout"
+                    android:layout_width="@dimen/grid_item_status_icon_size"
+                    android:layout_height="@dimen/grid_item_status_icon_size"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:visibility="gone"
+                    app:solid_background_color="@color/bg_unread_msg_count">
+
+                <com.zazoapp.client.ui.view.AutoResizeTextView
+                        android:id="@+id/tw_unread_count"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="@dimen/grid_item_status_icon_text_padding"
+                        android:gravity="center"
+                        android:text="12"
+                        android:textColor="@android:color/white"
+                        android:textSize="@dimen/text_very_small"
+                        android:singleLine="true"/>
+            </com.zazoapp.client.ui.view.ShadowedStatusLayout>
             <TextView
                     android:id="@+id/name"
                     android:layout_width="wrap_content"
@@ -58,6 +81,9 @@
                     android:layout_alignParentTop="true"
                     android:layout_toRightOf="@id/thumb"
                     android:layout_toEndOf="@id/thumb"
+                    android:layout_toLeftOf="@id/unread_count_layout"
+                    android:layout_toStartOf="@id/unread_count_layout"
+                    android:layout_alignWithParentIfMissing="true"
                     android:gravity="center_vertical"
                     android:minHeight="?android:attr/listPreferredItemHeightSmall"
                     android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"

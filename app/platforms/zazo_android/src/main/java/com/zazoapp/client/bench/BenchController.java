@@ -472,14 +472,20 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     holder.thumb.setBorderColorResource(R.color.primary);
                     holder.thumb.setBorderWidth((int) Convenience.dpToPx(context, 2.5f));
                     holder.thumb.setBorderOverlay(true);
+                    holder.twUnreadCount.setText(String.valueOf(friend.incomingVideoNotViewedCount()));
+                    holder.unreadCountLayout.setVisibility(View.VISIBLE);
                 } else {
                     holder.thumb.setBorderWidth(0);
                     holder.thumb.setBorderOverlay(false);
+                    holder.unreadCountLayout.setVisibility(View.GONE);
                 }
             } else {
                 holder.thumb.setImageResource(Convenience.getStringDependentItem(item.displayName, icons));
                 holder.thumb.setFillColor(Convenience.getStringDependentItem(item.displayName, colors));
                 holder.thumbTitle.setText(StringUtils.getInitials(item.firstName, item.lastName));
+                holder.thumb.setBorderWidth(0);
+                holder.thumb.setBorderOverlay(false);
+                holder.unreadCountLayout.setVisibility(View.GONE);
             }
             int itemViewType = getItemViewType(position);
             ContactsGroup group = groups.get(itemViewType);
@@ -519,6 +525,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             @InjectView(R.id.thumb_title) TextView thumbTitle;
             @InjectView(R.id.name) TextView name;
             @InjectView(R.id.icon) TextImageView headerIcon;
+            @InjectView(R.id.unread_count_layout) View unreadCountLayout;
+            @InjectView(R.id.tw_unread_count) TextView twUnreadCount;
 
             public ViewHolder(View v) {
                 ButterKnife.inject(this, v);
