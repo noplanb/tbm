@@ -61,7 +61,7 @@ public class PreviewTextureFrame extends FrameLayout {
         switchCameraIcon.setImageResource(R.drawable.ic_camera_switch);
         switchCameraIcon.setVisibility(Features.Feature.SWITCH_CAMERA.isUnlocked(getContext()) ? VISIBLE : INVISIBLE);
         LayoutParams switchCameraIconParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        switchCameraIconParams.gravity = Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL;
+        switchCameraIconParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
         switchCameraIcon.setAlpha(SWITCH_ICON_ALPHA);
         addView(switchCameraIcon, switchCameraIconParams);
         View recordingIconLayout = View.inflate(getContext(), R.layout.recording_icon, null);
