@@ -54,6 +54,10 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         if (!Convenience.checkAndNotifyNoSpace(context)) {
             return;
         }
+        if (!cameraSwitchAllowed) {
+            DialogShower.showToast(context, R.string.toast_camera_is_switching);
+            return;
+        }
         Friend f = ge.getFriend();
         f.setLastActionTime();
         if (videoRecorder.startRecording(f)) {
