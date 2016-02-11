@@ -468,6 +468,14 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     holder.thumb.setFillColor(Convenience.getStringDependentItem(item.displayName, colors));
                     holder.thumbTitle.setText(friend.getInitials());
                 }
+                if (friend.incomingVideoNotViewedCount() > 0) {
+                    holder.thumb.setBorderColorResource(R.color.primary);
+                    holder.thumb.setBorderWidth((int) Convenience.dpToPx(context, 2.5f));
+                    holder.thumb.setBorderOverlay(true);
+                } else {
+                    holder.thumb.setBorderWidth(0);
+                    holder.thumb.setBorderOverlay(false);
+                }
             } else {
                 holder.thumb.setImageResource(Convenience.getStringDependentItem(item.displayName, icons));
                 holder.thumb.setFillColor(Convenience.getStringDependentItem(item.displayName, colors));
