@@ -256,6 +256,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     // Helper methods
     //---------------
     private void setPlayerOverView(View view) {
+        zoomController.clearState();
         LayoutParams params = new FrameLayout.LayoutParams(view.getWidth(), view.getHeight());
         videoBody.setLayoutParams(params);
         videoBody.setX(view.getX());
@@ -405,6 +406,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         public void clearState() {
             videoView.setCropFraction(1f);
+            if (zoomAnimator != null) {
+                zoomAnimator.cancel();
+            }
             zoomRatio = 0f;
             zoomed = false;
         }
