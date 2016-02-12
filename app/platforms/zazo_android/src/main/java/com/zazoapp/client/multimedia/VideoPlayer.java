@@ -27,6 +27,7 @@ import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.view.GestureControlledLayout;
+import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.TouchBlockScreen;
 import com.zazoapp.client.ui.view.VideoProgressBar;
 import com.zazoapp.client.ui.view.VideoView;
@@ -55,6 +56,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @InjectView(R.id.video_root_layout) GestureControlledLayout videoRootLayout;
     private TouchBlockScreen blockScreen;
     private VideoProgressBar progressBar;
+    @InjectView(R.id.grid_view) NineViewGroup nineViewGroup;
 	private boolean videosAreDownloading;
     private ZazoManagerProvider managerProvider;
     private Timer timer = new Timer();
@@ -261,6 +263,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         videoBody.setLayoutParams(params);
         videoBody.setX(view.getX());
         videoBody.setY(view.getY());
+        videoBody.setTag(R.id.box_id, view.getTag(R.id.box_id));
     }
 
     private void determineIfDownloading() {
@@ -391,6 +394,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         ZoomController() {
             ArrayList<View> views = new ArrayList<>();
             views.add(videoBody);
+            views.addAll(nineViewGroup.getNineViews());
             views.add(videoRootLayout);
             gestureRecognizer = new ZoomGestureRecognizer(activity, videoRootLayout, views);
             videoRootLayout.setGestureRecognizer(gestureRecognizer);
@@ -426,13 +430,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
             @Override
             public boolean click(View v) {
-                if (videoRootLayout.equals(v)) {
-                    if (isPlaying()) {
-                        animateZoom(false);
-                        stop();
-                        return true;
-                    }
-                }
                 if (videoBody.equals(v)) {
                     if (videoView.isPlaying()) {
                         videoView.pause();
@@ -443,8 +440,36 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         progressBar.animateProgress(progressBar.getProgress(),
                                 currentVideoNumber / (float) numberOfVideos, duration);
                     }
+                } else {
+                    if (isPlaying()) {
+                        animateZoom(false);
+                        stop();
+                        return true;
+                    }
                 }
                 return false;
+            }
+
+            @Override
+            public boolean startLongpress(View v) {
+                if (videoRootLayout.equals(v)) {
+                    stop();
+                    return true;
+                } else if (videoBody.equals(v)) {
+                    v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) videoBody.getTag(R.id.box_id)]);
+                }
+                return nineViewGroup.getGestureRecognizer().startLongpress(v);
+            }
+
+            @Override
+            public boolean endLongpress(View v) {
+                if (videoRootLayout.equals(v)) {
+                    return true;
+                }
+                if (videoBody.equals(v)) {
+                    v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) videoBody.getTag(R.id.box_id)]);
+                }
+                return nineViewGroup.getGestureRecognizer().endLongpress(v);
             }
 
             @Override

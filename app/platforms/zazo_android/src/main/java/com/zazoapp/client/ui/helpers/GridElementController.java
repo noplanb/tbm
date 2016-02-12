@@ -84,7 +84,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onRecordClicked() {
-        //DialogShower.showHintDialog(activity, activity.getString(R.string.dialog_record_title), activity.getString(R.string.dialog_record_message));
         GridElementAnimation.holdToRec(gridElementView).start();
     }
 

@@ -422,6 +422,10 @@ public class NineViewGroup extends ViewGroup {
         vgGestureRecognizer.enable();
     }
 
+    public ViewGroupGestureRecognizer getGestureRecognizer() {
+        return vgGestureRecognizer;
+    }
+
     public void notifyUpdateDebug() {
         if (gestureCallbacks != null) {
             gestureCallbacks.notifyUpdateDebug();

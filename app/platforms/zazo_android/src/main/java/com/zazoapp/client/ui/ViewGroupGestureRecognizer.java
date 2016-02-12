@@ -122,6 +122,7 @@ public abstract class ViewGroupGestureRecognizer {
     private View targetView;
     private double[] downPosition = new double[2];
     private boolean enabled = false;
+    private boolean postponeDisabled = false;
     private boolean intercept = false;
     private boolean cancelOnMultiTouch = false;
     private CancelableTask longPressTask;
@@ -198,20 +199,23 @@ public abstract class ViewGroupGestureRecognizer {
 
     public void disable(Boolean silent) {
         Log.i(TAG, "disable silent=" + silent.toString());
-        cancelGesture(silent);
-        enabled = false;
+        if (silent && state == State.LONGPRESS) {
+            postponeDisabled = true;
+        } else {
+            cancelGesture();
+            enabled = false;
+        }
     }
 
-    public void cancelGesture(Boolean silent) {
-        Log.i(TAG, "cancelGesture silent=" + silent.toString());
-        if (!silent && state == State.LONGPRESS)
+    public void cancelGesture() {
+        Log.i(TAG, "cancelGesture");
+        if (state == State.LONGPRESS)
             runAbort(targetView, R.string.toast_gesture_cancelled);
-
         state = State.IDLE;
     }
 
     private void handleTouchEvent(MotionEvent event) {
-        if (!enabled)
+        if (!enabled && !(postponeDisabled || event.getAction() == MotionEvent.ACTION_UP))
             return;
 
         int action = event.getAction();
@@ -397,6 +401,10 @@ public abstract class ViewGroupGestureRecognizer {
                 endLongpress(v);
             }
         });
+        if (postponeDisabled) {
+            enabled = false;
+            postponeDisabled = false;
+        }
     }
 
     private void runAbortLongpress(final View v) {
