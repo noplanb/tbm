@@ -48,9 +48,9 @@
                     android:id="@+id/account_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="+38 (095) 123-45-67"
                     android:textColor="@android:color/white"
-                    android:textSize="@dimen/text_large"/>
+                    android:textSize="@dimen/text_large"
+                    android:visibility="gone"/>
         </LinearLayout>
     </RelativeLayout>
 
