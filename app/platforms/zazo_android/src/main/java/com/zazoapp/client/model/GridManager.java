@@ -129,9 +129,39 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
 		return fog;
 	}
 
-	public class FriendRankComparator implements Comparator<Friend>{
+    public void moveFriendsWithUnviewedOnGrid() {
+        ArrayList<Friend> fog = friendsOnGrid();
+        int emptySpaces = 0;
+        for (Friend friend : fog) {
+            if (friend.incomingVideoNotViewed()) {
+                emptySpaces++;
+            }
+        }
+        if (emptySpaces == 0) {
+            return;
+        }
+        ArrayList<Friend> friendsWithUnviewedOnBench = new ArrayList<>();
+        for (Friend friend : FriendFactory.getFactoryInstance().all()) {
+            if (friend.incomingVideoNotViewed() && !fog.contains(friend)) {
+                friendsWithUnviewedOnBench.add(friend);
+            }
+        }
+        Collections.sort(friendsWithUnviewedOnBench, new FriendRankComparator());
+        for (int i = emptySpaces; i > 0 && friendsWithUnviewedOnBench.size() > emptySpaces - i; i--) {
+            moveFriendToGrid(friendsWithUnviewedOnBench.get(emptySpaces - i));
+        }
+    }
+
+    public class FriendRankComparator implements Comparator<Friend>{
 		@Override
 		public int compare(Friend lhs, Friend rhs) {
+            boolean lhsHasNotViewed = lhs.incomingVideoNotViewed();
+            boolean rhsHasNotViewed = rhs.incomingVideoNotViewed();
+            if (lhsHasNotViewed && !rhsHasNotViewed) {
+                return 1;
+            } else if (!lhsHasNotViewed && rhsHasNotViewed) {
+                return -1;
+            }
 			return timeOfLastAction(lhs).compareTo(timeOfLastAction(rhs));
 		}
 	}

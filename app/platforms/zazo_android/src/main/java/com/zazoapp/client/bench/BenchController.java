@@ -66,6 +66,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     private GeneralContactsGroup currentSelectedGroup = GeneralContactsGroup.ALL;
     private final Object filterLock = new Object();
     private BenchListener benchListener;
+    private boolean firstLoaded;
 
     // ----------------------
     // Constructor and setup
@@ -82,6 +83,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
 	public void loadContacts() {
         friendFactory = FriendFactory.getFactoryInstance();
+        GridManager.getInstance().moveFriendsWithUnviewedOnGrid();
 		benchDataHandler.getRankedPhoneData();
 	}
 
@@ -135,6 +137,9 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
     @Override
     public void updateBench() {
+        if (!firstLoaded) {
+            return;
+        }
         AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
             private BenchObjectList list;
             @Override
@@ -262,6 +267,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                         doListViewAppearing();
                     }
                 }
+                firstLoaded = true;
             }
         });
     }
