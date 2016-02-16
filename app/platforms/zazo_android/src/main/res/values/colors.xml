@@ -28,6 +28,7 @@
     <color name="bg_downloading">@color/orange</color>
     
     <color name="bg_empty_friend">#1c1c19</color>
+    <color name="bg_empty_box">#f6f6f6</color>
 
     <color name="light_grey">#a8a294</color>
     <color name="dialog_title_bg">@color/orange</color>
@@ -58,7 +59,7 @@
     <color name="gray">#7D7D7D</color>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
-    <color name="bgn_main">#EEEEEE</color>
+    <color name="bgn_main">#f5f5f5</color>
     <color name="popup_text_color">#434343</color>
     <color name="status_bar_main_color">#3000</color>
     <color name="status_bar_register_color">#739a39</color>
