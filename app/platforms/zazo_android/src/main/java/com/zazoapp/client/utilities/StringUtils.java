@@ -6,6 +6,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
@@ -69,6 +71,21 @@ public class StringUtils {
         } catch (RuntimeException e) {
             return null;
         }
+    }
+
+    public static String getEventTime(String videoTimestamp) {
+        if (TextUtils.isEmpty(videoTimestamp)) {
+            return "";
+        }
+        try {
+            long timestamp = Long.parseLong(videoTimestamp);
+            Date date = new Date(timestamp);
+            DateFormat format = new SimpleDateFormat("MMM dd HH:mm");
+            return format.format(date);
+        } catch (NumberFormatException e) {
+            Log.e("Util", "Error to parse event time");
+        }
+        return "";
     }
 
     public static String getInitials(String a, String b) {

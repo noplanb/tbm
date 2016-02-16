@@ -12,6 +12,7 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.ui.animations.TextAnimations;
 import com.zazoapp.client.ui.animations.TransferProgressAnimation;
 import com.zazoapp.client.ui.animations.UnreadCountAnimation;
 import com.zazoapp.client.ui.animations.ViewedAnimation;
@@ -36,6 +37,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     }
 
     @InjectView(R.id.tw_name) TextView twName;
+    @InjectView(R.id.tw_date) TextView twDate;
     @InjectView(R.id.tw_unread_count) TextView twUnreadCount;
     @InjectView(R.id.img_thumb) ThumbView imgThumb;
     @InjectView(R.id.img_viewed) ImageView imgViewed;
@@ -86,6 +88,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         twUnreadCount.setTypeface(face);
         emptyText.setTypeface(face);
         twName.setTypeface(face);
+        twDate.setTypeface(face);
 
         holdToRecordView.setOnClickListener(this);
         mEmptyView.setOnClickListener(this);
@@ -162,6 +165,14 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void setName(String name) {
         twName.setText(name);
+    }
+
+    public void setDate(String date, boolean animateIfNeeded) {
+        if (animateIfNeeded && !date.equals(twDate.getText())) {
+            TextAnimations.animateAlpha(twDate, date);
+        } else {
+            twDate.setText(date);
+        }
     }
 
     public void setVideoViewed(boolean visible) {

@@ -84,7 +84,7 @@ public class Friend extends ActiveModel{
                 Attributes.CONNECTION_CREATOR,
                 Attributes.DELETED,
                 Attributes.EVER_SENT,
-                Attributes.CID
+                Attributes.CID,
         };
         return new ArrayList<>(Arrays.asList(a));
     }
@@ -697,7 +697,6 @@ public class Friend extends ActiveModel{
     public int getLastEventType(){
         return Integer.parseInt(get(Attributes.LAST_VIDEO_STATUS_EVENT_TYPE));
     }
-
 
     public int getIncomingVideoStatus(){
         IncomingVideo v = newestIncomingVideo();

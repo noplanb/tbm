@@ -20,6 +20,7 @@ import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.animations.GridElementAnimation;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.utilities.DialogShower;
+import com.zazoapp.client.utilities.StringUtils;
 
 /**
  * Created by User on 1/30/2015.
@@ -208,6 +209,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         }
 
         gridElementView.setName(friend.getDisplayName());
+        String videoTimestamp = (lastEventOutgoing) ? friend.getOutgoingVideoId() : friend.newestIncomingVideo().getId();
+        if (force || lastEventOutgoing || !lastEventOutgoing && friend.getIncomingVideoStatus() == IncomingVideo.Status.DOWNLOADED) {
+            gridElementView.setDate(StringUtils.getEventTime(videoTimestamp), !force);
+        }
 
         gridElementView.showResendButton(DebugConfig.getInstance().isResendAllowed() && friend.videoToFile(friend.getOutgoingVideoId()).exists());
         ((View) container.getParent()).invalidate();
