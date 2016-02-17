@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
@@ -26,12 +27,15 @@ import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
 import com.zazoapp.client.ui.ZazoManagerProvider;
+import com.zazoapp.client.ui.animations.TextAnimations;
 import com.zazoapp.client.ui.view.GestureControlledLayout;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.TouchBlockScreen;
 import com.zazoapp.client.ui.view.VideoProgressBar;
 import com.zazoapp.client.ui.view.VideoView;
+import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
+import com.zazoapp.client.utilities.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -54,6 +58,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @InjectView(R.id.video_view) VideoView videoView;
     @InjectView(R.id.video_body) ViewGroup videoBody;
     @InjectView(R.id.video_root_layout) GestureControlledLayout videoRootLayout;
+    @InjectView(R.id.tw_date) TextView twDate;
     private TouchBlockScreen blockScreen;
     private VideoProgressBar progressBar;
     @InjectView(R.id.grid_view) NineViewGroup nineViewGroup;
@@ -78,6 +83,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         ButterKnife.inject(this, rootView);
         this.videoView.setOnCompletionListener(this);
         this.videoView.setOnPreparedListener(this);
+        twDate.setTypeface(Convenience.getTypeface(activity));
         zoomController = new ZoomController();
         blockScreen.setUnlockListener(new TouchBlockScreen.UnlockListener() {
             @Override
@@ -264,6 +270,13 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         videoBody.setX(view.getX());
         videoBody.setY(view.getY());
         videoBody.setTag(R.id.box_id, view.getTag(R.id.box_id));
+        if (view.getY() < videoRootLayout.getHeight() / 4) {
+            twDate.setY(view.getY() + view.getHeight()); // for top row place it below
+        } else {
+            twDate.setY(view.getY() - twDate.getHeight()); // for other place it above
+        }
+        twDate.setX(view.getX());
+        twDate.setText("");
     }
 
     private void determineIfDownloading() {
@@ -287,6 +300,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     private void setCurrentVideoId(String videoId) {
         this.videoId = videoId;
+        TextAnimations.animateAlpha(twDate, StringUtils.getEventTime(videoId));
     }
 
     public boolean isPlaying(){
@@ -522,6 +536,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         }
 
         private void animateZoom(final boolean zoomIn) {
+            if (zoomed == zoomIn) {
+                return;
+            }
             zoomAnimator = ValueAnimator.ofFloat(zoomRatio, (zoomIn) ? 1 : 0);
             zoomAnimator.setInterpolator(new DecelerateInterpolator());
             zoomAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {

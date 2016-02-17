@@ -210,7 +210,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         gridElementView.setName(friend.getDisplayName());
         String videoTimestamp = (lastEventOutgoing) ? friend.getOutgoingVideoId() : friend.newestIncomingVideo().getId();
-        if (force || lastEventOutgoing || !lastEventOutgoing && friend.getIncomingVideoStatus() == IncomingVideo.Status.DOWNLOADED) {
+        if (force || lastEventOutgoing || friend.getIncomingVideoStatus() == IncomingVideo.Status.DOWNLOADED) {
             gridElementView.setDate(StringUtils.getEventTime(videoTimestamp), !force);
         }
 
