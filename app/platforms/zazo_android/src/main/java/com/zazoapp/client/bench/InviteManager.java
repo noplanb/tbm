@@ -268,7 +268,6 @@ public class InviteManager implements InviteHelper {
             Dispatch.dispatch(new NullPointerException(), "Friend is null");
             return;
         }
-        listener.onFinishInvitation();
         lastInvitedFriend = friend;
         moveFriendToGrid();
     }
@@ -409,6 +408,9 @@ public class InviteManager implements InviteHelper {
 
     @Override
     public void moveFriendToGrid() {
+        if (listener != null) {
+            listener.onFinishInvitation();
+        }
         GridManager.getInstance().moveFriendToGrid(friend);
     }
 

@@ -3,6 +3,7 @@ package com.zazoapp.client.ui.helpers;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -209,11 +210,14 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         }
 
         gridElementView.setName(friend.getDisplayName());
-        String videoTimestamp = (lastEventOutgoing) ? friend.getOutgoingVideoId() : friend.newestIncomingVideo().getId();
+        IncomingVideo newestIncomingVideo = friend.newestIncomingVideo();
+        String videoTimestamp = (lastEventOutgoing) ? friend.getOutgoingVideoId() :
+                (newestIncomingVideo != null) ? newestIncomingVideo.getId() : null;
         if (force || lastEventOutgoing || friend.getIncomingVideoStatus() == IncomingVideo.Status.DOWNLOADED) {
             gridElementView.setDate(StringUtils.getEventTime(videoTimestamp), !force);
+        } else if (TextUtils.isEmpty(videoTimestamp)) {
+            gridElementView.setDate("", true);
         }
-
         gridElementView.showResendButton(DebugConfig.getInstance().isResendAllowed() && friend.videoToFile(friend.getOutgoingVideoId()).exists());
         ((View) container.getParent()).invalidate();
         container.setVisibility(View.VISIBLE); // as content is loaded, display view
