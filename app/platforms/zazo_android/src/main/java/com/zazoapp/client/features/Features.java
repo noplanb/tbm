@@ -27,6 +27,8 @@ public class Features {
         SWITCH_CAMERA(R.string.feature_switch_camera_action),
         ABORT_RECORDING(R.string.feature_abort_recording_action),
         DELETE_FRIEND(R.string.feature_delete_friend_action),
+/*        PLAY_FULLSCREEN(R.string.feature_play_fullscreen_action),
+        PAUSE_PLAYBACK(R.string.feature_pause_playback_action),*/
         EARPIECE(R.string.feature_earpiece_action),
         CAROUSEL(R.string.feature_carousel_action),
         ;

@@ -56,7 +56,6 @@
                 android:gravity="left"
                 android:layout_marginBottom="4dp"
                 android:layout_marginTop="2dp"
-                android:text="Oct 28"
                 android:textColor="@color/color_name"
                 android:textSize="@dimen/text_tiny"
                 android:ellipsize="end"

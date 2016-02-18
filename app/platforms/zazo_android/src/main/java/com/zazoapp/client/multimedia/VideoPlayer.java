@@ -445,15 +445,16 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             @Override
             public boolean click(View v) {
                 if (videoBody.equals(v)) {
-                    if (videoView.isPlaying()) {
-                        videoView.pause();
-                        progressBar.pause();
-                    } else {
-                        videoView.start();
-                        int duration = videoView.getDuration() - videoView.getCurrentPosition();
-                        progressBar.animateProgress(progressBar.getProgress(),
-                                currentVideoNumber / (float) numberOfVideos, duration);
-                    }
+                    // TODO PAUSE feature
+                    //if (videoView.isPlaying()) {
+                    //    videoView.pause();
+                    //    progressBar.pause();
+                    //} else {
+                    //    videoView.start();
+                    //    int duration = videoView.getDuration() - videoView.getCurrentPosition();
+                    //    progressBar.animateProgress(progressBar.getProgress(),
+                    //            currentVideoNumber / (float) numberOfVideos, duration);
+                    //}
                 } else {
                     if (isPlaying()) {
                         animateZoom(false);
@@ -531,7 +532,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
             @Override
             public boolean isSlidingSupported() {
-                return true;
+                return false; // TODO return true to support full screen feature
             }
         }
 

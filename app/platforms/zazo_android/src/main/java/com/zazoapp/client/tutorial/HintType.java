@@ -58,6 +58,18 @@ public enum HintType {
             }
         }
     },
+/*    FEATURE_PLAY_FULLSCREEN(R.string.feature_play_fullscreen_hint, 0, Features.Feature.PLAY_FULLSCREEN) {
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            dimForFrame(layout, view, NineViewGroup.Box.CENTER_RIGHT, true); // TODO point to Menu icon in middle right box
+        }
+    },
+    FEATURE_PAUSE_PLAYBACK(R.string.feature_pause_playback_hint, 0, Features.Feature.PAUSE_PLAYBACK) {
+        @Override
+        void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
+            dimForFrame(layout, view, NineViewGroup.Box.CENTER_RIGHT, true);
+        }
+    },*/
     FEATURE_EARPIECE(R.string.feature_earpiece_hint, R.string.tutorial_try_it, Features.Feature.EARPIECE) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
