@@ -1,14 +1,17 @@
 package com.zazoapp.client.utilities;
 
+import android.os.Build;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
 
 public class StringUtils {
@@ -80,8 +83,28 @@ public class StringUtils {
         try {
             long timestamp = Long.parseLong(videoTimestamp);
             Date date = new Date(timestamp);
-            DateFormat format = new SimpleDateFormat("MMM dd HH:mm");
-            return format.format(date);
+            Calendar calendar = Calendar.getInstance();
+            int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
+            int currentMonth = calendar.get(Calendar.MONTH);
+            int currentYear = calendar.get(Calendar.YEAR);
+            calendar.clear();
+            calendar.set(currentYear, currentMonth, currentDay);
+            long dayStartTime = calendar.getTimeInMillis();
+            long timeDifference = dayStartTime - timestamp;
+            SimpleDateFormat dateFormat;
+            if (timeDifference <= 0) {
+                // Today
+                dateFormat = (SimpleDateFormat) SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT);
+            } else if (timeDifference <= 518400000) {
+                // Less than a week ago
+                dateFormat = new SimpleDateFormat("ccc " + ((SimpleDateFormat) SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT)).toPattern());
+            } else if (Build.VERSION.SDK_INT >= 18) {
+                dateFormat = new SimpleDateFormat();
+                dateFormat.applyPattern(DateFormat.getBestDateTimePattern(Locale.getDefault(), "MMMd"));
+            } else {
+                dateFormat = (SimpleDateFormat) SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM);
+            }
+            return dateFormat.format(date);
         } catch (NumberFormatException e) {
             Log.e("Util", "Error to parse event time");
         }
