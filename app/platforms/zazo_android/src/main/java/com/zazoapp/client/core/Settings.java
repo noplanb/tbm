@@ -14,7 +14,7 @@ import java.util.Set;
 public class Settings {
     public static final String FILE_NAME = "zazo_user_settings";
     public enum Bool {
-        ALLOW_DATA_IN_ROAMING(false, R.string.settings_allow_data_in_roaming, R.string.settings_allow_data_in_roaming_hint),
+        ALLOW_DATA_IN_ROAMING(true, R.string.settings_allow_data_in_roaming, R.string.settings_allow_data_in_roaming_hint),
         ;
 
         private boolean value;
