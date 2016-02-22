@@ -21,4 +21,6 @@ public interface InviteHelper {
     Friend getLastInvitedFriend();
     void dropLastInvitedFriend();
     void notifyInviteVector(String name, boolean success);
+    boolean isInvitationInProcess();
+    void cancelInvitation();
 }

@@ -129,7 +129,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
      * 
      * @param context
      * @param params server params
-     * @return Returns a friend only if a new one was created. It only creates a new friend if  
+     * @return Returns a friend only if a new one was created. It only creates a new friend if
      * none was found with the same id as in params. Returns null if friend is already exist.
      */
     public Friend createWithServerParams(Context context, LinkedTreeMap<String, String> params){

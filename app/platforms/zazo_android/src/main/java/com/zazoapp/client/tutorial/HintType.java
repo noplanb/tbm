@@ -153,7 +153,7 @@ public enum HintType {
                         return hasOneFriend() && unviewedCount == 0 &&
                                 ((firstInSession && current == null) || current == RECORD) && prefs.getBoolean(getPrefName(), true);
                     }
-                    return hasOneFriend() && unviewedCount == 0 && firstInSession && current == null && prefs.getBoolean(getPrefName(), true);
+                    return hasOneFriend() && unviewedCount == 0 && firstInSession && ((firstInSession && current == null) || current == RECORD) && prefs.getBoolean(getPrefName(), true);
             }
             return false;
         }
@@ -168,7 +168,8 @@ public enum HintType {
     SEND_WELCOME(R.string.tutorial_hint_send_welcome, 0) {
         @Override
         boolean shouldShow(TutorialEvent event, HintType current, PreferencesHelper prefs, Bundle params) {
-            return event == TutorialEvent.FRIEND_ADDED && current == null && params != null && params.containsKey(Tutorial.FRIEND_KEY);
+            return event == TutorialEvent.FRIEND_ADDED && (current == null || current == this || current == SEND_WELCOME_WITH_RECORD)
+                    && params != null && params.containsKey(Tutorial.FRIEND_KEY);
         }
 
         @Override

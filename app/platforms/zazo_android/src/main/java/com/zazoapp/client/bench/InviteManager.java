@@ -61,6 +61,7 @@ public class InviteManager implements InviteHelper {
     private Friend friend;
     private Friend lastInvitedFriend;
     private InviteDialogListener listener;
+    private boolean isInvitationInProcess;
 
     public InviteManager(Context context) {
         this.context = context;
@@ -86,6 +87,7 @@ public class InviteManager implements InviteHelper {
     }
 
     private void inviteInner(BenchObject bo) {
+        isInvitationInProcess = true;
         Friend friend = friendMatchingContact(bo.mobileNumber);
         if (friend != null) {
             this.friend = friend;
@@ -273,6 +275,7 @@ public class InviteManager implements InviteHelper {
     }
 
     private void showAlreadyConnectedDialog() {
+        cancelInvitation();
         String msg = context.getString(R.string.dialog_already_connected_message, benchObject.firstName, Config.appName, benchObject.firstName);
         String title = context.getString(R.string.dialog_already_connected_title);
         String action = context.getString(R.string.dialog_action_ok);
@@ -280,6 +283,7 @@ public class InviteManager implements InviteHelper {
     }
 
     private void serverError() {
+        cancelInvitation();
         String title = context.getString(R.string.dialog_server_error_title);
         String message = context.getString(R.string.dialog_server_error_message, Config.appName);
         listener.onShowInfoDialog(title, message);
@@ -306,6 +310,7 @@ public class InviteManager implements InviteHelper {
 
     @Override
     public void failureNoSimDialog() {
+        cancelInvitation();
         if (friend == null) {
             Log.e(TAG, "Friend is null on this step. This should never happen");
             Dispatch.dispatch(new NullPointerException(), "Friend is null");
@@ -360,6 +365,16 @@ public class InviteManager implements InviteHelper {
         new HttpRequest("invitation/direct_invite_message", params, "POST");
     }
 
+    @Override
+    public boolean isInvitationInProcess() {
+        return isInvitationInProcess;
+    }
+
+    @Override
+    public void cancelInvitation() {
+        isInvitationInProcess = false;
+    }
+
     private String getDefaultInviteMessage() {
         String landingPage;
         String id;
@@ -408,6 +423,7 @@ public class InviteManager implements InviteHelper {
 
     @Override
     public void moveFriendToGrid() {
+        isInvitationInProcess = false;
         if (listener != null) {
             listener.onFinishInvitation();
         }
@@ -430,6 +446,7 @@ public class InviteManager implements InviteHelper {
         }
         String status = params.get(HttpRequest.ParamKeys.RESPONSE_STATUS);
         if (HttpRequest.isFailure(status)) {
+            cancelInvitation();
             listener.onShowInfoDialog(params.get(HttpRequest.ParamKeys.ERROR_TITLE), params.get(HttpRequest.ParamKeys.ERROR_MSG));
             return true;
         } else {
