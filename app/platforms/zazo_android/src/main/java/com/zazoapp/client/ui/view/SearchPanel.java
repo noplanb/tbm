@@ -57,7 +57,7 @@ public class SearchPanel {
         }
     }
 
-    @OnClick(R.id.search_button)
+    @OnClick({R.id.search_button, R.id.search_action_view})
     public void onSearchButtonClicked(View v) {
         searchLayout.setVisibility(View.VISIBLE);
         searchLayout.animate().setListener(null).alpha(1f).start();
@@ -67,6 +67,10 @@ public class SearchPanel {
 
     @OnClick(R.id.search_back)
     public void onSearchBackButtonClicked(View v) {
+        closeSearch();
+    }
+
+    public void closeSearch() {
         searchLayout.animate().alpha(0f).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {

@@ -28,6 +28,14 @@
                 android:src="@drawable/ic_search"
         />
 
+        <View
+                android:id="@+id/search_action_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toLeftOf="@id/search_button"
+                android:layout_toRightOf="@id/contacts_group_selector"
+                android:layout_toStartOf="@id/search_button"
+                android:layout_toEndOf="@id/contacts_group_selector"/>
         <include layout="@layout/search_layout"
                  android:id="@+id/search_layout"/>
     </RelativeLayout>

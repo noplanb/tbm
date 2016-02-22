@@ -95,7 +95,7 @@ public class InviteManager implements InviteHelper {
                 friend.setDeleted(false);
                 finishInvitation();
             } else {
-                showAlreadyConnectedDialog();
+                moveFriendToGrid();
             }
             return;
         }
@@ -259,7 +259,7 @@ public class InviteManager implements InviteHelper {
             }
         } else { // if friend is already exist TODO legacy code
             friend = FriendFactory.getFactoryInstance().getExistingFriend(params);
-            showAlreadyConnectedDialog();
+            moveFriendToGrid();
         }
     }
 

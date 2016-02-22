@@ -151,7 +151,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
-                adapter.setList(list);
                 applyFilter(searchPanel.getText());
             }
         });
@@ -262,6 +261,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                         applyFilter(searchPanel.getText());
                     } else {
                         listView.setAdapter(adapter);
+                        applyFilter(searchPanel.getText());
                     }
                     if (listView.getVisibility() != View.VISIBLE) {
                         doListViewAppearing();
@@ -303,7 +303,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     // --------------------------
     private ArrayList<BenchObject> benchFriendsAsBenchObjects() {
         ArrayList<BenchObject> r = new ArrayList<>();
-        for (Friend f : GridManager.getInstance().friendsOnBench()) {
+        for (Friend f : FriendFactory.getFactoryInstance().allEnabled()) {
             LinkedTreeMap<String, String> e = new LinkedTreeMap<>();
             e.put(BenchObject.Keys.FRIEND_ID, f.getId());
             e.put(BenchObject.Keys.MOBILE_NUMBER, f.get(Friend.Attributes.MOBILE_NUMBER));
@@ -553,9 +553,16 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     // find all matching objects here and add
                     // them to allMatching, use filterString.
                     BenchObjectList allMatching = new BenchObjectList();
+                    ArrayList<Friend> friendsOnGrid = GridManager.getInstance().friendsOnGrid();
+                    ArrayList<String> friendIdsOnGrid = new ArrayList<>();
+                    for (Friend friend : friendsOnGrid) {
+                        friendIdsOnGrid.add(friend.getId());
+                    }
                     for (BenchObject name : listCopy) {
                         if (currentSelectedGroup == GeneralContactsGroup.ALL || currentSelectedGroup.equals(name.getGroup().getGeneralGroup())) {
-                            allMatching.add(name);
+                            if (name.getGroup().getGeneralGroup() != GeneralContactsGroup.ZAZO_FRIEND || !friendIdsOnGrid.contains(name.friendId)) {
+                                allMatching.add(name);
+                            }
                         }
                     }
 
@@ -569,9 +576,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     BenchObjectList allMatching = new BenchObjectList();
                     for (BenchObject name : listCopy) {
                         if (name != null && name.displayName.toLowerCase().contains(prefixString)) {
-                            if (currentSelectedGroup == GeneralContactsGroup.ALL || currentSelectedGroup.equals(name.getGroup().getGeneralGroup())) {
-                                allMatching.add(name);
-                            }
+                            allMatching.add(name);
                         }
                     }
 
@@ -667,6 +672,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         if (isViewAttached()) {
             searchPanel.hideKeyboard();
             searchPanel.clearTextView();
+            searchPanel.closeSearch();
         }
         if (groupSelector != null && groupSelector.getSelectedItemPosition() != 0) {
             groupSelector.setSelection(0);

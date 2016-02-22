@@ -8,9 +8,11 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.model.Friend.VideoStatusChangedCallback;
 import com.zazoapp.client.utilities.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -270,6 +272,18 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
                 GridManager.getInstance().moveNextFriendTo(ge);
             }
         }
+    }
+
+    public ArrayList<Friend> allEnabled() {
+        ArrayList<Friend> all = all();
+        Iterator<Friend> it = all.iterator();
+        while (it.hasNext()) {
+            Friend friend = it.next();
+            if (friend.isDeleted()) {
+                it.remove();
+            }
+        }
+        return all;
     }
 
     public static class ConnectionComparator implements Comparator<LinkedTreeMap<String, String>> {
