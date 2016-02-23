@@ -488,8 +488,25 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             }
 
             @Override
+            public boolean bigMove(View v) {
+                if (videoRootLayout.equals(v)) {
+                    return false;
+                }
+                if (videoBody.equals(v)) {
+                    v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) videoBody.getTag(R.id.box_id)]);
+                }
+                return nineViewGroup.getGestureRecognizer().bigMove(v);
+            }
+
+            @Override
             public boolean abort(View v, int reason) {
-                return false;
+                if (videoRootLayout.equals(v)) {
+                    return false;
+                }
+                if (videoBody.equals(v)) {
+                    v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) videoBody.getTag(R.id.box_id)]);
+                }
+                return nineViewGroup.getGestureRecognizer().abort(v, reason);
             }
 
             @Override

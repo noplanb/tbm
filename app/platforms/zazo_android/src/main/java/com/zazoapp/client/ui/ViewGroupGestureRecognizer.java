@@ -401,10 +401,7 @@ public abstract class ViewGroupGestureRecognizer {
                 endLongpress(v);
             }
         });
-        if (postponeDisabled) {
-            enabled = false;
-            postponeDisabled = false;
-        }
+        postponeDisable();
     }
 
     private void runAbortLongpress(final View v) {
@@ -414,6 +411,7 @@ public abstract class ViewGroupGestureRecognizer {
                 bigMove(v);
             }
         });
+        postponeDisable();
     }
 
     private void runAbort(final View v, final int reason) {
@@ -423,6 +421,14 @@ public abstract class ViewGroupGestureRecognizer {
                 abort(v, reason);
             }
         });
+        postponeDisable();
+    }
+
+    private void postponeDisable() {
+        if (postponeDisabled) {
+            enabled = false;
+            postponeDisabled = false;
+        }
     }
 
     // -------
