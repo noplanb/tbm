@@ -141,7 +141,7 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
             return;
         }
         ArrayList<Friend> friendsWithUnviewedOnBench = new ArrayList<>();
-        for (Friend friend : FriendFactory.getFactoryInstance().all()) {
+        for (Friend friend : FriendFactory.getFactoryInstance().allEnabled()) {
             if (friend.incomingVideoNotViewed() && !fog.contains(friend)) {
                 friendsWithUnviewedOnBench.add(friend);
             }

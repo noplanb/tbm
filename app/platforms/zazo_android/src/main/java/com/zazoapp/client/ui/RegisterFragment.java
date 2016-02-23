@@ -102,7 +102,6 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
 
         setAdditionalViewHeight();
         setUpView(savedInstanceState);
-        initUser();
         return v;
     }
 
@@ -557,6 +556,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     // Add user and friends
     //---------------------
     private void gotUser(LinkedTreeMap<String, String> params) {
+        initUser();
         user.set(User.Attributes.FIRST_NAME, params.get(UserFactory.ServerParamKeys.FIRST_NAME));
         user.set(User.Attributes.LAST_NAME, params.get(UserFactory.ServerParamKeys.LAST_NAME));
         user.set(User.Attributes.MOBILE_NUMBER, params.get(UserFactory.ServerParamKeys.MOBILE_NUMBER));

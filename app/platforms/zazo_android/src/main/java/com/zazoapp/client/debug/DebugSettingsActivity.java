@@ -261,6 +261,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                     DebugUtils.restoreBackup(context);
                     models.ensureAll();
                     GridManager.getInstance().initGrid(context);
+                    ActiveModelsHandler.getInstance(context).saveAll();
                     if (User.isRegistered(context)) {
                         DialogShower.showToast(context, "Loaded");
                         finish();
