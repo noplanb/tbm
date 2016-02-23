@@ -339,7 +339,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     @Override
     public void onFinishInvitation() {
-        showMainTab();
+        managerHolder.getBenchViewManager().hideBench();
     }
 
     private void showMainTab() {
