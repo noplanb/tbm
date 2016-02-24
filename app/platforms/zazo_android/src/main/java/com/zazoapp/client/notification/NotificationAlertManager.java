@@ -97,7 +97,7 @@ public class NotificationAlertManager {
 
 
     private static int getNotificationIcon() {
-        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) ? R.drawable.ic_notification_white : R.drawable.ic_launcher;
+        return R.drawable.ic_notification_white;
     }
 	// -------------------
 	// Notification Alerts

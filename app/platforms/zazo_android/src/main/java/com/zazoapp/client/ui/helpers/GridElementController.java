@@ -3,7 +3,6 @@ package com.zazoapp.client.ui.helpers;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -99,12 +98,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         // As it has thumb it must have friend, so play/stop video if there are any.
         // Otherwise show toast "Video is not playable"
         Friend friend = gridElement.getFriend();
-        // TODO FIXME TEST
-        //if (friend != null) {
-        //    IncomingVideo latest = friend.newestIncomingVideo();
-        //    friend.setAndNotifyIncomingVideoStatus(latest.getId(),
-        //            (latest.getVideoStatus() != IncomingVideo.Status.DOWNLOADED) ? IncomingVideo.Status.DOWNLOADED : IncomingVideo.Status.VIEWED);
-        //}
         if (friend.hasIncomingPlayableVideos()) {
             managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId());
             managerProvider.getTutorial().onVideoStartPlayingByUser();
@@ -210,14 +203,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         }
 
         gridElementView.setName(friend.getDisplayName());
-        IncomingVideo newestIncomingVideo = friend.newestIncomingVideo();
-        String videoTimestamp = (lastEventOutgoing) ? friend.getOutgoingVideoId() :
-                (newestIncomingVideo != null) ? newestIncomingVideo.getId() : null;
-        if (force || lastEventOutgoing || friend.getIncomingVideoStatus() == IncomingVideo.Status.DOWNLOADED) {
-            gridElementView.setDate(StringUtils.getEventTime(videoTimestamp), !force);
-        } else if (TextUtils.isEmpty(videoTimestamp)) {
-            gridElementView.setDate("", true);
-        }
+        gridElementView.setDate((showNewMessages) ? getLastIncomingEventDate() : "", !force);
+
         gridElementView.showResendButton(DebugConfig.getInstance().isResendAllowed() && friend.videoToFile(friend.getOutgoingVideoId()).exists());
         ((View) container.getParent()).invalidate();
         container.setVisibility(View.VISIBLE); // as content is loaded, display view
@@ -275,6 +262,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                                 @Override
                                 public void run() {
                                     updateContent(true, force);
+                                    gridElementView.setDate(getLastIncomingEventDate(), true);
                                     animateUnreadCountChanging(new Runnable() {
                                         @Override
                                         public void run() {
@@ -411,5 +399,15 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                 pendingAnim = false;
             }
         });
+    }
+
+    private String getLastIncomingEventDate() {
+        Friend friend = gridElement.getFriend();
+        if (friend == null || friend.getLastEventType() != Friend.VideoStatusEventType.INCOMING) {
+            return "";
+        }
+        IncomingVideo newestIncomingVideo = friend.newestIncomingVideo();
+        String videoTimestamp = (newestIncomingVideo != null) ? newestIncomingVideo.getId() : null;
+        return StringUtils.getEventTime(videoTimestamp);
     }
 }
