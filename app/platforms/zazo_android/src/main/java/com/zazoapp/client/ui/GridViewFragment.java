@@ -1,5 +1,6 @@
 package com.zazoapp.client.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -29,6 +30,7 @@ import com.zazoapp.client.multimedia.CameraManager.CameraExceptionHandler;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileUploadService;
+import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
 import com.zazoapp.client.ui.helpers.GridElementController;
 import com.zazoapp.client.ui.view.NineViewGroup;
@@ -48,7 +50,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     private NineViewGroup nineViewGroup;
 
     private boolean viewLoaded;
-    private boolean focused;
     private boolean globalLayoutComplete;
 
     @Override
@@ -260,11 +261,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         }
     }
 
-    public void onWindowFocusChanged(boolean hasFocus) {
-        Log.i(TAG, "onWindowFocusChanged " + hasFocus);
-        focused = hasFocus;
-    }
-
     @Override
     public void onSpinChanged(int newSpinOffset) {
         Context context = getActivity();
@@ -290,6 +286,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     @Override
     public void onGlobalLayout() {
+        Activity activity = getActivity();
+        boolean focused = activity != null && activity.hasWindowFocus() && !NotificationAlertManager.screenIsLocked(activity);
         Log.i(TAG, "OnGlobalLayout " + viewLoaded + " " + focused);
         if (viewLoaded && focused) {
             globalLayoutComplete = true;

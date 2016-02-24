@@ -14,7 +14,6 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.dispatch.ZazoAnalytics;
 import com.zazoapp.client.model.ActiveModelsHandler;
-import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.utilities.Logger;
 
 public class MainActivity extends FragmentActivity implements TaskFragmentListener {
@@ -107,14 +106,6 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
             result = ((MainFragment) currentFragment).onKeyDown(keyCode, event);
         }
         return result || super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (currentFragment instanceof MainFragment) {
-            ((MainFragment) currentFragment).onWindowFocusChanged(hasFocus && !NotificationAlertManager.screenIsLocked(this));
-        }
     }
 
     @Override

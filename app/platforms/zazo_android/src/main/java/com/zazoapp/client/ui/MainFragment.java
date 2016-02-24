@@ -477,12 +477,6 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         return false;
     }
 
-    public void onWindowFocusChanged(boolean hasFocus) {
-        if (gridFragment != null) {
-            gridFragment.onWindowFocusChanged(hasFocus);
-        }
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == InviteIntent.INVITATION_REQUEST_ID) {
