@@ -1,15 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="3dp"
     android:background="@drawable/bg_empty">
 
+    <TextView
+            android:id="@+id/card_empty_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/grid_item_empty_text_bottom_padding"
+            android:text="@string/add_contact"
+            android:textColor="@color/add_contact_text"
+            android:textSize="@dimen/text_small"
+            android:lines="1"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:layout_alignParentBottom="true"/>
+
     <LinearLayout
+            android:id="@+id/icon_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:weightSum="4"
             android:gravity="center"
+            android:layout_marginTop="30dp"
+            android:layout_above="@id/card_empty_text"
             android:orientation="horizontal">
 
         <ImageView
@@ -22,15 +39,4 @@
                 android:src="@drawable/card_empty_icon_selector"/>
     </LinearLayout>
 
-    <TextView
-            android:id="@+id/card_empty_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="@string/add_contact"
-            android:textColor="@color/add_contact_text"
-            android:textSize="@dimen/text_normal"
-            android:gravity="center"
-            android:layout_gravity="bottom"/>
-
-</FrameLayout>
+</RelativeLayout>

@@ -38,6 +38,7 @@
     <dimen name="grid_item_status_icon_y_shift">-5dp</dimen>
     <dimen name="grid_item_status_icon_x_shift">5dp</dimen>
     <dimen name="grid_item_status_icon_content_padding">5dp</dimen>
+    <dimen name="grid_item_empty_text_bottom_padding">12dp</dimen>
 
     <dimen name="video_indicator_min_text_size">8sp</dimen>
     <dimen name="video_indicator_size">24dp</dimen>
