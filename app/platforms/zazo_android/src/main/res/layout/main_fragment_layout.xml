@@ -43,6 +43,8 @@
                             android:layout_toEndOf="@id/menu_view"
                             android:paddingTop="@dimen/actionbar_item_icon_padding"
                             android:paddingBottom="@dimen/actionbar_item_icon_padding"
+                            android:paddingRight="@dimen/actionbar_item_icon_padding"
+                            android:paddingEnd="@dimen/actionbar_item_icon_padding"
                             android:layout_centerVertical="true"
                             android:adjustViewBounds="true"
                             android:src="@drawable/zazo_type_white"/>
