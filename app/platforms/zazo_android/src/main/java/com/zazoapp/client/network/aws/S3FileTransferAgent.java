@@ -7,16 +7,15 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.AmazonServiceException.ErrorType;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.mobileconnectors.s3.transfermanager.Download;
-import com.amazonaws.mobileconnectors.s3.transfermanager.TransferManager;
-import com.amazonaws.mobileconnectors.s3.transfermanager.Upload;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.IncomingVideo;
@@ -30,18 +29,21 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class S3FileTransferAgent implements IFileTransferAgent {
 	private static final String TAG = S3FileTransferAgent.class.getSimpleName();
 
     private String s3Bucket;
 
-    private TransferManager tm;
 	private Intent intent;
 	private File file;
 	private String filename;
 	private FileTransferService fileTransferService;
-	private boolean credentialsOk;
+
+    private static AmazonS3Client sS3Client;
+    private static TransferUtility sTransferUtility;
 
 	public S3FileTransferAgent(FileTransferService fts) {
 		fileTransferService = fts;
@@ -58,98 +60,101 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		this.intent = intent;
 		String filePath = intent.getStringExtra(IntentFields.FILE_PATH_KEY);
 		this.file = new File(filePath);
-		setupTransferManager();
 	}
 	
 	private void setupTransferManager(){
+        if (!checkCredentialsOk()) {
+            return;
+        }
         S3CredentialsStore s3CredStore = S3CredentialsStore.getInstance(fileTransferService);
-        checkCredentialsOk();
-        
-        // Use them even if they are not ok. We will get an AmazonClientException which we will special case not retry.
-        tm = new TransferManager(new BasicAWSCredentials(s3CredStore.getS3AccessKey(), s3CredStore.getS3SecretKey()));
+        if (sTransferUtility == null) {
+            if (sS3Client == null) {
+                sS3Client = new AmazonS3Client(new BasicAWSCredentials(s3CredStore.getS3AccessKey(), s3CredStore.getS3SecretKey()));
+                try {
+                    sS3Client.setRegion(Region.getRegion(Regions.valueOf(s3CredStore.getS3Region().toUpperCase().replace('-', '_'))));
+                } catch (IllegalArgumentException e) {
+                    Dispatch.dispatch("S3FileTransferAgent: cant set region: " + e.toString());
+                }
+            }
+            sTransferUtility = new TransferUtility(sS3Client, fileTransferService);
+        }
         s3Bucket = s3CredStore.getS3Bucket();
-        AmazonS3 client = tm.getAmazonS3Client();
-        try {
-            client.setRegion(Region.getRegion(Regions.valueOf(s3CredStore.getS3Region().toUpperCase().replace('-', '_'))));
-        } catch (IllegalArgumentException e) {
-            Dispatch.dispatch("S3FileTransferAgent: cant set region: " + e.toString());
-        }
 	}
-	
-	private void checkCredentialsOk(){
-        if (!S3CredentialsStore.getInstance(fileTransferService).hasCredentials()){
-        	Log.e(TAG, "Attempting an S3 file transfer but have no credentials. Getting them now by this transfer will fail.");
-        	new S3CredentialsGetter(fileTransferService);
-        	credentialsOk = false;
-        	return;
+
+    private boolean checkCredentialsOk() {
+        if (!S3CredentialsStore.getInstance(fileTransferService).hasCredentials()) {
+            Log.e(TAG, "Attempting an S3 file transfer but have no credentials. Getting them now by this transfer will fail.");
+            new S3CredentialsGetter(fileTransferService);
+            return false;
         }
-        credentialsOk = true;
-	}
+        return true;
+    }
 
 	//---------------------------
 	// Upload download and delete
 	//---------------------------
 	@Override
 	public boolean upload() throws InterruptedException {
-		try {
-            if (file.length() == 0) { // FIXME Temporary check for 0 size uploads
-                Dispatch.dispatch(filename + " has 0 size");
+        setupTransferManager();
+        if (sTransferUtility == null) {
+            return false;
+        }
+        if (file.length() == 0) { // FIXME Temporary check for 0 size uploads
+            Dispatch.dispatch(filename + " has 0 size");
+        }
+        Bundle data1 = intent.getBundleExtra(IntentFields.METADATA); // FIXME TEST
+        ObjectMetadata metadata = new ObjectMetadata();
+        if (intent.hasExtra(IntentFields.METADATA)) {
+            Bundle data = intent.getBundleExtra(IntentFields.METADATA);
+            for (String s : data.keySet()) {
+                metadata.addUserMetadata(s, data.getString(s));
             }
-            PutObjectRequest _putObjectRequest = new PutObjectRequest(s3Bucket, filename, file);
-            Bundle data1 = intent.getBundleExtra(IntentFields.METADATA); // FIXME TEST
-            if (intent.hasExtra(IntentFields.METADATA)) {
-                Bundle data = intent.getBundleExtra(IntentFields.METADATA);
-                ObjectMetadata metadata = new ObjectMetadata();
-                for (String s : data.keySet()) {
-                    metadata.addUserMetadata(s, data.getString(s));
-                }
-                _putObjectRequest.setMetadata(metadata);
-            }
-            Logger.i(TAG, "upload() Before upload " + data1);
-			Upload upload = tm.upload(_putObjectRequest);
-			upload.waitForUploadResult();
-            Logger.i(TAG, "upload() After upload " + data1);
-		} catch (AmazonServiceException e) {
-			handleServiceException(e);
-			return notRetryableServiceException(e);
-		} catch (AmazonClientException e) {
-			handleClientException(e);
-			return notRetryableClientException(e);
-		}
+        }
+        Logger.i(TAG, "upload() Before upload " + data1);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean transferResult = new AtomicBoolean(true);
+        TransferObserver observer = sTransferUtility.upload(s3Bucket, filename, file, metadata);
+        observer.setTransferListener(new ZazoTransferListener(latch, transferResult));
+        latch.await();
+        Logger.i(TAG, "upload() After upload " + data1);
+
         if (!DebugConfig.getInstance().isResendAllowed()) {
             file.delete(); // remove uploaded file
         }
 		fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADED);
-		return true;
+		return transferResult.get();
 	}
 
 	@Override
 	public boolean download() throws InterruptedException{
-		Log.i(TAG, "Starting S3 download for filename: " + filename);
-		try {
-            GetObjectRequest _getObjectRequest = new GetObjectRequest(s3Bucket, filename);
-            Logger.i(TAG, "download() Before download " + filename);
-			Download download = tm.download(_getObjectRequest,	file);
-			download.waitForCompletion();
-            Logger.i(TAG, "download() After download " + filename);
-		} catch (AmazonServiceException e) {
-			handleServiceException(e);
-			return notRetryableServiceException(e);
-		} catch (AmazonClientException e) {
-			handleClientException(e);
-			return notRetryableClientException(e);
-		} 
-		fileTransferService.reportStatus(intent, IncomingVideo.Status.DOWNLOADED);
-		return true;
-	}
-	
+        setupTransferManager();
+        if (sTransferUtility == null) {
+            return false;
+        }
+        Log.i(TAG, "Starting S3 download for filename: " + filename);
 
-	@Override
-	public boolean delete() throws InterruptedException{
+        Logger.i(TAG, "download() Before download " + filename);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean transferResult = new AtomicBoolean(true);
+        TransferObserver observer = sTransferUtility.download(s3Bucket, filename, file);
+        observer.setTransferListener(new ZazoTransferListener(latch, transferResult));
+        latch.await();
+        Logger.i(TAG, "download() After download " + filename);
+
+		fileTransferService.reportStatus(intent, IncomingVideo.Status.DOWNLOADED);
+		return transferResult.get();
+	}
+
+    @Override
+    public boolean delete() throws InterruptedException {
+        setupTransferManager();
+        if (sS3Client == null) {
+            return false;
+        }
 		try {
             Logger.i(TAG, "delete() Before delete " + filename);
             DeleteObjectRequest _deleteObjectRequest = new DeleteObjectRequest(s3Bucket, filename);
-			tm.getAmazonS3Client().deleteObject(_deleteObjectRequest);
+            sS3Client.deleteObject(_deleteObjectRequest);
             Logger.i(TAG, "delete() After delete " + filename);
 		} catch (AmazonServiceException e) {
 			handleServiceException(e);
@@ -207,7 +212,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
     private boolean notRetryableClientException(AmazonClientException e){
 		// The only client exception that is not retryable occurs if we have tried to access without credentials 
 		// this returns a client error with message "Unable to calculate a request signature"
-		return !credentialsOk;
+		return false;
 	}
 	
 	//-------------------------
@@ -280,6 +285,44 @@ public class S3FileTransferAgent implements IFileTransferAgent {
                 return true;
             default:
                 return true;
+        }
+    }
+
+    class ZazoTransferListener implements TransferListener {
+        private CountDownLatch latch;
+        private AtomicBoolean result;
+
+        ZazoTransferListener(CountDownLatch latch, AtomicBoolean result) {
+            this.latch = latch;
+            this.result = result;
+        }
+
+        @Override
+        public void onStateChanged(int id, TransferState state) {
+            switch (state) {
+                case COMPLETED:
+                    latch.countDown();
+                    break;
+                case FAILED:
+                    result.set(false);
+                    latch.countDown();
+                    break;
+            }
+        }
+
+        @Override
+        public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
+        }
+
+        @Override
+        public void onError(int id, Exception e) {
+            if (e instanceof AmazonServiceException) {
+                handleServiceException((AmazonServiceException) e);
+            } else if (e instanceof AmazonClientException) {
+                handleClientException((AmazonClientException) e);
+            } else {
+                Dispatch.dispatch(e, null);
+            }
         }
     }
 }
