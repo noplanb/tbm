@@ -51,8 +51,13 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
         this.params = intent.getBundleExtra(IntentFields.PARAMS_KEY);
 		this.filename = intent.getStringExtra(IntentFields.FILE_NAME_KEY);
 	}
-	
-	@Override
+
+    @Override
+    public void pause() throws InterruptedException {
+
+    }
+
+    @Override
 	public boolean upload() {
 		String urlWithParams = Config.fileUploadUrl() + stringifyParams(params);
 		Log.i(TAG, "upload: " + urlWithParams);

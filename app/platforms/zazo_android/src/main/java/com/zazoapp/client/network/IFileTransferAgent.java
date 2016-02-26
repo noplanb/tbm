@@ -8,4 +8,5 @@ public interface IFileTransferAgent {
 	boolean download() throws InterruptedException;
 	boolean delete() throws InterruptedException;
 	void setInstanceVariables(Intent intent) throws InterruptedException;
+    void pause() throws InterruptedException;
 }

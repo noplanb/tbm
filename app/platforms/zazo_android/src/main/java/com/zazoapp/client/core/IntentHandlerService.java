@@ -223,6 +223,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         private String transferType;
         private String videoId;
         private int status;
+        private int transferId;
         private int retryCount;
 
         public IntentHandler(Intent i) {
@@ -233,6 +234,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
             status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
             retryCount = intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
+            transferId = intent.getIntExtra(FileTransferService.IntentFields.TRANSFER_ID, -1);
             if (i.getExtras() != null) {
                 Log.i(TAG, i.getExtras().toString());
             }
@@ -321,6 +323,15 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 //
                 //// Send outgoing notification
                 //NotificationHandler.sendForVideoReceived(friend, videoId);
+            }
+            if (status == OutgoingVideo.Status.UPLOADING) {
+                if (transferId != -1) {
+                    OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().find(videoId);
+                    if (video != null) {
+                        video.setTransferDbId(transferId);
+                        OutgoingVideoFactory.getFactoryInstance().save(IntentHandlerService.this);
+                    }
+                }
             }
             if (status == OutgoingVideo.Status.UPLOADED || status == OutgoingVideo.Status.FAILED_PERMANENTLY) {
                 transferTasks.removeUploadId(videoId);
@@ -414,6 +425,13 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
             if (status == IncomingVideo.Status.DOWNLOADING) {
                 // No need to do anything special in this case.
+                if (transferId != -1) {
+                    IncomingVideo video = IncomingVideoFactory.getFactoryInstance().find(videoId);
+                    if (video != null) {
+                        video.setTransferDbId(transferId);
+                        IncomingVideoFactory.getFactoryInstance().save(IntentHandlerService.this);
+                    }
+                }
             }
 
             // Update the status and notify based on the intent if we have not exited for another reason above.

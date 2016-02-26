@@ -47,6 +47,7 @@ public abstract class FileTransferService extends IntentService {
         public static final String STATUS_KEY = "status";
         public static final String VIDEO_ID_KEY = "videoIdKey";
         public static final String METADATA = "metadata";
+        public static final String TRANSFER_ID = "transferId";
 
         public static final String TRANSFER_TYPE_UPLOAD = "upload";
         public static final String TRANSFER_TYPE_DOWNLOAD = "download";
@@ -130,6 +131,7 @@ public abstract class FileTransferService extends IntentService {
             retryCount.set(0);
             while (true) {
                 if (!isConnected()) {
+                    fileTransferAgent.pause();
                     if (!reset.await(2, TimeUnit.SECONDS)) {
                         continue;
                     }
@@ -197,7 +199,7 @@ public abstract class FileTransferService extends IntentService {
     public static void reset(Context context, Class<? extends FileTransferService> clazz) {
         Logger.i(TAG, "reset " + clazz.getSimpleName());
         Intent i = new Intent(context, clazz);
-        i.setAction(FileUploadService.RESET_ACTION);
+        i.setAction(RESET_ACTION);
         context.startService(i);
     }
 

@@ -31,6 +31,7 @@ public abstract class Video extends ActiveModel {
         public static final String FRIEND_ID = "friendId";
         public static final String STATUS = "status";
         public static final String RETRY_COUNT = "downloadRetryCount"; // keep legacy value
+        public static final String TRANSFER_DB_ID = "transferDbId";
     }
 
     @Override
@@ -39,7 +40,8 @@ public abstract class Video extends ActiveModel {
                 Attributes.ID,
                 Attributes.FRIEND_ID,
                 Attributes.STATUS,
-                Attributes.RETRY_COUNT
+                Attributes.RETRY_COUNT,
+                Attributes.TRANSFER_DB_ID
         };
         return new ArrayList<>(Arrays.asList(a));
     }
@@ -66,4 +68,16 @@ public abstract class Video extends ActiveModel {
         return get(Attributes.FRIEND_ID);
     }
 
+    public void setTransferDbId(int id) {
+        set(Attributes.TRANSFER_DB_ID, String.valueOf(id));
+    }
+
+    public int getTransferDbId() {
+        String dbId = get(Attributes.TRANSFER_DB_ID);
+        try {
+            return Integer.parseInt(dbId);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
 }

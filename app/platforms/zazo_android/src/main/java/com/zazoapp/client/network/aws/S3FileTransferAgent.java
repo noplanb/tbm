@@ -10,6 +10,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferType;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -29,8 +30,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class S3FileTransferAgent implements IFileTransferAgent {
 	private static final String TAG = S3FileTransferAgent.class.getSimpleName();
@@ -41,9 +43,14 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	private File file;
 	private String filename;
 	private FileTransferService fileTransferService;
+    private int transferId;
+    private TransferObserver transferObserver;
 
     private static AmazonS3Client sS3Client;
     private static TransferUtility sTransferUtility;
+
+    private static final int RESULT_FAILED = -1;
+    private static final int RESULT_NEED_RESTART = -2;
 
 	public S3FileTransferAgent(FileTransferService fts) {
 		fileTransferService = fts;
@@ -60,9 +67,26 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 		this.intent = intent;
 		String filePath = intent.getStringExtra(IntentFields.FILE_PATH_KEY);
 		this.file = new File(filePath);
+        transferId = intent.getIntExtra(IntentFields.TRANSFER_ID, -1);
+        setupTransferManager();
 	}
-	
-	private void setupTransferManager(){
+
+    @Override
+    public void pause() throws InterruptedException {
+        if (sTransferUtility != null) {
+            if (transferId != -1) {
+                Logger.i(TAG, "pause " + transferId + " " + filename);
+                sTransferUtility.pause(transferId);
+            }
+            List<TransferObserver> transfersInProgress = sTransferUtility.getTransfersWithTypeAndState(TransferType.ANY, TransferState.IN_PROGRESS);
+            for (TransferObserver transferInProgress : transfersInProgress) {
+                Logger.i(TAG, "pause " + transferInProgress.getId() + " " + new File(transferInProgress.getAbsoluteFilePath()).getName());
+                sTransferUtility.pause(transferInProgress.getId());
+            }
+        }
+    }
+
+    private void setupTransferManager(){
         if (!checkCredentialsOk()) {
             return;
         }
@@ -79,7 +103,23 @@ public class S3FileTransferAgent implements IFileTransferAgent {
             sTransferUtility = new TransferUtility(sS3Client, fileTransferService);
         }
         s3Bucket = s3CredStore.getS3Bucket();
-	}
+        if (transferObserver == null && transferId != -1) {
+            transferObserver = sTransferUtility.getTransferById(transferId);
+        }
+    }
+
+    private static TransferObserver getTransfer(String filepath) {
+        if (sTransferUtility == null) {
+            return null;
+        }
+        List<TransferObserver> transfers = sTransferUtility.getTransfersWithType(TransferType.ANY);
+        for (TransferObserver transfer : transfers) {
+            if (filepath.equals(transfer.getAbsoluteFilePath())) {
+                return transfer;
+            }
+        }
+        return null;
+    }
 
     private boolean checkCredentialsOk() {
         if (!S3CredentialsStore.getInstance(fileTransferService).hasCredentials()) {
@@ -99,6 +139,27 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         if (sTransferUtility == null) {
             return false;
         }
+        if (transferObserver != null) {
+            switch (transferObserver.getState()) {
+                case COMPLETED:
+                    return true;
+                case FAILED:
+                    break;
+                default:
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    final AtomicInteger transferResult = new AtomicInteger(0);
+                    transferObserver.setTransferListener(new ZazoTransferListener(latch, transferResult));
+                    sTransferUtility.resume(transferObserver.getId());
+                    latch.await();
+                    if (transferResult.get() == 0) {
+                        if (!DebugConfig.getInstance().isResendAllowed()) {
+                            file.delete(); // remove uploaded file
+                        }
+                        fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADED);
+                    }
+                    return transferResult.get() == 0 || transferResult.get() == RESULT_FAILED;
+            }
+        }
         if (file.length() == 0) { // FIXME Temporary check for 0 size uploads
             Dispatch.dispatch(filename + " has 0 size");
         }
@@ -112,17 +173,21 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         }
         Logger.i(TAG, "upload() Before upload " + data1);
         final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicBoolean transferResult = new AtomicBoolean(true);
+        final AtomicInteger transferResult = new AtomicInteger(0);
         TransferObserver observer = sTransferUtility.upload(s3Bucket, filename, file, metadata);
         observer.setTransferListener(new ZazoTransferListener(latch, transferResult));
+        intent.putExtra(IntentFields.TRANSFER_ID, observer.getId());
+        fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADING);
         latch.await();
-        Logger.i(TAG, "upload() After upload " + data1);
+        Logger.i(TAG, "upload() After upload " + transferResult.get() + " " + data1);
 
-        if (!DebugConfig.getInstance().isResendAllowed()) {
-            file.delete(); // remove uploaded file
+        if (transferResult.get() == 0) {
+            if (!DebugConfig.getInstance().isResendAllowed()) {
+                file.delete(); // remove uploaded file
+            }
+            fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADED);
         }
-		fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADED);
-		return transferResult.get();
+		return transferResult.get() == 0 || transferResult.get() == RESULT_FAILED;
 	}
 
 	@Override
@@ -132,18 +197,38 @@ public class S3FileTransferAgent implements IFileTransferAgent {
             return false;
         }
         Log.i(TAG, "Starting S3 download for filename: " + filename);
-
+        if (transferObserver != null) {
+            switch (transferObserver.getState()) {
+                case COMPLETED:
+                    return true;
+                case FAILED:
+                    break;
+                default:
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    final AtomicInteger transferResult = new AtomicInteger(0);
+                    transferObserver.setTransferListener(new ZazoTransferListener(latch, transferResult));
+                    sTransferUtility.resume(transferObserver.getId());
+                    latch.await();
+                    if (transferResult.get() == 0) {
+                        fileTransferService.reportStatus(intent, IncomingVideo.Status.DOWNLOADED);
+                    }
+                    return transferResult.get() == 0 || transferResult.get() == RESULT_FAILED;
+            }
+        }
         Logger.i(TAG, "download() Before download " + filename);
         final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicBoolean transferResult = new AtomicBoolean(true);
+        final AtomicInteger transferResult = new AtomicInteger(0);
         TransferObserver observer = sTransferUtility.download(s3Bucket, filename, file);
+        intent.putExtra(IntentFields.TRANSFER_ID, observer.getId());
+        fileTransferService.reportStatus(intent, IncomingVideo.Status.DOWNLOADING);
         observer.setTransferListener(new ZazoTransferListener(latch, transferResult));
         latch.await();
         Logger.i(TAG, "download() After download " + filename);
-
-		fileTransferService.reportStatus(intent, IncomingVideo.Status.DOWNLOADED);
-		return transferResult.get();
-	}
+        if (transferResult.get() == 0) {
+            fileTransferService.reportStatus(intent, IncomingVideo.Status.DOWNLOADED);
+        }
+        return transferResult.get() == 0 || transferResult.get() == RESULT_FAILED;
+    }
 
     @Override
     public boolean delete() throws InterruptedException {
@@ -290,21 +375,25 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 
     class ZazoTransferListener implements TransferListener {
         private CountDownLatch latch;
-        private AtomicBoolean result;
+        private AtomicInteger result;
 
-        ZazoTransferListener(CountDownLatch latch, AtomicBoolean result) {
+        ZazoTransferListener(CountDownLatch latch, AtomicInteger result) {
             this.latch = latch;
             this.result = result;
         }
 
         @Override
         public void onStateChanged(int id, TransferState state) {
+            Logger.i(TAG, "onStateChanged id " + id + " " + state);
             switch (state) {
+                case WAITING_FOR_NETWORK:
+                    result.set(RESULT_NEED_RESTART);
+                    latch.countDown();
+                    break;
                 case COMPLETED:
                     latch.countDown();
                     break;
                 case FAILED:
-                    result.set(false);
                     latch.countDown();
                     break;
             }
@@ -318,8 +407,10 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         public void onError(int id, Exception e) {
             if (e instanceof AmazonServiceException) {
                 handleServiceException((AmazonServiceException) e);
+                result.set(notRetryableServiceException((AmazonServiceException) e) ? RESULT_FAILED : RESULT_NEED_RESTART);
             } else if (e instanceof AmazonClientException) {
                 handleClientException((AmazonClientException) e);
+                result.set(notRetryableClientException((AmazonClientException) e) ? RESULT_FAILED : RESULT_NEED_RESTART);
             } else {
                 Dispatch.dispatch(e, null);
             }

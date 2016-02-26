@@ -71,6 +71,13 @@ public final class ModelUpgradeHelper {
          ensureAll(handler);
     }
 
+    /**
+     * Added TRANSFER_DB_ID attribute to Video model
+     */
+    public static void upgradeTo6(ActiveModelsHandler handler, Context context) {
+        ensureAll(handler);
+    }
+
     private static void ensureAll(ActiveModelsHandler handler) {
         handler.ensureUser();
         handler.ensure(FriendFactory.getFactoryInstance());

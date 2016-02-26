@@ -526,6 +526,8 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(videoId));
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this, videoId));
+        OutgoingVideo v = OutgoingVideoFactory.getFactoryInstance().find(videoId);
+        i.putExtra(FileTransferService.IntentFields.TRANSFER_ID, getDbId(v));
         i.putExtra(FileTransferService.IntentFields.METADATA, FileTransferService.MetaData.getMetadata(videoId, UserFactory.getCurrentUserMkey(), getMkey(), videoToFile(videoId)));
         // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
@@ -544,6 +546,8 @@ public class Friend extends ActiveModel{
         i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
+        IncomingVideo v = IncomingVideoFactory.getFactoryInstance().find(videoId);
+        i.putExtra(FileTransferService.IntentFields.TRANSFER_ID, getDbId(v));
         // This is here so the old saving files on server vs s3 work
         Bundle params = new Bundle();
         params.putString("filename", RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
@@ -850,5 +854,9 @@ public class Friend extends ActiveModel{
 
     public String getInitials() {
         return StringUtils.getInitials(get(Attributes.FIRST_NAME), get(Attributes.LAST_NAME));
+    }
+
+    private int getDbId(Video video) {
+        return video != null ? video.getTransferDbId() : -1;
     }
 }
