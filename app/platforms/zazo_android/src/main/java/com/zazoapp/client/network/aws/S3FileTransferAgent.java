@@ -74,10 +74,12 @@ public class S3FileTransferAgent implements IFileTransferAgent {
     @Override
     public void pause() throws InterruptedException {
         if (sTransferUtility != null) {
-            if (transferId != -1) {
-                Logger.i(TAG, "pause " + transferId + " " + filename);
-                sTransferUtility.pause(transferId);
-            }
+            //if (transferId != -1) {
+            //    if (sTransferUtility.getTransferById(transferId).getState() != TransferState.PAUSED) {
+            //        Logger.i(TAG, "pause " + transferId + " " + filename);
+            //        sTransferUtility.pause(transferId);
+            //    }
+            //}
             List<TransferObserver> transfersInProgress = sTransferUtility.getTransfersWithTypeAndState(TransferType.ANY, TransferState.IN_PROGRESS);
             for (TransferObserver transferInProgress : transfersInProgress) {
                 Logger.i(TAG, "pause " + transferInProgress.getId() + " " + new File(transferInProgress.getAbsoluteFilePath()).getName());
@@ -105,6 +107,10 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         s3Bucket = s3CredStore.getS3Bucket();
         if (transferObserver == null && transferId != -1) {
             transferObserver = sTransferUtility.getTransferById(transferId);
+            if (transferObserver.getState() == TransferState.IN_PROGRESS) {
+                Logger.i(TAG, "setupTransferManager pause " + transferId);
+                sTransferUtility.pause(transferId);
+            }
         }
     }
 
@@ -139,7 +145,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         if (sTransferUtility == null) {
             return false;
         }
+        Logger.i(TAG, "Starting S3 upload for filename: " + filename);
         if (transferObserver != null) {
+            transferObserver.refresh();
             switch (transferObserver.getState()) {
                 case COMPLETED:
                     return true;
@@ -149,15 +157,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
                     final CountDownLatch latch = new CountDownLatch(1);
                     final AtomicInteger transferResult = new AtomicInteger(0);
                     transferObserver.setTransferListener(new ZazoTransferListener(latch, transferResult));
+                    Logger.i(TAG, "Resume upload");
                     sTransferUtility.resume(transferObserver.getId());
-                    latch.await();
-                    if (transferResult.get() == 0) {
-                        if (!DebugConfig.getInstance().isResendAllowed()) {
-                            file.delete(); // remove uploaded file
-                        }
-                        fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADED);
-                    }
-                    return transferResult.get() == 0 || transferResult.get() == RESULT_FAILED;
+                    return waitForUploadResult(latch, transferResult);
             }
         }
         if (file.length() == 0) { // FIXME Temporary check for 0 size uploads
@@ -178,17 +180,27 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         observer.setTransferListener(new ZazoTransferListener(latch, transferResult));
         intent.putExtra(IntentFields.TRANSFER_ID, observer.getId());
         fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADING);
-        latch.await();
-        Logger.i(TAG, "upload() After upload " + transferResult.get() + " " + data1);
+		return waitForUploadResult(latch, transferResult);
+	}
 
+    /**
+     *
+     * @param latch
+     * @param transferResult
+     * @return true if no need to restart
+     * @throws InterruptedException
+     */
+    private boolean waitForUploadResult(CountDownLatch latch, AtomicInteger transferResult) throws InterruptedException {
+        latch.await();
+        Logger.i(TAG, "upload() After upload " + transferResult.get());
         if (transferResult.get() == 0) {
             if (!DebugConfig.getInstance().isResendAllowed()) {
                 file.delete(); // remove uploaded file
             }
             fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADED);
         }
-		return transferResult.get() == 0 || transferResult.get() == RESULT_FAILED;
-	}
+        return transferResult.get() == 0 || transferResult.get() == RESULT_FAILED;
+    }
 
 	@Override
 	public boolean download() throws InterruptedException{
@@ -196,8 +208,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         if (sTransferUtility == null) {
             return false;
         }
-        Log.i(TAG, "Starting S3 download for filename: " + filename);
+        Logger.i(TAG, "Starting S3 download for filename: " + filename);
         if (transferObserver != null) {
+            transferObserver.refresh();
             switch (transferObserver.getState()) {
                 case COMPLETED:
                     return true;
@@ -207,23 +220,30 @@ public class S3FileTransferAgent implements IFileTransferAgent {
                     final CountDownLatch latch = new CountDownLatch(1);
                     final AtomicInteger transferResult = new AtomicInteger(0);
                     transferObserver.setTransferListener(new ZazoTransferListener(latch, transferResult));
+                    Logger.i(TAG, "Resume download");
                     sTransferUtility.resume(transferObserver.getId());
-                    latch.await();
-                    if (transferResult.get() == 0) {
-                        fileTransferService.reportStatus(intent, IncomingVideo.Status.DOWNLOADED);
-                    }
-                    return transferResult.get() == 0 || transferResult.get() == RESULT_FAILED;
+                    return waitForDownloadResult(latch, transferResult);
             }
         }
-        Logger.i(TAG, "download() Before download " + filename);
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicInteger transferResult = new AtomicInteger(0);
         TransferObserver observer = sTransferUtility.download(s3Bucket, filename, file);
         intent.putExtra(IntentFields.TRANSFER_ID, observer.getId());
         fileTransferService.reportStatus(intent, IncomingVideo.Status.DOWNLOADING);
         observer.setTransferListener(new ZazoTransferListener(latch, transferResult));
+        return waitForDownloadResult(latch, transferResult);
+    }
+
+    /**
+     *
+     * @param latch
+     * @param transferResult
+     * @return true if no need to restart
+     * @throws InterruptedException
+     */
+    private boolean waitForDownloadResult(CountDownLatch latch, AtomicInteger transferResult) throws InterruptedException {
         latch.await();
-        Logger.i(TAG, "download() After download " + filename);
+        Logger.i(TAG, "download() After download " + transferResult.get() + " " + filename);
         if (transferResult.get() == 0) {
             fileTransferService.reportStatus(intent, IncomingVideo.Status.DOWNLOADED);
         }
@@ -386,6 +406,13 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         public void onStateChanged(int id, TransferState state) {
             Logger.i(TAG, "onStateChanged id " + id + " " + state);
             switch (state) {
+                case IN_PROGRESS:
+                    if (!fileTransferService.isConnected()) {
+                        result.set(RESULT_NEED_RESTART);
+                        sTransferUtility.pause(id);
+                        latch.countDown();
+                    }
+                    break;
                 case WAITING_FOR_NETWORK:
                     result.set(RESULT_NEED_RESTART);
                     latch.countDown();

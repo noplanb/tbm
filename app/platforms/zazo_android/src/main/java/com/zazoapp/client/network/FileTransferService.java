@@ -203,7 +203,7 @@ public abstract class FileTransferService extends IntentService {
         context.startService(i);
     }
 
-    private boolean isConnected() {
+    public boolean isConnected() {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected() && (!networkInfo.isRoaming() || Settings.Bool.ALLOW_DATA_IN_ROAMING.isSet());
