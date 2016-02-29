@@ -269,7 +269,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         videoBody.setLayoutParams(params);
         videoBody.setX(view.getX());
         videoBody.setY(view.getY());
-        videoBody.setTag(R.id.box_id, view.getTag(R.id.box_id));
+        videoBody.setTag(R.id.box_id, view.getId());
         if (view.getY() < videoRootLayout.getHeight() / 4) {
             twDate.setY(view.getY() + view.getHeight()); // for top row place it below
         } else {
