@@ -36,6 +36,8 @@ public abstract class ViewGroupGestureRecognizer {
 
     public abstract boolean isSlidingSupported();
 
+    public abstract boolean isAbortGestureAllowed();
+
     public static class Stub extends ViewGroupGestureRecognizer {
 
         public Stub(Activity a, ArrayList<View> tvs) {
@@ -94,6 +96,11 @@ public abstract class ViewGroupGestureRecognizer {
 
         @Override
         public boolean isSlidingSupported() {
+            return false;
+        }
+
+        @Override
+        public boolean isAbortGestureAllowed() {
             return false;
         }
     }
@@ -298,7 +305,7 @@ public abstract class ViewGroupGestureRecognizer {
                     // This should never happen but ignore rather than abort..
                     return;
                 case MotionEvent.ACTION_MOVE:
-                    if (isAbortLongpressMove(event)) {
+                    if (isAbortLongpressMove(event) && isAbortGestureAllowed()) {
                         state = State.IDLE;
                         runAbortLongpress(targetView);
                     }

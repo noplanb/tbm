@@ -52,8 +52,7 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
 
     @Override
     public boolean bigMove(View v) {
-        return managerProvider.getFeatures().isUnlocked(Features.Feature.ABORT_RECORDING) &&
-                nineViewGroup.handleAbort(v, R.string.toast_dragged_finger_away);
+        return nineViewGroup.handleAbort(v, R.string.toast_dragged_finger_away);
     }
 
     @Override
@@ -125,6 +124,11 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
     @Override
     public boolean isSlidingSupported() {
         return nineViewGroup.getSpinStrategy() != null && nineViewGroup.isSpinEnabled();
+    }
+
+    @Override
+    public boolean isAbortGestureAllowed() {
+        return managerProvider.getFeatures().isUnlocked(Features.Feature.ABORT_RECORDING);
     }
 
     private boolean angleInBetween(double angle, double startAngle, double endAngle) {

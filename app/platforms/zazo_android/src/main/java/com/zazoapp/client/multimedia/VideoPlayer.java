@@ -551,6 +551,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             public boolean isSlidingSupported() {
                 return false; // TODO return true to support full screen feature
             }
+
+            @Override
+            public boolean isAbortGestureAllowed() {
+                return nineViewGroup.getGestureRecognizer().isAbortGestureAllowed();
+            }
         }
 
         private void animateZoom(final boolean zoomIn) {
