@@ -86,8 +86,7 @@ public class Config {
 
     public static File recordingFile(Context context) {
         File recordingFile = null;
-        DebugConfig config = DebugConfig.getInstance(context);
-        if (config.shouldSendBrokenVideo()) {
+        if (DebugConfig.Bool.SEND_BROKEN_VIDEO.get()) {
             recordingFile = DebugUtils.getBrokenVideoFile(context);
         }
         if (recordingFile == null) {
@@ -97,24 +96,22 @@ public class Config {
     }
 
     public static String getServerHost() {
-        final DebugConfig config = DebugConfig.getInstance();
-        if (config != null && config.shouldUseCustomServer()) {
-            if (config.getCustomHost().isEmpty()) {
+        if (DebugConfig.Bool.USE_CUSTOM_SERVER.get()) {
+            if (DebugConfig.Str.CUSTOM_HOST.get().isEmpty()) {
                 return STAGE_HOST;
             } else {
-                return config.getCustomHost();
+                return DebugConfig.Str.CUSTOM_HOST.get();
             }
         }
         return SERVER_HOST;
     }
 
     public static String getServerUri() {
-        final DebugConfig config = DebugConfig.getInstance();
-        if (config != null && config.shouldUseCustomServer()) {
-            if (config.getCustomHost().isEmpty()) {
+        if (DebugConfig.Bool.USE_CUSTOM_SERVER.get()) {
+            if (DebugConfig.Str.CUSTOM_HOST.get().isEmpty()) {
                 return STAGE_URI;
             } else {
-                return config.getCustomUri();
+                return DebugConfig.Str.CUSTOM_URI.get();
             }
         }
         return SERVER_URI;

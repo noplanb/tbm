@@ -86,7 +86,7 @@ public final class DebugUtils {
             Preferences preferences = gson.fromJson(json, Preferences.class);
             PreferencesHelper p = new PreferencesHelper(context, DebugConfig.DEBUG_SETTINGS);
             p.putAll(preferences.prefs);
-            DebugConfig.getInstance(context).reloadPrefs();
+            DebugConfig.reloadPrefs();
         }
         json = Convenience.getJsonFromFile(backupFolder() + File.separator + Settings.FILE_NAME + ".json");
         if (json != null) {
@@ -94,7 +94,7 @@ public final class DebugUtils {
             Preferences preferences = gson.fromJson(json, Preferences.class);
             PreferencesHelper p = new PreferencesHelper(context, Settings.FILE_NAME);
             p.putAll(preferences.prefs);
-            DebugConfig.getInstance(context).reloadPrefs();
+            Settings.reloadPrefs();
         }
         json = Convenience.getJsonFromFile(backupFolder() + File.separator + "zazo_preferences.json");
         if (json != null) {

@@ -64,7 +64,6 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
     @InjectView(R.id.server_uri) EditText serverUri;
     @InjectView(R.id.min_room_space) EditText minRoomSpace;
     @InjectView(R.id.debug_mode) Switch debugMode;
-    private DebugConfig config;
     private VoiceRecognitionTestManager voiceRecognitionTestManager;
     private DialogFragment pd;
 
@@ -74,7 +73,6 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
         setContentView(R.layout.debug_settings);
         ButterKnife.inject(this);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        config = DebugConfig.getInstance(this);
         setUpVersion();
         setUpDebugMode();
         setUpUserInfo();
@@ -88,22 +86,21 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
     @Override
     protected void onStart() {
         super.onStart();
-        config.addCallback(this);
+        DebugConfig.addCallback(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        config.removeCallback(this);
+        DebugConfig.removeCallback(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        config.setCustomServerHost(serverHost.getText().toString().replace(" ", ""));
-        config.setCustomServerUri(serverUri.getText().toString().replace(" ", ""));
+        DebugConfig.set(DebugConfig.Str.CUSTOM_HOST, serverHost.getText().toString().replace(" ", ""));
+        DebugConfig.set(DebugConfig.Str.CUSTOM_URI, serverUri.getText().toString().replace(" ", ""));
         setMinRoomSpace(minRoomSpace.getText());
-        config.setMinRoomSpace(Integer.parseInt(minRoomSpace.getText().toString()));
         if (voiceRecognitionTestManager != null) {
             voiceRecognitionTestManager.saveTranscriptions();
         }
@@ -126,11 +123,11 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
     }
 
     private void setUpDebugMode() {
-        debugMode.setChecked(config.isDebugEnabled());
+        debugMode.setChecked(DebugConfig.isDebugEnabled());
         debugMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.enableDebug(isChecked);
+                DebugConfig.enableDebug(isChecked);
                 findViewById(R.id.crash_button_layout).setVisibility(isChecked ? View.VISIBLE : View.GONE);
             }
         });
@@ -142,16 +139,16 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
         final Switch forceSms = (Switch) findViewById(R.id.server_force_sms);
         final Switch forceCall = (Switch) findViewById(R.id.server_force_call);
         boolean serverOptionEnabled = getIntent().getBooleanExtra(EXTRA_FROM_REGISTER_SCREEN, false);
-        boolean isEnabled = config.shouldUseCustomServer() && serverOptionEnabled;
+        boolean isEnabled = DebugConfig.Bool.USE_CUSTOM_SERVER.get() && serverOptionEnabled;
         serverHostLayout.setEnabled(isEnabled);
         serverUriLayout.setEnabled(isEnabled);
         forceSms.setEnabled(isEnabled);
         forceCall.setEnabled(isEnabled);
-        serverHostLayout.setVisibility(config.shouldUseCustomServer() ? View.VISIBLE : View.GONE);
-        serverUriLayout.setVisibility(config.shouldUseCustomServer() ? View.VISIBLE : View.GONE);
+        serverHostLayout.setVisibility(DebugConfig.Bool.USE_CUSTOM_SERVER.get() ? View.VISIBLE : View.GONE);
+        serverUriLayout.setVisibility(DebugConfig.Bool.USE_CUSTOM_SERVER.get() ? View.VISIBLE : View.GONE);
 
-        serverHost.setText(config.getCustomHost());
-        serverUri.setText(config.getCustomUri());
+        serverHost.setText(DebugConfig.Str.CUSTOM_HOST.get());
+        serverUri.setText(DebugConfig.Str.CUSTOM_URI.get());
         serverHost.setEnabled(isEnabled);
         serverUri.setEnabled(isEnabled);
         serverHost.addTextChangedListener(new TextWatcher() {
@@ -174,11 +171,11 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
         });
         Switch useCustomServer = (Switch) findViewById(R.id.custom_server);
         useCustomServer.setEnabled(serverOptionEnabled);
-        useCustomServer.setChecked(config.shouldUseCustomServer());
+        useCustomServer.setChecked(DebugConfig.Bool.USE_CUSTOM_SERVER.get());
         useCustomServer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.useCustomServer(isChecked);
+                DebugConfig.set(DebugConfig.Bool.USE_CUSTOM_SERVER, isChecked);
                 serverHost.setEnabled(isChecked);
                 serverUri.setEnabled(isChecked);
                 forceSms.setEnabled(isChecked);
@@ -195,29 +192,29 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
             }
         });
 
-        forceSms.setChecked(config.shouldForceConfirmationSms());
-        forceCall.setChecked(config.shouldForceConfirmationCall());
+        forceSms.setChecked(DebugConfig.Bool.FORCE_CONFIRMATION_SMS.get());
+        forceCall.setChecked(DebugConfig.Bool.FORCE_CONFIRMATION_CALL.get());
         final CompoundButton.OnCheckedChangeListener onForceSwitchListener = new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 switch (buttonView.getId()) {
                     case R.id.server_force_sms:
-                        if (config.shouldForceConfirmationSms() != isChecked) {
-                            config.setForceConfirmationSms(isChecked);
-                            config.setForceConfirmationCall(false);
-                            forceCall.setEnabled(!isChecked && config.shouldUseCustomServer());
+                        if (DebugConfig.Bool.FORCE_CONFIRMATION_SMS.get() != isChecked) {
+                            DebugConfig.set(DebugConfig.Bool.FORCE_CONFIRMATION_SMS, isChecked);
+                            DebugConfig.set(DebugConfig.Bool.FORCE_CONFIRMATION_CALL, false);
+                            forceCall.setEnabled(!isChecked && DebugConfig.Bool.USE_CUSTOM_SERVER.get());
                         }
                         break;
                     case R.id.server_force_call:
-                        if (config.shouldForceConfirmationCall() != isChecked) {
-                            config.setForceConfirmationSms(false);
-                            config.setForceConfirmationCall(isChecked);
-                            forceSms.setEnabled(!isChecked && config.shouldUseCustomServer());
+                        if (DebugConfig.Bool.FORCE_CONFIRMATION_CALL.get() != isChecked) {
+                            DebugConfig.set(DebugConfig.Bool.FORCE_CONFIRMATION_SMS, false);
+                            DebugConfig.set(DebugConfig.Bool.FORCE_CONFIRMATION_CALL, isChecked);
+                            forceSms.setEnabled(!isChecked && DebugConfig.Bool.USE_CUSTOM_SERVER.get());
                         }
                         break;
                 }
-                forceSms.setChecked(config.shouldForceConfirmationSms());
-                forceCall.setChecked(config.shouldForceConfirmationCall());
+                forceSms.setChecked(DebugConfig.Bool.FORCE_CONFIRMATION_SMS.get());
+                forceCall.setChecked(DebugConfig.Bool.FORCE_CONFIRMATION_CALL.get());
             }
         };
         forceSms.setOnCheckedChangeListener(onForceSwitchListener);
@@ -362,68 +359,68 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
 
     private void setUpCustomizationOptions() {
         Switch cameraOption = (Switch) findViewById(R.id.use_rear_camera);
-        cameraOption.setChecked(config.shouldUseRearCamera());
+        cameraOption.setChecked(DebugConfig.Bool.USE_REAR_CAMERA.get());
         cameraOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.useRearCamera(isChecked);
+                DebugConfig.set(DebugConfig.Bool.USE_REAR_CAMERA, isChecked);
             }
         });
 
         Switch sendBrokenVideoOption = (Switch) findViewById(R.id.send_broken_video);
-        sendBrokenVideoOption.setChecked(config.shouldSendBrokenVideo());
+        sendBrokenVideoOption.setChecked(DebugConfig.Bool.SEND_BROKEN_VIDEO.get());
         sendBrokenVideoOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.setSendBrokenVideo(isChecked);
+                DebugConfig.set(DebugConfig.Bool.SEND_BROKEN_VIDEO, isChecked);
             }
         });
 
         Switch debugMode = (Switch) findViewById(R.id.send_sms);
-        debugMode.setChecked(config.shouldSendSms());
+        debugMode.setChecked(DebugConfig.Bool.SEND_SMS.get());
         debugMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.enableSendSms(isChecked);
+                DebugConfig.set(DebugConfig.Bool.SEND_SMS, isChecked);
             }
         });
 
         Switch disableGcm = (Switch) findViewById(R.id.disable_gcm_notifications);
-        disableGcm.setChecked(config.isGcmNotificationsDisabled());
+        disableGcm.setChecked(DebugConfig.Bool.DISABLE_GCM_NOTIFICATIONS.get());
         disableGcm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.setDisableGcmNotifications(isChecked);
+                DebugConfig.set(DebugConfig.Bool.DISABLE_GCM_NOTIFICATIONS, isChecked);
             }
         });
 
-        minRoomSpace.setText(String.valueOf(config.getMinRoomSpace()));
+        minRoomSpace.setText(String.valueOf(DebugConfig.Int.MIN_ROOM_SPACE_RESTRICTION.get()));
         minRoomSpace.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     setMinRoomSpace(v.getText());
-                    minRoomSpace.setText(String.valueOf(config.getMinRoomSpace()));
+                    minRoomSpace.setText(String.valueOf(DebugConfig.Int.MIN_ROOM_SPACE_RESTRICTION.get()));
                 }
                 return false;
             }
         });
 
         Switch sendIncorrectFileSizeSwitch = (Switch) findViewById(R.id.send_incorrect_file_size);
-        sendIncorrectFileSizeSwitch.setChecked(config.shouldSendIncorrectFileSize());
+        sendIncorrectFileSizeSwitch.setChecked(DebugConfig.Bool.SEND_INCORRECT_FILE_SIZE.get());
         sendIncorrectFileSizeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.setSendIncorrectFileSize(isChecked);
+                DebugConfig.set(DebugConfig.Bool.SEND_INCORRECT_FILE_SIZE, isChecked);
             }
         });
 
         Switch allowResendSwitch = (Switch) findViewById(R.id.allow_resend);
-        allowResendSwitch.setChecked(config.isResendAllowed());
+        allowResendSwitch.setChecked(DebugConfig.Bool.ALLOW_RESEND.get());
         allowResendSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.allowResend(isChecked);
+                DebugConfig.set(DebugConfig.Bool.ALLOW_RESEND, isChecked);
             }
         });
     }
@@ -432,7 +429,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
         if (!TextUtils.isEmpty(space)) {
             try {
                 int value = Integer.parseInt(space.toString());
-                config.setMinRoomSpace(value);
+                DebugConfig.setMinRoomSpace(value);
                 if (value != DebugConfig.DEFAULT_MIN_ROOM_SPACE_RESTRICTION) {
                     debugMode.setChecked(true);
                 }
@@ -463,7 +460,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
             }
         });
 
-        findViewById(R.id.crash_button_layout).setVisibility(config.isDebugEnabled() ? View.VISIBLE : View.GONE);
+        findViewById(R.id.crash_button_layout).setVisibility(DebugConfig.isDebugEnabled() ? View.VISIBLE : View.GONE);
     }
 
     private void setUpTutorialOption() {
@@ -483,7 +480,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
     }
 
     private void setUpFeatureOptions() {
-        boolean opened = config.isFeatureOptionsOpened();
+        boolean opened = DebugConfig.Bool.FEATURE_OPTIONS_OPENED.get();
         final Button openBtn = (Button) findViewById(R.id.feature_options_open_btn);
         openBtn.setEnabled(!opened);
         openBtn.setOnClickListener(new View.OnClickListener() {
@@ -493,7 +490,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                     @Override
                     public void onReceive(String input) {
                         if ("Sani".equalsIgnoreCase(input)) {
-                            config.openFeatureOptions(true);
+                            DebugConfig.set(DebugConfig.Bool.FEATURE_OPTIONS_OPENED, true);
                             openBtn.setEnabled(false);
                             findViewById(R.id.feature_options_layout).setVisibility(View.VISIBLE);
                         }
@@ -504,11 +501,11 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
         findViewById(R.id.feature_options_layout).setVisibility(opened ? View.VISIBLE : View.GONE);
 
         Switch enableFeatures = (Switch) findViewById(R.id.enable_all_features);
-        enableFeatures.setChecked(config.isAllFeaturesEnabled());
+        enableFeatures.setChecked(DebugConfig.Bool.ENABLE_ALL_FEATURES.get());
         enableFeatures.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                config.enableAllFeatures(isChecked);
+                DebugConfig.set(DebugConfig.Bool.ENABLE_ALL_FEATURES, isChecked);
             }
         });
 

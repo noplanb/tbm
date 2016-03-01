@@ -117,7 +117,7 @@ public class CameraManager {
         }
 
         int cameraNum;
-        if (DebugConfig.getInstance(context).shouldUseRearCamera() || !useFrontCamera) {
+        if (DebugConfig.Bool.USE_REAR_CAMERA.get() || !useFrontCamera) {
             cameraNum = rearCameraNum();
         } else {
             cameraNum = frontCameraNum();

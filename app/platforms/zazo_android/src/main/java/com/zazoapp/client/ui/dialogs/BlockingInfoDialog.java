@@ -39,7 +39,7 @@ public class BlockingInfoDialog extends DialogFragment {
                         getActivity().finish();
                     }
                 });
-        if (DebugConfig.getInstance(getActivity()).isDebugEnabled()) {
+        if (DebugConfig.isDebugEnabled()) {
             builder.setNegativeButton(getString(R.string.dialog_action_cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {

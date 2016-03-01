@@ -93,4 +93,8 @@ public class Settings {
     public void removeCallback(SettingChangesCallback callback) {
         callbacks.remove(callback);
     }
+
+    public static void reloadPrefs() {
+        INSTANCE.loadPreferences();
+    }
 }

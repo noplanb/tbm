@@ -269,10 +269,9 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         ub.appendPath("reg").appendPath("reg");
         LinkedTreeMap<String, String> r = userParams();
         r.put(UserFactory.ServerParamKeys.VERIFICATION_VIA, UserFactory.VerificationCodeVia.SMS);
-        DebugConfig config = DebugConfig.getInstance(getContext());
-        if (config.shouldForceConfirmationSms()) {
+        if (DebugConfig.Bool.FORCE_CONFIRMATION_SMS.get()) {
             r.put(UserFactory.ServerParamKeys.VERIFICATION_FORCE_SMS, "true");
-        } else if (config.shouldForceConfirmationCall()) {
+        } else if (DebugConfig.Bool.FORCE_CONFIRMATION_CALL.get()) {
             r.put(UserFactory.ServerParamKeys.VERIFICATION_FORCE_CALL, "true");
         }
         new Register(ub.build().toString(), r);

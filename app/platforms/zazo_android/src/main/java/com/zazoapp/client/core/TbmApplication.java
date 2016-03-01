@@ -40,7 +40,7 @@ public class TbmApplication extends Application {
         Log.d(TAG, "onCreate");
         application = this;
         unexpectedTerminationHelper.init();
-        DebugConfig.getInstance(this);
+        DebugConfig.init(this);
         ZazoAnalytics.init(this);
         Settings.init(this);
         loadDataModel();

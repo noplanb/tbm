@@ -77,7 +77,7 @@ public abstract class FileTransferService extends IntentService {
             metadata.putString(FIELD_RECEIVER_MKEY, receiver);
             metadata.putString(FIELD_CLIENT_VERSION, TbmApplication.getVersionNumber());
             metadata.putString(FIELD_CLIENT_PLATFORM, PLATFORM);
-            long fileSize = DebugConfig.getInstance().shouldSendIncorrectFileSize() ? 987654321L : videoFile.length();
+            long fileSize = DebugConfig.Bool.SEND_INCORRECT_FILE_SIZE.get() ? 987654321L : videoFile.length();
             metadata.putString(FIELD_FILE_SIZE, String.valueOf(fileSize));
             return metadata;
         }
@@ -179,7 +179,7 @@ public abstract class FileTransferService extends IntentService {
         intent.putExtra(IntentFields.RETRY_COUNT_KEY, retryCount.incrementAndGet());
         Logger.i(TAG, OTAG + "retry: " + retryCount.get());
 
-        long sleepTime = (DebugConfig.getInstance(this).isDebugEnabled()) ? 1000L : sleepTime(retryCount.get());
+        long sleepTime = (DebugConfig.isDebugEnabled()) ? 1000L : sleepTime(retryCount.get());
 
         Logger.i(TAG, OTAG + "Sleeping for: " + sleepTime + "ms");
         if (reset.await(sleepTime, TimeUnit.MILLISECONDS)) {

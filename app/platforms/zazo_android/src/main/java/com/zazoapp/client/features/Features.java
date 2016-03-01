@@ -51,7 +51,7 @@ public class Features {
 
         public boolean isUnlocked(Context context) {
             PreferencesHelper prefs = new PreferencesHelper(context);
-            return prefs.getBoolean(getPrefName(), false) || DebugConfig.getInstance(context).isAllFeaturesEnabled();
+            return prefs.getBoolean(getPrefName(), false) || DebugConfig.Bool.ENABLE_ALL_FEATURES.get();
         }
     }
 
@@ -88,7 +88,7 @@ public class Features {
     }
 
     public boolean isUnlocked(Feature feature) {
-        return prefs.getBoolean(feature.getPrefName(), false) || DebugConfig.getInstance(activity).isAllFeaturesEnabled();
+        return prefs.getBoolean(feature.getPrefName(), false) || DebugConfig.Bool.ENABLE_ALL_FEATURES.get();
     }
 
     /**

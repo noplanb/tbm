@@ -392,7 +392,7 @@ public class InviteManager implements InviteHelper {
         String addr = getMobileNumber();
 
         Log.i(TAG, "sendSms: " + addr + ": " + body);
-        if (DebugConfig.getInstance(context).shouldSendSms()) {
+        if (DebugConfig.Bool.SEND_SMS.get()) {
             try {
                 SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
             } catch (RuntimeException e) {
@@ -460,7 +460,7 @@ public class InviteManager implements InviteHelper {
     }
 
     private boolean canSendSms() {
-        return hasSim() || !DebugConfig.getInstance(context).shouldSendSms();
+        return hasSim() || !DebugConfig.Bool.SEND_SMS.get();
     }
 
 }

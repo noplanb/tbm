@@ -83,7 +83,7 @@ public class ZazoAnalytics {
     }
 
     private static boolean isEnabled() {
-        return !DebugConfig.getInstance(applicationContext).shouldUseCustomServer();
+        return !DebugConfig.Bool.USE_CUSTOM_SERVER.get();
     }
 }
 

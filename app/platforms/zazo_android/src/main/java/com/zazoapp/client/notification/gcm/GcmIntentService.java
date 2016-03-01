@@ -123,7 +123,7 @@ public class GcmIntentService extends IntentService {
     }
 
     private void startDataHolderService(Intent intent) {
-        if (!DebugConfig.getInstance(this).isGcmNotificationsDisabled()) {
+        if (!DebugConfig.Bool.DISABLE_GCM_NOTIFICATIONS.get()) {
             intent.setClass(getApplicationContext(), IntentHandlerService.class);
             startService(intent);
         }

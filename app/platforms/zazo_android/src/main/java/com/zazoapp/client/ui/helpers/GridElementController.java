@@ -205,7 +205,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         gridElementView.setName(friend.getDisplayName());
         gridElementView.setDate((showNewMessages) ? getLastIncomingEventDate() : "", !force);
 
-        gridElementView.showResendButton(DebugConfig.getInstance().isResendAllowed() && friend.videoToFile(friend.getOutgoingVideoId()).exists());
+        gridElementView.showResendButton(DebugConfig.Bool.ALLOW_RESEND.get() && friend.videoToFile(friend.getOutgoingVideoId()).exists());
         ((View) container.getParent()).invalidate();
         container.setVisibility(View.VISIBLE); // as content is loaded, display view
     }

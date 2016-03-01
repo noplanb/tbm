@@ -116,7 +116,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			handleClientException(e);
 			return notRetryableClientException(e);
 		}
-        if (!DebugConfig.getInstance().isResendAllowed()) {
+        if (!DebugConfig.Bool.ALLOW_RESEND.get()) {
             file.delete(); // remove uploaded file
         }
 		fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADED);

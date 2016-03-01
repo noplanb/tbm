@@ -72,6 +72,6 @@ public class FriendFinderRequests {
     }
 
     private static String getServerHost() {
-        return DebugConfig.getInstance().shouldUseCustomServer() ? STAGING_HOST : PROD_HOST;
+        return DebugConfig.Bool.USE_CUSTOM_SERVER.get() ? STAGING_HOST : PROD_HOST;
     }
 }
