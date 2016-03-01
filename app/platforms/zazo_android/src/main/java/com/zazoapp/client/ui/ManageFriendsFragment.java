@@ -296,6 +296,12 @@ public class ManageFriendsFragment extends Fragment {
 
                 FilterResults results = new FilterResults();
                 List<Friend> listCopy = FriendFactory.getFactoryInstance().all();
+                Collections.sort(listCopy, new Comparator<Friend>() {
+                    @Override
+                    public int compare(Friend lhs, Friend rhs) {
+                        return lhs.getFullName().compareTo(rhs.getFullName());
+                    }
+                });
                 if (filterString == null || filterString.length() == 0) {
                     results.values = listCopy;
                     results.count = listCopy.size();

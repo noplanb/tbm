@@ -19,6 +19,7 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -445,16 +446,17 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             @Override
             public boolean click(View v) {
                 if (videoBody.equals(v)) {
-                    // TODO PAUSE feature
-                    //if (videoView.isPlaying()) {
-                    //    videoView.pause();
-                    //    progressBar.pause();
-                    //} else {
-                    //    videoView.start();
-                    //    int duration = videoView.getDuration() - videoView.getCurrentPosition();
-                    //    progressBar.animateProgress(progressBar.getProgress(),
-                    //            currentVideoNumber / (float) numberOfVideos, duration);
-                    //}
+                    if (DebugConfig.Bool.ENABLE_PAUSE_FULLSCREEN.get()) {
+                        if (videoView.isPlaying()) {
+                            videoView.pause();
+                            progressBar.pause();
+                        } else {
+                            videoView.start();
+                            int duration = videoView.getDuration() - videoView.getCurrentPosition();
+                            progressBar.animateProgress(progressBar.getProgress(),
+                                    currentVideoNumber / (float) numberOfVideos, duration);
+                        }
+                    }
                 } else {
                     if (isPlaying()) {
                         animateZoom(false);
@@ -549,7 +551,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
             @Override
             public boolean isSlidingSupported() {
-                return false; // TODO return true to support full screen feature
+                return DebugConfig.Bool.ENABLE_PAUSE_FULLSCREEN.get();
             }
 
             @Override

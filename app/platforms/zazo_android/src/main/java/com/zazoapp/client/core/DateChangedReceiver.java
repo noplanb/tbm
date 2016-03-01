@@ -3,6 +3,7 @@ package com.zazoapp.client.core;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.features.friendfinder.ContactsInfoCollector;
 import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
@@ -19,7 +20,7 @@ public class DateChangedReceiver extends BroadcastReceiver {
         long lastTime = Long.parseLong(prefs.getString(lastSendKey, "0"));
         long week = 604800000; // 7 * 24 * 60 * 60 * 1000
         long currentTime = System.currentTimeMillis();
-        if (false) { // TODO do not send contacts for now
+        if (!DebugConfig.Bool.ALLOW_SEND_CONTACTS.get()) {
             return;
         }
         if (currentTime - lastTime > week) {

@@ -33,6 +33,7 @@ import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
+import com.zazoapp.client.features.friendfinder.ContactsInfoCollector;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -42,9 +43,12 @@ import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.model.OutgoingVideoFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.network.FriendFinderRequests;
+import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.tutorial.HintType;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.utilities.DialogShower;
+import org.json.JSONArray;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -423,6 +427,38 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                 DebugConfig.set(DebugConfig.Bool.ALLOW_RESEND, isChecked);
             }
         });
+
+        Switch allowSendContacts = (Switch) findViewById(R.id.allow_send_contacts);
+        allowSendContacts.setChecked(DebugConfig.Bool.ALLOW_SEND_CONTACTS.get());
+        allowSendContacts.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                DebugConfig.set(DebugConfig.Bool.ALLOW_SEND_CONTACTS, isChecked);
+            }
+        });
+
+        Button sendContacts = (Button) findViewById(R.id.send_contacts_button);
+        sendContacts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ContactsInfoCollector.collectContacts(getContentResolver(),  new ContactsInfoCollector.ContactsInfoCollectedCallback() {
+                    @Override
+                    public void onInfoCollected(final JSONArray contacts) {
+                        FriendFinderRequests.sendContacts(contacts, new HttpRequest.Callbacks() {
+                            @Override
+                            public void success(String response) {
+                                DialogShower.showToast(DebugSettingsActivity.this, "Contacts sent");
+                            }
+
+                            @Override
+                            public void error(String errorString) {
+                                DialogShower.showToast(DebugSettingsActivity.this, errorString);
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     private void setMinRoomSpace(CharSequence space) {
@@ -506,6 +542,15 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 DebugConfig.set(DebugConfig.Bool.ENABLE_ALL_FEATURES, isChecked);
+            }
+        });
+
+        Switch enablePauseFullscreenFeatures = (Switch) findViewById(R.id.enable_pause_fullscreen);
+        enablePauseFullscreenFeatures.setChecked(DebugConfig.Bool.ENABLE_PAUSE_FULLSCREEN.get());
+        enablePauseFullscreenFeatures.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                DebugConfig.set(DebugConfig.Bool.ENABLE_PAUSE_FULLSCREEN, isChecked);
             }
         });
 

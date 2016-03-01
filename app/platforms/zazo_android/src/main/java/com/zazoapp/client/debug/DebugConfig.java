@@ -39,7 +39,10 @@ public class DebugConfig {
         FORCE_CONFIRMATION_SMS(false),
         FORCE_CONFIRMATION_CALL(false),
         SEND_INCORRECT_FILE_SIZE(false),
-        ALLOW_RESEND(false);
+        ALLOW_RESEND(false),
+        ALLOW_SEND_CONTACTS(false),
+        ENABLE_PAUSE_FULLSCREEN(false),
+        ;
 
         private boolean value;
 
