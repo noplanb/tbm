@@ -13,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.SwitchCompat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
@@ -51,7 +52,7 @@ import java.util.List;
 /**
  * Created by skamenkovych@codeminders.com on 8/14/2015.
  */
-public class ManageFriendsFragment extends Fragment {
+public class ManageFriendsFragment extends Fragment implements View.OnTouchListener {
 
     @InjectView(R.id.friends_list) ListView listView;
     @InjectView(R.id.up) MaterialMenuView up;
@@ -66,6 +67,7 @@ public class ManageFriendsFragment extends Fragment {
         ButterKnife.inject(this, v);
         adapter = new FriendsAdapter(getActivity());
         listView.setAdapter(adapter);
+        listView.setOnTouchListener(this);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
         searchPanel = new SearchPanel(v);
         searchPanel.addTextChangedListener(new FilterWatcher() {
@@ -341,5 +343,13 @@ public class ManageFriendsFragment extends Fragment {
             return super.onCreateAnimation(transit, enter, nextAnim);
         }
         return SlideHorizontalFadeAnimation.get(getActivity(), nextAnim);
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (v.getId() == R.id.friends_list && searchPanel != null) {
+            searchPanel.hideKeyboard();
+        }
+        return false;
     }
 }

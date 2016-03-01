@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -41,7 +42,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class BenchController implements BenchDataHandler.BenchDataHandlerCallback, OnItemClickListener,
-        BenchViewManager, AdapterView.OnItemSelectedListener {
+        BenchViewManager, AdapterView.OnItemSelectedListener, View.OnTouchListener {
 
     private static final String TAG = BenchController.class.getSimpleName();
 
@@ -160,6 +161,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     public void attachView(View view) {
         if (!isViewAttached()) {
             ButterKnife.inject(this, view);
+            listView.setOnTouchListener(this);
             listView.setSelection(0); // to scroll list to the first position
             listView.setTextFilterEnabled(true);
             if (adapter.isDataSetReady()) {
@@ -384,6 +386,14 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
     public void setBenchListener(BenchListener benchListener) {
         this.benchListener = benchListener;
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (v.getId() == R.id.bench_list && searchPanel != null) {
+            searchPanel.hideKeyboard();
+        }
+        return false;
     }
 
     class BenchAdapter extends BaseAdapter implements Filterable {
