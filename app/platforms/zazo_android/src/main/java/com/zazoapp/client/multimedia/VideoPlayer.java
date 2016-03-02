@@ -201,6 +201,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 		    return;
 		}
 		play();
+        managerProvider.getTutorial().onVideoStartPlaying();
 	}
 
     private void play(){

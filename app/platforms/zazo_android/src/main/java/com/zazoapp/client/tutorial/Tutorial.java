@@ -190,15 +190,6 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         return null;
     }
 
-    private boolean shouldShow(TutorialEvent event, HintType hint, Bundle params) {
-        boolean inProcess = managers.getRecorder().isRecording() || managers.getPlayer().isPlaying();
-        boolean featureAwardDialogShowed = managers.getFeatures().isAwardDialogShowed();
-        if (!inProcess && !featureAwardDialogShowed) {
-            return hint.shouldShow(event, current, preferences, params);
-        }
-        return false;
-    }
-
     private void showHint(HintType hint, View view) {
         if (hint == HintType.NEXT_FEATURE || hint == HintType.NEXT_FEATURE_AFTER_UNLOCK) {
             if (managers.getFeatures().showNextFeatureDialog(managers, hint == HintType.NEXT_FEATURE_AFTER_UNLOCK)) {
@@ -275,6 +266,12 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         HintType hint = getHintToShow(TutorialEvent.FEATURE_AWARD_DISMISSED, params);
         if (hint != null) {
             showHint(hint, activity.findViewById(R.id.grid_view));
+        }
+    }
+
+    public void onVideoStartPlaying() {
+        if (isShown()) {
+            dismissHint();
         }
     }
 }
