@@ -68,7 +68,7 @@ public class FriendFinderRequests {
     }
 
     private static String getServerUri() {
-        return "https://" + getServerHost();
+        return "http://" + getServerHost();
     }
 
     private static String getServerHost() {
