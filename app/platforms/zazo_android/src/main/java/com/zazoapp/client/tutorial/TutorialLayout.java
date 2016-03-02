@@ -86,6 +86,10 @@ public class TutorialLayout extends FrameLayout {
 
     public void dim() {
         dimmed = true;
+        shiftRectToBackground(arrowAnchorRect);
+        shiftRectToBackground(dimExcludedRect);
+        shiftRectToBackground(additionalViewRect);
+        shiftRectToBackground(arrowAnchorRect);
         setUpHintText();
         setUpGotItButton();
         setVisibility(VISIBLE);
@@ -206,6 +210,14 @@ public class TutorialLayout extends FrameLayout {
     private void shiftRectVertically(RectF src, RectF dst) {
         dst.top -= src.top;
         dst.bottom -= src.top;
+    }
+
+    private void shiftRectToBackground(RectF rect) {
+        if (rect == null)
+            return;
+        float offset = getTutorialRect().left - backgroundViewRect.left;
+        rect.left += offset;
+        rect.right += offset;
     }
 
     public void dismiss() {
