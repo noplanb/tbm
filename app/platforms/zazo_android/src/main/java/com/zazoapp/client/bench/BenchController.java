@@ -166,6 +166,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             listView.setTextFilterEnabled(true);
             if (adapter.isDataSetReady()) {
                 listView.setAdapter(adapter);
+                applyFilter(searchPanel.getText());
                 doListViewAppearing();
             }
             slidingHeading.setVisibility(View.VISIBLE);
@@ -257,17 +258,16 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
-                adapter.setList(list);
                 if (isViewAttached()) {
-                    if (listView.getAdapter() == adapter) {
-                        applyFilter(searchPanel.getText());
-                    } else {
-                        listView.setAdapter(adapter);
-                        applyFilter(searchPanel.getText());
-                    }
+                    listView.setAdapter(null);
+                    adapter.setList(list);
+                    listView.setAdapter(adapter);
+                    applyFilter(searchPanel.getText());
                     if (listView.getVisibility() != View.VISIBLE) {
                         doListViewAppearing();
                     }
+                } else {
+                    adapter.setList(list);
                 }
                 firstLoaded = true;
             }
@@ -431,7 +431,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
         @Override
         public int getViewTypeCount() {
-            return list.getGroupCount();
+            return list.isEmpty() ? 1 : list.getGroupCount();
         }
 
         @Override
@@ -598,11 +598,13 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                setList((BenchObjectList) results.values);
-                if (results.count > 0) {
-                    notifyDataSetChanged();
+                if (isViewAttached()) {
+                    listView.setAdapter(null);
+                    setList((BenchObjectList) results.values);
+                    listView.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
                 } else {
-                    notifyDataSetInvalidated();
+                    setList((BenchObjectList) results.values);
                 }
             }
         }
