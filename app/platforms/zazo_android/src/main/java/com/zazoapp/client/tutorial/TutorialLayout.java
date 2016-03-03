@@ -90,6 +90,7 @@ public class TutorialLayout extends FrameLayout {
         shiftRectToBackground(dimExcludedRect);
         shiftRectToBackground(additionalViewRect);
         shiftRectToBackground(arrowAnchorRect);
+        shiftRectToBackground(backgroundViewRect);
         setUpHintText();
         setUpGotItButton();
         setVisibility(VISIBLE);
