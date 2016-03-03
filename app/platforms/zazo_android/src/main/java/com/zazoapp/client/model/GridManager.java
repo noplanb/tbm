@@ -1,6 +1,7 @@
 package com.zazoapp.client.model;
 
 import android.content.Context;
+import com.zazoapp.client.core.TbmApplication;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +22,18 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
         if(gridManager == null)
             gridManager = new GridManager();
         return gridManager;
+    }
+
+    public static void onFriendDeleteStatusChanged(Friend friend) {
+        if (friend.isDeleted()) {
+            if (GridElementFactory.getFactoryInstance().friendIsOnGrid(friend)) {
+                getInstance().moveNextFriendTo(GridElementFactory.getFactoryInstance().findWithFriendId(friend.getId()));
+            } else {
+                TbmApplication.getInstance().getManagerProvider().getBenchViewManager().updateBench();
+            }
+        } else {
+            getInstance().moveFriendToGrid(friend);
+        }
     }
 
     //----------

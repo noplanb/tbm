@@ -33,7 +33,6 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.HttpRequest;
@@ -86,18 +85,6 @@ public class ManageFriendsFragment extends Fragment implements View.OnTouchListe
                 searchPanel.hideKeyboard();
                 getFragmentManager().popBackStack();
                 break;
-        }
-    }
-
-    private void onFriendDeleteStatusChanged(Friend friend) {
-        if (friend.isDeleted()) {
-            if (GridElementFactory.getFactoryInstance().friendIsOnGrid(friend)) {
-                GridManager.getInstance().moveNextFriendTo(GridElementFactory.getFactoryInstance().findWithFriendId(friend.getId()));
-            } else {
-                TbmApplication.getInstance().getManagerProvider().getBenchViewManager().updateBench();
-            }
-        } else {
-            GridManager.getInstance().moveFriendToGrid(friend);
         }
     }
 
@@ -189,7 +176,7 @@ public class ManageFriendsFragment extends Fragment implements View.OnTouchListe
                         @Override
                         public void success(String response) {
                             friend.setDeleted(!isChecked);
-                            onFriendDeleteStatusChanged(friend);
+                            GridManager.onFriendDeleteStatusChanged(friend);
                             finishRequest();
                         }
 

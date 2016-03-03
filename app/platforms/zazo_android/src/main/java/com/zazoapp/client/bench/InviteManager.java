@@ -22,6 +22,7 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.MainFragment;
@@ -88,12 +89,26 @@ public class InviteManager implements InviteHelper {
 
     private void inviteInner(BenchObject bo) {
         isInvitationInProcess = true;
-        Friend friend = friendMatchingContact(bo.mobileNumber);
+        final Friend friend = friendMatchingContact(bo.mobileNumber);
         if (friend != null) {
             this.friend = friend;
             if (friend.isDeleted()) {
-                friend.setDeleted(false);
-                finishInvitation();
+                DeleteFriendRequest.makeRequest(friend, false, new HttpRequest.Callbacks() {
+                    @Override
+                    public void success(String response) {
+                        friend.setDeleted(false);
+                        GridManager.onFriendDeleteStatusChanged(friend);
+                        listener.onDismissProgressDialog();
+                        finishInvitation();
+                    }
+
+                    @Override
+                    public void error(String errorString) {
+                        listener.onDismissProgressDialog();
+                        serverError();
+                    }
+                });
+                listener.onShowProgressDialog(null, context.getString(R.string.dialog_checking_title));
             } else {
                 moveFriendToGrid();
             }
