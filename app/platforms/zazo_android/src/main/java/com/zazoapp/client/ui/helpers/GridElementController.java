@@ -374,6 +374,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             updateContentFromUi();
             managerProvider.getBenchViewManager().updateBench();
         }
+        boolean afterInvite = managerProvider.getInviteHelper().getLastInvitedFriend() != null;
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -382,7 +383,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         gridElement.getFriend());
             }
         });
-        highLightElementForFriend();
+        if (!afterInvite) {
+            highLightElementForFriend();
+        }
     }
 
     //----------------------
