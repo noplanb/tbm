@@ -59,7 +59,7 @@ public class Background extends View implements IBackground{
 
     private void updatePaints() {
         float delta = drawPaintRing.getStrokeWidth()/2;
-        radiusRing = Math.min(centerX, centerX) - delta;
+        radiusRing = Math.min(centerX, centerY) - delta;
         radiusCircle = radiusRing - delta + 1;
     }
 
