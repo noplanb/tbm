@@ -34,6 +34,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -285,7 +286,7 @@ public class HttpRequest {
         if (isPost()) {
             request = new HttpPost(sUrl);
             if (jsonParams != null) {
-                StringEntity entity = new StringEntity(jsonParams.toString());
+                StringEntity entity = new StringEntity(jsonParams.toString(), Charset.forName("UTF-8"));
                 request.addHeader(HTTP.CONTENT_TYPE, "application/json");
                 ((HttpPost)request).setEntity(entity);
             } else {
