@@ -423,6 +423,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                 break;
             case R.id.navigation_item_contacts:
                 selectTab(TAB_FRIENDS);
+                break;
             default:
                 DialogShower.showToast(context, String.valueOf(item.getTitle()));
                 break;
