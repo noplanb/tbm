@@ -102,7 +102,7 @@ public class ContactsInfoCollector {
                         ContactInfo contact = contacts.get(c.getInt(contactIndex));
                         String address = c.getString(addressIndex);
                         int timesContacted = c.getInt(timesContactedIndex);
-                        if (contact != null && address != null) {
+                        if (contact != null && !TextUtils.isEmpty(address)) {
                             EmailVector emailVector = new EmailVector(address);
                             emailVector.addParam(EmailVector.ADDS_EMAIL_SENT, timesContacted);
                             contact.addVector(emailVector);
@@ -125,7 +125,7 @@ public class ContactsInfoCollector {
                             int contactId = c.getInt(contactIndex);
                             String number = c.getString(numberIndex);
                             number = ContactsManager.getValidE164ForNumber(number);
-                            if (number != null) {
+                            if (!TextUtils.isEmpty(number)) {
                                 ContactInfo contact = contacts.get(contactId);
                                 if (contact != null) {
                                     ContactVector phoneVector = new MobileVector(number);

@@ -3,6 +3,7 @@ package com.zazoapp.client.features.friendfinder.vectors;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 /**
  * Social network vector factory
@@ -50,7 +51,11 @@ public final class SNVectorFactory {
                     if (index < 0) {
                         return null;
                     }
-                    return SocialNetworkVector.getForType(vg, c.getString(index));
+                    String value = c.getString(index);
+                    if (TextUtils.isEmpty(value)) {
+                        return null;
+                    }
+                    return SocialNetworkVector.getForType(vg, value);
                 }
             }
         }
