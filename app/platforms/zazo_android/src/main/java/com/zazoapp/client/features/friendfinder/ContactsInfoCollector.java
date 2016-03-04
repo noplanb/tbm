@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.bench.BenchDataHandler.SmsColumnNames;
@@ -57,7 +58,7 @@ public class ContactsInfoCollector {
                     int starredIndex = c.getColumnIndex(ContactsContract.Contacts.STARRED);
                     while (c.moveToNext()) {
                         String name = c.getString(nameId);
-                        if (name != null) {
+                        if (!TextUtils.isEmpty(name)) {
                             int id = c.getInt(contactIndex);
                             ContactInfo info = new ContactInfo(id, name);
                             info.setFavorite(c.getInt(starredIndex) == 1);
