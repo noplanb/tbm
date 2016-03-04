@@ -63,6 +63,7 @@ public class InviteManager implements InviteHelper {
     private Friend lastInvitedFriend;
     private InviteDialogListener listener;
     private boolean isInvitationInProcess;
+    private boolean isNudging;
 
     public InviteManager(Context context) {
         this.context = context;
@@ -89,6 +90,7 @@ public class InviteManager implements InviteHelper {
 
     private void inviteInner(BenchObject bo) {
         isInvitationInProcess = true;
+        isNudging = false;
         final Friend friend = friendMatchingContact(bo.mobileNumber);
         if (friend != null) {
             this.friend = friend;
@@ -139,6 +141,7 @@ public class InviteManager implements InviteHelper {
 
     @Override
     public void nudge(Friend f) {
+        isNudging = true;
         friend = f;
         preNudgeDialog();
     }
@@ -285,7 +288,11 @@ public class InviteManager implements InviteHelper {
             Dispatch.dispatch(new NullPointerException(), "Friend is null");
             return;
         }
-        lastInvitedFriend = friend;
+        if (isNudging) {
+            isNudging = false;
+        } else {
+            lastInvitedFriend = friend;
+        }
         moveFriendToGrid();
     }
 
@@ -388,6 +395,7 @@ public class InviteManager implements InviteHelper {
     @Override
     public void cancelInvitation() {
         isInvitationInProcess = false;
+        isNudging = false;
     }
 
     private String getDefaultInviteMessage() {
