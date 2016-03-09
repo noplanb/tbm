@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -541,6 +542,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
             RemoteStorageHandler.setWelcomedFriends();
             Features features = new Features(getActivity());
             features.checkAndUnlock();
+            RemoteStorageHandler.setUserSettings();
             getAWSCredentials();
         }
 
@@ -548,6 +550,36 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         protected void failure() {
             dismissProgressDialog();
             serverError();
+        }
+    }
+
+    private class RegSyncUserSettings extends RemoteStorageHandler.GetUserSettings {
+        private Features features;
+
+        RegSyncUserSettings() {
+            FragmentActivity activity = getActivity();
+            if (activity == null) {
+                features = new Features(activity);
+            }
+        }
+
+        @Override
+        protected void failure() {
+            dismissProgressDialog();
+            serverError();
+        }
+
+        @Override
+        protected void gotUserSettings(@Nullable UserSettings settings) {
+            if (settings == null || settings.openedFeatures == null) {
+                return;
+            }
+            if (features != null) {
+                for (String openedFeature : settings.openedFeatures) {
+                    features.unlockByName(openedFeature);
+                }
+            }
+            new RegSyncWelcomedFriends();
         }
     }
 
@@ -573,7 +605,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
 
         @Override
         protected void success() {
-            new RegSyncWelcomedFriends();
+            new RegSyncUserSettings();
         }
 
         @Override

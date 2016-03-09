@@ -27,8 +27,8 @@ public class Features {
         SWITCH_CAMERA(R.string.feature_switch_camera_action),
         ABORT_RECORDING(R.string.feature_abort_recording_action),
         DELETE_FRIEND(R.string.feature_delete_friend_action),
-/*        PLAY_FULLSCREEN(R.string.feature_play_fullscreen_action),
-        PAUSE_PLAYBACK(R.string.feature_pause_playback_action),*/
+        PLAY_FULLSCREEN(R.string.feature_play_fullscreen_action),
+        PAUSE_PLAYBACK(R.string.feature_pause_playback_action),
         EARPIECE(R.string.feature_earpiece_action),
         CAROUSEL(R.string.feature_carousel_action),
         ;
@@ -76,6 +76,15 @@ public class Features {
         notifyCallbacks(feature, true);
     }
 
+    public void unlockByName(String name) {
+        if (name != null) {
+            try {
+                Feature feature = Feature.valueOf(name);
+                unlock(feature);
+            } catch (IllegalArgumentException e) {
+            }
+        }
+    }
     public void lock(Feature feature) {
         prefs.remove(feature.getPrefName());
         notifyCallbacks(feature, false);
@@ -97,11 +106,13 @@ public class Features {
      */
     public Feature checkAndUnlock() {
         int count = Math.min(calculateNumberOfUnlockedFeatures(), Feature.values().length);
+        int leftToUnlock = Math.max(count - getUnlockedFeaturesNumber(), 0);
         Feature lastUnlocked = null;
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < Feature.values().length && leftToUnlock > 0; i++) {
             if (!isUnlocked(Feature.values()[i])) {
                 unlock(Feature.values()[i]);
                 lastUnlocked = Feature.values()[i];
+                leftToUnlock--;
             }
         }
         return lastUnlocked;
@@ -123,6 +134,16 @@ public class Features {
         // If we are invitee than unlock activatedInviteeCount + (activatedNonInviteeCount > 0) ? 1 : 0 features;
         // If not just unlock activatedInviteeCount features
         return Math.max(0, activatedInviteeCount + ((activatedNonInviteeCount > 0 && UserFactory.current_user().isInvitee()) ? 1 : 0) - 1);
+    }
+
+    int getUnlockedFeaturesNumber() {
+        int count = 0;
+        for (Feature feature : Feature.values()) {
+            if (isUnlocked(feature)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public void showFeatureAwardDialog(ZazoManagerProvider managers, Feature feature) {

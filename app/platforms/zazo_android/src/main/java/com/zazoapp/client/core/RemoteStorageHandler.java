@@ -1,9 +1,11 @@
 package com.zazoapp.client.core;
 
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.UserFactory;
@@ -20,6 +22,7 @@ public class RemoteStorageHandler {
     private static final String VIDEO_ID_KV_KEY = "-VideoIdKVKey";
     private static final String VIDEO_STATUS_KV_KEY = "-VideoStatusKVKey";
     private static final String WELCOMED_FRIENDS_KV_KEY = "-WelcomedFriends";
+    private static final String USER_SETTINGS_KV_KEY = "-UserSettings";
 
     //--------------------------------
     // Data structures keys and values
@@ -181,6 +184,50 @@ public class RemoteStorageHandler {
         }
     }
 
+
+    public abstract static class GetUserSettings extends GetRemoteKV {
+        public GetUserSettings() {
+            super(buildUserSettingsKvKey(), null);
+        }
+
+        @Override
+        protected void gotRemoteKV(String json) {
+            if (json == null) {
+                gotUserSettings(null);
+                return;
+            }
+            UserSettings settings = null;
+            Gson gson = new Gson();
+            try {
+                settings = gson.fromJson(json, UserSettings.class);
+            } catch (JsonSyntaxException e) {
+            }
+            gotUserSettings(settings);
+        }
+
+        protected abstract void gotUserSettings(@Nullable UserSettings settings);
+
+        protected static class UserSettings {
+            public List<String> openedFeatures;
+        }
+    }
+
+    public static void setUserSettings() {
+        GetUserSettings.UserSettings settings = new GetUserSettings.UserSettings();
+        settings.openedFeatures = new ArrayList<>();
+        for (Features.Feature feature : Features.Feature.values()) {
+            if (feature.isUnlocked(TbmApplication.getContext())) {
+                settings.openedFeatures.add(feature.name());
+            }
+        }
+        Gson g = new Gson();
+        String value = g.toJson(settings);
+        setRemoteKV(buildUserSettingsKvKey(), null, value);
+    }
+
+    public static void deleteUserSettings() {
+        deleteRemoteKV(buildUserSettingsKvKey(), null);
+    }
     //-------
     // Delete
     //-------
@@ -256,6 +303,11 @@ public class RemoteStorageHandler {
     private static String buildWelcomedFriendsKvKey() {
         return UserFactory.getCurrentUserMkey() + WELCOMED_FRIENDS_KV_KEY;
     }
+
+    private static String buildUserSettingsKvKey() {
+        return UserFactory.getCurrentUserMkey() + USER_SETTINGS_KV_KEY;
+    }
+
     //--------------------------
     // Set Get and Delete Remote
     //--------------------------

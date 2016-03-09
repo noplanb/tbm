@@ -95,18 +95,20 @@ public class DialogShower {
 
     public static void showInfoDialog(FragmentActivity activity, String title, String message) {
         DialogFragment d = InfoDialogFragment.getInstance(title, message);
-        showDialog(activity.getSupportFragmentManager(), d, null);
+        if (activity != null) {
+            showDialog(activity.getSupportFragmentManager(), d, null);
+        }
     }
 
     public static void showHintDialog(FragmentActivity activity, String title, String message) {
-        if (activity.getSupportFragmentManager().findFragmentByTag("hint") == null) {
+        if (activity != null && activity.getSupportFragmentManager().findFragmentByTag("hint") == null) {
             DialogFragment d = InfoDialogFragment.getInstance(title, message);
             showDialog(activity.getSupportFragmentManager(), d, "hint");
         }
     }
 
     public static void showVersionHandlerDialog(FragmentActivity activity, String message, boolean negativeButton) {
-        if (activity.getSupportFragmentManager().findFragmentByTag("compatibility") == null) {
+        if (activity != null && activity.getSupportFragmentManager().findFragmentByTag("compatibility") == null) {
             DialogFragment d = VersionDialogFragment.getInstance(message, negativeButton);
             showDialog(activity.getSupportFragmentManager(), d, "compatibility");
         }
@@ -118,6 +120,9 @@ public class DialogShower {
     }
 
     public static void showDialog(FragmentManager fragmentManager, Fragment dialog, String tag) {
+        if (fragmentManager == null) {
+            return;
+        }
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(dialog, tag);
         transaction.commitAllowingStateLoss();
@@ -127,15 +132,24 @@ public class DialogShower {
         if (listener instanceof Fragment) {
             return ((Fragment) listener).getChildFragmentManager();
         }
+        if (activity == null) {
+            return null;
+        }
         return activity.getSupportFragmentManager();
     }
 
     public static void showSendLinkDialog(FragmentActivity activity, int dialogId, String phone, String message, DoubleActionDialogListener callbacks) {
+        if (activity == null) {
+            return;
+        }
         DialogFragment d = SendLinkThroughDialog.getInstance(dialogId, phone, activity, message, callbacks);
         showDialog(getFragmentManager(activity, callbacks), d, null);
     }
 
     public static void showFeatureAwardDialog(FragmentActivity activity, Features.Feature feature) {
+        if (activity == null) {
+            return;
+        }
         Fragment fragment = activity.getSupportFragmentManager().findFragmentByTag(FEATURE_FRAME);
         if (fragment != null) {
             activity.getSupportFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
@@ -149,6 +163,9 @@ public class DialogShower {
     }
 
     public static boolean isFeatureAwardDialogShown(FragmentActivity activity) {
+        if (activity == null) {
+            return false;
+        }
         FragmentManager fm = activity.getSupportFragmentManager();
         if (fm != null) {
             Fragment fragment = fm.findFragmentByTag(FEATURE_FRAME);
@@ -160,6 +177,9 @@ public class DialogShower {
     }
 
     public static void showNextFeatureDialog(FragmentActivity activity, boolean justUnlockedFeature) {
+        if (activity == null) {
+            return;
+        }
         Fragment fragment = activity.getSupportFragmentManager().findFragmentByTag(FEATURE_FRAME);
         if (fragment != null) {
             activity.getSupportFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
@@ -171,7 +191,7 @@ public class DialogShower {
     }
 
     public static void showBlockingDialog(FragmentActivity activity, int titleId, int messageId) {
-        if (activity.getSupportFragmentManager().findFragmentByTag("blocking") == null) {
+        if (activity != null && activity.getSupportFragmentManager().findFragmentByTag("blocking") == null) {
             String title = activity.getString(titleId);
             String message = activity.getString(messageId);
             DialogFragment d = BlockingInfoDialog.getInstance(title, message);

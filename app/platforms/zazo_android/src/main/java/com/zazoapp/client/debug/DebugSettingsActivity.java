@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
@@ -604,7 +605,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
 
         @Override
         protected void success() {
-            new ClearSyncWelcomedFriends();
+            new ClearSyncUserSettings(DebugSettingsActivity.this);
         }
 
         @Override
@@ -633,6 +634,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
             RemoteStorageHandler.setWelcomedFriends();
             Features features = new Features(DebugSettingsActivity.this);
             features.checkAndUnlock();
+            RemoteStorageHandler.setUserSettings();
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -646,6 +648,31 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
         protected void failure() {
             dismissProgressDialog();
             serverError();
+        }
+    }
+
+    private class ClearSyncUserSettings extends RemoteStorageHandler.GetUserSettings {
+        private Features features;
+
+        ClearSyncUserSettings(FragmentActivity a) {
+            features = new Features(a);
+        }
+
+        @Override
+        protected void failure() {
+            dismissProgressDialog();
+            serverError();
+        }
+
+        @Override
+        protected void gotUserSettings(@Nullable UserSettings settings) {
+            if (settings == null || settings.openedFeatures == null) {
+                return;
+            }
+            for (String openedFeature : settings.openedFeatures) {
+                features.unlockByName(openedFeature);
+            }
+            new ClearSyncWelcomedFriends();
         }
     }
 

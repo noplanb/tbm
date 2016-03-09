@@ -31,6 +31,7 @@ public class SyncManager {
      * @param managers if not null will try to unlock features silently on sync finish
      */
     public static void syncWelcomedFriends(@Nullable ZazoManagerProvider managers) {
+        new SyncUserSettings(managers);
         new SyncWelcomedFriends(managers, true);
     }
 
@@ -58,6 +59,7 @@ public class SyncManager {
             if (isJustUpgraded) {
                 applyWelcomedFriends(true, managers);
             } else {
+                new SyncUserSettings(managers);
                 new SyncWelcomedFriends(managers, false);
             }
         }
@@ -77,6 +79,7 @@ public class SyncManager {
             Features features = managers.getFeatures();
             features.checkAndUnlock();
         }
+        RemoteStorageHandler.setUserSettings();
     }
 
     private static class SyncWelcomedFriends extends RemoteStorageHandler.GetWelcomedFriends {
@@ -112,6 +115,32 @@ public class SyncManager {
         @Override
         protected void failure() {
             applyWelcomedFriends(false, managers);
+        }
+    }
+
+    private static class SyncUserSettings extends RemoteStorageHandler.GetUserSettings {
+        private ZazoManagerProvider managers;
+        private boolean forceSync;
+
+        SyncUserSettings(ZazoManagerProvider m) {
+            Log.d(TAG, "syncUserSettings");
+            managers = m;
+        }
+
+        @Override
+        protected void failure() {
+        }
+
+        @Override
+        protected void gotUserSettings(@Nullable UserSettings settings) {
+            if (settings == null || settings.openedFeatures == null) {
+                return;
+            }
+            if (managers != null) {
+                for (String openedFeature : settings.openedFeatures) {
+                    managers.getFeatures().unlockByName(openedFeature);
+                }
+            }
         }
     }
 }
