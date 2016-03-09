@@ -113,6 +113,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
         switch (requestCode) {
             case REGISTER_FRAGMENT:
                 currentFragmentId = MAIN_FRAGMENT;
+                ZazoAnalytics.setUser();
                 currentFragment = new MainFragment();
                 currentFragment.setFragmentId(currentFragmentId);
                 getSupportFragmentManager()
