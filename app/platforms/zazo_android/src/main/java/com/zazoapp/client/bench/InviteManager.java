@@ -332,7 +332,6 @@ public class InviteManager implements InviteHelper {
 
     @Override
     public void failureNoSimDialog() {
-        cancelInvitation();
         if (friend == null) {
             Log.e(TAG, "Friend is null on this step. This should never happen");
             Dispatch.dispatch(new NullPointerException(), "Friend is null");
