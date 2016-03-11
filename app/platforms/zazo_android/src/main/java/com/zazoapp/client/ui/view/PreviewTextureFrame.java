@@ -148,4 +148,8 @@ public class PreviewTextureFrame extends FrameLayout {
     public int getPreviewHeight() {
         return textureView.getHeight();
     }
+
+    public void setSwitchCameraIndication() {
+        switchCameraIcon.setVisibility(Features.Feature.SWITCH_CAMERA.isUnlocked(getContext()) ? VISIBLE : INVISIBLE);
+    }
 }

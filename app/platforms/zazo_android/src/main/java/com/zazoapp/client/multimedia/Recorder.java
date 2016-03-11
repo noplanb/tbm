@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 public interface Recorder {
     /**
      * Starts recording for specified friend
+     *
      * @param friendId
      */
     void start(String friendId);
@@ -34,18 +35,21 @@ public interface Recorder {
 
     /**
      * Should be called in onPause of host activity
+     *
      * @param release true to release camera
      */
     void pause(boolean release);
 
     /**
      * Indicates whether it is currently recording
+     *
      * @return true if it is recording
      */
     boolean isRecording();
 
     /**
      * Set up preview to parent container
+     *
      * @param container
      */
     void addPreviewTo(ViewGroup container);
@@ -54,4 +58,9 @@ public interface Recorder {
      * Switches front/back cameras
      */
     void switchCamera();
+
+    /**
+     * Sets indicators of switch camera feature
+     */
+    void indicateSwitchCameraFeature();
 }

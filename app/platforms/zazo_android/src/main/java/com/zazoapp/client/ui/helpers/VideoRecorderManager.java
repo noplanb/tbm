@@ -197,6 +197,12 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     }
 
     @Override
+    public void indicateSwitchCameraFeature() {
+        PreviewTextureFrame frame = (PreviewTextureFrame) videoRecorder.getView();
+        frame.setSwitchCameraIndication();
+    }
+
+    @Override
     public void reconnect() {
         videoRecorder.dispose();
         videoRecorder.restore();

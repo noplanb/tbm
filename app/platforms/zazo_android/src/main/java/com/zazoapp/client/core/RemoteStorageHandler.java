@@ -216,7 +216,7 @@ public class RemoteStorageHandler {
         GetUserSettings.UserSettings settings = new GetUserSettings.UserSettings();
         settings.openedFeatures = new ArrayList<>();
         for (Features.Feature feature : Features.Feature.values()) {
-            if (feature.isUnlocked(TbmApplication.getContext())) {
+            if (feature.isUnlockedPref(TbmApplication.getContext())) {
                 settings.openedFeatures.add(feature.name());
             }
         }

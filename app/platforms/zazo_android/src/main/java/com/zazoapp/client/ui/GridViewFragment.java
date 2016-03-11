@@ -282,6 +282,9 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         if (feature == Features.Feature.CAROUSEL && nineViewGroup != null) {
             nineViewGroup.enableSpin(unlocked);
         }
+        if (feature == Features.Feature.SWITCH_CAMERA && nineViewGroup != null) {
+            getManagerProvider().getRecorder().indicateSwitchCameraFeature();
+        }
     }
 
     @Override

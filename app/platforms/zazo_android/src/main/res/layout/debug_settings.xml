@@ -331,11 +331,19 @@
             <Switch
                     android:id="@+id/enable_all_features"
                     style="@style/DevSwitch"
-                    android:text="Enable all features"/>
-            <Switch
-                    android:id="@+id/enable_pause_fullscreen"
-                    style="@style/DevSwitch"
-                    android:text="Enable pause/fullscreen features"/>
+                    android:text="Enable all features (test)"/>
+            <Button
+                    android:id="@+id/manage_features"
+                    style="@style/DevButton"
+                    android:layout_width="match_parent"
+                    android:text="Manage features"
+                    android:layout_marginTop="@dimen/debug_options_margin"/>
+            <Button
+                    android:id="@+id/delete_user_settings"
+                    style="@style/DevButton"
+                    android:layout_width="match_parent"
+                    android:text="Delete user settings"
+                    android:layout_marginTop="@dimen/debug_options_margin"/>
             <Button
                     android:id="@+id/delete_welcomed_friends"
                     style="@style/DevButton"
@@ -348,12 +356,6 @@
                     android:layout_width="match_parent"
                     android:text="Lock all features"
                     android:layout_marginTop="@dimen/debug_options_margin"/>
-            <Button
-                android:id="@+id/show_unlocked_features"
-                style="@style/DevButton"
-                android:layout_width="match_parent"
-                android:text="Show unlocked features"
-                android:layout_marginTop="@dimen/debug_options_margin"/>
 
             <include layout="@layout/lollipop_specific_features"
                     android:id="@+id/lollipop_specific_features"/>

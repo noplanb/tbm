@@ -546,12 +546,18 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
             }
         });
 
-        Switch enablePauseFullscreenFeatures = (Switch) findViewById(R.id.enable_pause_fullscreen);
-        enablePauseFullscreenFeatures.setChecked(DebugConfig.Bool.ENABLE_PAUSE_FULLSCREEN.get());
-        enablePauseFullscreenFeatures.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        findViewById(R.id.manage_features).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                DebugConfig.set(DebugConfig.Bool.ENABLE_PAUSE_FULLSCREEN, isChecked);
+            public void onClick(View v) {
+                ManageFeaturesDialog manageFriendsDialog = new ManageFeaturesDialog();
+                DialogShower.showDialog(getSupportFragmentManager(), manageFriendsDialog, "manageFriends");
+            }
+        });
+
+        findViewById(R.id.delete_user_settings).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RemoteStorageHandler.deleteUserSettings();
             }
         });
 
@@ -568,23 +574,6 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                 for (Features.Feature feature : Features.Feature.values()) {
                     features.lock(feature);
                 }
-            }
-        });
-        findViewById(R.id.show_unlocked_features).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Features features = new Features(DebugSettingsActivity.this);
-                StringBuilder text = new StringBuilder();
-
-                for (Features.Feature feature : Features.Feature.values()) {
-                    if (features.isUnlocked(feature)) {
-                        text.append(feature.name());
-                        if (feature != features.lastUnlockedFeature()) {
-                            text.append("\n");
-                        }
-                    }
-                }
-                DialogShower.showToast(DebugSettingsActivity.this, text.toString());
             }
         });
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

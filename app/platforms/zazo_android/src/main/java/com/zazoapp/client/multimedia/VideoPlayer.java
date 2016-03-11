@@ -19,8 +19,8 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
-import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideo;
@@ -447,7 +447,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             @Override
             public boolean click(View v) {
                 if (videoBody.equals(v)) {
-                    if (DebugConfig.Bool.ENABLE_PAUSE_FULLSCREEN.get()) {
+                    if (managerProvider.getFeatures().isUnlocked(Features.Feature.PAUSE_PLAYBACK)) {
                         if (videoView.isPlaying()) {
                             videoView.pause();
                             progressBar.pause();
@@ -552,7 +552,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
             @Override
             public boolean isSlidingSupported() {
-                return DebugConfig.Bool.ENABLE_PAUSE_FULLSCREEN.get();
+                return managerProvider.getFeatures().isUnlocked(Features.Feature.PLAY_FULLSCREEN);
             }
 
             @Override

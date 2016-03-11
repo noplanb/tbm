@@ -41,7 +41,6 @@ public class DebugConfig {
         SEND_INCORRECT_FILE_SIZE(false),
         ALLOW_RESEND(false),
         ALLOW_SEND_CONTACTS(false),
-        ENABLE_PAUSE_FULLSCREEN(false),
         ;
 
         private boolean value;

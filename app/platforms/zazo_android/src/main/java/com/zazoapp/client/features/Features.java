@@ -50,8 +50,12 @@ public class Features {
         }
 
         public boolean isUnlocked(Context context) {
+            return isUnlockedPref(context) || DebugConfig.Bool.ENABLE_ALL_FEATURES.get();
+        }
+
+        public boolean isUnlockedPref(Context context) {
             PreferencesHelper prefs = new PreferencesHelper(context);
-            return prefs.getBoolean(getPrefName(), false) || DebugConfig.Bool.ENABLE_ALL_FEATURES.get();
+            return prefs.getBoolean(getPrefName(), false);
         }
     }
 
@@ -71,7 +75,7 @@ public class Features {
         prefs = new PreferencesHelper(this.activity);
     }
 
-    private void unlock(Feature feature) {
+    public void unlock(Feature feature) {
         prefs.putBoolean(feature.getPrefName(), true);
         notifyCallbacks(feature, true);
     }
@@ -80,11 +84,14 @@ public class Features {
         if (name != null) {
             try {
                 Feature feature = Feature.valueOf(name);
-                unlock(feature);
+                if (!isUnlockedPref(feature)) {
+                    unlock(feature);
+                }
             } catch (IllegalArgumentException e) {
             }
         }
     }
+
     public void lock(Feature feature) {
         prefs.remove(feature.getPrefName());
         notifyCallbacks(feature, false);
@@ -97,7 +104,11 @@ public class Features {
     }
 
     public boolean isUnlocked(Feature feature) {
-        return prefs.getBoolean(feature.getPrefName(), false) || DebugConfig.Bool.ENABLE_ALL_FEATURES.get();
+        return isUnlockedPref(feature) || DebugConfig.Bool.ENABLE_ALL_FEATURES.get();
+    }
+
+    public boolean isUnlockedPref(Feature feature) {
+        return prefs.getBoolean(feature.getPrefName(), false);
     }
 
     /**
@@ -109,7 +120,7 @@ public class Features {
         int leftToUnlock = Math.max(count - getUnlockedFeaturesNumber(), 0);
         Feature lastUnlocked = null;
         for (int i = 0; i < Feature.values().length && leftToUnlock > 0; i++) {
-            if (!isUnlocked(Feature.values()[i])) {
+            if (!isUnlockedPref(Feature.values()[i])) {
                 unlock(Feature.values()[i]);
                 lastUnlocked = Feature.values()[i];
                 leftToUnlock--;

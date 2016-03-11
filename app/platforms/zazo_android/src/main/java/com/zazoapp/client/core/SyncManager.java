@@ -120,7 +120,6 @@ public class SyncManager {
 
     private static class SyncUserSettings extends RemoteStorageHandler.GetUserSettings {
         private ZazoManagerProvider managers;
-        private boolean forceSync;
 
         SyncUserSettings(ZazoManagerProvider m) {
             Log.d(TAG, "syncUserSettings");
