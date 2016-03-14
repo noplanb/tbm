@@ -70,13 +70,13 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     @Override
     public void cancel() {
         // Different from abortAnyRecording because we always toast here.
-        videoRecorder.stopRecording();
+        videoRecorder.stopRecording(true);
         DialogShower.showToast(context, R.string.toast_not_sent);
     }
 
     @Override
     public void stop() {
-        if (videoRecorder.stopRecording()) {
+        if (videoRecorder.stopRecording(false)) {
             Friend f = videoRecorder.getCurrentFriend();
             Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
             f.requestUpload(f.getOutgoingVideoId());
@@ -130,7 +130,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     public void pause(boolean release) {
         videoRecorder.onPause(release);
         if (release) {
-            videoRecorder.stopRecording();
+            videoRecorder.stopRecording(false);
         }
     }
 

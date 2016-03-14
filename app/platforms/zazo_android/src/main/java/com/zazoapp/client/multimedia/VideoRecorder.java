@@ -116,7 +116,7 @@ public class VideoRecorder implements SurfaceTextureListener {
         return true;
     }
 
-    public boolean stopRecording() {
+    public boolean stopRecording(boolean cancel) {
         Log.i(TAG, "stopRecording");
         boolean rval = false;
         hideRecordingIndicator(); // It should be safe to call this even if the
@@ -131,6 +131,10 @@ public class VideoRecorder implements SurfaceTextureListener {
             // will have already been disposed of and app will crash.
             try {
                 mediaRecorder.stop();
+                if (cancel) {
+                    Config.recordingFile(context).delete();
+                    return false;
+                }
                 rval = true;
                 long fileLength = Config.recordingFile(context).length();
                 Logger.i(TAG, String.format("Recorded file %s : %d", Config.recordingFilePath(context), fileLength));
