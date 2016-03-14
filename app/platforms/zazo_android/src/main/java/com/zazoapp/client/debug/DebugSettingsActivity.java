@@ -655,11 +655,10 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
 
         @Override
         protected void gotUserSettings(@Nullable UserSettings settings) {
-            if (settings == null || settings.openedFeatures == null) {
-                return;
-            }
-            for (String openedFeature : settings.openedFeatures) {
-                features.unlockByName(openedFeature);
+            if (settings != null && settings.openedFeatures != null) {
+                for (String openedFeature : settings.openedFeatures) {
+                    features.unlockByName(openedFeature);
+                }
             }
             new ClearSyncWelcomedFriends();
         }

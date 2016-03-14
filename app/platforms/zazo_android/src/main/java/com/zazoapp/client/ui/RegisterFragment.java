@@ -571,10 +571,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
 
         @Override
         protected void gotUserSettings(@Nullable UserSettings settings) {
-            if (settings == null || settings.openedFeatures == null) {
-                return;
-            }
-            if (features != null) {
+            if (settings != null && settings.openedFeatures != null && features != null) {
                 for (String openedFeature : settings.openedFeatures) {
                     features.unlockByName(openedFeature);
                 }
