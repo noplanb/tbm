@@ -44,7 +44,7 @@ public class DialogShower {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(context.getApplicationContext(), message, Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
             }
