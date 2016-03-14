@@ -231,7 +231,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     cancelWaitingForStart();
                     mp.reset();
                     onCompletion(mp);
-                    friend.setAndNotifyIncomingVideoStatus(brokenVideoId, IncomingVideo.Status.FAILED_PERMANENTLY);
+                    //friend.setAndNotifyIncomingVideoStatus(brokenVideoId, IncomingVideo.Status.FAILED_PERMANENTLY);
                     notifyPlaybackError();
                     Dispatch.dispatch(String.format("Error while playing video %s %d %d", brokenVideoId, what, extra));
                     return true;
