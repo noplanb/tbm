@@ -91,6 +91,7 @@ public class InviteManager implements InviteHelper {
     private void inviteInner(BenchObject bo) {
         isInvitationInProcess = true;
         isNudging = false;
+        lastInvitedFriend = null;
         final Friend friend = friendMatchingContact(bo.mobileNumber);
         if (friend != null) {
             this.friend = friend;
@@ -142,6 +143,7 @@ public class InviteManager implements InviteHelper {
     @Override
     public void nudge(Friend f) {
         isNudging = true;
+        lastInvitedFriend = null;
         friend = f;
         preNudgeDialog();
     }
@@ -273,6 +275,7 @@ public class InviteManager implements InviteHelper {
             if (friend.hasApp()) {
                 finishInvitation();
             } else {
+                lastInvitedFriend = friend;
                 showSmsDialog();
             }
         } else { // if friend is already exist TODO legacy code
