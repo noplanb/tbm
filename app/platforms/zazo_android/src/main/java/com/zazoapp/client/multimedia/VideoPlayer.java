@@ -373,7 +373,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                         progressBar.doAppearing();
                                         progressBar.setCurrent(currentVideoNumber, true);
                                         int duration = videoView.getDuration() - videoView.getCurrentPosition();
-                                        progressBar.animateProgress((currentVideoNumber - 1) / (float) numberOfVideos,
+                                        float offset = (videoView.getDuration() >= 0) ?
+                                                videoView.getCurrentPosition() / (float) videoView.getDuration() : 0f;
+                                        progressBar.animateProgress((currentVideoNumber - 1 + offset) / (float) numberOfVideos,
                                                 currentVideoNumber / (float) numberOfVideos, duration);
                                         notifyStartPlaying();
                                     }
