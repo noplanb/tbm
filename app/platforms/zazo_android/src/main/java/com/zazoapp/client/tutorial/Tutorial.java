@@ -159,6 +159,9 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         if (friend != null && !friend.everSent()) {
             friend.setEverSent(true);
             ZazoAnalytics.trackEvent("UniqueZazo");
+            if (HintType.RECORD.isHintShowed(preferences) && FriendFactory.getFactoryInstance().getNumberOfEverSentFriends() == 1) {
+                ZazoAnalytics.trackEvent("FirstZazo");
+            }
             final Features.Feature feature = managers.getFeatures().checkAndUnlock();
             SyncManager.syncWelcomedFriends(managers);
             if (feature != null) {
