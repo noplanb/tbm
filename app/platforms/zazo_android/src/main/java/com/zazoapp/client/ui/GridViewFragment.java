@@ -51,6 +51,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     private boolean viewLoaded;
     private boolean globalLayoutComplete;
+    private boolean globalLayoutWasCalled;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -292,7 +293,19 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         Activity activity = getActivity();
         boolean focused = activity != null && activity.hasWindowFocus() && !NotificationAlertManager.screenIsLocked(activity);
         Log.i(TAG, "OnGlobalLayout " + viewLoaded + " " + focused);
+        if (viewLoaded) {
+            globalLayoutWasCalled = true;
+        }
         if (viewLoaded && focused) {
+            globalLayoutComplete = true;
+            handleIntentAction(getActivity().getIntent());
+        }
+    }
+
+    public void onWindowFocusChanged(boolean hasFocus) {
+        Intent intent = getActivity().getIntent();
+        if (globalLayoutWasCalled && !globalLayoutComplete && hasFocus
+                && intent != null && !intent.getBooleanExtra(MainActivity.EXTRA_NEW_INTENT_AFTER_ON_CREATE, true)) {
             globalLayoutComplete = true;
             handleIntentAction(getActivity().getIntent());
         }

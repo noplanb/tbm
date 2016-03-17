@@ -54,4 +54,6 @@ public class ZazoFragment extends Fragment {
         }
     }
 
+    public void onWindowFocusChanged(boolean hasFocus) {
+    }
 }

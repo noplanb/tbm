@@ -22,7 +22,7 @@ public class Logger {
 
     private static FileWriter fileWriter;
 
-    private static SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+    private static SimpleDateFormat timeFormat = new SimpleDateFormat("MM/dd HH:mm:ss.SSS", Locale.getDefault());
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     public static void e(String string, String string2, Exception e) {
@@ -66,6 +66,23 @@ public class Logger {
         Log.i(string, string2);
         if (IS_NEED_TO_SAVE)
             printToFile(string + "\t" + string2);
+    }
+
+    public static void i(String tag, String markers, int... params) {
+        StringBuilder builder = new StringBuilder();
+        String[] markerArray = (markers != null) ? markers.split(" ") : null;
+        for (int i = 0; i < params.length; i++) {
+            if (markerArray != null && markerArray.length == params.length) {
+                builder.append(markerArray[i]).append(": ");
+            }
+            builder.append(params[i]);
+            if (i < params.length - 1) {
+                builder.append(", ");
+            }
+        }
+        Log.i(tag, builder.toString());
+        if (IS_NEED_TO_SAVE)
+            printToFile(tag + "\t" + builder.toString());
     }
 
     private static void printToFile(CharSequence text) {

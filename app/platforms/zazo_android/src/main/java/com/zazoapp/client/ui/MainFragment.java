@@ -522,6 +522,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         }
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (gridFragment != null) {
+            gridFragment.onWindowFocusChanged(hasFocus);
+        }
+    }
+
     public class ZazoPagerAdapter extends FragmentPagerAdapter {
 
         public ZazoPagerAdapter(FragmentManager fm) {

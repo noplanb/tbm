@@ -20,6 +20,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String CURRENT_FRAGMENT_KEY = "current_zazo_fragment";
+    public static final String EXTRA_NEW_INTENT_AFTER_ON_CREATE = "new_intent_after_on_create";
 
     private ZazoFragment currentFragment;
     private int currentFragmentId;
@@ -29,7 +30,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Logger.i(TAG, "onCreate");
+        Logger.i(TAG, "onCreate " + getIntent());
         ZazoAnalytics.start();
         setContentView(R.layout.main_activity);
         setupFragment();
@@ -38,7 +39,11 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Logger.i(TAG, "onNewIntent");
+        Logger.i(TAG, "onNewIntent " + intent);
+        Intent currentIntent = getIntent();
+        if (currentIntent != null && Intent.ACTION_MAIN.equals(currentIntent.getAction())) {
+            intent.putExtra(EXTRA_NEW_INTENT_AFTER_ON_CREATE, true);
+        }
         setIntent(intent);
     }
 
@@ -167,6 +172,14 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
                 window.setSoftInputMode(
                         WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
                 break;
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (currentFragment != null) {
+            currentFragment.onWindowFocusChanged(hasFocus);
         }
     }
 }
