@@ -4,12 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import com.appsflyer.AppsFlyerLib;
 import com.zazoapp.client.debug.DebugConfig;
-import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,14 +68,7 @@ public class ZazoAnalytics {
             eventValue.put("FirstName", user.getFirstName());
             eventValue.put("LastName", user.getLastName());
             eventValue.put("IdTbm", user.getId());
-            ArrayList<Friend> friends = FriendFactory.getFactoryInstance().all();
-            int everSentFriendsCount = 0;
-            for (Friend friend : friends) {
-                if (friend.everSent()) {
-                    everSentFriendsCount++;
-                }
-            }
-            eventValue.put("NumZazoedFriends", everSentFriendsCount);
+            eventValue.put("NumZazoedFriends", FriendFactory.getFactoryInstance().getNumberOfEverSentFriends());
         }
         return eventValue;
     }

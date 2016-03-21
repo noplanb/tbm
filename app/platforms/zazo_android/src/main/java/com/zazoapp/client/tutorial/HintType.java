@@ -372,6 +372,10 @@ public enum HintType {
         }
     }
 
+    public boolean isHintShowed(PreferencesHelper preferences) {
+        return !preferences.getBoolean(getPrefName(), true);
+    }
+
     public void markHintAsShowedForSession(PreferencesHelper preferences) {
         if (preferences.getBoolean(getPrefSessionName(), true)) {
             preferences.putBoolean(getPrefSessionName(), false);

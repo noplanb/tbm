@@ -286,6 +286,17 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         return all;
     }
 
+    public int getNumberOfEverSentFriends() {
+        List<Friend> friends = FriendFactory.getFactoryInstance().all();
+        int number = 0;
+        for (Friend friend : friends) {
+            if (friend.everSent()) {
+                number++;
+            }
+        }
+        return number;
+    }
+
     public static class ConnectionComparator implements Comparator<LinkedTreeMap<String, String>> {
         @Override
         public int compare(LinkedTreeMap<String, String> lhs, LinkedTreeMap<String, String> rhs) {
