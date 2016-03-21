@@ -300,6 +300,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         if (viewLoaded && focused) {
             globalLayoutComplete = true;
             handleIntentAction(getActivity().getIntent());
+        } else {
+            globalLayoutComplete = false;
         }
     }
 
@@ -307,10 +309,17 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         Logger.i(TAG, "onWindowFocusChanged " + hasFocus);
         Intent intent = getActivity().getIntent();
         if (globalLayoutWasCalled && !globalLayoutComplete && hasFocus
-                && intent != null && !intent.getBooleanExtra(MainActivity.EXTRA_NEW_INTENT_AFTER_ON_CREATE, true)) {
+                && intent != null && !intent.hasExtra(MainActivity.EXTRA_NEW_INTENT_AFTER_ON_CREATE)) {
             globalLayoutComplete = true;
             handleIntentAction(getActivity().getIntent());
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Logger.i(TAG, "onStop");
+        globalLayoutComplete = false;
     }
 
     //------------------------------

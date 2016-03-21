@@ -214,8 +214,8 @@ public class NineViewGroup extends ViewGroup {
         for (int i = 0; i < 9; i++) {
             FrameLayout fl = new FrameLayout(getContext());
             fl.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-            fl.setClipChildren(false);
-            fl.setClipToPadding(false);
+            fl.setClipChildren(i == 4);
+            fl.setClipToPadding(i == 4);
             fl.setId(i);
             fl.setTag(R.id.box_id, i);
             addView(fl, i);
