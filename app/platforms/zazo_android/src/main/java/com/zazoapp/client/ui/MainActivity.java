@@ -178,6 +178,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
+        Logger.i(TAG, "onWindowFocusChanged " + hasFocus);
         if (currentFragment != null) {
             currentFragment.onWindowFocusChanged(hasFocus);
         }

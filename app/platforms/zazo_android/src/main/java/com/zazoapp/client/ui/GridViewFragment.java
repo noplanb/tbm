@@ -219,14 +219,14 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         // 2) to notify the user if there was a problem sending Sms invite to a
         // friend. (Not used as decided this is unnecessarily disruptive)
         if (currentIntent == null) {
-            Log.i(TAG, "handleIntentAction: no intent. Exiting.");
+            Logger.i(TAG, "handleIntentAction: no intent. Exiting.");
             return;
         }
         if (!globalLayoutComplete) {
-            Log.i(TAG, "handleIntentAction: View is not loaded yet or showed to user. Ignore for now.");
+            Logger.i(TAG, "handleIntentAction: View is not loaded yet or showed to user. Ignore for now.");
             return;
         }
-        Log.i(TAG, "handleIntentAction: " + currentIntent.toString());
+        Logger.i(TAG, "handleIntentAction: " + currentIntent.toString());
 
         String action = currentIntent.getAction();
         Uri data = currentIntent.getData();
@@ -238,17 +238,18 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         }
 
         if (action == null || data == null) {
-            Log.i(TAG, "handleIntentAction: no action or data. Exiting.");
+            Logger.i(TAG, "handleIntentAction: no action or data. Exiting.");
             return;
         }
 
         String friendId = currentIntent.getData().getQueryParameter(IntentHandlerService.IntentParamKeys.FRIEND_ID);
-        if (action == null || friendId == null) {
-            Log.i(TAG, "handleIntentAction: no friendId or action. Exiting." + currentIntent.toString());
+        if (friendId == null) {
+            Logger.i(TAG, "handleIntentAction: no friendId or action. Exiting." + currentIntent.toString());
             return;
         }
 
         if (action.equals(IntentHandlerService.IntentActions.PLAY_VIDEO)) {
+            Logger.i(TAG, "handleIntentAction: play video");
             currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             play(friendId);
         }
@@ -292,7 +293,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     public void onGlobalLayout() {
         Activity activity = getActivity();
         boolean focused = activity != null && activity.hasWindowFocus() && !NotificationAlertManager.screenIsLocked(activity);
-        Log.i(TAG, "OnGlobalLayout " + viewLoaded + " " + focused);
+        Logger.i(TAG, "OnGlobalLayout " + viewLoaded + " " + focused);
         if (viewLoaded) {
             globalLayoutWasCalled = true;
         }
@@ -303,6 +304,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     }
 
     public void onWindowFocusChanged(boolean hasFocus) {
+        Logger.i(TAG, "onWindowFocusChanged " + hasFocus);
         Intent intent = getActivity().getIntent();
         if (globalLayoutWasCalled && !globalLayoutComplete && hasFocus
                 && intent != null && !intent.getBooleanExtra(MainActivity.EXTRA_NEW_INTENT_AFTER_ON_CREATE, true)) {
