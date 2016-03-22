@@ -165,6 +165,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public void onResume() {
         super.onResume();
         managerHolder.registerManagers();
+        handleIntent(getActivity().getIntent());
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
+            // TODO Do action specified in https://zazo.fogbugz.com/f/cases/1062/
+            intent.setAction(IntentHandlerService.IntentActions.NONE);
+        }
     }
 
     @Override
