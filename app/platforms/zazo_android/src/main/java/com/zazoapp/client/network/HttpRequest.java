@@ -290,11 +290,13 @@ public class HttpRequest {
                 request.addHeader(HTTP.CONTENT_TYPE, "application/json");
                 ((HttpPost)request).setEntity(entity);
             } else {
-                List<NameValuePair> nameValuePairs = new LinkedList<NameValuePair>();
-                for (String s : sParams.keySet()) {
-                    nameValuePairs.add(new BasicNameValuePair(s, sParams.get(s)));
+                if (sParams != null && sParams.size() > 0) {
+                    List<NameValuePair> nameValuePairs = new LinkedList<NameValuePair>();
+                    for (String s : sParams.keySet()) {
+                        nameValuePairs.add(new BasicNameValuePair(s, sParams.get(s)));
+                    }
+                    ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
                 }
-                ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
             }
         } else {
             if (sParams != null && sParams.size() > 0){

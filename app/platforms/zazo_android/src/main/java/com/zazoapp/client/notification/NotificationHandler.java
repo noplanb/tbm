@@ -25,7 +25,7 @@ public class NotificationHandler {
         public static final String CONTENT = "content";
         public static final String SUBJECT = "subject";
         public static final String ADDITIONS = "additions";
-        public static final String NKEY = "mkey";
+        public static final String NKEY = "nkey";
 
         public static class Additions {
             public static final String FRIEND_NAME = "friend_name";
