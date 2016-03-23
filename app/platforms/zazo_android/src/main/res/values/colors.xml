@@ -82,4 +82,8 @@
     <color name="white_active_tint">#8A000000</color>
     <color name="progress_half_blue">#140000FF</color>
 
+    <color name="suggestion_notice">#6D7073</color>
+    <color name="suggestion_card_divider">#D9D9D9</color>
+    <color name="suggestion_card_color">#EDF5FB</color>
+    <color name="suggestion_action_button_bgn">#eea5caec</color>
 </resources>

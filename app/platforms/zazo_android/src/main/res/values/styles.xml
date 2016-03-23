@@ -170,4 +170,15 @@
         <item name="colorAccent">@color/green</item>
     </style>
 
+    <style name="BorderlessFlatActionButton" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">36dp</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:background">@drawable/suggestion_action_btn_bg</item>
+        <item name="android:textColor">@color/dialog_action_text</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">@dimen/text_normal</item>
+    </style>
 </resources>

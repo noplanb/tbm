@@ -390,6 +390,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         tr.commit();
     }
 
+    private void showSuggestions() {
+        FragmentTransaction tr = getFragmentManager().beginTransaction();
+        tr.setCustomAnimations(R.anim.slide_bottom_fade_in, R.anim.slide_bottom_fade_out, R.anim.slide_bottom_fade_in, R.anim.slide_bottom_fade_out);
+        tr.add(R.id.top_frame, new SuggestionsFragment());
+        tr.addToBackStack(null);
+        tr.commit();
+    }
+
     private void inviteFriends() {
         BenchController bench = managerHolder.getBenchViewManager();
         bench.showBench();
@@ -431,6 +439,9 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                 break;
             case R.id.navigation_item_contacts:
                 selectTab(TAB_FRIENDS);
+                break;
+            case R.id.navigation_item_suggestions:
+                showSuggestions();
                 break;
             default:
                 DialogShower.showToast(context, String.valueOf(item.getTitle()));
