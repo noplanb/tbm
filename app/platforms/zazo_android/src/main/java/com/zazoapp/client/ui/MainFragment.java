@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.AnimRes;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -92,6 +93,9 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     private boolean isNavigationOpened;
 
     private ZazoPagerAdapter pagerAdapter;
+
+    private ZazoTopFragment topFragment;
+
     @InjectView(R.id.action_bar_icon) ImageView actionBarIcon;
     @InjectView(R.id.tabs) TabLayout tabsLayout;
     @InjectView(R.id.navigation_view) NavigationView navigationView;
@@ -169,9 +173,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     }
 
     private void handleIntent(Intent intent) {
-        if (intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
+        if (intent == null) {
+            return;
+        }
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             // TODO Do action specified in https://zazo.fogbugz.com/f/cases/1062/
             intent.setAction(IntentHandlerService.IntentActions.NONE);
+        } else if (IntentHandlerService.IntentActions.SUGGESTIONS.equals(intent.getAction())) {
+            showSuggestions(intent);
         }
     }
 
@@ -375,27 +384,30 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     }
 
     private void showEditFriends() {
-        FragmentTransaction tr = getFragmentManager().beginTransaction();
-        tr.setCustomAnimations(R.anim.slide_left_fade_in, R.anim.slide_right_fade_out, R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
-        tr.add(R.id.top_frame, new ManageFriendsFragment());
-        tr.addToBackStack(null);
-        tr.commit();
+        showTopFragment(new ManageFriendsFragment(), R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
     }
 
     private void showSettings() {
-        FragmentTransaction tr = getFragmentManager().beginTransaction();
-        tr.setCustomAnimations(R.anim.slide_left_fade_in, R.anim.slide_right_fade_out, R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
-        tr.add(R.id.top_frame, new SettingsFragment());
-        tr.addToBackStack(null);
-        tr.commit();
+        showTopFragment(new SettingsFragment(), R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
     }
 
-    private void showSuggestions() {
+    private void showSuggestions(@Nullable Intent intent) {
+        showTopFragment(SuggestionsFragment.getInstance(intent), R.anim.slide_bottom_fade_in, R.anim.slide_bottom_fade_out);
+    }
+
+    private void showTopFragment(ZazoTopFragment f, @AnimRes int in, @AnimRes int out) {
         FragmentTransaction tr = getFragmentManager().beginTransaction();
-        tr.setCustomAnimations(R.anim.slide_bottom_fade_in, R.anim.slide_bottom_fade_out, R.anim.slide_bottom_fade_in, R.anim.slide_bottom_fade_out);
-        tr.add(R.id.top_frame, new SuggestionsFragment());
+        tr.setCustomAnimations(in, out, in, out);
+        tr.add(R.id.top_frame, f);
         tr.addToBackStack(null);
         tr.commit();
+        f.setOnBackListener(new ZazoTopFragment.OnBackListener() {
+            @Override
+            public void onBack() {
+                topFragment = null;
+            }
+        });
+        topFragment = f;
     }
 
     private void inviteFriends() {
@@ -441,7 +453,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                 selectTab(TAB_FRIENDS);
                 break;
             case R.id.navigation_item_suggestions:
-                showSuggestions();
+                showSuggestions(null);
                 break;
             default:
                 DialogShower.showToast(context, String.valueOf(item.getTitle()));
@@ -478,7 +490,10 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch(keyCode) {
+        if (topFragment != null) {
+            return topFragment.onKeyDown(keyCode, event);
+        }
+        switch (keyCode) {
             case KeyEvent.KEYCODE_MENU:
                 toggleNavigationPanel();
                 return true;

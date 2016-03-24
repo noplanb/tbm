@@ -9,7 +9,6 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.SwitchCompat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -51,7 +50,7 @@ import java.util.List;
 /**
  * Created by skamenkovych@codeminders.com on 8/14/2015.
  */
-public class ManageFriendsFragment extends Fragment implements View.OnTouchListener {
+public class ManageFriendsFragment extends ZazoTopFragment implements View.OnTouchListener {
 
     @InjectView(R.id.friends_list) ListView listView;
     @InjectView(R.id.up) MaterialMenuView up;

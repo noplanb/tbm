@@ -35,6 +35,7 @@ import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
+import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
@@ -450,7 +451,9 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     FriendFinderRequests.addFriend(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
-                            DialogShower.showToast(getApplicationContext(), getString(R.string.ff_add_success_message, name));
+                            Intent startIntent = new Intent(intent);
+                            startIntent.setClass(getApplicationContext(), MainActivity.class);
+                            startActivity(startIntent);
                         }
 
                         @Override
@@ -464,12 +467,47 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     FriendFinderRequests.ignoreFriend(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
-                            DialogShower.showToast(getApplicationContext(), R.string.ff_ignore_success_message);
+                            Intent startIntent = new Intent(intent);
+                            startIntent.setClass(getApplicationContext(), MainActivity.class);
+                            startActivity(startIntent);
                         }
 
                         @Override
                         public void error(String errorString) {
                             DialogShower.showToast(getApplicationContext(), R.string.ff_ignore_error_message);
+                        }
+                    });
+                    break;
+                case FriendJoinedActions.UNSUBSCRIBE:
+                    NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
+                    FriendFinderRequests.unsubscribe(nkey, new HttpRequest.Callbacks() {
+                        @Override
+                        public void success(String response) {
+                            Intent startIntent = new Intent(intent);
+                            startIntent.setClass(getApplicationContext(), MainActivity.class);
+                            startActivity(startIntent);
+                        }
+
+                        @Override
+                        public void error(String errorString) {
+                            DialogShower.showToast(getApplicationContext(), R.string.ff_subscription_failure);
+                        }
+                    });
+                    break;
+                case FriendJoinedActions.SUBSCRIBE:
+                    NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
+                    FriendFinderRequests.subscribe(nkey, new HttpRequest.Callbacks() {
+                        @Override
+                        public void success(String response) {
+                            Intent startIntent = new Intent(intent);
+                            startIntent.setClass(getApplicationContext(), MainActivity.class);
+                            startIntent.setAction(IntentActions.SUGGESTIONS);
+                            startActivity(startIntent);
+                        }
+
+                        @Override
+                        public void error(String errorString) {
+                            DialogShower.showToast(getApplicationContext(), R.string.ff_subscription_failure);
                         }
                     });
                     break;
@@ -512,6 +550,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         public static final String SMS_RESULT = "smsResult";
         public static final String SAVE_MODEL = "saveModel";
         public static final String FRIEND_JOINED = "friend_joined";
+        public static final String SUGGESTIONS = "suggestions";
     }
 
     public static class FriendJoinedIntentFields {

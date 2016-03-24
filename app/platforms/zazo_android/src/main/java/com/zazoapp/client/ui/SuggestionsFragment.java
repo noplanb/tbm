@@ -3,13 +3,14 @@ package com.zazoapp.client.ui;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.annotation.StringRes;
 import android.support.v7.widget.SwitchCompat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -18,9 +19,11 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import butterknife.ButterKnife;
@@ -29,6 +32,7 @@ import butterknife.OnClick;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -48,15 +52,66 @@ import java.util.List;
 /**
  * Created by skamenkovych@codeminders.com on 8/14/2015.
  */
-public class SuggestionsFragment extends Fragment {
+public class SuggestionsFragment extends ZazoTopFragment {
 
     @InjectView(R.id.friends_list) ListView listView;
     @InjectView(R.id.up) MaterialMenuView up;
     @InjectView(R.id.unsubscribed_layout) ViewGroup unsubscribedLayout;
     @InjectView(R.id.added_ignored_layout) ViewGroup addedIgnoredLayout;
     @InjectView(R.id.last_suggestion_card) ViewGroup lastSuggestionCard;
+    @InjectView(R.id.last_suggestion_thumb) CircleImageView thumb;
+    @InjectView(R.id.add_ignore_mark) ImageView addIgnoreMark;
+    @InjectView(R.id.suggestion_name) TextView suggestionName;
+    @InjectView(R.id.suggestion_info) TextView suggestionInfo;
+    @InjectView(R.id.suggestion_action_btn) Button suggestionActionButton;
 
     private FriendsAdapter adapter;
+    private SuggestionCardResult currentCardType = SuggestionCardResult.NONE;
+
+    private static final String CARD_TYPE = "card_type";
+    private static final String NAME = "name";
+    private static final String NKEY = "nkey";
+
+
+    private enum SuggestionCardResult {
+        NONE(0),
+        UNSUBSCRIBED(R.string.action_subscribe),
+        IGNORED(R.string.action_undo),
+        ADDED(R.string.action_got_it);
+
+        private int actionId;
+
+        SuggestionCardResult(@StringRes int action) {
+            actionId = action;
+        }
+    }
+
+    @Deprecated public SuggestionsFragment() {}
+
+    public static SuggestionsFragment getInstance(@Nullable Intent intent) {
+        Bundle bundle = new Bundle();
+        if (intent != null) {
+            String action = intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION);
+            if (action != null) {
+                switch (action) {
+                    case IntentHandlerService.FriendJoinedActions.ADD:
+                        bundle.putInt(CARD_TYPE, SuggestionCardResult.ADDED.ordinal());
+                        break;
+                    case IntentHandlerService.FriendJoinedActions.IGNORE:
+                        bundle.putInt(CARD_TYPE, SuggestionCardResult.IGNORED.ordinal());
+                        break;
+                    case IntentHandlerService.FriendJoinedActions.UNSUBSCRIBE:
+                        bundle.putInt(CARD_TYPE, SuggestionCardResult.UNSUBSCRIBED.ordinal());
+                        break;
+                }
+                bundle.putString(NAME, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NAME));
+                bundle.putString(NKEY, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NKEY));
+            }
+        }
+        SuggestionsFragment fragment = new SuggestionsFragment();
+        fragment.setArguments(bundle);
+        return fragment;
+    }
 
     @Nullable
     @Override
@@ -66,17 +121,62 @@ public class SuggestionsFragment extends Fragment {
         adapter = new FriendsAdapter(getActivity());
         listView.setAdapter(adapter);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
-        unsubscribedLayout.setVisibility(View.GONE);
+        showLastSuggestionCard(SuggestionCardResult.values()[getArguments().getInt(CARD_TYPE, 0)]);
         return v;
     }
 
-    @OnClick({R.id.home, R.id.suggestion_action_btn})
+    @OnClick({R.id.home, R.id.suggestion_action_btn, R.id.done_btn})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.home:
+                dropSuggestionIntent();
                 getFragmentManager().popBackStack();
                 break;
+            case R.id.done_btn:
+                dropSuggestionIntent();
+                getFragmentManager().popBackStack();
+                // TODO do invite
+                break;
         }
+    }
+
+    private void dropSuggestionIntent() {
+        Intent intent = getActivity().getIntent();
+        if (intent != null && IntentHandlerService.IntentActions.SUGGESTIONS.equals(intent.getAction())) {
+            intent.setAction(IntentHandlerService.IntentActions.NONE);
+        }
+    }
+
+    @Override
+    protected void onBackPressed() {
+        super.onBackPressed();
+        dropSuggestionIntent();
+    }
+
+    private void showLastSuggestionCard(SuggestionCardResult cardType) {
+        String name = getArguments().getString(NAME);
+        switch (cardType) {
+            case UNSUBSCRIBED:
+                unsubscribedLayout.setVisibility(View.VISIBLE);
+                addedIgnoredLayout.setVisibility(View.GONE);
+                lastSuggestionCard.setVisibility(View.VISIBLE);
+                break;
+            case IGNORED:
+            case ADDED:
+                boolean added = cardType == SuggestionCardResult.ADDED;
+                unsubscribedLayout.setVisibility(View.GONE);
+                addedIgnoredLayout.setVisibility(View.VISIBLE);
+                suggestionName.setText(name);
+                suggestionInfo.setText(added ? R.string.ff_add_success_message : R.string.ff_ignore_success_message);
+                // TODO change mark
+                lastSuggestionCard.setVisibility(View.VISIBLE);
+                break;
+            default:
+                lastSuggestionCard.setVisibility(View.GONE);
+                break;
+        }
+        suggestionActionButton.setText(cardType.actionId != 0 ? getString(0) : "");
+        currentCardType = cardType;
     }
 
     class FriendsAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener, Filterable {

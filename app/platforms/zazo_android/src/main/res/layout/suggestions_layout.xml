@@ -38,6 +38,23 @@
             />
         </LinearLayout>
 
+        <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/done_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:padding="12dp"
+                android:gravity="center_vertical"
+                android:layout_centerVertical="true"
+                android:text=""
+                android:textSize="@dimen/text_very_large"
+                android:textColor="@color/actionbar_textcolor"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:drawableLeft="@drawable/ic_action_accept_white"
+                android:drawableStart="@drawable/ic_action_accept_white"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                />
     </RelativeLayout>
 
     <RelativeLayout
@@ -70,7 +87,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:text="@string/suggestions_unsubscribed_notice"
+                        android:text="@string/ff_unsubscribed_message"
                         android:textColor="@color/suggestion_notice"
                         android:layout_marginLeft="@dimen/abc_action_bar_content_inset_material"
                         android:layout_marginStart="@dimen/abc_action_bar_content_inset_material"
@@ -97,7 +114,7 @@
                         app:civ_fill_color="@color/accent_2"
                         />
                 <TextView
-                        android:id="@+id/thumb_title"
+                        android:id="@+id/last_suggestion_thumb_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignLeft="@id/last_suggestion_thumb"

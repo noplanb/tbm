@@ -3,7 +3,6 @@ package com.zazoapp.client.ui;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.SwitchCompat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -25,7 +24,7 @@ import com.zazoapp.client.ui.animations.SlideHorizontalFadeAnimation;
 /**
  * Created by skamenkovych@codeminders.com on 1/22/2016.
  */
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends ZazoTopFragment {
 
     @InjectView(R.id.settings_list) ScrollView settingsList;
     @InjectView(R.id.up) MaterialMenuView up;
