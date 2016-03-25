@@ -176,9 +176,17 @@
         <item name="android:minWidth">64dp</item>
         <item name="android:paddingLeft">8dp</item>
         <item name="android:paddingRight">8dp</item>
-        <item name="android:background">@drawable/suggestion_action_btn_bg</item>
+        <item name="android:background">@drawable/suggestion_action_btn_bg_blue</item>
         <item name="android:textColor">@color/dialog_action_text</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:textSize">@dimen/text_normal</item>
+        <item name="android:textSize">@dimen/text_small</item>
+    </style>
+
+    <style name="BorderlessFlatActionButton.Small">
+        <item name="android:layout_height">30dp</item>
+        <item name="android:minWidth">50dp</item>
+        <item name="android:paddingLeft">3dp</item>
+        <item name="android:paddingRight">3dp</item>
+        <item name="android:background">@drawable/suggestion_action_btn_bg</item>
     </style>
 </resources>

@@ -1,11 +1,16 @@
 package com.zazoapp.client.network;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.debug.DebugConfig;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Random;
 
 /**
  * Created by skamenkovych@codeminders.com on 12/7/2015.
@@ -48,6 +53,22 @@ public class FriendFinderRequests {
 
     public static void subscribe(String nkey, @Nullable HttpRequest.Callbacks callbacks) {
         requestNotificationApi("subscribe", nkey, callbacks);
+    }
+
+    private static final Random testRandom = new Random();
+    public static void testRequest(@NonNull final HttpRequest.Callbacks callbacks) {
+        final int value = testRandom.nextInt(4);
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (value == 0) {
+                    callbacks.error("test error");
+                } else {
+                    callbacks.success("test success");
+                }
+            }
+        }, 1000);
     }
 
     private static void requestNotificationApi(String action, String nkey, @Nullable HttpRequest.Callbacks callbacks) {

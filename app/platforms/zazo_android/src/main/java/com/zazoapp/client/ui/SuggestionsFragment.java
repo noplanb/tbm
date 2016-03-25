@@ -1,7 +1,6 @@
 package com.zazoapp.client.ui;
 
 import android.animation.ValueAnimator;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -11,42 +10,34 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
-import android.support.v7.widget.SwitchCompat;
-import android.view.ContextThemeWrapper;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
-import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+import butterknife.Optional;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
-import com.zazoapp.client.core.TbmApplication;
-import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.GridManager;
-import com.zazoapp.client.network.DeleteFriendRequest;
+import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.animations.SlideHorizontalFadeAnimation;
+import com.zazoapp.client.ui.view.CircleThumbView;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
+import com.zazoapp.client.utilities.StringUtils;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -54,7 +45,7 @@ import java.util.List;
  */
 public class SuggestionsFragment extends ZazoTopFragment {
 
-    @InjectView(R.id.friends_list) ListView listView;
+    @InjectView(R.id.suggestions_list) RecyclerView listView;
     @InjectView(R.id.up) MaterialMenuView up;
     @InjectView(R.id.unsubscribed_layout) ViewGroup unsubscribedLayout;
     @InjectView(R.id.added_ignored_layout) ViewGroup addedIgnoredLayout;
@@ -65,7 +56,7 @@ public class SuggestionsFragment extends ZazoTopFragment {
     @InjectView(R.id.suggestion_info) TextView suggestionInfo;
     @InjectView(R.id.suggestion_action_btn) Button suggestionActionButton;
 
-    private FriendsAdapter adapter;
+    private SuggestionsAdapter adapter;
     private SuggestionCardResult currentCardType = SuggestionCardResult.NONE;
 
     private static final String CARD_TYPE = "card_type";
@@ -118,8 +109,10 @@ public class SuggestionsFragment extends ZazoTopFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.suggestions_layout, null);
         ButterKnife.inject(this, v);
-        adapter = new FriendsAdapter(getActivity());
+        adapter = new SuggestionsAdapter(getContext());
         listView.setAdapter(adapter);
+        listView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+
         up.setState(MaterialMenuDrawable.IconState.ARROW);
         showLastSuggestionCard(SuggestionCardResult.values()[getArguments().getInt(CARD_TYPE, 0)]);
         return v;
@@ -136,6 +129,18 @@ public class SuggestionsFragment extends ZazoTopFragment {
                 dropSuggestionIntent();
                 getFragmentManager().popBackStack();
                 // TODO do invite
+                break;
+        }
+    }
+
+    @OnClick({R.id.test_add, R.id.test_remove})
+    public void testOnClick(View v) {
+        switch (v.getId()) {
+            case R.id.test_add:
+                adapter.add(adapter.getItemCount(), new Suggestion("Test " + (adapter.getItemCount())));
+                break;
+            case R.id.test_remove:
+                adapter.remove(adapter.getItemCount() - 1);
                 break;
         }
     }
@@ -179,134 +184,150 @@ public class SuggestionsFragment extends ZazoTopFragment {
         currentCardType = cardType;
     }
 
-    class FriendsAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener, Filterable {
+    private static class SuggestionsAdapter extends RecyclerView.Adapter<ViewHolder> implements View.OnClickListener {
+        private List<Suggestion> suggestions;
+        private OnItemClickListener onItemClickListener;
+        private LayoutInflater layoutInflater;
 
-        private LayoutInflater inflater;
-        private List<Friend> friends;
         private final int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
         private final int colors[];
         private ColorMatrix grayedMatrix = new ColorMatrix();
         private ColorMatrixColorFilter disabledFilter;
         private ColorDrawable transparentDrawable = new ColorDrawable(Color.TRANSPARENT);
 
-        private final float MIN_SATURATION = 0.25f;
+        private final float MIN_SATURATION = 0f;
         private final float MIN_ALPHA = 0.6f;
         private final long ANIM_DURATION = 300;
-        private Filter filter;
 
-        FriendsAdapter(Activity context) {
-            ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(context.getBaseContext(), R.style.AppTheme_SwitchCompat);
-            inflater = (LayoutInflater) contextThemeWrapper.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            friends = FriendFactory.getFactoryInstance().all();
-            Collections.sort(friends, new Comparator<Friend>() {
-                @Override
-                public int compare(Friend lhs, Friend rhs) {
-                    return lhs.getFullName().compareTo(rhs.getFullName());
+        @Override
+        public void onClick(final View v) {
+            if (v.getId() == R.id.add_all_btn) {
+                DialogShower.showToast(layoutInflater.getContext(), "Add All");
+                return;
+            }
+            final int position = (Integer) v.getTag(R.id.id);
+            final Suggestion item = suggestions.get(position);
+            ViewHolder h = (ViewHolder) v.getTag();
+            switch (v.getId()) {
+                case R.id.add_btn: {
+                    h.progress.setVisibility(View.VISIBLE);
+                    FriendFinderRequests.testRequest(new SuggestionRequestCallback(position, v, Suggestion.State.ADDED));
                 }
-            });
+                break;
+                case R.id.ignore_btn: {
+                    h.progress.setVisibility(View.VISIBLE);
+                    FriendFinderRequests.testRequest(new SuggestionRequestCallback(position, v, Suggestion.State.IGNORED));
+                }
+                break;
+                case R.id.undo_btn: {
+                    setState(Suggestion.State.NEW, v, position, true);
+                }
+                break;
+            }
+        }
+
+        public interface OnItemClickListener{
+            void onItemClick(ViewHolder item, int position, int actionId);
+        }
+
+        public SuggestionsAdapter(Context context){
+            layoutInflater = LayoutInflater.from(context);
+            suggestions = new ArrayList<>();
             colors = context.getResources().getIntArray(R.array.thumb_colors);
             grayedMatrix.setSaturation(MIN_SATURATION);
             disabledFilter = new ColorMatrixColorFilter(grayedMatrix);
         }
 
-        void setList(List<Friend> friends) {
-            this.friends = friends;
-        }
-
         @Override
-        public int getCount() {
-            return friends.size();
-        }
-
-        @Override
-        public Friend getItem(int position) {
-            return friends.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            Holder h;
-            if (convertView != null) {
-                h = (Holder) convertView.getTag();
-            } else {
-                convertView = inflater.inflate(R.layout.manage_friends_list_item, null);
-                h = new Holder(convertView);
-                convertView.setTag(h);
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View itemView;
+            switch (viewType) {
+                case 1:
+                    itemView = layoutInflater.inflate(R.layout.suggestions_first_list_item, parent, false);
+                    break;
+                default:
+                    itemView = layoutInflater.inflate(R.layout.suggestions_list_item, parent, false);
+                    break;
             }
-            Friend f = getItem(position);
-            h.name.setText(f.getFullName());
-            h.phone.setText(f.get(Friend.Attributes.MOBILE_NUMBER));
-            h.button.setTag(h);
-            h.button.setTag(R.id.id, position);
-            h.button.setChecked(!f.isDeleted());
-            h.button.setOnCheckedChangeListener(this);
-            setState(!f.isDeleted(), h.button, position, false);
+            return new ViewHolder(itemView, this);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder h, int position) {
+            Suggestion item = suggestions.get(position);
+            h.name.setText(item.name);
+            h.addButton.setTag(h);
+            h.addButton.setTag(R.id.id, position);
+            h.addButton.setOnClickListener(this);
+            h.ignoreButton.setTag(h);
+            h.ignoreButton.setTag(R.id.id, position);
+            h.ignoreButton.setOnClickListener(this);
+            h.undoButton.setTag(h);
+            h.undoButton.setTag(R.id.id, position);
+            h.undoButton.setOnClickListener(this);
+            if (getItemViewType(position) == 1) {
+                h.addAllButton.setOnClickListener(this);
+            }
+            setState(item.state, h.addButton, position, false);
             h.progress.setVisibility(View.INVISIBLE);
-            return convertView;
         }
 
         @Override
-        public void onCheckedChanged(final CompoundButton v, final boolean isChecked) {
-            if (v.getId() == R.id.delete_btn) {
-                final int position = (Integer) v.getTag(R.id.id);
-                final Friend friend = getItem(position);
-                if (friend.isDeleted() == isChecked) {
-                    ((Holder) v.getTag()).progress.setVisibility(View.VISIBLE);
-                    DeleteFriendRequest.makeRequest(friend, !isChecked, new HttpRequest.Callbacks() {
-                        @Override
-                        public void success(String response) {
-                            friend.setDeleted(!isChecked);
-                            GridManager.onFriendDeleteStatusChanged(friend);
-                            finishRequest();
-                        }
-
-                        @Override
-                        public void error(String errorString) {
-                            DialogShower.showToast(TbmApplication.getInstance(), R.string.toast_could_not_sync);
-                            v.setChecked(!friend.isDeleted());
-                            finishRequest();
-                        }
-
-                        private void finishRequest() {
-                            if (position == (int) v.getTag(R.id.id)) {
-                                Holder h = (Holder) v.getTag();
-                                h.progress.setVisibility(View.INVISIBLE);
-                                setState(!friend.isDeleted(), v, position, true);
-                            }
-                        }
-                    });
-                }
-
-            }
+        public int getItemCount() {
+            return suggestions.size();
         }
 
-        void setState(final boolean enabled, final View v, final int position, boolean smooth) {
-            Friend f = getItem(position);
-            final Holder h = (Holder) v.getTag();
+        public void add(int location, Suggestion suggestion){
+            suggestions.add(location, suggestion);
+            notifyItemInserted(location);
+        }
+
+        public void remove(int location){
+            if(location >= suggestions.size())
+                return;
+
+            suggestions.remove(location);
+            notifyItemRemoved(location);
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return position == 0 ? 1 : 2;
+        }
+
+        void setState(final Suggestion.State state, final View v, final int position, boolean smooth) {
+            final Suggestion item = suggestions.get(position);
+            final ViewHolder h = (ViewHolder) v.getTag();
             final int posId = (int) v.getTag(R.id.id);
-            if (f.thumbExists()) {
-                h.thumbTitle.setText(null);
-                h.thumb.setImageBitmap(f.thumbBitmap());
-                h.thumb.setFillColor(Color.TRANSPARENT);
-            } else if (f.hasApp()) {
-                h.thumb.setImageResource(Convenience.getStringDependentItem(f.getFullName(), icons));
-                h.thumb.setFillColor(Convenience.getStringDependentItem(f.getFullName(), colors));
-                h.thumbTitle.setText(f.getInitials());
-            } else {
-                h.thumb.setImageDrawable(transparentDrawable);
-                h.thumb.setFillColor(Color.GRAY);
-                h.thumbTitle.setText(f.getInitials());
+            h.thumb.setImageResource(Convenience.getStringDependentItem(item.name, icons));
+            h.thumb.setFillColor(Convenience.getStringDependentItem(item.name, colors));
+            h.thumbTitle.setText(StringUtils.getInitials(item.name));
+            item.state = state;
+            switch (item.state) {
+                case NEW:
+                    h.addButton.setVisibility(View.VISIBLE);
+                    h.ignoreButton.setVisibility(View.VISIBLE);
+                    h.undoButton.setVisibility(View.INVISIBLE);
+                    h.checkbox.setVisibility(View.INVISIBLE);
+                    break;
+                case ADDED:
+                    h.addButton.setVisibility(View.GONE);
+                    h.ignoreButton.setVisibility(View.GONE);
+                    h.undoButton.setVisibility(View.INVISIBLE);
+                    h.checkbox.setVisibility(View.VISIBLE);
+                    break;
+                case IGNORED:
+                    h.addButton.setVisibility(View.GONE);
+                    h.ignoreButton.setVisibility(View.GONE);
+                    h.undoButton.setVisibility(View.VISIBLE);
+                    h.checkbox.setVisibility(View.INVISIBLE);
+                    break;
             }
             if (smooth) {
                 ValueAnimator animator = new ValueAnimator();
                 animator.setDuration(ANIM_DURATION);
                 animator.setInterpolator(new AccelerateInterpolator());
-                if (enabled) {
+                if (state != Suggestion.State.IGNORED) {
                     animator.setFloatValues(0f, 1f);
                 } else {
                     animator.setFloatValues(1f, 0f);
@@ -322,7 +343,8 @@ public class SuggestionsFragment extends ZazoTopFragment {
                             h.leftLayout.setAlpha(value * (1 - MIN_ALPHA) + MIN_ALPHA);
                             matrix.setSaturation(value * (1 - MIN_SATURATION) + MIN_SATURATION);
                             filter = new ColorMatrixColorFilter(matrix);
-                            h.thumb.setColorFilter(filter);
+                            h.thumb.setFillColorFilter(filter);
+                            h.thumb.invalidate();
                         } else {
                             animation.cancel();
                         }
@@ -330,80 +352,46 @@ public class SuggestionsFragment extends ZazoTopFragment {
                 });
                 animator.start();
             } else {
-                if (enabled) {
+                if (state != Suggestion.State.IGNORED) {
                     h.leftLayout.setAlpha(1f);
-                    h.thumb.setColorFilter(null);
+                    h.thumb.setFillColorFilter(null);
                 } else {
                     h.leftLayout.setAlpha(MIN_ALPHA);
-                    h.thumb.setColorFilter(disabledFilter);
+                    h.thumb.setFillColorFilter(disabledFilter);
                 }
             }
 
         }
 
-        @Override
-        public Filter getFilter() {
-            if (filter == null) {
-                filter = new SearchFilter();
-            }
-            return filter;
-        }
+        class SuggestionRequestCallback implements HttpRequest.Callbacks {
 
-        class Holder {
-            @InjectView(R.id.thumb) CircleImageView thumb;
-            @InjectView(R.id.thumb_title) TextView thumbTitle;
-            @InjectView(R.id.delete_btn) SwitchCompat button;
-            @InjectView(R.id.name) TextView name;
-            @InjectView(R.id.phone) TextView phone;
-            @InjectView(R.id.progress_layout) View progress;
-            @InjectView(R.id.left_layout) View leftLayout;
+            private int position;
+            private View view;
+            private Suggestion.State successState;
 
-            Holder(View source) {
-                ButterKnife.inject(this, source);
-            }
-        }
-
-        private class SearchFilter extends Filter {
-
-            @Override
-            protected FilterResults performFiltering(CharSequence filterString) {
-
-                FilterResults results = new FilterResults();
-                List<Friend> listCopy = FriendFactory.getFactoryInstance().all();
-                Collections.sort(listCopy, new Comparator<Friend>() {
-                    @Override
-                    public int compare(Friend lhs, Friend rhs) {
-                        return lhs.getFullName().compareTo(rhs.getFullName());
-                    }
-                });
-                if (filterString == null || filterString.length() == 0) {
-                    results.values = listCopy;
-                    results.count = listCopy.size();
-                } else {
-                    String prefixString = filterString.toString().toLowerCase();
-
-                    // find all matching objects here and add
-                    // them to allMatching, use filterString.
-                    List<Friend> allMatching = new ArrayList<>();
-                    for (Friend friend : listCopy) {
-                        if (friend != null && friend.getFullName().toLowerCase().contains(prefixString)) {
-                            allMatching.add(friend);
-                        }
-                    }
-
-                    results.values = allMatching;
-                    results.count = allMatching.size();
-                }
-                return results;
+            SuggestionRequestCallback(int position, View v, Suggestion.State successState) {
+                this.position = position;
+                this.view = v;
+                this.successState = successState;
             }
 
             @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                setList((List<Friend>) results.values);
-                if (results.count > 0) {
-                    notifyDataSetChanged();
-                } else {
-                    notifyDataSetInvalidated();
+            public void success(String response) {
+                finishRequest(true);
+            }
+
+            @Override
+            public void error(String errorString) {
+                finishRequest(false);
+            }
+
+            private void finishRequest(boolean success) {
+                if (position == (int) view.getTag(R.id.id)) {
+                    ViewHolder h = (ViewHolder) view.getTag();
+                    h.progress.setVisibility(View.INVISIBLE);
+                    if (success) {
+                        setState(successState, view, position, true);
+                    }
                 }
             }
         }
@@ -415,5 +403,43 @@ public class SuggestionsFragment extends ZazoTopFragment {
             return super.onCreateAnimation(transit, enter, nextAnim);
         }
         return SlideHorizontalFadeAnimation.get(getActivity(), nextAnim);
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+
+        @InjectView(R.id.thumb) CircleThumbView thumb;
+        @InjectView(R.id.thumb_title) TextView thumbTitle;
+        @InjectView(R.id.add_btn) Button addButton;
+        @InjectView(R.id.ignore_btn) Button ignoreButton;
+        @InjectView(R.id.undo_btn) Button undoButton;
+        @InjectView(R.id.checkbox) ImageView checkbox;
+        @InjectView(R.id.name) TextView name;
+        @InjectView(R.id.progress_layout) View progress;
+        @InjectView(R.id.left_layout) View leftLayout;
+        @Optional @InjectView(R.id.add_all_btn) Button addAllButton;
+
+        private SuggestionsAdapter adpater;
+
+        public ViewHolder(View itemView, SuggestionsAdapter suggestionsAdapter) {
+            super(itemView);
+            ButterKnife.inject(this, itemView);
+        }
+    }
+
+    static class Suggestion {
+        String name;
+        String nkey;
+        State state = State.NEW;
+
+        Suggestion(String name) {
+            this.name = name;
+        }
+
+        enum State {
+            NEW,
+            ADDED,
+            IGNORED,
+            SYNCING
+        }
     }
 }

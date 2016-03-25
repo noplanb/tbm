@@ -116,7 +116,7 @@
 
     <string name="action_view">View</string>
     <string name="action_dismiss">Dismiss</string>
-    <string name="action_undo">Dismiss</string>
+    <string name="action_undo">Undo</string>
     <string name="action_got_it">Got it</string>
     <string name="action_subscribe">Subscribe</string>
     <string name="action_done">Done</string>
@@ -190,6 +190,8 @@
     <string name="action_unsubscribe_joined_friend">Unsubscribe</string>
 
     <string name="suggestions">Suggestions</string>
+    <string name="suggestions_add_all">Add all</string>
+    <string name="suggestions_add_all_label">Add others on Zazo:</string>
     <string name="ff_add_success_message">You and %1$s are connected!</string>
     <string name="ff_add_error_message">Couldn\'t add friend</string>
     <string name="ff_ignore_success_message">Ignored! %1$s was not added.</string>

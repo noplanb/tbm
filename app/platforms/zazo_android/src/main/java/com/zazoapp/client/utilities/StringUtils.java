@@ -122,6 +122,19 @@ public class StringUtils {
         return initials.toString();
     }
 
+    public static String getInitials(String a) {
+        if (a != null && !a.isEmpty()) {
+            String[] split = a.split(" ", 2);
+            if (split.length == 2) {
+                return getInitials(split[0], split[1]);
+            } else {
+                return getInitials(split[0], null);
+            }
+        } else {
+            return "";
+        }
+    }
+
     public static CharSequence getFirstLetter(CharSequence sequence) {
         if (TextUtils.isEmpty(sequence)) {
             return "?";
