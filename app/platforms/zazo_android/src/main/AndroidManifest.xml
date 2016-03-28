@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" /> <!--Normal permission-->
     <uses-permission android:name="android.permission.INTERNET" /> <!--Normal permission-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!--Normal permission-->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_LOGS"/>
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
@@ -43,6 +44,14 @@
 
         <receiver
                 android:name="com.appsflyer.MultipleInstallBroadcastReceiver"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver
+                android:name=".ads.affle.AffleInstallReceiver"
                 android:exported="true">
             <intent-filter>
                 <action android:name="com.android.vending.INSTALL_REFERRER"/>
@@ -134,6 +143,10 @@
                 <action android:name="android.intent.action.DATE_CHANGED"/>
             </intent-filter>
         </receiver>
+        <meta-data android:name="af_DebugMode" android:value="false"/>
+        <meta-data android:name="af_cid" android:value="1458844986"/>
+        <meta-data android:name="af_SessionTimeOut" android:value="3600"/>
+
         <!-- For tests -->
         <!--<activity android:name=".tests.TestActivity" android:screenOrientation="portrait" android:launchMode="singleTask"/>-->
         <!--<service android:name=".tests.FileDownloadServiceTest"/>-->
