@@ -166,7 +166,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             listView.setTextFilterEnabled(true);
             if (adapter.isDataSetReady()) {
                 listView.setAdapter(adapter);
-                applyFilter(searchPanel.getText());
+                applyFilter("");
                 doListViewAppearing();
             }
             slidingHeading.setVisibility(View.VISIBLE);
