@@ -244,12 +244,16 @@ public class NotificationAlertManager {
         Log.i(TAG, "postNativeAlert");
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         Intent activityIntent = new Intent(context.getApplicationContext(), MainActivity.class);
+        activityIntent.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
+        activityIntent.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.NOTIFY);
+        activityIntent.putExtra(IntentHandlerService.FriendJoinedIntentFields.NKEY, nkey);
+        activityIntent.putExtra(IntentHandlerService.FriendJoinedIntentFields.NAME, name);
         Intent serviceIntent = new Intent(context.getApplicationContext(), IntentHandlerService.class);
-        PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, activityIntent, 0);
+        PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         PendingIntent addJoinedFriendIntent = PendingIntent.getService(context, 1,
-                makeJoinedFriendIntent(serviceIntent, nkey, name, IntentHandlerService.FriendJoinedActions.ADD), 0);
+                makeJoinedFriendIntent(serviceIntent, nkey, name, IntentHandlerService.FriendJoinedActions.ADD), PendingIntent.FLAG_CANCEL_CURRENT);
         PendingIntent ignoreJoinedFriendIntent = PendingIntent.getService(context, 2,
-                makeJoinedFriendIntent(serviceIntent, nkey, name, IntentHandlerService.FriendJoinedActions.IGNORE), 0);
+                makeJoinedFriendIntent(serviceIntent, nkey, name, IntentHandlerService.FriendJoinedActions.IGNORE), PendingIntent.FLAG_CANCEL_CURRENT);
 
         String title = context.getString(R.string.new_friend_joined, name);
         NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();

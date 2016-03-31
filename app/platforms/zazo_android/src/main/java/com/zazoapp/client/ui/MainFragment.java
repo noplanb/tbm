@@ -78,6 +78,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     private static final String TAB = "mf_tab";
     private static final int TAB_MAIN = 0;
     private static final int TAB_FRIENDS = 1;
+    private static final String EXTRA_HANDLED = "extra_handled";
 
     private GcmHandler gcmHandler;
     private VersionHandler versionHandler;
@@ -180,7 +181,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             // TODO Do action specified in https://zazo.fogbugz.com/f/cases/1062/
             intent.setAction(IntentHandlerService.IntentActions.NONE);
         } else if (IntentHandlerService.IntentActions.SUGGESTIONS.equals(intent.getAction())) {
-            showSuggestions(intent);
+            if (!intent.getBooleanExtra(EXTRA_HANDLED, false)) {
+                if (topFragment != null) {
+                    getFragmentManager().popBackStack();
+                    topFragment = null;
+                }
+                showSuggestions(intent);
+                intent.putExtra(EXTRA_HANDLED, true);
+            }
         }
     }
 
@@ -561,6 +569,9 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         super.onWindowFocusChanged(hasFocus);
         if (gridFragment != null) {
             gridFragment.onWindowFocusChanged(hasFocus);
+        }
+        if (hasFocus) {
+            handleIntent(getActivity().getIntent());
         }
     }
 

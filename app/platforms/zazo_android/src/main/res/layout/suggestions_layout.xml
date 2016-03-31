@@ -64,7 +64,11 @@
             android:layout_below="@id/zazo_action_bar"
             android:background="@drawable/suggestion_card_background"
             android:clipChildren="false"
-            android:clipToPadding="false">
+            android:clipToPadding="false"
+            android:paddingLeft="@dimen/abc_dialog_padding_material"
+            android:paddingRight="@dimen/abc_dialog_padding_material"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
         <FrameLayout
                 android:id="@+id/suggestion_card_content"
                 android:layout_width="match_parent"
@@ -75,14 +79,11 @@
                     android:id="@+id/unsubscribed_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingLeft="@dimen/abc_dialog_padding_material"
-                    android:paddingRight="@dimen/abc_dialog_padding_material"
-                    android:layout_marginTop="16dp">
+                    android:orientation="horizontal">
                 <ImageView
                         android:layout_width="@dimen/thumb_icon_size"
                         android:layout_height="@dimen/thumb_icon_size"
-                        android:src="@android:drawable/ic_dialog_alert"/>
+                        android:src="@drawable/ic_suggestions_unsubscribed_mark"/>
                 <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -98,9 +99,6 @@
                     android:id="@+id/added_ignored_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingLeft="@dimen/abc_dialog_padding_material"
-                    android:paddingRight="@dimen/abc_dialog_padding_material"
-                    android:layout_marginTop="16dp"
                     android:clipChildren="false"
                     android:clipToPadding="false">
                 <de.hdodenhof.circleimageview.CircleImageView
@@ -132,7 +130,7 @@
                         android:id="@+id/add_ignore_mark"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_card_empty_next"
+                        android:src="@drawable/ic_suggestions_add_ignore_mark"
                         android:layout_alignBottom="@id/last_suggestion_thumb"
                         android:layout_alignRight="@id/last_suggestion_thumb"
                         android:translationX="5dp"
@@ -172,13 +170,39 @@
                 android:id="@+id/suggestion_action_btn"
                 style="@style/BorderlessFlatActionButton"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                android:layout_marginRight="@dimen/abc_dialog_padding_material"
-                android:layout_marginEnd="@dimen/abc_dialog_padding_material"
                 android:layout_below="@id/suggestion_card_content"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:text="@string/dialog_action_ok"/>
+        <LinearLayout
+                android:id="@+id/multiple_action_btn_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end|center_vertical"
+                android:layout_below="@id/suggestion_card_content"
+                android:layout_marginTop="16dp">
+
+            <Button
+                    android:id="@+id/suggestion_action_third_btn"
+                    style="@style/BorderlessFlatActionButton"
+                    android:textColor="@color/suggestion_notice"/>
+            <Button
+                    android:id="@+id/suggestion_action_second_btn"
+                    style="@style/BorderlessFlatActionButton"
+                    android:textColor="@color/suggestion_notice"/>
+            <android.support.v7.widget.AppCompatButton
+                    android:id="@+id/suggestion_action_main_btn"
+                    style="@style/Widget.AppCompat.Button"
+                    app:backgroundTint="@color/suggestions_btn_tint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:minWidth="64dp"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:textColor="@color/white"/>
+
+        </LinearLayout>
     </RelativeLayout>
 
     <RelativeLayout
@@ -211,6 +235,16 @@
                 tools:listitem="@layout/suggestions_list_item"/>
     </android.support.v4.widget.SwipeRefreshLayout>
 
+    <ProgressBar
+            android:id="@+id/card_request_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:indeterminate="true"
+            android:layout_below="@id/last_suggestion_card"
+            android:translationY="-2dp"
+            android:visibility="gone"
+            />
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="?android:attr/listPreferredItemHeight"

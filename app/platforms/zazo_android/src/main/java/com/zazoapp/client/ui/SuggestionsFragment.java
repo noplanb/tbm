@@ -2,6 +2,7 @@ package com.zazoapp.client.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,6 +17,7 @@ import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -26,6 +28,7 @@ import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.network.FriendFinderRequests;
+import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.animations.SlideHorizontalFadeAnimation;
 import com.zazoapp.client.ui.view.CircleThumbView;
 import com.zazoapp.client.utilities.Convenience;
@@ -48,6 +51,11 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
     @InjectView(R.id.suggestion_action_btn) Button suggestionActionButton;
     @InjectView(R.id.progress) ProgressBar progressBar;
     @InjectView(R.id.swipe_container) SwipeRefreshLayout swipeRefreshLayout;
+    @InjectView(R.id.multiple_action_btn_layout) ViewGroup multipleActionsButtonLayout;
+    @InjectView(R.id.suggestion_action_third_btn) Button thirdButton;
+    @InjectView(R.id.suggestion_action_second_btn) Button secondButton;
+    @InjectView(R.id.suggestion_action_main_btn) Button mainButton;
+    @InjectView(R.id.card_request_progress) ProgressBar cardRequestProgress;
 
     private SuggestionsAdapter adapter;
     private SuggestionCardResult currentCardType = SuggestionCardResult.NONE;
@@ -65,12 +73,15 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
         NONE(0),
         UNSUBSCRIBED(R.string.action_subscribe),
         IGNORED(R.string.action_undo),
-        ADDED(R.string.action_got_it);
+        ADDED(R.string.action_got_it),
+        NOTIFICATION(R.string.action_add_joined_friend, R.string.action_ignore_joined_friend, R.string.action_unsubscribe_joined_friend);
 
         private int actionId;
+        private int[] extraActionIds;
 
-        SuggestionCardResult(@StringRes int action) {
-            actionId = action;
+        SuggestionCardResult(@StringRes int mainAction, @StringRes int... extraActions) {
+            actionId = mainAction;
+            extraActionIds = extraActions;
         }
     }
 
@@ -91,6 +102,10 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
                     case IntentHandlerService.FriendJoinedActions.UNSUBSCRIBE:
                         bundle.putInt(CARD_TYPE, SuggestionCardResult.UNSUBSCRIBED.ordinal());
                         break;
+                    case IntentHandlerService.FriendJoinedActions.NOTIFY:
+                        bundle.putInt(CARD_TYPE, SuggestionCardResult.NOTIFICATION.ordinal());
+                        break;
+
                 }
                 bundle.putString(NAME, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NAME));
                 bundle.putString(NKEY, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NKEY));
@@ -137,7 +152,7 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
         });
     }
 
-    @OnClick({R.id.home, R.id.suggestion_action_btn, R.id.done_btn})
+    @OnClick({R.id.home, R.id.suggestion_action_btn, R.id.done_btn, R.id.suggestion_action_main_btn, R.id.suggestion_action_second_btn, R.id.suggestion_action_third_btn})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.home:
@@ -150,23 +165,54 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
                 // TODO do invite
                 break;
             case R.id.suggestion_action_btn:
-                if (currentCardType == SuggestionCardResult.UNSUBSCRIBED) {
-                    FriendFinderRequests.subscribe(getArguments().getString(NKEY), null);
+                switch (currentCardType.actionId) {
+                    case R.string.action_subscribe:
+                        // TODO subscribed
+                        FriendFinderRequests.subscribe(getArguments().getString(NKEY), new CardLayoutRequestCallback(SuggestionCardResult.UNSUBSCRIBED));
+                        break;
+                    case R.string.action_undo:
+                        showLastSuggestionCard(SuggestionCardResult.NOTIFICATION);
+                        break;
+                    default:
+                        hideLastSuggestionCard();
+                        break;
                 }
-                hideLastSuggestionCard();
+                break;
+            case R.id.suggestion_action_main_btn:
+                FriendFinderRequests.addFriend(getArguments().getString(NKEY), new CardLayoutRequestCallback(SuggestionCardResult.ADDED));
+                cardRequestProgress.setVisibility(View.VISIBLE);
+                break;
+            case R.id.suggestion_action_second_btn:
+                FriendFinderRequests.ignoreFriend(getArguments().getString(NKEY), new CardLayoutRequestCallback(SuggestionCardResult.IGNORED));
+                break;
+            case R.id.unsubscribed_layout:
+                FriendFinderRequests.unsubscribe(getArguments().getString(NKEY), new CardLayoutRequestCallback(SuggestionCardResult.UNSUBSCRIBED));
                 break;
         }
     }
 
     private void hideLastSuggestionCard() {
-        swipeRefreshLayout.animate().yBy(-lastSuggestionCard.getHeight()).start();
-        lastSuggestionCard.animate().yBy(-lastSuggestionCard.getHeight()).start();
-        lastSuggestionCard.postDelayed(new Runnable() {
+        ValueAnimator slideAnim = ValueAnimator.ofInt(0, lastSuggestionCard.getHeight());
+        slideAnim.setDuration(400);
+        slideAnim.addListener(new AnimatorListenerAdapter() {
             @Override
-            public void run() {
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
                 showLastSuggestionCard(SuggestionCardResult.NONE);
             }
-        }, 400);
+        });
+        slideAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int value = (int) animation.getAnimatedValue();
+                swipeRefreshLayout.setTranslationY(lastSuggestionCard.getHeight()-value);
+            }
+        });
+        slideAnim.start();
+        RelativeLayout.LayoutParams p = (RelativeLayout.LayoutParams) swipeRefreshLayout.getLayoutParams();
+        p.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        p.addRule(RelativeLayout.BELOW, R.id.zazo_action_bar);
+        swipeRefreshLayout.setLayoutParams(p);
     }
 
     @OnClick({R.id.test_add, R.id.test_remove})
@@ -201,6 +247,7 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
                 unsubscribedLayout.setVisibility(View.VISIBLE);
                 addedIgnoredLayout.setVisibility(View.GONE);
                 lastSuggestionCard.setVisibility(View.VISIBLE);
+                multipleActionsButtonLayout.setVisibility(View.GONE);
                 break;
             case IGNORED:
             case ADDED:
@@ -209,8 +256,21 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
                 addedIgnoredLayout.setVisibility(View.VISIBLE);
                 suggestionName.setText(name);
                 suggestionInfo.setText(added ? getString(R.string.ff_add_success_message, name) : getString(R.string.ff_ignore_success_message, name));
-                // TODO change mark
+                addIgnoreMark.setEnabled(added);
+                addIgnoreMark.setVisibility(View.VISIBLE);
                 lastSuggestionCard.setVisibility(View.VISIBLE);
+                multipleActionsButtonLayout.setVisibility(View.GONE);
+                break;
+            case NOTIFICATION:
+                multipleActionsButtonLayout.setVisibility(View.VISIBLE);
+                unsubscribedLayout.setVisibility(View.GONE);
+                addedIgnoredLayout.setVisibility(View.VISIBLE);
+                suggestionName.setText(name);
+                suggestionInfo.setText(getString(R.string.new_friend_joined, name));
+                mainButton.setText(R.string.action_add_joined_friend);
+                secondButton.setText(R.string.action_ignore_joined_friend);
+                thirdButton.setText(R.string.action_unsubscribe_joined_friend);
+                addIgnoreMark.setVisibility(View.INVISIBLE);
                 break;
             default:
                 lastSuggestionCard.setVisibility(View.GONE);
@@ -222,7 +282,7 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
 
     private void doListViewAppearing() {
         if (listView != null && listView.getAlpha() == 0) {
-            final float offset = Convenience.dpToPx(getContext(), 50);
+            final float offset = Convenience.dpToPx(listView.getContext(), 50);
             progressBar.animate().alpha(0).translationY(-offset).setListener(
                     new AnimatorListenerAdapter() {
                         @Override
@@ -283,6 +343,37 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
             ADDED,
             IGNORED,
             SYNCING
+        }
+    }
+
+    private class CardLayoutRequestCallback implements HttpRequest.Callbacks {
+
+        SuggestionCardResult successCard;
+
+        CardLayoutRequestCallback(SuggestionCardResult cardType) {
+            successCard = cardType;
+            cardRequestProgress.setVisibility(View.VISIBLE);
+            setButtonsEnabled(false);
+        }
+
+        @Override
+        public void success(String response) {
+            cardRequestProgress.setVisibility(View.GONE);
+            showLastSuggestionCard(successCard);
+            setButtonsEnabled(true);
+        }
+
+        @Override
+        public void error(String errorString) {
+            cardRequestProgress.setVisibility(View.GONE);
+            setButtonsEnabled(true);
+        }
+
+        private void setButtonsEnabled(boolean enable) {
+            suggestionActionButton.setEnabled(enable);
+            mainButton.setEnabled(enable);
+            secondButton.setEnabled(enable);
+            thirdButton.setEnabled(enable);
         }
     }
 }
