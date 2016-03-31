@@ -436,7 +436,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         }
 
         private void handleFriendJoinedIntent() {
-            String friendJoinedAction = intent.getStringExtra(FriendJoinedIntentFields.ACTION);
+            final String friendJoinedAction = intent.getStringExtra(FriendJoinedIntentFields.ACTION);
             if (friendJoinedAction == null) {
                 return;
             }
@@ -453,6 +453,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                         public void success(String response) {
                             Intent startIntent = new Intent(intent);
                             startIntent.setClass(getApplicationContext(), MainActivity.class);
+                            startIntent.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
                             startActivity(startIntent);
                         }
 
@@ -469,6 +470,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                         public void success(String response) {
                             Intent startIntent = new Intent(intent);
                             startIntent.setClass(getApplicationContext(), MainActivity.class);
+                            startIntent.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
                             startActivity(startIntent);
                         }
 
@@ -485,6 +487,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                         public void success(String response) {
                             Intent startIntent = new Intent(intent);
                             startIntent.setClass(getApplicationContext(), MainActivity.class);
+                            startIntent.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
                             startActivity(startIntent);
                         }
 

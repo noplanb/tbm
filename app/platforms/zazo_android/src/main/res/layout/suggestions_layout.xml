@@ -26,7 +26,7 @@
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
                     android:padding="@dimen/actionbar_item_padding"
-                    android:visibility="gone"/>
+                    android:visibility="visible"/>
 
             <TextView
                     android:layout_width="wrap_content"
@@ -180,16 +180,37 @@
                 android:layout_alignParentEnd="true"
                 android:text="@string/dialog_action_ok"/>
     </RelativeLayout>
-    <android.support.v7.widget.RecyclerView
-            android:id="@+id/suggestions_list"
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/last_suggestion_card">
+        <ProgressBar
+                android:id="@+id/progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:max="10000"
+                android:indeterminateOnly="true"/>
+    </RelativeLayout>
+
+    <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/last_suggestion_card"
             android:layout_alignParentBottom="true"
-            android:divider="@null"
-            android:dividerHeight="0px"
-            android:background="@color/bgn_main"
-            tools:listitem="@layout/suggestions_list_item"/>
+            >
+        <android.support.v7.widget.RecyclerView
+                android:id="@+id/suggestions_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@null"
+                android:dividerHeight="0px"
+                android:background="@color/bgn_main"
+                tools:listitem="@layout/suggestions_list_item"/>
+    </android.support.v4.widget.SwipeRefreshLayout>
+
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="?android:attr/listPreferredItemHeight"
@@ -197,14 +218,14 @@
             android:paddingRight="?android:attr/listPreferredItemPaddingRight"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
-            android:layout_above="@id/suggestions_list"
+            android:layout_above="@id/swipe_container"
             android:visibility="gone">
         <android.support.v7.widget.AppCompatButton
                 android:id="@+id/test_add"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 style="@style/Widget.AppCompat.Button"
-                android:backgroundTint="@color/primary"
+                app:backgroundTint="@color/suggestions_btn_tint"
                 android:textColor="@color/white"
                 android:text="Add"
                 />
@@ -213,7 +234,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 style="@style/Widget.AppCompat.Button"
-                android:backgroundTint="@color/primary"
+                app:backgroundTint="@color/suggestions_btn_tint"
                 android:textColor="@color/white"
                 android:text="Remove"
                 />

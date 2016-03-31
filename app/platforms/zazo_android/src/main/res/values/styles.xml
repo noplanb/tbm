@@ -183,10 +183,10 @@
     </style>
 
     <style name="BorderlessFlatActionButton.Small">
-        <item name="android:layout_height">30dp</item>
+        <item name="android:layout_height">36dp</item>
         <item name="android:minWidth">50dp</item>
-        <item name="android:paddingLeft">3dp</item>
-        <item name="android:paddingRight">3dp</item>
+        <item name="android:paddingLeft">4dp</item>
+        <item name="android:paddingRight">4dp</item>
         <item name="android:background">@drawable/suggestion_action_btn_bg</item>
     </style>
 </resources>
