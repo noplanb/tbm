@@ -745,4 +745,11 @@
         <item>@color/thumb_color_indigo</item>
         <item>@color/thumb_color_cyan</item>
     </integer-array>
+    <integer-array name="progress_colors">
+        <item>@color/thumb_color_blue</item>
+        <item>@color/thumb_color_teal</item>
+        <item>@color/thumb_color_deep_purple</item>
+        <item>@color/thumb_color_indigo</item>
+        <item>@color/thumb_color_cyan</item>
+    </integer-array>
 </resources>

@@ -110,13 +110,10 @@
                 android:layout_height="match_parent"
                 android:clickable="true"
                 android:visibility="invisible">
-            <com.github.rahatarmanahmed.cpv.CircularProgressView
+            <fr.castorflex.android.circularprogressbar.CircularProgressBar
                     android:id="@+id/progress"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    app:cpv_animAutostart="true"
-                    app:cpv_indeterminate="true"
-                    app:cpv_color="@color/primary"
                     android:layout_centerInParent="true"/>
             <View
                     android:layout_width="match_parent"

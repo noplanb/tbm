@@ -63,7 +63,7 @@ public class FriendFinderRequests {
             JSONObject object = new JSONObject();
             try {
                 List<Integer> list = Arrays.asList(ids);
-                object.put("added", list);
+                object.put("contacts_ids", list);
                 new HttpRequest.Builder()
                         .setUrl(getUrl(CONTACTS_API, "add"))
                         .setHost(getServerHost())
@@ -90,9 +90,9 @@ public class FriendFinderRequests {
             JSONObject object = new JSONObject();
             try {
                 List<Integer> list = Arrays.asList(ids);
-                object.put("rejected", list);
+                object.put("contacts_ids", list);
                 new HttpRequest.Builder()
-                        .setUrl(getUrl(CONTACTS_API, "reject"))
+                        .setUrl(getUrl(CONTACTS_API, "ignore"))
                         .setHost(getServerHost())
                         .setMethod(HttpRequest.POST)
                         .setJsonParams(object)
@@ -137,6 +137,10 @@ public class FriendFinderRequests {
     }
 
     private static void requestNotificationApi(String action, String nkey, @Nullable HttpRequest.Callbacks callbacks) {
+        if (DebugConfig.Bool.USE_CUSTOM_SERVER.get()) {
+            testRequest(callbacks);
+            return;
+        }
         new HttpRequest.Builder()
                 .setUrl(getUrl(NOTIFICATION_API, nkey, action))
                 .setHost(getServerHost())

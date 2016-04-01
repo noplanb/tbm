@@ -4,5 +4,8 @@
           android:state_focused="true"/>
     <item android:color="@color/primary_focused"
           android:state_pressed="true"/>
+    <item android:color="@color/dialog_textcolor_disabled"
+          android:state_enabled="false"/>
     <item android:color="@color/primary"/>
+
 </selector>

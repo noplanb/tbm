@@ -24,7 +24,7 @@
                 android:title="@string/navigation_contacts" />
         <item
                 android:id="@+id/navigation_item_suggestions"
-                android:icon="@drawable/ic_navigation_contacts"
+                android:icon="@drawable/ic_navigation_suggestions"
                 android:title="@string/navigation_suggestions" />
     </group>
 

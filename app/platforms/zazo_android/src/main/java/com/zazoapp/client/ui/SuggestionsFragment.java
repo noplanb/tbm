@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -129,6 +130,7 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setColorSchemeResources(R.color.thumb_color_blue, R.color.thumb_color_cyan, R.color.thumb_color_teal, R.color.thumb_color_deep_purple, R.color.thumb_color_indigo);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
+        cardRequestProgress.setInterpolator(new FastOutSlowInInterpolator());
         showLastSuggestionCard(SuggestionCardResult.values()[getArguments().getInt(CARD_TYPE, 0)]);
         return v;
     }
@@ -167,8 +169,7 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
             case R.id.suggestion_action_btn:
                 switch (currentCardType.actionId) {
                     case R.string.action_subscribe:
-                        // TODO subscribed
-                        FriendFinderRequests.subscribe(getArguments().getString(NKEY), new CardLayoutRequestCallback(SuggestionCardResult.UNSUBSCRIBED));
+                        FriendFinderRequests.subscribe(getArguments().getString(NKEY), new CardLayoutRequestCallback(SuggestionCardResult.NOTIFICATION));
                         break;
                     case R.string.action_undo:
                         showLastSuggestionCard(SuggestionCardResult.NOTIFICATION);
@@ -185,7 +186,7 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
             case R.id.suggestion_action_second_btn:
                 FriendFinderRequests.ignoreFriend(getArguments().getString(NKEY), new CardLayoutRequestCallback(SuggestionCardResult.IGNORED));
                 break;
-            case R.id.unsubscribed_layout:
+            case R.id.suggestion_action_third_btn:
                 FriendFinderRequests.unsubscribe(getArguments().getString(NKEY), new CardLayoutRequestCallback(SuggestionCardResult.UNSUBSCRIBED));
                 break;
         }
@@ -358,14 +359,14 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
 
         @Override
         public void success(String response) {
-            cardRequestProgress.setVisibility(View.GONE);
+            cardRequestProgress.setVisibility(View.INVISIBLE);
             showLastSuggestionCard(successCard);
             setButtonsEnabled(true);
         }
 
         @Override
         public void error(String errorString) {
-            cardRequestProgress.setVisibility(View.GONE);
+            cardRequestProgress.setVisibility(View.INVISIBLE);
             setButtonsEnabled(true);
         }
 

@@ -186,11 +186,11 @@
             <Button
                     android:id="@+id/suggestion_action_third_btn"
                     style="@style/BorderlessFlatActionButton"
-                    android:textColor="@color/suggestion_notice"/>
+                    android:textColor="@color/suggestions_secondary_action_btn"/>
             <Button
                     android:id="@+id/suggestion_action_second_btn"
                     style="@style/BorderlessFlatActionButton"
-                    android:textColor="@color/suggestion_notice"/>
+                    android:textColor="@color/suggestions_secondary_action_btn"/>
             <android.support.v7.widget.AppCompatButton
                     android:id="@+id/suggestion_action_main_btn"
                     style="@style/Widget.AppCompat.Button"
@@ -209,13 +209,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/last_suggestion_card">
-        <ProgressBar
+        <fr.castorflex.android.circularprogressbar.CircularProgressBar
                 android:id="@+id/progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:max="10000"
-                android:indeterminateOnly="true"/>
+                android:indeterminate="true"/>
     </RelativeLayout>
 
     <android.support.v4.widget.SwipeRefreshLayout
@@ -235,15 +234,14 @@
                 tools:listitem="@layout/suggestions_list_item"/>
     </android.support.v4.widget.SwipeRefreshLayout>
 
-    <ProgressBar
+    <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
             android:id="@+id/card_request_progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
-            android:layout_height="4dp"
+            android:layout_height="1dp"
             android:indeterminate="true"
             android:layout_below="@id/last_suggestion_card"
-            android:translationY="-2dp"
-            android:visibility="gone"
+            android:translationY="-1dp"
+            android:visibility="invisible"
             />
     <LinearLayout
             android:layout_width="match_parent"
