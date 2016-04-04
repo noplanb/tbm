@@ -1,6 +1,7 @@
 package com.zazoapp.client.bench;
 
 import android.util.SparseArray;
+import com.zazoapp.client.dispatch.Dispatch;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.ArrayList;
@@ -55,7 +56,9 @@ public final class BenchObjectList extends ArrayList<BenchObject> {
                     Group group = new Group(objectGroup, currentIndex, currentIndex);
                     if (groups.contains(group)) {
                         super.remove(currentIndex);
-                        throw new IllegalArgumentException("Group of objects can't be added twice");
+                        Dispatch.dispatch(new IllegalArgumentException("Group of objects can't be added twice"),
+                                "" + group.type + " " + group.start + " " + group.end + " " + currentIndex);
+                        return false;
                     }
                     groups.add(group);
                     startEndPoints.put(currentIndex, group);
