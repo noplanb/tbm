@@ -451,10 +451,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     FriendFinderRequests.addFriend(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
-                            Intent startIntent = new Intent(intent);
-                            startIntent.setClass(getApplicationContext(), MainActivity.class);
-                            startIntent.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
-                            startActivity(startIntent);
+                            startSuggestionsActivity();
                         }
 
                         @Override
@@ -468,10 +465,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     FriendFinderRequests.ignoreFriend(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
-                            Intent startIntent = new Intent(intent);
-                            startIntent.setClass(getApplicationContext(), MainActivity.class);
-                            startIntent.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
-                            startActivity(startIntent);
+                            startSuggestionsActivity();
                         }
 
                         @Override
@@ -485,10 +479,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     FriendFinderRequests.unsubscribe(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
-                            Intent startIntent = new Intent(intent);
-                            startIntent.setClass(getApplicationContext(), MainActivity.class);
-                            startIntent.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
-                            startActivity(startIntent);
+                            startSuggestionsActivity();
                         }
 
                         @Override
@@ -502,10 +493,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     FriendFinderRequests.subscribe(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
-                            Intent startIntent = new Intent(intent);
-                            startIntent.setClass(getApplicationContext(), MainActivity.class);
-                            startIntent.setAction(IntentActions.SUGGESTIONS);
-                            startActivity(startIntent);
+                            startSuggestionsActivity();
                         }
 
                         @Override
@@ -515,6 +503,14 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     });
                     break;
             }
+        }
+
+        private void startSuggestionsActivity() {
+            Intent startIntent = new Intent(intent);
+            startIntent.setClass(getApplicationContext(), MainActivity.class);
+            startIntent.setAction(IntentActions.SUGGESTIONS);
+            startIntent.addFlags(Intent.FLAG_FROM_BACKGROUND);
+            startActivity(startIntent);
         }
 
         //--------

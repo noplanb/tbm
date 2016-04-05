@@ -38,6 +38,12 @@
         <item name="android:editTextStyle">@style/DevEditText</item>
     </style>
 
+    <style name="AppTheme.LockScreen">
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:colorBackground">@color/black</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
     <style name="ZazoActionBar" parent="@android:style/Widget.Holo.ActionBar">
         <item name="android:background">@color/actionbar_bg</item>
         <item name="android:layout_width">match_parent</item>

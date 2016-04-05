@@ -14,14 +14,14 @@ repositories {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "23.0.3"
 
     defaultConfig {
         applicationId "com.zazoapp.client"
         minSdkVersion 14
         targetSdkVersion 22
-        versionCode 140
-        versionName "3.1.4" //<!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
+        versionCode 142
+        versionName "3.1.6" //<!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
         resConfigs "en"
     }
 

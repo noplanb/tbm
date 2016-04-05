@@ -40,6 +40,9 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
 
     @Override
     public void onClick(final View v) {
+        if (fragment.isRefreshing()) {
+            return;
+        }
         if (v.getId() == R.id.add_all_btn) {
             List<Integer> contactIds = new ArrayList<>();
             for (SuggestionsFragment.Suggestion suggestion : suggestions) {
@@ -52,6 +55,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
                 for (int i = 0; i < ids.length; i++) {
                     ids[i] = contactIds.get(i);
                 }
+                fragment.setRefreshing(true);
                 FriendFinderRequests.addFriends(new HttpRequest.Callbacks() {
                     @Override
                     public void success(String response) {
@@ -60,6 +64,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
 
                     @Override
                     public void error(String errorString) {
+                        fragment.setRefreshing(false);
                     }
                 }, ids);
             }

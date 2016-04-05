@@ -13,17 +13,34 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.notification.NotificationAlertManager;
+import com.zazoapp.client.utilities.Convenience;
+import com.zazoapp.client.utilities.StringUtils;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class LockScreenAlertActivity extends Activity {
 
 	private static final String TAG = LockScreenAlertActivity.class.getSimpleName();
 
     private boolean isStopped = true;
+    @InjectView(R.id.title_text) TextView titleText;
+    @InjectView(R.id.subtitle_text) TextView subtitleText;
+    @InjectView(R.id.logoImage) ImageView smallIconView;
+    @InjectView(R.id.thumbImage) CircleImageView thumbImage;
+    @InjectView(R.id.thumb_title) TextView thumbTitle;
+    @InjectView(R.id.action_main_btn) Button mainButton;
+    @InjectView(R.id.action_second_btn) Button secondButton;
+    @InjectView(R.id.action_third_btn) Button thirdButton;
+
+    private int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
+    private int colors[];
 	//-------------------
 	// Activity lifecycle
 	//-------------------
@@ -31,9 +48,11 @@ public class LockScreenAlertActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-		setupWindow();
-		setContentView(R.layout.lock_screen_alert);
-		setupViews(getIntent());
+        colors = getResources().getIntArray(R.array.thumb_colors);
+        setupWindow();
+        setContentView(R.layout.lock_screen_alert);
+        ButterKnife.inject(this);
+        setupViews(getIntent());
 	}
 
 	@Override
@@ -78,7 +97,6 @@ public class LockScreenAlertActivity extends Activity {
 		super.onStart();
         isStopped = false;
         Log.i(TAG, "onStart");
-		setupListeners();
 	}
 
 	@SuppressLint("NewApi")
@@ -102,25 +120,39 @@ public class LockScreenAlertActivity extends Activity {
 		getWindow().setAttributes(lp);
 	}
 
-	private void setupViews(Intent i){
-		((TextView) this.findViewById(R.id.titleTextView)).setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));
-		((TextView) this.findViewById(R.id.subtitleTextView)).setText(i.getStringExtra(NotificationAlertManager.SUB_TITLE_KEY));
-		((ImageView) this.findViewById(R.id.logoImage)).setBackgroundResource(i.getIntExtra(NotificationAlertManager.SMALL_ICON_KEY, 0));
-        ImageView thumbImage = (ImageView) this.findViewById(R.id.thumbImage);
+    private void setupViews(Intent i) {
+        titleText.setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));
+        subtitleText.setText(i.getStringExtra(NotificationAlertManager.SUB_TITLE_KEY));
+        int smallIconId = i.getIntExtra(NotificationAlertManager.SMALL_ICON_KEY, 0);
+        if (smallIconId == 0) {
+            smallIconView.setVisibility(View.GONE);
+        } else {
+            smallIconView.setVisibility(View.VISIBLE);
+            smallIconView.setBackgroundResource(smallIconId);
+        }
         if (IntentHandlerService.IntentActions.PLAY_VIDEO.equals(i.getAction())) {
             Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
-
             if (friend.thumbExists()) {
                 thumbImage.setImageBitmap(friend.thumbBitmap());
+                thumbTitle.setText("");
             } else {
+                thumbImage.setImageResource(Convenience.getStringDependentItem(friend.getDisplayName(), icons));
+                thumbImage.setFillColor(Convenience.getStringDependentItem(friend.getDisplayName(), colors));
+                thumbTitle.setText(friend.getInitials());
                 thumbImage.setImageResource(R.drawable.ic_no_pic_z);
             }
-            ((Button) findViewById(R.id.btnDismiss)).setText(R.string.action_dismiss);
-            ((Button) findViewById(R.id.btnView)).setText(R.string.action_view);
+            secondButton.setText(R.string.action_dismiss);
+            mainButton.setText(R.string.action_view);
         } else if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(i.getAction())) {
-            thumbImage.setImageResource(R.drawable.ic_launcher);
-            ((Button) findViewById(R.id.btnDismiss)).setText(R.string.action_ignore_joined_friend);
-            ((Button) findViewById(R.id.btnView)).setText(R.string.action_add_joined_friend);
+            String name = i.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NAME);
+            if (name == null) {
+                name = "";
+            }
+            thumbImage.setImageResource(Convenience.getStringDependentItem(name, icons));
+            thumbImage.setFillColor(Convenience.getStringDependentItem(name, colors));
+            thumbTitle.setText(StringUtils.getInitials(name));
+            mainButton.setText(R.string.action_add_joined_friend);
+            secondButton.setText(R.string.action_ignore_joined_friend);
         }
 	}
 
@@ -150,34 +182,30 @@ public class LockScreenAlertActivity extends Activity {
 		super.onBackPressed();
 		dismiss();
 	}
-	
-	private void setupListeners(){
-		Button btnDismiss = (Button) findViewById(R.id.btnDismiss);
-		btnDismiss.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				dismiss();
-                if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction())) {
-                    Intent i = new Intent(getIntent());
-                    i.setClass(getApplicationContext(), IntentHandlerService.class);
-                    i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.IGNORE);
-                }
-			}
-		});
 
-		Button btnView = (Button) findViewById(R.id.btnView);
-		btnView.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
+    @OnClick({R.id.action_main_btn, R.id.action_second_btn, R.id.action_third_btn})
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.action_main_btn:
                 if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction())) {
                     dismiss();
                     Intent i = new Intent(getIntent());
                     i.setClass(getApplicationContext(), IntentHandlerService.class);
                     i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.ADD);
+                    startService(i);
                 } else {
                     startHomeActivity();
                 }
-			}
-		});
-	}
+                break;
+            case R.id.action_second_btn:
+                dismiss();
+                if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction())) {
+                    Intent i = new Intent(getIntent());
+                    i.setClass(getApplicationContext(), IntentHandlerService.class);
+                    i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.IGNORE);
+                    startService(i);
+                }
+                break;
+        }
+    }
 }

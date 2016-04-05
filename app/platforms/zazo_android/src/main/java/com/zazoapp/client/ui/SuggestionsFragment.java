@@ -57,6 +57,7 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
     @InjectView(R.id.suggestion_action_second_btn) Button secondButton;
     @InjectView(R.id.suggestion_action_main_btn) Button mainButton;
     @InjectView(R.id.card_request_progress) ProgressBar cardRequestProgress;
+    @InjectView(R.id.empty_suggestions) View emptySuggestions;
 
     private SuggestionsAdapter adapter;
     private SuggestionCardResult currentCardType = SuggestionCardResult.NONE;
@@ -68,6 +69,16 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
     @Override
     public void onRefresh() {
         loadSuggestions();
+    }
+
+    public void setRefreshing(boolean refreshing) {
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setRefreshing(refreshing);
+        }
+    }
+
+    public boolean isRefreshing() {
+        return swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing();
     }
 
     private enum SuggestionCardResult {
@@ -149,6 +160,11 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
                     for (FriendFinderRequests.SuggestionsData.Suggestion suggestion : data.getSuggestions()) {
                         adapter.add(adapter.getItemCount(), new Suggestion(suggestion.getDisplayName(), suggestion.getId()));
                     }
+                    if (adapter.getItemCount() == 0) {
+                        emptySuggestions.setVisibility(View.VISIBLE);
+                    } else {
+                        emptySuggestions.setVisibility(View.INVISIBLE);
+                    }
                 }
             }
         });
@@ -176,6 +192,7 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
                         break;
                     default:
                         hideLastSuggestionCard();
+                        dropSuggestionIntent();
                         break;
                 }
                 break;

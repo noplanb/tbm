@@ -192,6 +192,7 @@
     <string name="suggestions">Suggestions</string>
     <string name="suggestions_add_all">Add all</string>
     <string name="suggestions_add_all_label">Add others on Zazo:</string>
+    <string name="suggestions_empty">No more friends to suggest</string>
     <string name="ff_add_success_message">You and %1$s are connected!</string>
     <string name="ff_add_error_message">Couldn\'t add friend</string>
     <string name="ff_ignore_success_message">Ignored! %1$s was not added.</string>

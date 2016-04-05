@@ -320,7 +320,7 @@ public class NotificationAlertManager {
 		Intent i = makePlayVideoIntent(ri, context, friend);
 		i.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId());
 		i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend));
-		i.putExtra(SMALL_ICON_KEY, R.drawable.ic_launcher);
+		i.putExtra(SMALL_ICON_KEY, R.drawable.ic_zazo_blue);
 		i.putExtra(TITLE_KEY, title(context, friend));
 		i.putExtra(SUB_TITLE_KEY, subTitle);
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
@@ -334,7 +334,8 @@ public class NotificationAlertManager {
         Log.i(TAG, "postLockScreenAlert");
         Intent ri = new Intent(context, LockScreenAlertActivity.class);
         Intent i = makeJoinedFriendIntent(ri, nkey, name, IntentHandlerService.FriendJoinedActions.NOTIFY);
-        i.putExtra(TITLE_KEY, context.getString(R.string.new_friend_joined, name));
+        i.putExtra(TITLE_KEY, name);
+        i.putExtra(SUB_TITLE_KEY, context.getString(R.string.new_friend_joined, name));
         i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         i.addFlags(Intent.FLAG_FROM_BACKGROUND);
         //i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK); // This is probably not necessary since the activity has launch mode singleInstance.

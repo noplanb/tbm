@@ -1,79 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_vertical"
-    android:layout_margin="0dp"
-    android:background="@drawable/top_bottom_border_shape"
-    android:orientation="vertical"
-    android:paddingBottom="10dp"
-    android:paddingLeft="10dp"
-    android:paddingRight="10dp"
-    android:paddingTop="10dp" >
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center_vertical"
+             android:layout_margin="0dp"
+             android:background="@drawable/abc_popup_background_mtrl_mult"
+             android:orientation="vertical"
+             android:paddingBottom="10dp"
+             android:paddingLeft="10dp"
+             android:paddingRight="10dp"
+             android:paddingTop="10dp">
 
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp">
 
-        <ImageView
-            android:id="@+id/thumbImage"
-            android:layout_width="80dp"
-            android:layout_height="120dp"
-            android:layout_alignParentLeft="true"
-             />
+        <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/thumbImage"
+                android:layout_width="@dimen/thumb_icon_size"
+                android:layout_height="@dimen/thumb_icon_size"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:src="@drawable/bgn_thumb_2"
+                app:civ_fill_color="@color/accent_2"
+                />
 
         <TextView
-            android:id="@+id/titleTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="20dp"
-            android:layout_toRightOf="@+id/thumbImage"
-            android:text="From Konstantin"
-            android:textSize="24sp" />
+                android:id="@+id/thumb_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@id/thumbImage"
+                android:layout_alignStart="@id/thumbImage"
+                android:layout_alignRight="@id/thumbImage"
+                android:layout_alignEnd="@id/thumbImage"
+                android:layout_alignTop="@id/thumbImage"
+                android:layout_alignBottom="@id/thumbImage"
+                android:text="AB"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_xlarge"
+                android:gravity="center"
+                />
 
-        <ImageView
-            android:id="@+id/logoImage"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_below="@+id/titleTextView"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="2dp"
-            android:layout_toRightOf="@+id/thumbImage"
-             />
+        <RelativeLayout
+                android:id="@+id/titleLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@id/thumbImage">
+            <TextView
+                    android:id="@+id/title_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:text="From Konstantin"
+                    android:textSize="@dimen/text_xlarge"
+                    android:textColor="@color/contacts_name_text"/>
 
-        <TextView
-            android:id="@+id/subtitleTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/titleTextView"
-            android:layout_marginLeft="5dp"
-            android:layout_toRightOf="@+id/logoImage"
-            android:text="@string/app_name"
-            android:textSize="@dimen/text_very_small" />
+            <ImageView
+                    android:id="@+id/logoImage"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_below="@+id/title_text"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginRight="5dp"
+                    android:visibility="visible"
+                    />
 
-        <Button
-            android:id="@+id/btnDismiss"
-            style="@style/darkButton"
-            android:layout_below="@+id/subtitleTextView"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="18dp"
-            android:layout_toRightOf="@+id/thumbImage"
-            android:background="@drawable/red_button_background_shape"
-            android:text="@string/action_dismiss"
-            android:textColor="#ff0000" />
+            <TextView
+                    android:id="@+id/subtitle_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/title_text"
+                    android:layout_toRightOf="@id/logoImage"
+                    android:text="@string/app_name"
+                    android:textSize="@dimen/text_very_small"
+                    android:textColor="@color/contacts_phone_text"/>
+        </RelativeLayout>
 
-        <Button
-            android:id="@+id/btnView"
-            style="@style/darkButton"
-            android:layout_width="90dp"
-            android:layout_below="@+id/subtitleTextView"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="18dp"
-            android:layout_toRightOf="@+id/btnDismiss"
-            android:background="@drawable/green_button_background_shape"
-            android:text="@string/action_view"
-            android:textColor="#00ff00" />
+        <LinearLayout
+                android:id="@+id/multiple_action_btn_layout"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:orientation="horizontal"
+                android:gravity="end|center_vertical"
+                android:layout_below="@id/titleLayout"
+                android:layout_toRightOf="@id/thumbImage"
+                android:layout_marginTop="16dp"
+                android:weightSum="3">
+
+            <Button
+                    android:id="@+id/action_third_btn"
+                    style="@style/BorderlessFlatActionButton"
+                    android:background="@drawable/dialog_action_btn_bg"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
+                    android:layout_margin="@dimen/abc_control_inset_material"
+                    android:layout_weight="1"
+                    android:visibility="invisible"
+                    android:textColor="@color/suggestions_secondary_action_btn"/>
+            <Button
+                    android:id="@+id/action_second_btn"
+                    style="@style/BorderlessFlatActionButton"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
+                    android:layout_weight="1"
+                    android:layout_margin="@dimen/abc_control_inset_material"
+                    android:padding="@dimen/abc_control_inset_material"
+                    android:background="@drawable/dialog_action_btn_bg"
+                    android:text="@string/action_dismiss"
+                    android:textColor="@color/suggestions_secondary_action_btn"/>
+
+            <android.support.v7.widget.AppCompatButton
+                    android:id="@+id/action_main_btn"
+                    style="@style/Widget.AppCompat.Button"
+                    app:backgroundTint="@color/suggestions_btn_tint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:minWidth="64dp"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
+                    android:textColor="@color/white"
+                    android:textAllCaps="true"
+                    android:text="@string/action_view"/>
+
+        </LinearLayout>
     </RelativeLayout>
 
 </FrameLayout>

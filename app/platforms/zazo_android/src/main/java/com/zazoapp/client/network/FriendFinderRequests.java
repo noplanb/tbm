@@ -13,7 +13,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -62,8 +61,11 @@ public class FriendFinderRequests {
         if (ids != null && ids.length > 0) {
             JSONObject object = new JSONObject();
             try {
-                List<Integer> list = Arrays.asList(ids);
-                object.put("contacts_ids", list);
+                JSONArray idArray = new JSONArray();
+                for (Integer id : ids) {
+                    idArray.put(id.intValue());
+                }
+                object.put("contacts_ids", idArray);
                 new HttpRequest.Builder()
                         .setUrl(getUrl(CONTACTS_API, "add"))
                         .setHost(getServerHost())
@@ -89,8 +91,11 @@ public class FriendFinderRequests {
         if (ids != null && ids.length > 0) {
             JSONObject object = new JSONObject();
             try {
-                List<Integer> list = Arrays.asList(ids);
-                object.put("contacts_ids", list);
+                JSONArray idArray = new JSONArray();
+                for (Integer id : ids) {
+                    idArray.put(id.intValue());
+                }
+                object.put("contacts_ids", idArray);
                 new HttpRequest.Builder()
                         .setUrl(getUrl(CONTACTS_API, "ignore"))
                         .setHost(getServerHost())
