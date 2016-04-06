@@ -124,11 +124,8 @@ public class LockScreenAlertActivity extends Activity {
         titleText.setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));
         subtitleText.setText(i.getStringExtra(NotificationAlertManager.SUB_TITLE_KEY));
         int smallIconId = i.getIntExtra(NotificationAlertManager.SMALL_ICON_KEY, 0);
-        if (smallIconId == 0) {
-            smallIconView.setVisibility(View.GONE);
-        } else {
-            smallIconView.setVisibility(View.VISIBLE);
-            smallIconView.setBackgroundResource(smallIconId);
+        if (smallIconId != 0) {
+            smallIconView.setBackgroundResource(R.drawable.ic_zazo_blue);
         }
         if (IntentHandlerService.IntentActions.PLAY_VIDEO.equals(i.getAction())) {
             Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
@@ -143,6 +140,8 @@ public class LockScreenAlertActivity extends Activity {
             }
             secondButton.setText(R.string.action_dismiss);
             mainButton.setText(R.string.action_view);
+            thirdButton.setText("");
+            thirdButton.setVisibility(View.INVISIBLE);
         } else if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(i.getAction())) {
             String name = i.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NAME);
             if (name == null) {
@@ -153,6 +152,8 @@ public class LockScreenAlertActivity extends Activity {
             thumbTitle.setText(StringUtils.getInitials(name));
             mainButton.setText(R.string.action_add_joined_friend);
             secondButton.setText(R.string.action_ignore_joined_friend);
+            thirdButton.setText(R.string.action_unsubscribe_joined_friend);
+            thirdButton.setVisibility(View.VISIBLE);
         }
 	}
 
@@ -187,25 +188,36 @@ public class LockScreenAlertActivity extends Activity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.action_main_btn:
-                if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction())) {
+                if (isFriendJoinedIntent()) {
                     dismiss();
-                    Intent i = new Intent(getIntent());
-                    i.setClass(getApplicationContext(), IntentHandlerService.class);
-                    i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.ADD);
-                    startService(i);
+                    startServiceForAction(IntentHandlerService.FriendJoinedActions.ADD);
                 } else {
                     startHomeActivity();
                 }
                 break;
             case R.id.action_second_btn:
                 dismiss();
-                if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction())) {
-                    Intent i = new Intent(getIntent());
-                    i.setClass(getApplicationContext(), IntentHandlerService.class);
-                    i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.IGNORE);
-                    startService(i);
+                if (isFriendJoinedIntent()) {
+                    startServiceForAction(IntentHandlerService.FriendJoinedActions.IGNORE);
+                }
+                break;
+            case R.id.action_third_btn:
+                dismiss();
+                if (isFriendJoinedIntent()) {
+                    startServiceForAction(IntentHandlerService.FriendJoinedActions.UNSUBSCRIBE);
                 }
                 break;
         }
+    }
+
+    private boolean isFriendJoinedIntent() {
+        return IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction());
+    }
+
+    private void startServiceForAction(String action) {
+        Intent i = new Intent(getIntent());
+        i.setClass(getApplicationContext(), IntentHandlerService.class);
+        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, action);
+        startService(i);
     }
 }

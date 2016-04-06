@@ -117,7 +117,6 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
                     case IntentHandlerService.FriendJoinedActions.NOTIFY:
                         bundle.putInt(CARD_TYPE, SuggestionCardResult.NOTIFICATION.ordinal());
                         break;
-
                 }
                 bundle.putString(NAME, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NAME));
                 bundle.putString(NKEY, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NKEY));

@@ -58,25 +58,30 @@
                     android:textSize="@dimen/text_xlarge"
                     android:textColor="@color/contacts_name_text"/>
 
-            <ImageView
-                    android:id="@+id/logoImage"
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_below="@+id/title_text"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginRight="5dp"
-                    android:visibility="visible"
-                    />
-
-            <TextView
-                    android:id="@+id/subtitle_text"
+            <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/title_text"
-                    android:layout_toRightOf="@id/logoImage"
-                    android:text="@string/app_name"
-                    android:textSize="@dimen/text_very_small"
-                    android:textColor="@color/contacts_phone_text"/>
+                    android:layout_below="@id/title_text"
+                    android:layout_marginTop="2dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                <ImageView
+                        android:id="@+id/logoImage"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_marginRight="5dp"
+                        android:src="@drawable/ic_zazo_blue"
+                        android:visibility="visible"
+                        />
+                <TextView
+                        android:id="@+id/subtitle_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_name"
+                        android:textSize="@dimen/text_very_small"
+                        android:textColor="@color/contacts_phone_text"/>
+            </LinearLayout>
+
         </RelativeLayout>
 
         <LinearLayout
@@ -86,16 +91,14 @@
                 android:orientation="horizontal"
                 android:gravity="end|center_vertical"
                 android:layout_below="@id/titleLayout"
-                android:layout_toRightOf="@id/thumbImage"
                 android:layout_marginTop="16dp"
-                android:weightSum="3">
+                android:weightSum="4">
 
             <Button
                     android:id="@+id/action_third_btn"
                     style="@style/BorderlessFlatActionButton"
                     android:background="@drawable/dialog_action_btn_bg"
-                    android:paddingLeft="16dp"
-                    android:paddingRight="16dp"
+                    android:padding="@dimen/abc_control_inset_material"
                     android:layout_margin="@dimen/abc_control_inset_material"
                     android:layout_weight="1"
                     android:visibility="invisible"
@@ -103,8 +106,6 @@
             <Button
                     android:id="@+id/action_second_btn"
                     style="@style/BorderlessFlatActionButton"
-                    android:paddingLeft="16dp"
-                    android:paddingRight="16dp"
                     android:layout_weight="1"
                     android:layout_margin="@dimen/abc_control_inset_material"
                     android:padding="@dimen/abc_control_inset_material"
