@@ -3,6 +3,7 @@ package com.zazoapp.client.ui;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -245,9 +246,12 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
     }
 
     private void dropSuggestionIntent() {
-        Intent intent = getActivity().getIntent();
-        if (intent != null && IntentHandlerService.IntentActions.SUGGESTIONS.equals(intent.getAction())) {
-            intent.setAction(IntentHandlerService.IntentActions.NONE);
+        Activity activity = getActivity();
+        if (activity != null) {
+            Intent intent = activity.getIntent();
+            if (intent != null && IntentHandlerService.IntentActions.SUGGESTIONS.equals(intent.getAction())) {
+                intent.setAction(IntentHandlerService.IntentActions.NONE);
+            }
         }
     }
 
