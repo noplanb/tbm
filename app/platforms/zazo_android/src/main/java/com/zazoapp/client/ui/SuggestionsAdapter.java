@@ -37,6 +37,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
     private final float MIN_SATURATION = 0f;
     private final float MIN_ALPHA = 0.6f;
     private final long ANIM_DURATION = 300;
+    private static final int MAX_ITEMS = 10;
 
     @Override
     public void onClick(final View v) {
@@ -124,7 +125,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
         SuggestionsFragment.Suggestion item = suggestions.get(position);
         h.name.setText(item.name);
         h.addButton.setTag(h);
-        h.addButton.setTag(R.id.id, position);
+        h.addButton.setTag(R.id.id, position); // FIXME for random item inserting change to save item instead
         h.addButton.setOnClickListener(this);
         h.ignoreButton.setTag(h);
         h.ignoreButton.setTag(R.id.id, position);
@@ -141,12 +142,18 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
 
     @Override
     public int getItemCount() {
+        return Math.min(suggestions.size(), MAX_ITEMS);
+    }
+
+    public int getRealCount() {
         return suggestions.size();
     }
 
     public void add(int location, SuggestionsFragment.Suggestion suggestion) {
         suggestions.add(location, suggestion);
-        notifyItemInserted(location);
+        if (location < MAX_ITEMS) {
+            notifyItemInserted(location);
+        }
     }
 
     public void remove(int location) {
@@ -154,7 +161,12 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
             return;
 
         suggestions.remove(location);
-        notifyItemRemoved(location);
+        if (location < MAX_ITEMS) {
+            notifyItemRemoved(location);
+        }
+        if (suggestions.size() >= MAX_ITEMS) {
+            notifyItemInserted(MAX_ITEMS - 1);
+        }
     }
 
     @Override

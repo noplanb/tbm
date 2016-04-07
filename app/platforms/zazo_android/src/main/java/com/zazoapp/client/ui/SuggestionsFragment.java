@@ -237,7 +237,7 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
     public void testOnClick(View v) {
         switch (v.getId()) {
             case R.id.test_add:
-                adapter.add(adapter.getItemCount(), new Suggestion("Test " + (adapter.getItemCount()), -1));
+                adapter.add(adapter.getItemCount(), new Suggestion("Test " + (adapter.getRealCount()), -1));
                 break;
             case R.id.test_remove:
                 adapter.remove(adapter.getItemCount() - 1);
