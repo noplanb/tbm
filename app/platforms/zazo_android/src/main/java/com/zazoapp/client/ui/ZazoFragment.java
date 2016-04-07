@@ -1,5 +1,6 @@
 package com.zazoapp.client.ui;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -54,6 +55,6 @@ public class ZazoFragment extends Fragment {
         }
     }
 
-    public void onWindowFocusChanged(boolean hasFocus) {
+    public void onWindowFocusChanged(Activity activity, boolean hasFocus) {
     }
 }

@@ -1,5 +1,6 @@
 package com.zazoapp.client.ui;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -565,13 +566,13 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     }
 
     @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
+    public void onWindowFocusChanged(Activity activity, boolean hasFocus) {
+        super.onWindowFocusChanged(activity, hasFocus);
         if (gridFragment != null) {
             gridFragment.onWindowFocusChanged(hasFocus);
         }
         if (hasFocus) {
-            handleIntent(getActivity().getIntent());
+            handleIntent(activity.getIntent());
         }
     }
 
