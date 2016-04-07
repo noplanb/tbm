@@ -129,6 +129,10 @@ public class LockScreenAlertActivity extends Activity {
         }
         if (IntentHandlerService.IntentActions.PLAY_VIDEO.equals(i.getAction())) {
             Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
+            if (friend == null) {
+                dismiss();
+                return;
+            }
             if (friend.thumbExists()) {
                 thumbImage.setImageBitmap(friend.thumbBitmap());
                 thumbTitle.setText("");
