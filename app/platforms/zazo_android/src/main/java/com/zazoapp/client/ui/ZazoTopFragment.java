@@ -20,7 +20,8 @@ public class ZazoTopFragment extends Fragment {
                     onBackListener.onBack();
                 }
                 onBackPressed();
-                return false;
+                getFragmentManager().popBackStack();
+                return true;
         }
         return false;
     }

@@ -157,6 +157,7 @@
     <string name="feature_carousel_hint">Move a friend.\nDrag a friend to any position</string>
 
     <string name="manage_friends">Edit friends</string>
+    <string name="welcome_friends">Record a welcome Zazo</string>
 
     <string name="send_feedback">Send feedback</string>
     <string name="feedback_subject">Feedback</string>
@@ -190,8 +191,6 @@
     <string name="action_unsubscribe_joined_friend">Unsubscribe</string>
 
     <string name="suggestions">Suggestions</string>
-    <string name="suggestions_add_all">Add all</string>
-    <string name="suggestions_add_all_label">Add others on Zazo:</string>
     <string name="suggestions_empty">No more friends to suggest</string>
     <string name="ff_add_success_message">You and %1$s are connected!</string>
     <string name="ff_add_error_message">Couldn\'t add friend</string>

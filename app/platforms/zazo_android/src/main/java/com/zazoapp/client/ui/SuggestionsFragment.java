@@ -8,10 +8,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,10 +26,10 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
-import butterknife.Optional;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.bench.BenchObject;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
@@ -36,10 +38,15 @@ import com.zazoapp.client.ui.view.CircleThumbView;
 import com.zazoapp.client.utilities.Convenience;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by skamenkovych@codeminders.com on 8/14/2015.
  */
-public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefreshLayout.OnRefreshListener {
+public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLayout.OnRefreshListener {
+
+    private static final String TAG = SuggestionsFragment.class.getSimpleName();
 
     @InjectView(R.id.suggestions_list) RecyclerView listView;
     @InjectView(R.id.up) MaterialMenuView up;
@@ -66,6 +73,10 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
     private static final String CARD_TYPE = "card_type";
     private static final String NAME = "name";
     private static final String NKEY = "nkey";
+    private static final String FROM_APPLICATION = "from_application";
+
+    private List<BenchObject> addedFriends = new ArrayList<>();
+    private ZazoTopFragment topFragment;
 
     @Override
     public void onRefresh() {
@@ -118,11 +129,16 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
                     case IntentHandlerService.FriendJoinedActions.NOTIFY:
                         bundle.putInt(CARD_TYPE, SuggestionCardResult.NOTIFICATION.ordinal());
                         break;
+                    default:
+                        bundle.putInt(CARD_TYPE, SuggestionCardResult.NONE.ordinal());
+                        break;
                 }
                 bundle.putString(NAME, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NAME));
                 bundle.putString(NKEY, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NKEY));
+                bundle.putBoolean(FROM_APPLICATION, false);
             }
         }
+        //noinspection deprecation
         SuggestionsFragment fragment = new SuggestionsFragment();
         fragment.setArguments(bundle);
         return fragment;
@@ -140,7 +156,12 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
         loadSuggestions();
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setColorSchemeResources(R.color.thumb_color_blue, R.color.thumb_color_cyan, R.color.thumb_color_teal, R.color.thumb_color_deep_purple, R.color.thumb_color_indigo);
-        up.setState(MaterialMenuDrawable.IconState.ARROW);
+        if (fromApplication()) {
+            up.setState(MaterialMenuDrawable.IconState.ARROW);
+        } else {
+            up.setVisibility(View.GONE);
+            v.findViewById(R.id.home).setClickable(false);
+        }
         cardRequestProgress.setInterpolator(new FastOutSlowInInterpolator());
         showLastSuggestionCard(SuggestionCardResult.values()[getArguments().getInt(CARD_TYPE, 0)]);
         return v;
@@ -174,13 +195,8 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.home:
-                dropSuggestionIntent();
-                getFragmentManager().popBackStack();
-                break;
             case R.id.done_btn:
-                dropSuggestionIntent();
-                getFragmentManager().popBackStack();
-                // TODO do invite
+                finishInvitation();
                 break;
             case R.id.suggestion_action_btn:
                 switch (currentCardType.actionId) {
@@ -206,6 +222,29 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
             case R.id.suggestion_action_third_btn:
                 FriendFinderRequests.unsubscribe(getArguments().getString(NKEY), new CardLayoutRequestCallback(SuggestionCardResult.UNSUBSCRIBED));
                 break;
+        }
+    }
+
+    private void finishInvitation() {
+        dropSuggestionIntent();
+        if (!addedFriends.isEmpty()) {
+            topFragment = new WelcomeMultipleFragment();
+            topFragment.setOnBackListener(new OnBackListener() {
+                @Override
+                public void onBack() {
+                    topFragment = null;
+                }
+            });
+            FragmentTransaction tr = getChildFragmentManager().beginTransaction();
+            tr.setCustomAnimations(R.anim.slide_left_fade_in, R.anim.slide_right_fade_out, R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
+            tr.add(R.id.top_frame, topFragment);
+            tr.addToBackStack(null);
+            tr.commit();
+        } else {
+            super.onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+            if (!fromApplication()) {
+                publishResult(0, null);
+            }
         }
     }
 
@@ -253,12 +292,6 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
                 intent.setAction(IntentHandlerService.IntentActions.NONE);
             }
         }
-    }
-
-    @Override
-    protected void onBackPressed() {
-        super.onBackPressed();
-        dropSuggestionIntent();
     }
 
     private void showLastSuggestionCard(SuggestionCardResult cardType) {
@@ -320,12 +353,28 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
         }
     }
 
+    private boolean fromApplication() {
+        return getArguments().getBoolean(FROM_APPLICATION, true);
+    }
+
     @Override
     public Animation onCreateAnimation(int transit, boolean enter, int nextAnim) {
         if (nextAnim != R.anim.slide_left_fade_in && nextAnim != R.anim.slide_right_fade_out) {
             return super.onCreateAnimation(transit, enter, nextAnim);
         }
         return SlideHorizontalFadeAnimation.get(getActivity(), nextAnim);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (topFragment != null) {
+            return topFragment.onKeyDown(keyCode, event);
+        }
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            finishInvitation();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -339,9 +388,8 @@ public class SuggestionsFragment extends ZazoTopFragment implements SwipeRefresh
         @InjectView(R.id.name) TextView name;
         @InjectView(R.id.progress_layout) View progress;
         @InjectView(R.id.left_layout) View leftLayout;
-        @Optional @InjectView(R.id.add_all_btn) Button addAllButton;
 
-        private SuggestionsAdapter adpater;
+        private SuggestionsAdapter adapter;
 
         public ViewHolder(View itemView, SuggestionsAdapter suggestionsAdapter) {
             super(itemView);

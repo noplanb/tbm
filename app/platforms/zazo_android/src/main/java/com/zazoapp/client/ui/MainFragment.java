@@ -76,6 +76,8 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public static final int SENDLINK_DIALOG = 3;
     public static final int NO_SIM_DIALOG = 4;
 
+    public static final int ACTION_CODE_SHOW_SUGGESTIONS = 1;
+
     private static final String TAB = "mf_tab";
     private static final int TAB_MAIN = 0;
     private static final int TAB_FRIENDS = 1;
@@ -187,7 +189,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                     getFragmentManager().popBackStack();
                     topFragment = null;
                 }
-                showSuggestions(intent);
+                publishResult(ACTION_CODE_SHOW_SUGGESTIONS, null);
                 intent.putExtra(EXTRA_HANDLED, true);
             }
         }
@@ -404,8 +406,8 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         showTopFragment(SuggestionsFragment.getInstance(intent), R.anim.slide_bottom_fade_in, R.anim.slide_bottom_fade_out);
     }
 
-    private void showTopFragment(ZazoTopFragment f, @AnimRes int in, @AnimRes int out) {
-        FragmentTransaction tr = getFragmentManager().beginTransaction();
+    public void showTopFragment(ZazoTopFragment f, @AnimRes int in, @AnimRes int out) {
+        FragmentTransaction tr = getChildFragmentManager().beginTransaction();
         tr.setCustomAnimations(in, out, in, out);
         tr.add(R.id.top_frame, f);
         tr.addToBackStack(null);
@@ -498,6 +500,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         }
     }
 
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (topFragment != null) {
             return topFragment.onKeyDown(keyCode, event);

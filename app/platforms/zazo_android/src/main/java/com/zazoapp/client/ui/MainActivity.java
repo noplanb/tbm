@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.dispatch.ZazoAnalytics;
 import com.zazoapp.client.model.ActiveModelsHandler;
@@ -28,6 +29,8 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
 
     private static final int MAIN_FRAGMENT = 0;
     private static final int REGISTER_FRAGMENT = 1;
+    private static final int SUGGESTIONS_FRAGMENT = 2;
+    private static final int SUGGESTIONS_INNER_FRAGMENT = 3;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +83,11 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
         if (!preferences.getBoolean(ActiveModelsHandler.USER_REGISTERED, false)) {
             currentFragmentId = REGISTER_FRAGMENT;
         } else {
-            currentFragmentId = MAIN_FRAGMENT;
+            if (isSuggestionIntent()) {
+                currentFragmentId = SUGGESTIONS_FRAGMENT;
+            } else {
+                currentFragmentId = MAIN_FRAGMENT;
+            }
             ZazoAnalytics.setUser();
         }
         currentFragment = (ZazoFragment) getSupportFragmentManager().findFragmentByTag("main" + currentFragmentId);
@@ -91,6 +98,9 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
                     break;
                 case REGISTER_FRAGMENT:
                     currentFragment = new RegisterFragment();
+                    break;
+                case SUGGESTIONS_FRAGMENT:
+                    currentFragment = SuggestionsFragment.getInstance(getIntent());
                     break;
                 default:
                     throw new NullPointerException("Current fragment isn't set");
@@ -107,10 +117,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        boolean result = false;
-        if (currentFragment instanceof MainFragment) {
-            result = ((MainFragment) currentFragment).onKeyDown(keyCode, event);
-        }
+        boolean result = currentFragment.onKeyDown(keyCode, event);
         return result || super.onKeyDown(keyCode, event);
     }
 
@@ -128,6 +135,22 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
                         .replace(R.id.main_frame, currentFragment, "main" + currentFragmentId)
                         .commitAllowingStateLoss();
                 setupWindowParams();
+                break;
+            case MAIN_FRAGMENT:
+                if (resultCode == MainFragment.ACTION_CODE_SHOW_SUGGESTIONS) {
+                    MainFragment mainFragment = (MainFragment) currentFragment;
+                    currentFragmentId = SUGGESTIONS_INNER_FRAGMENT;
+                    currentFragment = SuggestionsFragment.getInstance(getIntent());
+                    currentFragment.setFragmentId(currentFragmentId);
+                    mainFragment.showTopFragment(currentFragment, R.anim.fade_in, R.anim.fade_out);
+                }
+                break;
+            case SUGGESTIONS_FRAGMENT:
+                finish();
+                break;
+            case SUGGESTIONS_INNER_FRAGMENT:
+                currentFragmentId = MAIN_FRAGMENT;
+                currentFragment = (ZazoFragment) getSupportFragmentManager().findFragmentByTag("main" + currentFragmentId);
                 break;
         }
     }
@@ -162,6 +185,9 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
                 case REGISTER_FRAGMENT:
                     window.setStatusBarColor(res.getColor(R.color.status_bar_register_color));
                     break;
+                default:
+                    window.setStatusBarColor(res.getColor(R.color.primary_dark));
+                    break;
             }
         }
         switch (currentFragmentId) {
@@ -173,6 +199,10 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
                 window.setSoftInputMode(
                         WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
                 break;
+            default:
+                window.setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                break;
         }
     }
 
@@ -183,5 +213,10 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
         if (currentFragment != null) {
             currentFragment.onWindowFocusChanged(this, hasFocus);
         }
+    }
+
+    private boolean isSuggestionIntent() {
+        Intent intent = getIntent();
+        return intent != null && IntentHandlerService.IntentActions.SUGGESTIONS.equals(intent.getAction());
     }
 }

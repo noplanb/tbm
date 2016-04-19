@@ -4,12 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 
 /**
  * Created by skamenkovych@codeminders.com on 11/10/2015.
  */
-public class ZazoFragment extends Fragment {
+public class ZazoFragment extends ZazoTopFragment {
     private static final String ZAZO_FRAGMENT_ID = "zf_id";
     private int fragmentId;
 

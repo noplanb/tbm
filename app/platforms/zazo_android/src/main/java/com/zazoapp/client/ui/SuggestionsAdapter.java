@@ -44,33 +44,6 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
         if (fragment.isRefreshing()) {
             return;
         }
-        if (v.getId() == R.id.add_all_btn) {
-            List<Integer> contactIds = new ArrayList<>();
-            for (SuggestionsFragment.Suggestion suggestion : suggestions) {
-                if (suggestion.state != SuggestionsFragment.Suggestion.State.IGNORED) {
-                    contactIds.add(suggestion.contactId);
-                }
-            }
-            if (!contactIds.isEmpty()) {
-                Integer[] ids = new Integer[contactIds.size()];
-                for (int i = 0; i < ids.length; i++) {
-                    ids[i] = contactIds.get(i);
-                }
-                fragment.setRefreshing(true);
-                FriendFinderRequests.addFriends(new HttpRequest.Callbacks() {
-                    @Override
-                    public void success(String response) {
-                        fragment.onRefresh();
-                    }
-
-                    @Override
-                    public void error(String errorString) {
-                        fragment.setRefreshing(false);
-                    }
-                }, ids);
-            }
-            return;
-        }
         final int position = (Integer) v.getTag(R.id.id);
         final SuggestionsFragment.Suggestion item = suggestions.get(position);
         SuggestionsFragment.ViewHolder h = (SuggestionsFragment.ViewHolder) v.getTag();
@@ -108,15 +81,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
 
     @Override
     public SuggestionsFragment.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView;
-        switch (viewType) {
-            case 1:
-                itemView = layoutInflater.inflate(R.layout.suggestions_first_list_item, parent, false);
-                break;
-            default:
-                itemView = layoutInflater.inflate(R.layout.suggestions_list_item, parent, false);
-                break;
-        }
+        View itemView = layoutInflater.inflate(R.layout.suggestions_list_item, parent, false);
         return new SuggestionsFragment.ViewHolder(itemView, this);
     }
 
@@ -133,9 +98,6 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
         h.undoButton.setTag(h);
         h.undoButton.setTag(R.id.id, position);
         h.undoButton.setOnClickListener(this);
-        if (getItemViewType(position) == 1) {
-            h.addAllButton.setOnClickListener(this);
-        }
         setState(item.state, h.addButton, position, false);
         h.progress.setVisibility(View.INVISIBLE);
     }
@@ -167,11 +129,6 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
         if (suggestions.size() >= MAX_ITEMS) {
             notifyItemInserted(MAX_ITEMS - 1);
         }
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return position == 0 ? 1 : 2;
     }
 
     void setState(final SuggestionsFragment.Suggestion.State state, final View v, final int position, boolean smooth) {
