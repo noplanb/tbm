@@ -106,6 +106,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     @InjectView(R.id.menu_view) MaterialMenuView menuView;
     @InjectView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @InjectView(R.id.content_frame) ViewPager contentFrame;
+    @InjectView(R.id.tutorial_parent_layout) View tutorialParent;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -188,6 +189,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                 if (topFragment != null) {
                     getFragmentManager().popBackStack();
                     topFragment = null;
+                    tutorialParent.setVisibility(View.VISIBLE);
                 }
                 publishResult(ACTION_CODE_SHOW_SUGGESTIONS, null);
                 intent.putExtra(EXTRA_HANDLED, true);
@@ -416,9 +418,11 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             @Override
             public void onBack() {
                 topFragment = null;
+                tutorialParent.setVisibility(View.VISIBLE);
             }
         });
         topFragment = f;
+        tutorialParent.setVisibility(View.INVISIBLE);
     }
 
     private void inviteFriends() {

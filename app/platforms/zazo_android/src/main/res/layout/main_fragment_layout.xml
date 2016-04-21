@@ -112,10 +112,15 @@
             />
     </android.support.v4.widget.DrawerLayout>
 
-    <com.zazoapp.client.tutorial.TutorialLayout
-            android:id="@+id/tutorial_layout"
+    <FrameLayout
+            android:id="@+id/tutorial_parent_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="invisible"/>
+            android:layout_height="match_parent">
+        <com.zazoapp.client.tutorial.TutorialLayout
+                android:id="@+id/tutorial_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="invisible"/>
+    </FrameLayout>
 
 </RelativeLayout>
