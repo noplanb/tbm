@@ -86,7 +86,10 @@
                 android:launchMode="singleTask"
                 android:screenOrientation="portrait"
                 android:theme="@style/DebugTheme"/>
-
+        <activity
+                android:name=".ui.WelcomeScreenActivity"
+                android:launchMode="singleTask"
+                android:screenOrientation="portrait"/>
         <receiver
             android:name=".notification.gcm.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
