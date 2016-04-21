@@ -29,22 +29,17 @@ import butterknife.OnClick;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
-import com.zazoapp.client.bench.BenchObject;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.animations.SlideHorizontalFadeAnimation;
-import com.zazoapp.client.ui.view.CircleThumbView;
 import com.zazoapp.client.utilities.Convenience;
 import de.hdodenhof.circleimageview.CircleImageView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by skamenkovych@codeminders.com on 8/14/2015.
  */
-public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLayout.OnRefreshListener {
+public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLayout.OnRefreshListener, SuggestionsAdapter.OnItemStateChangedListener {
 
     private static final String TAG = SuggestionsFragment.class.getSimpleName();
 
@@ -75,7 +70,8 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     private static final String NKEY = "nkey";
     private static final String FROM_APPLICATION = "from_application";
 
-    private List<BenchObject> addedFriends = new ArrayList<>();
+    private boolean isAnyoneAdded;
+
     private ZazoTopFragment topFragment;
 
     @Override
@@ -91,6 +87,13 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
 
     public boolean isRefreshing() {
         return swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing();
+    }
+
+    @Override
+    public void onItemStateChanged(int position, SuggestionsAdapter.Suggestion.State state) {
+        if (state == SuggestionsAdapter.Suggestion.State.ADDED) {
+            isAnyoneAdded = true;
+        }
     }
 
     private enum SuggestionCardResult {
@@ -150,6 +153,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
         View v = inflater.inflate(R.layout.suggestions_layout, null);
         ButterKnife.inject(this, v);
         adapter = new SuggestionsAdapter(getContext(), this);
+        adapter.setOnItemStateChangedListener(this);
         listView.setAdapter(adapter);
         listView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         listView.setAlpha(0f);
@@ -179,7 +183,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                 if (data != null) {
                     adapter.clear();
                     for (FriendFinderRequests.SuggestionsData.Suggestion suggestion : data.getSuggestions()) {
-                        adapter.add(adapter.getItemCount(), new Suggestion(suggestion.getDisplayName(), suggestion.getId()));
+                        adapter.add(adapter.getItemCount(), new SuggestionsAdapter.Suggestion(suggestion.getDisplayName(), suggestion.getId()));
                     }
                     if (adapter.getItemCount() == 0) {
                         emptySuggestions.setVisibility(View.VISIBLE);
@@ -227,7 +231,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
 
     private void finishInvitation() {
         dropSuggestionIntent();
-        if (!addedFriends.isEmpty()) {
+        if (isAnyoneAdded) {
             topFragment = new WelcomeMultipleFragment();
             topFragment.setOnBackListener(new OnBackListener() {
                 @Override
@@ -276,7 +280,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     public void testOnClick(View v) {
         switch (v.getId()) {
             case R.id.test_add:
-                adapter.add(adapter.getItemCount(), new Suggestion("Test " + (adapter.getRealCount()), -1));
+                adapter.add(adapter.getItemCount(), new SuggestionsAdapter.Suggestion("Test " + (adapter.getRealCount()), -1));
                 break;
             case R.id.test_remove:
                 adapter.remove(adapter.getItemCount() - 1);
@@ -306,6 +310,9 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
             case IGNORED:
             case ADDED:
                 boolean added = cardType == SuggestionCardResult.ADDED;
+                if (added) {
+                    isAnyoneAdded = true;
+                }
                 unsubscribedLayout.setVisibility(View.GONE);
                 addedIgnoredLayout.setVisibility(View.VISIBLE);
                 suggestionName.setText(name);
@@ -375,44 +382,6 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
             return true;
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    static class ViewHolder extends RecyclerView.ViewHolder {
-
-        @InjectView(R.id.thumb) CircleThumbView thumb;
-        @InjectView(R.id.thumb_title) TextView thumbTitle;
-        @InjectView(R.id.add_btn) Button addButton;
-        @InjectView(R.id.ignore_btn) Button ignoreButton;
-        @InjectView(R.id.undo_btn) Button undoButton;
-        @InjectView(R.id.checkbox) ImageView checkbox;
-        @InjectView(R.id.name) TextView name;
-        @InjectView(R.id.progress_layout) View progress;
-        @InjectView(R.id.left_layout) View leftLayout;
-
-        private SuggestionsAdapter adapter;
-
-        public ViewHolder(View itemView, SuggestionsAdapter suggestionsAdapter) {
-            super(itemView);
-            ButterKnife.inject(this, itemView);
-        }
-    }
-
-    static class Suggestion {
-        String name;
-        Integer contactId;
-        State state = State.NEW;
-
-        Suggestion(String name, Integer contactId) {
-            this.name = name;
-            this.contactId = contactId;
-        }
-
-        enum State {
-            NEW,
-            ADDED,
-            IGNORED,
-            SYNCING
-        }
     }
 
     private class CardLayoutRequestCallback implements HttpRequest.Callbacks {

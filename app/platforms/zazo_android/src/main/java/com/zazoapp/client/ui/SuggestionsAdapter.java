@@ -11,9 +11,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
+import com.zazoapp.client.ui.view.CircleThumbView;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.StringUtils;
 
@@ -23,8 +29,8 @@ import java.util.List;
 /**
  * Created by skamenkovych@codeminders.com on 3/30/2016.
  */
-class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHolder> implements View.OnClickListener {
-    private List<SuggestionsFragment.Suggestion> suggestions;
+class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHolder> implements View.OnClickListener {
+    private List<Suggestion> suggestions;
     private LayoutInflater layoutInflater;
     private SuggestionsFragment fragment;
 
@@ -39,27 +45,37 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
     private final long ANIM_DURATION = 300;
     private static final int MAX_ITEMS = 10;
 
+    private OnItemStateChangedListener onItemStateChangedListener;
+
+    interface OnItemStateChangedListener {
+        void onItemStateChanged(int position, Suggestion.State state);
+    }
+
+    void setOnItemStateChangedListener(OnItemStateChangedListener listener) {
+        onItemStateChangedListener = listener;
+    }
+
     @Override
     public void onClick(final View v) {
         if (fragment.isRefreshing()) {
             return;
         }
         final int position = (Integer) v.getTag(R.id.id);
-        final SuggestionsFragment.Suggestion item = suggestions.get(position);
-        SuggestionsFragment.ViewHolder h = (SuggestionsFragment.ViewHolder) v.getTag();
+        final Suggestion item = suggestions.get(position);
+        ViewHolder h = (ViewHolder) v.getTag();
         switch (v.getId()) {
             case R.id.add_btn: {
                 h.progress.setVisibility(View.VISIBLE);
-                FriendFinderRequests.addFriends(new SuggestionRequestCallback(position, v, SuggestionsFragment.Suggestion.State.ADDED), item.contactId);
+                FriendFinderRequests.addFriends(new SuggestionRequestCallback(position, v, Suggestion.State.ADDED), item.contactId);
             }
             break;
             case R.id.ignore_btn: {
                 h.progress.setVisibility(View.VISIBLE);
-                FriendFinderRequests.ignoreFriends(new SuggestionRequestCallback(position, v, SuggestionsFragment.Suggestion.State.IGNORED), item.contactId);
+                FriendFinderRequests.ignoreFriends(new SuggestionRequestCallback(position, v, Suggestion.State.IGNORED), item.contactId);
             }
             break;
             case R.id.undo_btn: {
-                setState(SuggestionsFragment.Suggestion.State.NEW, v, position, true);
+                setState(Suggestion.State.NEW, v, position, true);
             }
             break;
         }
@@ -80,14 +96,14 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
     }
 
     @Override
-    public SuggestionsFragment.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = layoutInflater.inflate(R.layout.suggestions_list_item, parent, false);
-        return new SuggestionsFragment.ViewHolder(itemView, this);
+        return new ViewHolder(itemView, this);
     }
 
     @Override
-    public void onBindViewHolder(SuggestionsFragment.ViewHolder h, int position) {
-        SuggestionsFragment.Suggestion item = suggestions.get(position);
+    public void onBindViewHolder(ViewHolder h, int position) {
+        Suggestion item = suggestions.get(position);
         h.name.setText(item.name);
         h.addButton.setTag(h);
         h.addButton.setTag(R.id.id, position); // FIXME for random item inserting change to save item instead
@@ -111,7 +127,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
         return suggestions.size();
     }
 
-    public void add(int location, SuggestionsFragment.Suggestion suggestion) {
+    public void add(int location, Suggestion suggestion) {
         suggestions.add(location, suggestion);
         if (location < MAX_ITEMS) {
             notifyItemInserted(location);
@@ -131,9 +147,9 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
         }
     }
 
-    void setState(final SuggestionsFragment.Suggestion.State state, final View v, final int position, boolean smooth) {
-        final SuggestionsFragment.Suggestion item = suggestions.get(position);
-        final SuggestionsFragment.ViewHolder h = (SuggestionsFragment.ViewHolder) v.getTag();
+    void setState(final Suggestion.State state, final View v, final int position, boolean smooth) {
+        final Suggestion item = suggestions.get(position);
+        final ViewHolder h = (ViewHolder) v.getTag();
         final int posId = (int) v.getTag(R.id.id);
         h.thumb.setImageResource(Convenience.getStringDependentItem(item.name, icons));
         h.thumb.setFillColor(Convenience.getStringDependentItem(item.name, colors));
@@ -163,7 +179,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
             ValueAnimator animator = new ValueAnimator();
             animator.setDuration(ANIM_DURATION);
             animator.setInterpolator(new AccelerateInterpolator());
-            if (state != SuggestionsFragment.Suggestion.State.IGNORED) {
+            if (state != Suggestion.State.IGNORED) {
                 animator.setFloatValues(0f, 1f);
             } else {
                 animator.setFloatValues(1f, 0f);
@@ -188,7 +204,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
             });
             animator.start();
         } else {
-            if (state != SuggestionsFragment.Suggestion.State.IGNORED) {
+            if (state != Suggestion.State.IGNORED) {
                 h.leftLayout.setAlpha(1f);
                 h.thumb.setFillColorFilter(null);
             } else {
@@ -196,16 +212,58 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
                 h.thumb.setFillColorFilter(disabledFilter);
             }
         }
+        if (smooth) {
+            if (onItemStateChangedListener != null) {
+                onItemStateChangedListener.onItemStateChanged(position, state);
+            }
+        }
+    }
 
+    static class ViewHolder extends RecyclerView.ViewHolder {
+
+        @InjectView(R.id.thumb) CircleThumbView thumb;
+        @InjectView(R.id.thumb_title) TextView thumbTitle;
+        @InjectView(R.id.add_btn) Button addButton;
+        @InjectView(R.id.ignore_btn) Button ignoreButton;
+        @InjectView(R.id.undo_btn) Button undoButton;
+        @InjectView(R.id.checkbox) ImageView checkbox;
+        @InjectView(R.id.name) TextView name;
+        @InjectView(R.id.progress_layout) View progress;
+        @InjectView(R.id.left_layout) View leftLayout;
+
+        private SuggestionsAdapter adapter;
+
+        public ViewHolder(View itemView, SuggestionsAdapter suggestionsAdapter) {
+            super(itemView);
+            ButterKnife.inject(this, itemView);
+        }
+    }
+
+    static class Suggestion {
+        String name;
+        Integer contactId;
+        State state = State.NEW;
+
+        Suggestion(String name, Integer contactId) {
+            this.name = name;
+            this.contactId = contactId;
+        }
+
+        enum State {
+            NEW,
+            ADDED,
+            IGNORED,
+            SYNCING
+        }
     }
 
     class SuggestionRequestCallback implements HttpRequest.Callbacks {
 
         private int position;
         private View view;
-        private SuggestionsFragment.Suggestion.State successState;
+        private Suggestion.State successState;
 
-        SuggestionRequestCallback(int position, View v, SuggestionsFragment.Suggestion.State successState) {
+        SuggestionRequestCallback(int position, View v, Suggestion.State successState) {
             this.position = position;
             this.view = v;
             this.successState = successState;
@@ -223,7 +281,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsFragment.ViewHo
 
         private void finishRequest(boolean success) {
             if (position == (int) view.getTag(R.id.id)) {
-                SuggestionsFragment.ViewHolder h = (SuggestionsFragment.ViewHolder) view.getTag();
+                ViewHolder h = (ViewHolder) view.getTag();
                 h.progress.setVisibility(View.INVISIBLE);
                 if (success) {
                     setState(successState, view, position, true);

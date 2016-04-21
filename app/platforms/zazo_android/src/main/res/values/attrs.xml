@@ -73,4 +73,8 @@
     <declare-styleable name="ShadowedStatusLayout">
         <attr name="solid_background_color" format="color"/>
     </declare-styleable>
+
+    <declare-styleable name="StatusIndicator">
+        <attr name="ratio" format="float"/>
+    </declare-styleable>
 </resources>

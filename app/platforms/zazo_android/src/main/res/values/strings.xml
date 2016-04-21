@@ -198,6 +198,11 @@
     <string name="ff_ignore_error_message">Couldn\'t ignore friend</string>
     <string name="ff_unsubscribed_message">Unsubscribed! You will no longer receive notifications from Zazo when friends join.</string>
     <string name="ff_subscription_failure">Failed to change subscription.</string>
+    <plurals name="welcome_multiple_members_label">
+        <item quantity="one">%d member</item>
+        <item quantity="other">%d members</item>
+    </plurals>
+    <string name="to_label">To:</string>
 
     <string name="settings_allow_data_in_roaming">Zazo when roaming</string>
     <string name="settings_allow_data_in_roaming_hint">Send and receive Zazos when roaming</string>

@@ -1,6 +1,7 @@
 package com.zazoapp.client.ui.view;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import com.zazoapp.client.R;
@@ -25,11 +26,16 @@ public class StatusIndicator extends ImageView {
     }
 
     public StatusIndicator(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
     }
 
     public StatusIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        final TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.StatusIndicator);
+
+        if (typedArray.hasValue(R.styleable.StatusIndicator_ratio)) {
+            childToParentRatio = typedArray.getFloat(R.styleable.StatusIndicator_ratio, (float) PARENT_WIDTH_RATIO);
+        }
     }
 
     @Override
