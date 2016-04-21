@@ -251,6 +251,24 @@
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
+    <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_action_accept_white"
+            app:backgroundTint="@color/accent_2"
+            app:useCompatPadding="true"
+            app:borderWidth="2dp"
+            app:elevation="4dp"
+            android:layout_margin="@dimen/abc_control_inset_material"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:scaleX="0"
+            android:scaleY="0"
+            app:rippleColor="@color/ripple_material_dark"
+            android:visibility="invisible"/>
+
     <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
             android:id="@+id/card_request_progress"
             android:layout_width="match_parent"
@@ -296,5 +314,6 @@
     <FrameLayout
             android:id="@+id/top_frame"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:elevation="10dp"/>
 </RelativeLayout>

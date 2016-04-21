@@ -82,8 +82,8 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     public void onStopRecordClicked() {
         recordingLayout.setVisibility(View.INVISIBLE);
         DialogShower.showToast(getActivity(), "Recording finished");
-        showActionBar();
         // TODO stop recording
+        actionBar.setVisibility(View.VISIBLE);
         bottomSheet.setVisibility(View.VISIBLE);
         switchCameraIcon.setVisibility(View.VISIBLE);
         recordBtn.setVisibility(View.VISIBLE);
@@ -94,8 +94,8 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         bottomSheet.setVisibility(View.INVISIBLE);
         switchCameraIcon.setVisibility(View.INVISIBLE);
         recordBtn.setVisibility(View.INVISIBLE);
+        actionBar.setVisibility(View.INVISIBLE);
         // TODO start recording
-        hideActionBar();
         recordingTimeLabel.setText("00:00");
         recordingLayout.setVisibility(View.VISIBLE);
         return true;

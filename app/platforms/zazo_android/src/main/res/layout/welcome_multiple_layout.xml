@@ -127,8 +127,9 @@
             android:src="@drawable/ic_record_white"
             app:backgroundTint="@color/accent_2"
             app:useCompatPadding="true"
-            app:borderWidth="2dp"
             app:elevation="4dp"
+            android:layout_marginRight="@dimen/abc_control_inset_material"
+            android:layout_marginEnd="@dimen/abc_control_inset_material"
             app:layout_anchor="@id/bottom_sheet"
             app:layout_anchorGravity="top|end"
             app:rippleColor="@color/ripple_material_dark"/>

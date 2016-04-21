@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -61,6 +62,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     @InjectView(R.id.suggestion_action_main_btn) Button mainButton;
     @InjectView(R.id.card_request_progress) ProgressBar cardRequestProgress;
     @InjectView(R.id.empty_suggestions) View emptySuggestions;
+    @InjectView(R.id.fab) FloatingActionButton fab;
 
     private SuggestionsAdapter adapter;
     private SuggestionCardResult currentCardType = SuggestionCardResult.NONE;
@@ -92,7 +94,15 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     @Override
     public void onItemStateChanged(int position, SuggestionsAdapter.Suggestion.State state) {
         if (state == SuggestionsAdapter.Suggestion.State.ADDED) {
+            moveToAnyoneAddedState();
+        }
+    }
+
+    private void moveToAnyoneAddedState() {
+        if (!isAnyoneAdded) {
             isAnyoneAdded = true;
+            fab.setVisibility(View.VISIBLE);
+            fab.animate().setInterpolator(new FastOutSlowInInterpolator()).scaleX(1).scaleY(1).start();
         }
     }
 
@@ -195,11 +205,14 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
         });
     }
 
-    @OnClick({R.id.home, R.id.suggestion_action_btn, R.id.done_btn, R.id.suggestion_action_main_btn, R.id.suggestion_action_second_btn, R.id.suggestion_action_third_btn})
+    @OnClick({R.id.home, R.id.done_btn, R.id.fab, R.id.suggestion_action_btn,
+            R.id.suggestion_action_main_btn, R.id.suggestion_action_second_btn,
+            R.id.suggestion_action_third_btn})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.home:
             case R.id.done_btn:
+            case R.id.fab:
                 finishInvitation();
                 break;
             case R.id.suggestion_action_btn:
@@ -311,7 +324,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
             case ADDED:
                 boolean added = cardType == SuggestionCardResult.ADDED;
                 if (added) {
-                    isAnyoneAdded = true;
+                    moveToAnyoneAddedState();
                 }
                 unsubscribedLayout.setVisibility(View.GONE);
                 addedIgnoredLayout.setVisibility(View.VISIBLE);
