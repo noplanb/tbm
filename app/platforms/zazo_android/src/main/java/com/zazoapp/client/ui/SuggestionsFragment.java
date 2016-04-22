@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -70,11 +69,9 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     private static final String CARD_TYPE = "card_type";
     private static final String NAME = "name";
     private static final String NKEY = "nkey";
-    private static final String FROM_APPLICATION = "from_application";
+    static final String FROM_APPLICATION = "from_application";
 
-    private boolean isAnyoneAdded;
-
-    private ZazoTopFragment topFragment;
+    private boolean isAnyoneAdded = true;
 
     @Override
     public void onRefresh() {
@@ -245,18 +242,14 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     private void finishInvitation() {
         dropSuggestionIntent();
         if (isAnyoneAdded) {
-            topFragment = new WelcomeMultipleFragment();
-            topFragment.setOnBackListener(new OnBackListener() {
-                @Override
-                public void onBack() {
-                    topFragment = null;
-                }
-            });
-            FragmentTransaction tr = getChildFragmentManager().beginTransaction();
-            tr.setCustomAnimations(R.anim.slide_left_fade_in, R.anim.slide_right_fade_out, R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
-            tr.add(R.id.top_frame, topFragment);
-            tr.addToBackStack(null);
-            tr.commit();
+            Activity activity = getActivity();
+            if (activity != null) {
+                Intent intent = new Intent(activity, WelcomeScreenActivity.class);
+                intent.putExtra(FROM_APPLICATION, fromApplication());
+                // TODO add friends to intent
+                activity.startActivity(intent);
+                activity.finish();
+            }
         } else {
             super.onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
             if (!fromApplication()) {
@@ -387,9 +380,6 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (topFragment != null) {
-            return topFragment.onKeyDown(keyCode, event);
-        }
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             finishInvitation();
             return true;

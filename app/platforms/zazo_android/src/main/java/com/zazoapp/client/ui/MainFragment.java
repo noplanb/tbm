@@ -178,22 +178,28 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     }
 
     private void handleIntent(Intent intent) {
-        if (intent == null) {
+        if (intent == null || intent.getAction() == null) {
             return;
         }
-        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-            // TODO Do action specified in https://zazo.fogbugz.com/f/cases/1062/
-            intent.setAction(IntentHandlerService.IntentActions.NONE);
-        } else if (IntentHandlerService.IntentActions.SUGGESTIONS.equals(intent.getAction())) {
-            if (!intent.getBooleanExtra(EXTRA_HANDLED, false)) {
-                if (topFragment != null) {
-                    getFragmentManager().popBackStack();
-                    topFragment = null;
-                    tutorialParent.setVisibility(View.VISIBLE);
+        switch (intent.getAction()) {
+            case Intent.ACTION_VIEW:
+                // TODO Do action specified in https://zazo.fogbugz.com/f/cases/1062/
+                intent.setAction(IntentHandlerService.IntentActions.NONE);
+                break;
+            case IntentHandlerService.IntentActions.SUGGESTIONS:
+                if (!intent.getBooleanExtra(EXTRA_HANDLED, false)) {
+                    if (topFragment != null) {
+                        getFragmentManager().popBackStack();
+                        topFragment = null;
+                        tutorialParent.setVisibility(View.VISIBLE);
+                    }
+                    publishResult(ACTION_CODE_SHOW_SUGGESTIONS, null);
+                    intent.putExtra(EXTRA_HANDLED, true);
                 }
-                publishResult(ACTION_CODE_SHOW_SUGGESTIONS, null);
-                intent.putExtra(EXTRA_HANDLED, true);
-            }
+                break;
+            case IntentHandlerService.IntentActions.SEND_VIDEO:
+                DialogShower.showToast(getActivity(), "Send videos");
+                break;
         }
     }
 

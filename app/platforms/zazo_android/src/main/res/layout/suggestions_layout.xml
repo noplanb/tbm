@@ -311,9 +311,4 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/zazo_action_bar"
             android:background="@drawable/toolbar_shadow"/>
-    <FrameLayout
-            android:id="@+id/top_frame"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:elevation="10dp"/>
 </RelativeLayout>

@@ -1,19 +1,54 @@
 package com.zazoapp.client.ui;
 
+import android.content.Intent;
+import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
+import android.view.KeyEvent;
+import android.view.Window;
+import android.view.WindowManager;
 import com.zazoapp.client.R;
 
 /**
  * Created by skamenkovych@codeminders.com on 21.04.2016.
  */
 public class WelcomeScreenActivity extends FragmentActivity {
+
+    private ZazoTopFragment topFragment;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.welcome_screen);
+        topFragment = new WelcomeMultipleFragment();
+        Bundle args = new Bundle();
+        Intent intent = getIntent();
+        if (intent != null) {
+            args.putBoolean(SuggestionsFragment.FROM_APPLICATION, intent.getBooleanExtra(SuggestionsFragment.FROM_APPLICATION, false));
+        }
+        topFragment.setArguments(args);
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.content_frame, new WelcomeMultipleFragment(), "welcomeScreen").commit();
+                .add(R.id.content_frame, topFragment, "welcomeScreen").commit();
+        setupWindowParams();
+    }
+
+    private void setupWindowParams() {
+        Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            Resources res = getResources();
+            window.setStatusBarColor(res.getColor(R.color.primary_dark));
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (topFragment != null) {
+            return topFragment.onKeyDown(keyCode, event);
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

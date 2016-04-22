@@ -1,5 +1,6 @@
 package com.zazoapp.client.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -17,6 +18,7 @@ import butterknife.OnClick;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.utilities.DialogShower;
@@ -42,7 +44,13 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     @InjectView(R.id.recording_layout) View recordingLayout;
     @InjectView(R.id.recording_time_label) TextView recordingTimeLabel;
     @InjectView(R.id.stop_recording_btn) ImageView stopRecordingBtn;
+    @InjectView(R.id.video_actions_layout) View videoActionsLayout;
+    @InjectView(R.id.video_thumb) ImageView videoThumb;
+    @InjectView(R.id.video_duration_text) TextView videoDurationText;
     private ArrayList<Friend> friends;
+
+    public static final String EXTRA_FRIEND_IDS = "friend_mkeys";
+    public static final String EXTRA_VIDEO_PATH = "video_path";
 
     @Nullable
     @Override
@@ -85,12 +93,29 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         // TODO stop recording
         actionBar.setVisibility(View.VISIBLE);
         bottomSheet.setVisibility(View.VISIBLE);
+        videoActionsLayout.setVisibility(View.VISIBLE);
         switchCameraIcon.setVisibility(View.VISIBLE);
-        recordBtn.setVisibility(View.VISIBLE);
+    }
+
+    @OnClick({R.id.redo_btn, R.id.send_btn})
+    public void onVideoActionClicked(View v) {
+        switch (v.getId()) {
+            case R.id.redo_btn:
+                startRecording();
+                break;
+            case R.id.send_btn:
+                sendRecording();
+                break;
+        }
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        startRecording();
+        return true;
+    }
+
+    private void startRecording() {
         bottomSheet.setVisibility(View.INVISIBLE);
         switchCameraIcon.setVisibility(View.INVISIBLE);
         recordBtn.setVisibility(View.INVISIBLE);
@@ -98,6 +123,29 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         // TODO start recording
         recordingTimeLabel.setText("00:00");
         recordingLayout.setVisibility(View.VISIBLE);
-        return true;
+    }
+
+    private void sendRecording() {
+        getActivity().finish();
+        Intent intent = new Intent(getActivity(), MainActivity.class);
+        intent.setAction(IntentHandlerService.IntentActions.SEND_VIDEO);
+        intent.putExtra(EXTRA_FRIEND_IDS, "ids");
+        intent.putExtra(EXTRA_VIDEO_PATH, "path");
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onBackPressed() {
+        super.onBackPressed();
+        if (fromApplication()) {
+            Intent intent = new Intent(getActivity(), MainActivity.class);
+            startActivity(intent);
+        }
+        getActivity().finish();
+    }
+
+    private boolean fromApplication() {
+        Bundle args = getArguments();
+        return args != null && args.getBoolean(SuggestionsFragment.FROM_APPLICATION, false);
     }
 }

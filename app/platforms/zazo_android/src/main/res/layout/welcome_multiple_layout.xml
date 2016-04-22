@@ -87,13 +87,85 @@
                 android:background="@color/white"
                 android:orientation="vertical">
 
+            <RelativeLayout
+                    android:id="@+id/video_actions_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
+                    android:paddingRight="@dimen/abc_list_item_padding_horizontal_material"
+                    android:paddingTop="@dimen/abc_action_bar_icon_vertical_padding_material"
+                    android:paddingBottom="@dimen/abc_action_bar_icon_vertical_padding_material"
+                    android:visibility="gone"
+                    android:background="@color/primary">
+
+                <ImageView
+                        android:id="@+id/video_thumb"
+                        android:layout_width="@dimen/thumb_icon_size"
+                        android:layout_height="@dimen/thumb_icon_size"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:src="@drawable/ic_zazo_blue"
+                        android:scaleType="centerCrop"
+                        android:layout_centerVertical="true"
+                        />
+                <TextView
+                        android:id="@+id/video_duration_text"
+                        android:layout_width="@dimen/thumb_icon_size"
+                        android:layout_height="@dimen/thumb_icon_size"
+                        android:gravity="bottom|center_horizontal"
+                        android:layout_alignLeft="@id/video_thumb"
+                        android:layout_alignTop="@id/video_thumb"
+                        android:layout_alignRight="@id/video_thumb"
+                        android:layout_alignBottom="@id/video_thumb"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_small"
+                        android:text="00:00"
+                        android:background="@drawable/bottom_scrim"
+                        android:layout_centerVertical="true"/>
+
+                <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:orientation="horizontal"
+                        android:layout_centerVertical="true">
+
+                    <Button
+                            android:id="@+id/redo_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Widget.AppCompat.Button.Borderless"
+                            android:textColor="@color/welcome_screen_redo"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:textSize="@dimen/text_large"
+                            android:textAllCaps="true"
+                            android:text="@string/welcome_friends_redo_action"
+                            />
+                    <Button
+                            android:id="@+id/send_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Widget.AppCompat.Button.Borderless"
+                            android:textColor="@color/welcome_screen_send"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:textSize="@dimen/text_large"
+                            android:textAllCaps="true"
+                            android:text="@string/welcome_friends_send_action"
+                            />
+                </LinearLayout>
+            </RelativeLayout>
+
             <TextView
                     android:id="@+id/number_members"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/text_normal"
                     android:textColor="@color/suggestion_notice"
-                    android:padding="@dimen/abc_action_bar_content_inset_material"/>
+                    android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
+                    android:paddingRight="@dimen/abc_list_item_padding_horizontal_material"
+                    android:paddingTop="@dimen/abc_action_bar_icon_vertical_padding_material"
+                    android:paddingBottom="@dimen/abc_action_bar_icon_vertical_padding_material"/>
             <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -102,7 +174,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="@dimen/abc_action_bar_content_inset_material">
+                    android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
+                    android:paddingRight="@dimen/abc_list_item_padding_horizontal_material"
+                    android:paddingTop="@dimen/abc_action_bar_icon_vertical_padding_material"
+                    android:paddingBottom="@dimen/abc_action_bar_icon_vertical_padding_material">
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

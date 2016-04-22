@@ -88,4 +88,7 @@
     <color name="suggestion_card_divider">#D9D9D9</color>
     <color name="suggestion_card_color">#EDF5FB</color>
     <color name="suggestion_action_button_bgn">#eea5caec</color>
+
+    <color name="welcome_screen_redo">#DAE9F8</color>
+    <color name="welcome_screen_send">@color/white</color>
 </resources>

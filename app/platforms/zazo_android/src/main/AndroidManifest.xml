@@ -89,7 +89,10 @@
         <activity
                 android:name=".ui.WelcomeScreenActivity"
                 android:launchMode="singleTask"
-                android:screenOrientation="portrait"/>
+                android:screenOrientation="portrait"
+                android:windowSoftInputMode="stateAlwaysHidden|adjustNothing"
+                android:theme="@style/AppTheme"
+                />
         <receiver
             android:name=".notification.gcm.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
