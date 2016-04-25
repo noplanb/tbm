@@ -51,7 +51,7 @@ public class BaseManagerHolder implements BaseManagerProvider {
     public void unregisterManagers() {
         videoRecorder.pause(true);
         CameraManager.releaseCamera();
-        videoPlayer.release();
+        getPlayer().release();
         audioManager.abandonFocus();
         audioManager.reset();
         sensorManager.unregisterListener(audioManager);

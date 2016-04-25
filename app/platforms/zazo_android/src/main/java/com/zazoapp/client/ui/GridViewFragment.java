@@ -155,7 +155,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return;
         }
         Log.i(TAG, "layoutVideoRecorder: adding videoRecorder preview");
-        getManagerProvider().getRecorder().addPreviewTo(fl);
+        getManagerProvider().getRecorder().addPreviewTo(fl, true);
     }
 
     // -------------------------------

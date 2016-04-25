@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -21,6 +22,7 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.ui.view.WelcomeScreenPreview;
 import com.zazoapp.client.utilities.DialogShower;
 
 import java.util.ArrayList;
@@ -51,12 +53,13 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
 
     public static final String EXTRA_FRIEND_IDS = "friend_mkeys";
     public static final String EXTRA_VIDEO_PATH = "video_path";
+    private WelcomeScreenPreview contentView;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.welcome_multiple_layout, null);
-        ButterKnife.inject(this, v);
+        contentView = new WelcomeScreenPreview(inflater.getContext());
+        ButterKnife.inject(this, contentView);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
         friends = FriendFactory.getFactoryInstance().allEnabled();
         Iterator<Friend> it = friends.iterator();
@@ -70,7 +73,16 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         numberMembers.setText(getResources().getQuantityString(R.plurals.welcome_multiple_members_label, friends.size(), friends.size()));
 
         recordBtn.setOnTouchListener(this);
-        return v;
+        return contentView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        BaseManagerProvider managers = getManagers();
+        if (managers != null) {
+            managers.getRecorder().addPreviewTo(contentView, false);
+        }
     }
 
     private void hideActionBar() {
@@ -106,6 +118,14 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
             case R.id.send_btn:
                 sendRecording();
                 break;
+        }
+    }
+
+    @OnClick({R.id.video_preview, R.id.switch_camera_icon})
+    public void onPreviewClicked(View v) {
+        BaseManagerProvider managers = getManagers();
+        if (managers != null) {
+            managers.getRecorder().switchCamera();
         }
     }
 
@@ -147,5 +167,13 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     private boolean fromApplication() {
         Bundle args = getArguments();
         return args != null && args.getBoolean(SuggestionsFragment.FROM_APPLICATION, false);
+    }
+
+    private BaseManagerProvider getManagers() {
+        final FragmentActivity activity = getActivity();
+        if (activity instanceof WelcomeScreenActivity) {
+            return ((WelcomeScreenActivity) activity).getManagerProvider();
+        }
+        return null;
     }
 }

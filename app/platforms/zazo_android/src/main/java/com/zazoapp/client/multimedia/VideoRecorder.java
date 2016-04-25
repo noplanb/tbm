@@ -12,7 +12,7 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.ui.CancelableTask;
-import com.zazoapp.client.ui.view.PreviewTextureFrame;
+import com.zazoapp.client.ui.view.BasePreviewTextureFrame;
 import com.zazoapp.client.utilities.Logger;
 
 import java.io.File;
@@ -53,7 +53,7 @@ public class VideoRecorder implements SurfaceTextureListener {
     private Context context;
     private MediaRecorder mediaRecorder;
     private Friend currentFriend;
-    private PreviewTextureFrame preview;
+    private BasePreviewTextureFrame preview;
     private AudioController audioController;
     private PreviewListener previewListener;
 
@@ -295,12 +295,13 @@ public class VideoRecorder implements SurfaceTextureListener {
         }
     }
 
-    public View getView() {
-        if (preview == null) {
-            preview = new PreviewTextureFrame(context);
-            preview.setSurfaceTextureListener(this);
-        }
+    public BasePreviewTextureFrame getView() {
         return preview;
+    }
+
+    public void setView(BasePreviewTextureFrame view) {
+        preview = view;
+        preview.setSurfaceTextureListener(this);
     }
 
     @Override

@@ -52,8 +52,9 @@ public interface Recorder {
      * Set up preview to parent container
      *
      * @param container
+     * @param inCard if false - container must be an instance of {@link com.zazoapp.client.ui.view.BasePreviewTextureFrame}
      */
-    void addPreviewTo(ViewGroup container);
+    void addPreviewTo(ViewGroup container, boolean inCard);
 
     /**
      * Switches front/back cameras

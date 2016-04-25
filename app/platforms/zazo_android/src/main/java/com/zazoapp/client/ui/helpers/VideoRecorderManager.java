@@ -18,7 +18,8 @@ import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoRecorder;
 import com.zazoapp.client.ui.BaseManagerProvider;
 import com.zazoapp.client.ui.animations.CameraAnimation;
-import com.zazoapp.client.ui.view.PreviewTextureFrame;
+import com.zazoapp.client.ui.view.BasePreviewTextureFrame;
+import com.zazoapp.client.ui.view.GridPreviewFrame;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
@@ -130,26 +131,35 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     }
 
     @Override
-    public void addPreviewTo(ViewGroup container) {
-        PreviewTextureFrame vrFrame = (PreviewTextureFrame) videoRecorder.getView();
-        View blackBackground = new View(context);
-        blackBackground.setBackgroundColor(Color.BLACK);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            CardView cardView = new CardView(context);
-            cardView.addView(blackBackground, new ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            cardView.addView(vrFrame, new ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            container.addView(cardView, new ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            container.setBackgroundResource(R.drawable.card_empty);
-        } else {
-            container.addView(blackBackground, new ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            container.addView(vrFrame, new PreviewTextureFrame.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            container.setBackgroundResource(R.drawable.card);
-            vrFrame.setOuterRecordingBorder(container);
+    public void addPreviewTo(ViewGroup container, boolean inCard) {
+        BasePreviewTextureFrame frame = videoRecorder.getView();
+        if (frame == null) {
+            if (inCard) {
+                GridPreviewFrame vrFrame = new GridPreviewFrame(context);
+                View blackBackground = new View(context);
+                blackBackground.setBackgroundColor(Color.BLACK);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    CardView cardView = new CardView(context);
+                    cardView.addView(blackBackground, new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    cardView.addView(vrFrame, new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    container.addView(cardView, new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    container.setBackgroundResource(R.drawable.card_empty);
+                } else {
+                    container.addView(blackBackground, new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    container.addView(vrFrame, new GridPreviewFrame.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    container.setBackgroundResource(R.drawable.card);
+                    vrFrame.setOuterRecordingBorder(container);
+                }
+                frame = vrFrame;
+            } else {
+                frame = (BasePreviewTextureFrame) container;
+            }
+            videoRecorder.setView(frame);
         }
         containerRef = new WeakReference<View>(container);
     }
@@ -162,7 +172,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
                 @Override
                 protected void onPreExecute() {
                     super.onPreExecute();
-                    View switchCameraIcon = ((PreviewTextureFrame) videoRecorder.getView()).getCameraIconView();
+                    View switchCameraIcon = videoRecorder.getView().getCameraIconView();
                     switchCameraIcon.animate().setDuration(400).rotationYBy(180).start();
                 }
 
@@ -193,7 +203,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
 
     @Override
     public void indicateSwitchCameraFeature() {
-        PreviewTextureFrame frame = (PreviewTextureFrame) videoRecorder.getView();
+        GridPreviewFrame frame = (GridPreviewFrame) videoRecorder.getView();
         frame.setSwitchCameraIndication();
     }
 

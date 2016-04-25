@@ -17,11 +17,14 @@ import com.zazoapp.client.R;
 public class WelcomeScreenActivity extends FragmentActivity {
 
     private ZazoTopFragment topFragment;
+    private BaseManagerHolder managers;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.welcome_screen);
+        managers = new BaseManagerHolder();
+        managers.init(getApplicationContext(), this, null);
         topFragment = new WelcomeMultipleFragment();
         Bundle args = new Bundle();
         Intent intent = getIntent();
@@ -42,6 +45,22 @@ public class WelcomeScreenActivity extends FragmentActivity {
             Resources res = getResources();
             window.setStatusBarColor(res.getColor(R.color.primary_dark));
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        managers.registerManagers();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        managers.unregisterManagers();
+    }
+
+    public BaseManagerProvider getManagerProvider() {
+        return managers;
     }
 
     @Override
