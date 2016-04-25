@@ -47,7 +47,7 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
     public boolean endLongpress(View v) {
         if (nineViewGroup.getGestureListener() == null)
             return false;
-        return nineViewGroup.getGestureListener().onEndLongpress();
+        return nineViewGroup.getGestureListener().onEndLongpress(nineViewGroup.positionOfView(v));
     }
 
     @Override

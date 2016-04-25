@@ -15,8 +15,9 @@ public interface Recorder {
 
     /**
      * Ends recording and save the result
+     * @return true if video file was successfully recorded
      */
-    void stop();
+    boolean stop();
 
     /**
      * Cancels recording. Do not save anything

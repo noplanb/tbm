@@ -16,7 +16,7 @@ import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoRecorder;
-import com.zazoapp.client.ui.ZazoManagerProvider;
+import com.zazoapp.client.ui.BaseManagerProvider;
 import com.zazoapp.client.ui.animations.CameraAnimation;
 import com.zazoapp.client.ui.view.PreviewTextureFrame;
 import com.zazoapp.client.utilities.AsyncTaskManager;
@@ -34,11 +34,11 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
 
     private final VideoRecorder videoRecorder;
     private final Context context;
-    private final ZazoManagerProvider managerProvider;
+    private final BaseManagerProvider managerProvider;
     private volatile boolean cameraSwitchAllowed = true;
     private WeakReference<View> containerRef;
 
-    public VideoRecorderManager(Context context, ZazoManagerProvider managerProvider) {
+    public VideoRecorderManager(Context context, BaseManagerProvider managerProvider) {
         this.context = context;
         videoRecorder = new VideoRecorder(context);
         videoRecorder.addExceptionHandlerDelegate(this);
@@ -75,13 +75,8 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     }
 
     @Override
-    public void stop() {
-        if (videoRecorder.stopRecording(false)) {
-            Friend f = videoRecorder.getCurrentFriend();
-            Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
-            f.requestUpload(f.getOutgoingVideoId());
-            managerProvider.getTutorial().onVideoRecorded(f);
-        }
+    public boolean stop() {
+        return videoRecorder.stopRecording(false);
     }
 
     // ---------------------------------------

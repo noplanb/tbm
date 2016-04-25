@@ -58,7 +58,7 @@ public class NineViewGroup extends ViewGroup {
 
         boolean onCenterStartLongpress(View view);
 
-        boolean onEndLongpress();
+        boolean onEndLongpress(int position);
 
         boolean onCancelLongpress(int reason);
 
