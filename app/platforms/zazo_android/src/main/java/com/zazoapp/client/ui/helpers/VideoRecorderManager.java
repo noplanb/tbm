@@ -87,8 +87,8 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     public void unableToSetPreview() {
         DialogShower.showToast(context, R.string.toast_unable_to_set_preview);
         final View container = containerRef.get();
-        if (container != null && videoRecorder.getView().getAlpha() == 0) {
-            CameraAnimation.animateIn(videoRecorder.getView(), null);
+        if (container != null && videoRecorder.getView().getSwitchAnimationView().getAlpha() == 0) {
+            CameraAnimation.animateIn(videoRecorder.getView().getSwitchAnimationView(), null);
         }
     }
 
@@ -187,7 +187,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
                 protected void onPostExecute(Void aVoid) {
                     final View container = containerRef.get();
                     if (container != null) {
-                        CameraAnimation.animateOut(videoRecorder.getView(), new Runnable() {
+                        CameraAnimation.animateOut(videoRecorder.getView().getSwitchAnimationView(), new Runnable() {
                             @Override
                             public void run() {
                                 videoRecorder.setPreviewListener(VideoRecorderManager.this);
@@ -203,7 +203,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
 
     @Override
     public void indicateSwitchCameraFeature() {
-        GridPreviewFrame frame = (GridPreviewFrame) videoRecorder.getView();
+        BasePreviewTextureFrame frame = videoRecorder.getView();
         frame.setSwitchCameraIndication();
     }
 
@@ -223,7 +223,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         videoRecorder.setPreviewListener(null);
         final View container = containerRef.get();
         if (container != null) {
-            CameraAnimation.animateIn(videoRecorder.getView(), null);
+            CameraAnimation.animateIn(videoRecorder.getView().getSwitchAnimationView(), null);
         }
     }
 }

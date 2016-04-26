@@ -26,6 +26,10 @@ public abstract class BasePreviewTextureFrame extends FrameLayout {
 
     public abstract void init();
 
+    public View getSwitchAnimationView() {
+        return this;
+    }
+
     public boolean isRecording() {
         return isRecording;
     }

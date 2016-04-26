@@ -20,4 +20,9 @@ public class WelcomeScreenPreview extends BasePreviewTextureFrame {
         textureView = ButterKnife.findById(contentView, R.id.video_preview);
         switchCameraIcon = ButterKnife.findById(contentView, R.id.switch_camera_icon);
     }
+
+    @Override
+    public View getSwitchAnimationView() {
+        return textureView;
+    }
 }
