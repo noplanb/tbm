@@ -11,7 +11,7 @@ public interface Recorder {
      *
      * @param friendId
      */
-    void start(String friendId);
+    boolean start(String friendId);
 
     /**
      * Ends recording and save the result

@@ -11,8 +11,7 @@ import android.view.ViewGroup;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.GridElement;
-import com.zazoapp.client.model.GridElementFactory;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoRecorder;
@@ -48,24 +47,30 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     }
 
     @Override
-    public void start(String friendId) {
-        GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(friendId);
-        if (!ge.hasFriend())
-            return;
+    public boolean start(String friendId) {
         if (!Convenience.checkAndNotifyNoSpace(context)) {
-            return;
+            return false;
         }
         if (!cameraSwitchAllowed) {
             DialogShower.showToast(context, R.string.toast_camera_is_switching);
-            return;
+            return false;
         }
-        Friend f = ge.getFriend();
-        f.setLastActionTime();
-        if (videoRecorder.startRecording(f)) {
-            Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
+
+        Friend f = FriendFactory.getFactoryInstance().find(friendId);
+        boolean startedRecording = videoRecorder.startRecording(f);
+        if (f != null) {
+            f.setLastActionTime();
+            if (startedRecording) {
+                Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
+            } else {
+                Dispatch.dispatch("onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
+            }
+        } else if (startedRecording) {
+            Log.i(TAG, "onRecordStart: START RECORDING with no friend");
         } else {
-            Dispatch.dispatch("onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
+            Dispatch.dispatch("onRecordStart: unable to start recording");
         }
+        return startedRecording;
     }
 
     @Override

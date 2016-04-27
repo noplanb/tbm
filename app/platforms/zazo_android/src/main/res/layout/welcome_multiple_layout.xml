@@ -60,17 +60,18 @@
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
                 android:background="@drawable/recording_time_label_bgn"
-                android:drawableLeft="@drawable/ic_flag_ua"
+                android:drawableLeft="@drawable/ic_rec"
                 android:drawablePadding="5dp"
                 android:gravity="center"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_large"
+                android:text="00:00"
                 android:layout_marginTop="@dimen/abc_action_bar_content_inset_material"/>
         <ImageView
                 android:id="@+id/stop_recording_btn"
-                android:layout_width="@dimen/thumb_icon_size"
-                android:layout_height="@dimen/thumb_icon_size"
-                android:src="@drawable/ic_card_empty"
+                android:layout_width="@dimen/recording_icon_size"
+                android:layout_height="@dimen/recording_icon_size"
+                android:src="@drawable/ic_stop_recording"
                 android:layout_alignParentBottom="true"
                 android:layout_marginBottom="@dimen/abc_action_bar_content_inset_material"
                 android:layout_centerHorizontal="true"
@@ -102,15 +103,15 @@
                     android:visibility="gone"
                     android:background="@color/primary">
 
-                <ImageView
+                <com.zazoapp.client.ui.view.ThumbView
                         android:id="@+id/video_thumb"
                         android:layout_width="@dimen/thumb_icon_size"
                         android:layout_height="@dimen/thumb_icon_size"
                         android:layout_alignParentLeft="true"
                         android:layout_alignParentStart="true"
-                        android:src="@drawable/ic_zazo_blue"
                         android:scaleType="centerCrop"
                         android:layout_centerVertical="true"
+                        android:background="@color/switch_thumb_disabled_material_dark"
                         />
                 <TextView
                         android:id="@+id/video_duration_text"

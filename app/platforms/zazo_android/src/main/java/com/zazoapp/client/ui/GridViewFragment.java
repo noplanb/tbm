@@ -84,6 +84,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         super.onResume();
         Logger.i(TAG, "onResume");
         setupSpinFeature(getActivity());
+        CameraManager.setUsePreferredPreviewSize(false);
         getManagerProvider().getRecorder().resume();
     }
 
@@ -155,6 +156,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return;
         }
         Log.i(TAG, "layoutVideoRecorder: adding videoRecorder preview");
+        CameraManager.setUsePreferredPreviewSize(false);
         getManagerProvider().getRecorder().addPreviewTo(fl, true);
     }
 

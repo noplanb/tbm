@@ -38,9 +38,11 @@ public class CameraManager {
     private static Camera camera = null;
     private static boolean useFrontCamera = true;
     private static Camera.Size selectedPreviewSize = null;
+    private static Camera.Size selectedVideoSize = null;
     private static int orientation;                        //used in videoRecorder to set video recording orientation
     private static int recalculatedOrientation;            //used in cameraParams to set camera parameters properly
     private static boolean is15FramesAvailable;
+    private static boolean usePreferredPreviewSize = false;
 
     // --------------
     // Public methods
@@ -53,6 +55,10 @@ public class CameraManager {
 
     public static Camera.Size getPreviewSize(){
         return selectedPreviewSize;
+    }
+
+    public static Size getSupportedSize() {
+        return selectedVideoSize;
     }
 
     public static synchronized void releaseCamera(){
@@ -103,6 +109,11 @@ public class CameraManager {
             setupCamera(context);
         }
     }
+
+    public static synchronized void setUsePreferredPreviewSize(boolean use) {
+        usePreferredPreviewSize = use;
+    }
+
     // ---------------
     // Private methods
     // ---------------
@@ -218,6 +229,13 @@ public class CameraManager {
         Log.i(TAG, String.format("setCameraParams: setPreviewSize %d %d", videoSize.width, videoSize.height));
         selectedPreviewSize = videoSize;
         cparams.setPreviewSize(videoSize.width, videoSize.height);
+        List<Size> supportedVideoSizes = camera.getParameters().getSupportedVideoSizes();
+        // If 320x240 exists then use it
+        selectedVideoSize = getVideoSize(supportedVideoSizes, 320, 240);
+        if (selectedVideoSize == null) {
+            sortVideoSizeByAscendingWidth(supportedVideoSizes);
+            selectedVideoSize = getSizeWithAspect(supportedVideoSizes);
+        }
 
         // Set antibanding
         String ab = getAppropriateAntibandingSetting(cparams);
@@ -233,7 +251,10 @@ public class CameraManager {
                 break;
             }
         }
-
+        if (cparams.getSupportedFocusModes().contains(
+                Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+            cparams.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+        }
         if(isSupportedMaxPreviewFpsRange)
             cparams.setPreviewFpsRange(30000, 30000);
         else{
@@ -271,7 +292,9 @@ public class CameraManager {
     private static Camera.Size getAppropriateVideoSize(Camera.Parameters cparams){
         Camera.Size r = null;
         List <Camera.Size> previewSizes = cparams.getSupportedPreviewSizes();
-
+        if (previewSizes.size() > 0 && usePreferredPreviewSize) {
+            return getSizeWithAspect(previewSizes);
+        }
         // If 320x240 exists then use it
         r = getVideoSize(previewSizes, 320, 240);
         if (r != null)
@@ -279,7 +302,13 @@ public class CameraManager {
 
         // Otherwise find the smallest size with a 1.33 aspect ratio.
         sortVideoSizeByAscendingWidth(previewSizes);
-        for (Camera.Size size : previewSizes) {
+        r = getSizeWithAspect(previewSizes);
+        return r;
+    }
+
+    private static Size getSizeWithAspect(List<Size> previewSizes) {
+        Size r = null;
+        for (Size size : previewSizes) {
             Log.i(TAG, String.format("%s,  %f", stringWithCameraSize(size), aspectRation(size)));
             if ( Math.abs(aspectRation(size) - 1.33) < 0.009){
                 r = size;

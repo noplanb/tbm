@@ -96,6 +96,7 @@ public class VideoRecorder implements SurfaceTextureListener {
         try {
             mediaRecorder.start();
         } catch (IllegalStateException e) {
+            deleteRecordedFile();
             Dispatch.dispatch("startRecording: called in illegal state.");
             releaseMediaRecorder();
             if (videoRecorderExceptionHandler != null)
@@ -105,6 +106,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             // Since this seems to get the media recorder into a wedged state I
             // will just finish the app here.
             CameraManager.releaseCamera();
+            deleteRecordedFile();
             Dispatch.dispatch("ERROR: RuntimeException: this should never happen according to google. But I have seen it. "
                     + e.toString());
             releaseMediaRecorder();
@@ -132,7 +134,7 @@ public class VideoRecorder implements SurfaceTextureListener {
             try {
                 mediaRecorder.stop();
                 if (cancel) {
-                    Config.recordingFile(context).delete();
+                    deleteRecordedFile();
                     return false;
                 }
                 rval = true;
@@ -155,6 +157,9 @@ public class VideoRecorder implements SurfaceTextureListener {
                 rval = false;
             } finally {
                 releaseMediaRecorder();
+                if (!rval) {
+                    deleteRecordedFile();
+                }
             }
         }
         return rval;
@@ -240,18 +245,25 @@ public class VideoRecorder implements SurfaceTextureListener {
         if (CameraManager.is15FramesAvailable())
             mediaRecorder.setVideoFrameRate(15);
 
-        Camera.Size size = CameraManager.getPreviewSize();
-        if (size == null) {
+        Camera.Size supportedSize = CameraManager.getSupportedSize();
+        if (supportedSize == null) {
             notifyUnableToPrepare();
             return;
         }
-        mediaRecorder.setVideoSize(size.width, size.height);
+        mediaRecorder.setVideoSize(supportedSize.width, supportedSize.height);
 
-        String ofile = Config.recordingFilePath(context);
+        final String ofile = Config.recordingFilePath(context);
         Log.i(TAG, "prepareMediaRecorder: mediaRecorder outfile: " + ofile);
         mediaRecorder.setOutputFile(ofile);
 
         mediaRecorder.setOrientationHint(CameraManager.getOrientation());
+        mediaRecorder.setOnErrorListener(new MediaRecorder.OnErrorListener() {
+            @Override
+            public void onError(MediaRecorder mr, int what, int extra) {
+                hideRecordingIndicator();
+                deleteRecordedFile();
+            }
+        });
 
         // Step 6: Prepare configured MediaRecorder
         try {
@@ -443,5 +455,9 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     public void setPreviewListener(PreviewListener listener) {
         previewListener = listener;
+    }
+
+    private void deleteRecordedFile() {
+        Config.recordingFile(context).delete();
     }
 }

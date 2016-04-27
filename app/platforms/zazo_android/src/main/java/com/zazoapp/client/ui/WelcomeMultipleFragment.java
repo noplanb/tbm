@@ -1,6 +1,7 @@
 package com.zazoapp.client.ui;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -18,15 +19,25 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
+import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.multimedia.CameraManager;
+import com.zazoapp.client.multimedia.ThumbnailRetriever;
+import com.zazoapp.client.ui.view.ThumbView;
 import com.zazoapp.client.ui.view.WelcomeScreenPreview;
+import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by skamenkovych@codeminders.com on 4/18/2016.
@@ -47,13 +58,16 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     @InjectView(R.id.recording_time_label) TextView recordingTimeLabel;
     @InjectView(R.id.stop_recording_btn) ImageView stopRecordingBtn;
     @InjectView(R.id.video_actions_layout) View videoActionsLayout;
-    @InjectView(R.id.video_thumb) ImageView videoThumb;
+    @InjectView(R.id.video_thumb) ThumbView videoThumb;
     @InjectView(R.id.video_duration_text) TextView videoDurationText;
     private ArrayList<Friend> friends;
 
     public static final String EXTRA_FRIEND_IDS = "friend_mkeys";
     public static final String EXTRA_VIDEO_PATH = "video_path";
     private WelcomeScreenPreview contentView;
+    private Timer timer;
+    private TimerTask updateTimerTask;
+    private static final SimpleDateFormat timerFormatter = new SimpleDateFormat("mm:ss");
 
     @Nullable
     @Override
@@ -71,9 +85,18 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         }
 
         numberMembers.setText(getResources().getQuantityString(R.plurals.welcome_multiple_members_label, friends.size(), friends.size()));
-
+        recordingTimeLabel.setTypeface(Convenience.getTypeface(contentView.getContext()));
         recordBtn.setOnTouchListener(this);
+        bottomSheet.setOnTouchListener(this);
+        timer = new Timer();
         return contentView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        timer.cancel();
+        timer = null;
     }
 
     @Override
@@ -81,8 +104,21 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         super.onActivityCreated(savedInstanceState);
         BaseManagerProvider managers = getManagers();
         if (managers != null) {
+            CameraManager.setUsePreferredPreviewSize(true);
             managers.getRecorder().addPreviewTo(contentView, false);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onStart();
+        CameraManager.setUsePreferredPreviewSize(true);
+    }
+
+    @Override
+    public void onPause() {
+        super.onStop();
+        CameraManager.setUsePreferredPreviewSize(false);
     }
 
     private void hideActionBar() {
@@ -100,13 +136,59 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
 
     @OnClick(R.id.stop_recording_btn)
     public void onStopRecordClicked() {
+        stopRecording();
+    }
+
+    private void stopRecording() {
         recordingLayout.setVisibility(View.INVISIBLE);
         DialogShower.showToast(getActivity(), "Recording finished");
-        // TODO stop recording
+        BaseManagerProvider managers = getManagers();
+        if (managers != null) {
+            managers.getRecorder().stop();
+        }
+        cancelTimerTask();
         actionBar.setVisibility(View.VISIBLE);
         bottomSheet.setVisibility(View.VISIBLE);
-        videoActionsLayout.setVisibility(View.VISIBLE);
         switchCameraIcon.setVisibility(View.VISIBLE);
+        setupThumb();
+    }
+
+    private void setupThumb() {
+        String path = Config.recordingFilePath(contentView.getContext());
+        File recordedFile = new File(path);
+        if (recordedFile .exists()) {
+            videoActionsLayout.setVisibility(View.VISIBLE);
+            recordBtn.setVisibility(View.INVISIBLE);
+            ThumbnailRetriever retriever = new ThumbnailRetriever();
+            try {
+                Bitmap thumbnail = retriever.getThumbnail(path);
+                videoThumb.setImageBitmap(thumbnail);
+                videoThumb.setMapArea(ThumbView.MapArea.FULL);
+            } catch (ThumbnailRetriever.ThumbnailBrokenException e) {
+                videoThumb.setImageResource(R.drawable.navigation_background_pattern);
+                videoThumb.setMapArea(ThumbView.MapArea.LEFT_TOP);
+            }
+            videoDurationText.setText(recordingTimeLabel.getText());
+        } else {
+            videoActionsLayout.setVisibility(View.GONE);
+            recordBtn.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void startRecording() {
+        BaseManagerProvider managers = getManagers();
+        if (managers != null) {
+            if (managers.getRecorder().start(null)) {
+                runNewTimerTask();
+                bottomSheet.setVisibility(View.INVISIBLE);
+                switchCameraIcon.setVisibility(View.INVISIBLE);
+                recordBtn.setVisibility(View.INVISIBLE);
+                actionBar.setVisibility(View.INVISIBLE);
+                recordingLayout.setVisibility(View.VISIBLE);
+            } else {
+                DialogShower.showToast(getActivity(), R.string.toast_unable_to_start_recording);
+            }
+        }
     }
 
     @OnClick({R.id.redo_btn, R.id.send_btn})
@@ -131,18 +213,60 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        startRecording();
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            if (v.getId() == R.id.record_btn) {
+                BaseManagerProvider managers = getManagers();
+                if (managers != null && !managers.getRecorder().isRecording()) {
+                    startRecording();
+                }
+            }
+        }
         return true;
     }
 
-    private void startRecording() {
-        bottomSheet.setVisibility(View.INVISIBLE);
-        switchCameraIcon.setVisibility(View.INVISIBLE);
-        recordBtn.setVisibility(View.INVISIBLE);
-        actionBar.setVisibility(View.INVISIBLE);
-        // TODO start recording
-        recordingTimeLabel.setText("00:00");
-        recordingLayout.setVisibility(View.VISIBLE);
+    private void cancelTimerTask() {
+        if (updateTimerTask != null) {
+            updateTimerTask.cancel();
+            timer.purge();
+            updateTimerTask = null;
+        }
+    }
+
+    private void runNewTimerTask() {
+        cancelTimerTask();
+        updateTimerTask = new TimerTask() {
+            Date date = new Date(0);
+            @Override
+            public void run() {
+                BaseManagerProvider managers = getManagers();
+                if (managers != null && managers.getRecorder().isRecording()) {
+                    recordingTimeLabel.post(new Runnable() {
+                        String time = timerFormatter.format(date);
+                        @Override
+                        public void run() {
+                            recordingTimeLabel.setText(time);
+                        }
+                    });
+                    date.setTime(date.getTime() + 1000);
+                    if (date.getTime() > 300000) { // limit to 5 min
+                        contentView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                stopRecording();
+                            }
+                        });
+                    }
+                } else { // if recording was stopped due to some errors
+                    contentView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            stopRecording();
+                        }
+                    });
+                }
+            }
+        };
+        timer.schedule(updateTimerTask, 0, 1000);
     }
 
     private void sendRecording() {
