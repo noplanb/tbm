@@ -27,9 +27,6 @@ public class NotificationHandler {
         public static final String ADDITIONS = "additions";
         public static final String NKEY = "nkey";
 
-        public static class Additions {
-            public static final String FRIEND_NAME = "friend_name";
-        }
     }
 
     public static class StatusEnum {

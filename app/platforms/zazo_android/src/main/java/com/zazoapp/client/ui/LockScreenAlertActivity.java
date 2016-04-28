@@ -21,6 +21,7 @@ import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.notification.NotificationAlertManager;
+import com.zazoapp.client.notification.NotificationSuggestion;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.StringUtils;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -147,7 +148,8 @@ public class LockScreenAlertActivity extends Activity {
             thirdButton.setText("");
             thirdButton.setVisibility(View.INVISIBLE);
         } else if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(i.getAction())) {
-            String name = i.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.NAME);
+            NotificationSuggestion suggestion = i.getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
+            String name = suggestion.getName();
             if (name == null) {
                 name = "";
             }

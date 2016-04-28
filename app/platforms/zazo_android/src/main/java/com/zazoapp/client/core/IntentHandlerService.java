@@ -35,6 +35,7 @@ import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
+import com.zazoapp.client.notification.NotificationSuggestion;
 import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Convenience;
@@ -440,11 +441,11 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             if (friendJoinedAction == null) {
                 return;
             }
-            final String name = intent.getStringExtra(FriendJoinedIntentFields.NAME);
-            String nkey = intent.getStringExtra(FriendJoinedIntentFields.NKEY);
+            NotificationSuggestion suggestion = intent.getParcelableExtra(FriendJoinedIntentFields.DATA);
+            String nkey = suggestion.getNkey();
             switch (friendJoinedAction) {
                 case FriendJoinedActions.NOTIFY:
-                    NotificationAlertManager.alertFriendJoined(IntentHandlerService.this, nkey, name);
+                    NotificationAlertManager.alertFriendJoined(IntentHandlerService.this, new Intent(intent));
                     break;
                 case FriendJoinedActions.ADD:
                     NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
@@ -458,7 +459,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                         public void error(String errorString) {
                             DialogShower.showToast(getApplicationContext(), R.string.ff_add_error_message);
                         }
-                    });
+                    }, null);
                     break;
                 case FriendJoinedActions.IGNORE:
                     NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
@@ -554,9 +555,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
     }
 
     public static class FriendJoinedIntentFields {
-        public static final String NAME = "friend_name";
+        public static final String DATA = "data";
         public static final String ACTION = "action";
-        public static final String NKEY = "nkey";
     }
 
     public static class FriendJoinedActions {

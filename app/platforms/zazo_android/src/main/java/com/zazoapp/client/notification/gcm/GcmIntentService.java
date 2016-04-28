@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.Gson;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.debug.DebugConfig;
@@ -15,8 +15,11 @@ import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.notification.NotificationHandler;
+import com.zazoapp.client.notification.NotificationSuggestion;
 import com.zazoapp.client.utilities.Logger;
 import com.zazoapp.client.utilities.StringUtils;
+
+import java.util.ArrayList;
 
 /**
  * This IntentService handles push notifications. It is called by
@@ -112,12 +115,14 @@ public class GcmIntentService extends IntentService {
 	}
 
     private void handleFriendJoined(Intent intent) {
-        LinkedTreeMap<String, String> additions = StringUtils.linkedTreeMapWithJson(intent.getStringExtra(NotificationHandler.DataKeys.ADDITIONS));
+        Gson g = new Gson();
+        FriendJoinedAdditions additions = StringUtils.fromJson(intent.getStringExtra(NotificationHandler.DataKeys.ADDITIONS), FriendJoinedAdditions.class);
         if (additions != null) {
             Intent i = new Intent(IntentHandlerService.IntentActions.FRIEND_JOINED);
-            i.putExtra(IntentHandlerService.FriendJoinedIntentFields.NAME, additions.get(NotificationHandler.DataKeys.Additions.FRIEND_NAME));
+            NotificationSuggestion suggestion = new NotificationSuggestion(additions.friend_name,
+                    intent.getStringExtra(NotificationHandler.DataKeys.NKEY), additions.phone_numbers);
             i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.NOTIFY);
-            i.putExtra(IntentHandlerService.FriendJoinedIntentFields.NKEY, intent.getStringExtra(NotificationHandler.DataKeys.NKEY));
+            i.putExtra(IntentHandlerService.FriendJoinedIntentFields.DATA, suggestion);
             startDataHolderService(i);
         }
     }
@@ -127,6 +132,11 @@ public class GcmIntentService extends IntentService {
             intent.setClass(getApplicationContext(), IntentHandlerService.class);
             startService(intent);
         }
+    }
+
+    private static class FriendJoinedAdditions {
+        String friend_name;
+        ArrayList<String> phone_numbers;
     }
 
 }

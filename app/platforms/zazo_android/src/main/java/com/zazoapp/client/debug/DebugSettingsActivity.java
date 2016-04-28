@@ -460,6 +460,15 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                 });
             }
         });
+
+        Switch imitateRequests = (Switch) findViewById(R.id.imitate_requests);
+        imitateRequests.setChecked(DebugConfig.Bool.IMITATE_REQUESTS.get());
+        imitateRequests.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                DebugConfig.set(DebugConfig.Bool.IMITATE_REQUESTS, isChecked);
+            }
+        });
     }
 
     private void setMinRoomSpace(CharSequence space) {

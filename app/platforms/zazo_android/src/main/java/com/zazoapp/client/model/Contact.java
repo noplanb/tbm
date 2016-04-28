@@ -3,7 +3,6 @@ package com.zazoapp.client.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.ContactsContract;
-
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.util.List;
@@ -37,7 +36,24 @@ public class Contact implements Parcelable{
 		this.contact = contact;
 	}
 
-	public String getDisplayName(){
+    //protected Contact(Parcel in) {
+    //    in.readList(phoneObjects, ArrayList.class.getClassLoader());
+    //    in.readMap(contact, LinkedTreeMap.class.getClassLoader());
+    //}
+    //
+    //public static final Creator<Contact> CREATOR = new Creator<Contact>() {
+    //    @Override
+    //    public Contact createFromParcel(Parcel in) {
+    //        return new Contact(in);
+    //    }
+    //
+    //    @Override
+    //    public Contact[] newArray(int size) {
+    //        return new Contact[size];
+    //    }
+    //};
+
+    public String getDisplayName(){
 		return contact.get(ContactKeys.DISPLAY_NAME);
 	}
 

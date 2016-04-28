@@ -17,6 +17,8 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.features.friendfinder.Suggestion;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.view.CircleThumbView;
@@ -30,7 +32,7 @@ import java.util.List;
  * Created by skamenkovych@codeminders.com on 3/30/2016.
  */
 class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHolder> implements View.OnClickListener {
-    private List<Suggestion> suggestions;
+    private List<ContactSuggestion> suggestions;
     private LayoutInflater layoutInflater;
     private SuggestionsFragment fragment;
 
@@ -48,11 +50,15 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
     private OnItemStateChangedListener onItemStateChangedListener;
 
     interface OnItemStateChangedListener {
-        void onItemStateChanged(int position, Suggestion.State state);
+        void onItemStateChanged(int position, ContactSuggestion.State state);
     }
 
     void setOnItemStateChangedListener(OnItemStateChangedListener listener) {
         onItemStateChangedListener = listener;
+    }
+
+    interface OnPhoneItemSelected {
+        void onPhoneItemSelected(int index);
     }
 
     @Override
@@ -61,21 +67,27 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
             return;
         }
         final int position = (Integer) v.getTag(R.id.id);
-        final Suggestion item = suggestions.get(position);
-        ViewHolder h = (ViewHolder) v.getTag();
+        final ContactSuggestion item = suggestions.get(position);
         switch (v.getId()) {
             case R.id.add_btn: {
-                h.progress.setVisibility(View.VISIBLE);
-                FriendFinderRequests.addFriends(new SuggestionRequestCallback(position, v, Suggestion.State.ADDED), item.contactId);
+                if (item.hasMultiplePhones()) {
+                    fragment.displayPhoneChooserPopup(new OnPhoneItemSelected() {
+                        @Override
+                        public void onPhoneItemSelected(int index) {
+                            FriendFinderRequests.addFriend(new SuggestionRequestCallback(position, v, ContactSuggestion.State.ADDED), item.getId(), item.getPhone(index));
+                        }
+                    }, item, v);
+                } else {
+                    FriendFinderRequests.addFriend(new SuggestionRequestCallback(position, v, ContactSuggestion.State.ADDED), item.getId(), null);
+                }
             }
             break;
             case R.id.ignore_btn: {
-                h.progress.setVisibility(View.VISIBLE);
-                FriendFinderRequests.ignoreFriends(new SuggestionRequestCallback(position, v, Suggestion.State.IGNORED), item.contactId);
+                FriendFinderRequests.ignoreFriend(new SuggestionRequestCallback(position, v, ContactSuggestion.State.IGNORED), item.getId());
             }
             break;
             case R.id.undo_btn: {
-                setState(Suggestion.State.NEW, v, position, true);
+                setState(ContactSuggestion.State.NEW, v, position, true);
             }
             break;
         }
@@ -103,8 +115,8 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
 
     @Override
     public void onBindViewHolder(ViewHolder h, int position) {
-        Suggestion item = suggestions.get(position);
-        h.name.setText(item.name);
+        ContactSuggestion item = suggestions.get(position);
+        h.name.setText(item.getName());
         h.addButton.setTag(h);
         h.addButton.setTag(R.id.id, position); // FIXME for random item inserting change to save item instead
         h.addButton.setOnClickListener(this);
@@ -127,7 +139,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
         return suggestions.size();
     }
 
-    public void add(int location, Suggestion suggestion) {
+    public void add(int location, ContactSuggestion suggestion) {
         suggestions.add(location, suggestion);
         if (location < MAX_ITEMS) {
             notifyItemInserted(location);
@@ -147,13 +159,13 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
         }
     }
 
-    void setState(final Suggestion.State state, final View v, final int position, boolean smooth) {
-        final Suggestion item = suggestions.get(position);
+    void setState(final ContactSuggestion.State state, final View v, final int position, boolean smooth) {
+        final ContactSuggestion item = suggestions.get(position);
         final ViewHolder h = (ViewHolder) v.getTag();
         final int posId = (int) v.getTag(R.id.id);
-        h.thumb.setImageResource(Convenience.getStringDependentItem(item.name, icons));
-        h.thumb.setFillColor(Convenience.getStringDependentItem(item.name, colors));
-        h.thumbTitle.setText(StringUtils.getInitials(item.name));
+        h.thumb.setImageResource(Convenience.getStringDependentItem(item.getName(), icons));
+        h.thumb.setFillColor(Convenience.getStringDependentItem(item.getName(), colors));
+        h.thumbTitle.setText(StringUtils.getInitials(item.getName()));
         item.state = state;
         switch (item.state) {
             case NEW:
@@ -179,7 +191,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
             ValueAnimator animator = new ValueAnimator();
             animator.setDuration(ANIM_DURATION);
             animator.setInterpolator(new AccelerateInterpolator());
-            if (state != Suggestion.State.IGNORED) {
+            if (state != ContactSuggestion.State.IGNORED) {
                 animator.setFloatValues(0f, 1f);
             } else {
                 animator.setFloatValues(1f, 0f);
@@ -204,7 +216,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
             });
             animator.start();
         } else {
-            if (state != Suggestion.State.IGNORED) {
+            if (state != ContactSuggestion.State.IGNORED) {
                 h.leftLayout.setAlpha(1f);
                 h.thumb.setFillColorFilter(null);
             } else {
@@ -239,14 +251,17 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
         }
     }
 
-    static class Suggestion {
-        String name;
-        Integer contactId;
+    static class ContactSuggestion extends Suggestion {
+        int contactId;
         State state = State.NEW;
 
-        Suggestion(String name, Integer contactId) {
-            this.name = name;
-            this.contactId = contactId;
+        ContactSuggestion(String name, int id) {
+            super(name);
+        }
+
+        ContactSuggestion(FriendFinderRequests.SuggestionsData.Suggestion s) {
+            super(s.getDisplayName(), s.getPhoneNumbers());
+            this.contactId = s.getId();
         }
 
         enum State {
@@ -255,22 +270,37 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
             IGNORED,
             SYNCING
         }
+
+        int getId() {
+            return contactId;
+        }
+    }
+    private void gotFriend(String response) {
+        FriendFinderRequests.AddResponse params = StringUtils.fromJson(response, FriendFinderRequests.AddResponse.class);
+        if (params.getFriendData() != null) {
+            FriendFactory.getFactoryInstance().createWithServerParams(layoutInflater.getContext(), params.getFriendData());
+        }
     }
 
     class SuggestionRequestCallback implements HttpRequest.Callbacks {
 
         private int position;
         private View view;
-        private Suggestion.State successState;
+        private ContactSuggestion.State successState;
 
-        SuggestionRequestCallback(int position, View v, Suggestion.State successState) {
+        SuggestionRequestCallback(int position, View v, ContactSuggestion.State successState) {
             this.position = position;
             this.view = v;
             this.successState = successState;
+            if (position == (int) view.getTag(R.id.id)) {
+                ViewHolder h = (ViewHolder) view.getTag();
+                h.progress.setVisibility(View.VISIBLE);
+            }
         }
 
         @Override
         public void success(String response) {
+            gotFriend(response);
             finishRequest(true);
         }
 

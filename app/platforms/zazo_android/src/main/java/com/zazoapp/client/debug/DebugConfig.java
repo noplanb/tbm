@@ -41,6 +41,7 @@ public class DebugConfig {
         SEND_INCORRECT_FILE_SIZE(false),
         ALLOW_RESEND(false),
         ALLOW_SEND_CONTACTS(false),
+        IMITATE_REQUESTS(false),
         ;
 
         private boolean value;

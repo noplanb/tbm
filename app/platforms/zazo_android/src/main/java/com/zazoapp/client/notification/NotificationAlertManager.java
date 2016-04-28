@@ -113,11 +113,11 @@ public class NotificationAlertManager {
 		postNativeAlert(context, friend, videoId);
 	}
 
-    public static void alertFriendJoined(Context context, String nkey, String name) {
+    public static void alertFriendJoined(Context context, Intent friendJoinedIntent) {
         if (screenIsLocked(context) || screenIsOff(context)) {
-            postLockScreenFriendJoinedAlert(context, nkey, name);
+            postLockScreenFriendJoinedAlert(context, friendJoinedIntent);
         }
-        postNativeFriendJoinedAlert(context, nkey, name);
+        postNativeFriendJoinedAlert(context, friendJoinedIntent);
     }
 
     public static void alert(Context context, String title, String subTitle, long[] vibratePattern, int id) {
@@ -240,20 +240,23 @@ public class NotificationAlertManager {
     }
 
     // Private
-    private static void postNativeFriendJoinedAlert(Context context, String nkey, String name) {
+    private static void postNativeFriendJoinedAlert(Context context, Intent friendJoinedIntent) {
         Log.i(TAG, "postNativeAlert");
+        NotificationSuggestion suggestion = friendJoinedIntent.getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
+        String name = suggestion.getName();
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        Intent activityIntent = new Intent(context.getApplicationContext(), MainActivity.class);
+        Intent activityIntent = new Intent(friendJoinedIntent);
+        activityIntent.setClass(context.getApplicationContext(), MainActivity.class);
         activityIntent.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
-        activityIntent.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.NOTIFY);
-        activityIntent.putExtra(IntentHandlerService.FriendJoinedIntentFields.NKEY, nkey);
-        activityIntent.putExtra(IntentHandlerService.FriendJoinedIntentFields.NAME, name);
-        Intent serviceIntent = new Intent(context.getApplicationContext(), IntentHandlerService.class);
+        Intent serviceIntent = new Intent(friendJoinedIntent);
+        serviceIntent.setClass(context.getApplicationContext(), IntentHandlerService.class);
         PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         PendingIntent addJoinedFriendIntent = PendingIntent.getService(context, 1,
-                makeJoinedFriendIntent(serviceIntent, nkey, name, IntentHandlerService.FriendJoinedActions.ADD), PendingIntent.FLAG_CANCEL_CURRENT);
+                makeJoinedFriendIntent(serviceIntent, IntentHandlerService.FriendJoinedActions.ADD), PendingIntent.FLAG_CANCEL_CURRENT);
         PendingIntent ignoreJoinedFriendIntent = PendingIntent.getService(context, 2,
-                makeJoinedFriendIntent(serviceIntent, nkey, name, IntentHandlerService.FriendJoinedActions.IGNORE), PendingIntent.FLAG_CANCEL_CURRENT);
+                makeJoinedFriendIntent(serviceIntent, IntentHandlerService.FriendJoinedActions.IGNORE), PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent viewJoinedFriendIntent = PendingIntent.getActivity(context, 3,
+                makeJoinedFriendIntent(activityIntent, IntentHandlerService.FriendJoinedActions.NOTIFY), PendingIntent.FLAG_CANCEL_CURRENT);
 
         String title = context.getString(R.string.new_friend_joined, name);
         NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
@@ -270,7 +273,11 @@ public class NotificationAlertManager {
         mBuilder.setContentIntent(openAppIntent);
         //mBuilder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.icons_plus));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            mBuilder.addAction(R.drawable.ic_action_accept, context.getString(R.string.action_add_joined_friend), addJoinedFriendIntent);
+            if (suggestion.hasMultiplePhones()) {
+                mBuilder.addAction(R.drawable.ic_info, context.getString(R.string.action_view), viewJoinedFriendIntent);
+            } else {
+                mBuilder.addAction(R.drawable.ic_action_accept, context.getString(R.string.action_add_joined_friend), addJoinedFriendIntent);
+            }
             mBuilder.addAction(R.drawable.ic_action_cancel, context.getString(R.string.action_ignore_joined_friend), ignoreJoinedFriendIntent);
         }
 
@@ -330,10 +337,12 @@ public class NotificationAlertManager {
 		context.startActivity(i);
 	}
 
-    private static void postLockScreenFriendJoinedAlert(Context context, String nkey, String name) {
+    private static void postLockScreenFriendJoinedAlert(Context context, Intent friendJoinedIntent) {
         Log.i(TAG, "postLockScreenAlert");
-        Intent ri = new Intent(context, LockScreenAlertActivity.class);
-        Intent i = makeJoinedFriendIntent(ri, nkey, name, IntentHandlerService.FriendJoinedActions.NOTIFY);
+        Intent i = new Intent(friendJoinedIntent);
+        i.setClass(context, LockScreenAlertActivity.class);
+        NotificationSuggestion suggestion = i.getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
+        String name = suggestion.getName();
         i.putExtra(TITLE_KEY, name);
         i.putExtra(SUB_TITLE_KEY, context.getString(R.string.new_friend_joined, name));
         i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
@@ -352,12 +361,10 @@ public class NotificationAlertManager {
         return i;
     }
 
-    public static Intent makeJoinedFriendIntent(Intent intent, String nkey, String name, String friendJoinedAction) {
+    public static Intent makeJoinedFriendIntent(Intent intent, String friendJoinedAction) {
         Intent i = new Intent(intent);
         i.setAction(IntentHandlerService.IntentActions.FRIEND_JOINED);
         i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, friendJoinedAction);
-        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.NKEY, nkey);
-        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.NAME, name);
         return i;
     }
 

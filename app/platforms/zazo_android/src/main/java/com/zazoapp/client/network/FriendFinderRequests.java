@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.debug.DebugConfig;
 import org.json.JSONArray;
@@ -45,34 +46,43 @@ public class FriendFinderRequests {
         }
     }
 
-    public static void addFriend(String nkey, @Nullable HttpRequest.Callbacks callbacks) {
-        requestNotificationApi("add", nkey, callbacks);
+    public static void addFriend(String nkey, @Nullable HttpRequest.Callbacks callbacks, String phoneNumber) {
+        JSONObject params = null;
+        if (phoneNumber != null) {
+            params = new JSONObject();
+            try {
+                params.put("phone_number", phoneNumber);
+            } catch (JSONException e) {
+                if (callbacks != null) {
+                    callbacks.error("Json exception");
+                }
+            }
+        }
+        requestNotificationApi("add", nkey, callbacks, params);
     }
 
     public static void ignoreFriend(String nkey, @Nullable HttpRequest.Callbacks callbacks) {
         requestNotificationApi("ignore", nkey, callbacks);
     }
 
-    public static void addFriends(@Nullable HttpRequest.Callbacks callbacks, Integer... ids) {
-        if (DebugConfig.Bool.USE_CUSTOM_SERVER.get()) {
+    public static void addFriend(@Nullable HttpRequest.Callbacks callbacks, int id, String phoneNumber) {
+        if (DebugConfig.Bool.IMITATE_REQUESTS.get()) {
             testRequest(callbacks);
             return;
         }
-        if (ids != null && ids.length > 0) {
+        if (id >= 0) {
             JSONObject object = new JSONObject();
             try {
-                JSONArray idArray = new JSONArray();
-                for (Integer id : ids) {
-                    idArray.put(id.intValue());
-                }
-                object.put("contacts_ids", idArray);
-                new HttpRequest.Builder()
-                        .setUrl(getUrl(CONTACTS_API, "add"))
+                HttpRequest.Builder requestBuilder = new HttpRequest.Builder()
+                        .setUrl(getUrl(CONTACTS_API, String.valueOf(id), "add"))
                         .setHost(getServerHost())
                         .setMethod(HttpRequest.POST)
-                        .setJsonParams(object)
-                        .setCallbacks(callbacks)
-                        .build();
+                        .setCallbacks(callbacks);
+                if (phoneNumber != null) {
+                    object.put("phone_number", phoneNumber);
+                    requestBuilder.setJsonParams(object);
+                }
+                requestBuilder.build();
             } catch (JSONException e) {
                 if (callbacks != null) {
                     callbacks.error("Json exception");
@@ -83,31 +93,18 @@ public class FriendFinderRequests {
         }
     }
 
-    public static void ignoreFriends(@Nullable HttpRequest.Callbacks callbacks, Integer... ids) {
-        if (DebugConfig.Bool.USE_CUSTOM_SERVER.get()) {
+    public static void ignoreFriend(@Nullable HttpRequest.Callbacks callbacks, int id) {
+        if (DebugConfig.Bool.IMITATE_REQUESTS.get()) {
             testRequest(callbacks);
             return;
         }
-        if (ids != null && ids.length > 0) {
-            JSONObject object = new JSONObject();
-            try {
-                JSONArray idArray = new JSONArray();
-                for (Integer id : ids) {
-                    idArray.put(id.intValue());
-                }
-                object.put("contacts_ids", idArray);
-                new HttpRequest.Builder()
-                        .setUrl(getUrl(CONTACTS_API, "ignore"))
-                        .setHost(getServerHost())
-                        .setMethod(HttpRequest.POST)
-                        .setJsonParams(object)
-                        .setCallbacks(callbacks)
-                        .build();
-            } catch (JSONException e) {
-                if (callbacks != null) {
-                    callbacks.error("Json exception");
-                }
-            }
+        if (id >= 0) {
+            new HttpRequest.Builder()
+                    .setUrl(getUrl(CONTACTS_API, String.valueOf(id), "ignore"))
+                    .setHost(getServerHost())
+                    .setMethod(HttpRequest.POST)
+                    .setCallbacks(callbacks)
+                    .build();
         } else if (callbacks != null) {
             callbacks.error("No contacts added");
         }
@@ -142,16 +139,23 @@ public class FriendFinderRequests {
     }
 
     private static void requestNotificationApi(String action, String nkey, @Nullable HttpRequest.Callbacks callbacks) {
-        if (DebugConfig.Bool.USE_CUSTOM_SERVER.get()) {
+        requestNotificationApi(action, nkey, callbacks, null);
+    }
+
+    private static void requestNotificationApi(String action, String nkey, @Nullable HttpRequest.Callbacks callbacks, @Nullable JSONObject params) {
+        if (DebugConfig.Bool.IMITATE_REQUESTS.get()) {
             testRequest(callbacks);
             return;
         }
-        new HttpRequest.Builder()
+        HttpRequest.Builder requestBuilder = new HttpRequest.Builder()
                 .setUrl(getUrl(NOTIFICATION_API, nkey, action))
                 .setHost(getServerHost())
                 .setMethod(HttpRequest.POST)
-                .setCallbacks(callbacks)
-                .build();
+                .setCallbacks(callbacks);
+        if (params != null) {
+            requestBuilder.setJsonParams(params);
+        }
+        requestBuilder.build();
     }
 
     private static String getUrl(String... uri) {
@@ -210,6 +214,7 @@ public class FriendFinderRequests {
             //private String zazo_mkey;
             //private String zazo_id;
             //private int total_score;
+            private List<String> phone_numbers;
 
             public int getId() {
                 return id;
@@ -218,6 +223,9 @@ public class FriendFinderRequests {
             public String getDisplayName() {
                 return display_name;
             }
+            public List<String> getPhoneNumbers() {
+                return phone_numbers;
+            }
         }
 
         private List<Suggestion> data;
@@ -225,5 +233,30 @@ public class FriendFinderRequests {
         public List<Suggestion> getSuggestions() {
             return data;
         }
+    }
+
+    public static class AddResponse {
+        private String status;
+        private LinkedTreeMap<String, String> data;
+
+        public LinkedTreeMap<String, String> getFriendData() {
+            return data;
+        }
+/*        private static class InviteResponse {
+            String id;
+            String mkey;
+            String first_name;
+            String last_name;
+            String mobile_number;
+            String device_platform;
+            ArrayList<String> emails;
+            String has_app;
+            String ckey;
+            String cid;
+            String connection_created_on;
+            String connection_creator_mkey;
+            String connection_status;
+            String status;
+        }*/
     }
 }

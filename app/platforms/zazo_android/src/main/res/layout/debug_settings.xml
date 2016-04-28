@@ -293,6 +293,11 @@
                     android:text="Send"/>
         </LinearLayout>
 
+        <Switch
+                android:id="@+id/imitate_requests"
+                style="@style/DevSwitch"
+                android:text="Imitate requests (FF)"/>
+
         <LinearLayout style="@style/DevDivider.Layout">
             <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Tutorial"/><View style="@style/DevDivider.Line"/>
         </LinearLayout>
