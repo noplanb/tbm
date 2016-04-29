@@ -30,6 +30,7 @@ public class WelcomeScreenActivity extends FragmentActivity {
         Intent intent = getIntent();
         if (intent != null) {
             args.putBoolean(SuggestionsFragment.FROM_APPLICATION, intent.getBooleanExtra(SuggestionsFragment.FROM_APPLICATION, false));
+            args.putStringArrayList(SuggestionsFragment.ADDED_FRIENDS, intent.getStringArrayListExtra(SuggestionsFragment.ADDED_FRIENDS));
         }
         topFragment.setArguments(args);
         getSupportFragmentManager().beginTransaction()

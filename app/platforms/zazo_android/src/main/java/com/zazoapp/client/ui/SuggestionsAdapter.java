@@ -18,7 +18,6 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.features.friendfinder.Suggestion;
-import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.view.CircleThumbView;
@@ -275,12 +274,6 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
             return contactId;
         }
     }
-    private void gotFriend(String response) {
-        FriendFinderRequests.AddResponse params = StringUtils.fromJson(response, FriendFinderRequests.AddResponse.class);
-        if (params.getFriendData() != null) {
-            FriendFactory.getFactoryInstance().createWithServerParams(layoutInflater.getContext(), params.getFriendData());
-        }
-    }
 
     class SuggestionRequestCallback implements HttpRequest.Callbacks {
 
@@ -300,7 +293,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
 
         @Override
         public void success(String response) {
-            gotFriend(response);
+            fragment.onReceivedFriend(FriendFinderRequests.gotFriend(layoutInflater.getContext(), response));
             finishRequest(true);
         }
 

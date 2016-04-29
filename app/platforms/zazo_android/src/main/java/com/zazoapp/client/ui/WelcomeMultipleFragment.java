@@ -1,5 +1,6 @@
 package com.zazoapp.client.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.ThumbnailRetriever;
+import com.zazoapp.client.ui.view.ChipsViewWrapper;
 import com.zazoapp.client.ui.view.ThumbView;
 import com.zazoapp.client.ui.view.WelcomeScreenPreview;
 import com.zazoapp.client.utilities.Convenience;
@@ -42,7 +44,7 @@ import java.util.TimerTask;
 /**
  * Created by skamenkovych@codeminders.com on 4/18/2016.
  */
-public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnTouchListener {
+public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnTouchListener, WelcomeScreenPreview.OnSizeChangedListener {
 
     private static final String TAG = WelcomeMultipleFragment.class.getSimpleName();
 
@@ -60,10 +62,11 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     @InjectView(R.id.video_actions_layout) View videoActionsLayout;
     @InjectView(R.id.video_thumb) ThumbView videoThumb;
     @InjectView(R.id.video_duration_text) TextView videoDurationText;
-    private ArrayList<Friend> friends;
+    private ArrayList<Friend> friendsNotSent;
 
     public static final String EXTRA_FRIEND_IDS = "friend_mkeys";
     public static final String EXTRA_VIDEO_PATH = "video_path";
+    private Context context;
     private WelcomeScreenPreview contentView;
     private Timer timer;
     private TimerTask updateTimerTask;
@@ -72,23 +75,26 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        contentView = new WelcomeScreenPreview(inflater.getContext());
+        context = inflater.getContext();
+        contentView = new WelcomeScreenPreview(context);
+        contentView.setOnSizeChangedListener(this);
         ButterKnife.inject(this, contentView);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
-        friends = FriendFactory.getFactoryInstance().allEnabled();
-        Iterator<Friend> it = friends.iterator();
+        friendsNotSent = FriendFactory.getFactoryInstance().allEnabled();
+        Iterator<Friend> it = friendsNotSent.iterator();
         while (it.hasNext()) {
             Friend friend = it.next();
-            if (friend.everSent() || friend.isConnectionCreator() || friend.hasIncomingPlayableVideos()) {
+            if (friend.everSent() /*|| friend.isConnectionCreator() || friend.hasIncomingPlayableVideos()*/) {
                 it.remove();
             }
         }
 
-        numberMembers.setText(getResources().getQuantityString(R.plurals.welcome_multiple_members_label, friends.size(), friends.size()));
-        recordingTimeLabel.setTypeface(Convenience.getTypeface(contentView.getContext()));
+        numberMembers.setText(getResources().getQuantityString(R.plurals.welcome_multiple_members_label, friendsNotSent.size(), friendsNotSent.size()));
+        recordingTimeLabel.setTypeface(Convenience.getTypeface(context));
         recordBtn.setOnTouchListener(this);
         bottomSheet.setOnTouchListener(this);
         timer = new Timer();
+
         return contentView;
     }
 
@@ -141,7 +147,6 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
 
     private void stopRecording() {
         recordingLayout.setVisibility(View.INVISIBLE);
-        DialogShower.showToast(getActivity(), "Recording finished");
         BaseManagerProvider managers = getManagers();
         if (managers != null) {
             managers.getRecorder().stop();
@@ -299,5 +304,43 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
             return ((WelcomeScreenActivity) activity).getManagerProvider();
         }
         return null;
+    }
+
+    @Override
+    public void onSizeChanged(int w, int h) {
+        fillChips();
+    }
+
+    private void fillChips() {
+        int maxWidth = recipientsField.getMeasuredWidth();
+        ChipsViewWrapper more = new ChipsViewWrapper(context);
+        more.setMore();
+        more.getView().measure(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        int moreWidth = more.getView().getMeasuredWidth();
+        recipientsField.removeAllViewsInLayout();
+        ArrayList<Friend> friends = friendsNotSent;
+        int i = 0;
+        for (; i < friends.size(); i++) {
+            ChipsViewWrapper cvh = new ChipsViewWrapper(context);
+            Friend friend = friends.get(i);
+            if (friend.thumbExists()) {
+                cvh.setTitleWithIcon(friend.getFullName(), friend.thumbBitmap());
+            } else {
+                cvh.setTitle(friend.getFullName());
+            }
+            cvh.getView().measure(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            if (cvh.getView().getMeasuredWidth() + moreWidth < maxWidth
+                    || (i == friends.size() - 1) && cvh.getView().getMeasuredWidth() < maxWidth) {
+                maxWidth -= cvh.getView().getMeasuredWidth();
+                recipientsField.addView(cvh.getView());
+            } else {
+                break;
+            }
+        }
+        if (i < friends.size()) {
+            ChipsViewWrapper cvh = new ChipsViewWrapper(context);
+            cvh.setMore();
+            recipientsField.addView(cvh.getView());
+        }
     }
 }

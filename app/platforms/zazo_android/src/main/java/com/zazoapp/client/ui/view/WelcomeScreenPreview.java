@@ -9,6 +9,13 @@ import com.zazoapp.client.R;
  * Created by skamenkovych@codeminders.com on 4/25/2016.
  */
 public class WelcomeScreenPreview extends BasePreviewTextureFrame {
+
+    public interface OnSizeChangedListener {
+        void onSizeChanged(int w, int h);
+    }
+
+    private OnSizeChangedListener onSizeChangedListener;
+
     public WelcomeScreenPreview(Context context) {
         super(context);
         init();
@@ -24,5 +31,17 @@ public class WelcomeScreenPreview extends BasePreviewTextureFrame {
     @Override
     public View getSwitchAnimationView() {
         return textureView;
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if (onSizeChangedListener != null && w != 0 && h != 0) {
+            onSizeChangedListener.onSizeChanged(w, h);
+        }
+    }
+
+    public void setOnSizeChangedListener(OnSizeChangedListener listener) {
+        onSizeChangedListener = listener;
     }
 }

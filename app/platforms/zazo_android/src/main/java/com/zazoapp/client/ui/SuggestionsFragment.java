@@ -37,12 +37,15 @@ import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.features.friendfinder.Suggestion;
+import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.notification.NotificationSuggestion;
 import com.zazoapp.client.ui.animations.SlideHorizontalFadeAnimation;
 import com.zazoapp.client.utilities.Convenience;
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import java.util.ArrayList;
 
 /**
  * Created by skamenkovych@codeminders.com on 8/14/2015.
@@ -74,12 +77,16 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     private SuggestionsAdapter adapter;
     private SuggestionCardResult currentCardType = SuggestionCardResult.NONE;
     private NotificationSuggestion suggestion;
+    private Context context;
 
     private static final String CARD_TYPE = "card_type";
     private static final String NOTIFICATION_DATA = "notification_data";
     static final String FROM_APPLICATION = "from_application";
+    static final String ADDED_FRIENDS = "added_friends";
+    private static final String IS_ANYONE_ADDED = "is_anyone_added";
 
     private boolean isAnyoneAdded = true;
+    private ArrayList<String> friendIds = new ArrayList<>();
 
     @Override
     public void onRefresh() {
@@ -165,6 +172,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.suggestions_layout, null);
+        context = inflater.getContext();
         ButterKnife.inject(this, v);
         adapter = new SuggestionsAdapter(getContext(), this);
         adapter.setOnItemStateChangedListener(this);
@@ -184,6 +192,17 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
         suggestion = getArguments().getParcelable(NOTIFICATION_DATA);
         showLastSuggestionCard(SuggestionCardResult.values()[getArguments().getInt(CARD_TYPE, 0)]);
         return v;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            friendIds = savedInstanceState.getStringArrayList(ADDED_FRIENDS);
+            if (savedInstanceState.getBoolean(IS_ANYONE_ADDED)) {
+                moveToAnyoneAddedState();
+            }
+        }
     }
 
     private void loadSuggestions() {
@@ -264,7 +283,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
             if (activity != null) {
                 Intent intent = new Intent(activity, WelcomeScreenActivity.class);
                 intent.putExtra(FROM_APPLICATION, fromApplication());
-                // TODO add friends to intent
+                intent.putStringArrayListExtra(ADDED_FRIENDS, friendIds);
                 activity.startActivity(intent);
                 activity.finish();
             }
@@ -322,8 +341,13 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putStringArrayList(ADDED_FRIENDS, friendIds);
+        super.onSaveInstanceState(outState);
+    }
+
     private void showLastSuggestionCard(SuggestionCardResult cardType) {
-        String name = suggestion.getName();
         switch (cardType) {
             case UNSUBSCRIBED:
                 unsubscribedLayout.setVisibility(View.VISIBLE);
@@ -332,30 +356,34 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                 multipleActionsButtonLayout.setVisibility(View.GONE);
                 break;
             case IGNORED:
-            case ADDED:
+            case ADDED: {
                 boolean added = cardType == SuggestionCardResult.ADDED;
                 if (added) {
                     moveToAnyoneAddedState();
                 }
                 unsubscribedLayout.setVisibility(View.GONE);
                 addedIgnoredLayout.setVisibility(View.VISIBLE);
+                String name = suggestion.getName();
                 suggestionName.setText(name);
                 suggestionInfo.setText(added ? getString(R.string.ff_add_success_message, name) : getString(R.string.ff_ignore_success_message, name));
                 addIgnoreMark.setEnabled(added);
                 addIgnoreMark.setVisibility(View.VISIBLE);
                 lastSuggestionCard.setVisibility(View.VISIBLE);
                 multipleActionsButtonLayout.setVisibility(View.GONE);
+            }
                 break;
-            case NOTIFICATION:
+            case NOTIFICATION: {
                 multipleActionsButtonLayout.setVisibility(View.VISIBLE);
                 unsubscribedLayout.setVisibility(View.GONE);
                 addedIgnoredLayout.setVisibility(View.VISIBLE);
+                String name = suggestion.getName();
                 suggestionName.setText(name);
                 suggestionInfo.setText(getString(R.string.new_friend_joined, name));
                 mainButton.setText(R.string.action_add_joined_friend);
                 secondButton.setText(R.string.action_ignore_joined_friend);
                 thirdButton.setText(R.string.action_unsubscribe_joined_friend);
                 addIgnoreMark.setVisibility(View.INVISIBLE);
+            }
                 break;
             default:
                 lastSuggestionCard.setVisibility(View.GONE);
@@ -417,6 +445,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
 
         @Override
         public void success(String response) {
+            onReceivedFriend(FriendFinderRequests.gotFriend(context, response));
             cardRequestProgress.setVisibility(View.INVISIBLE);
             showLastSuggestionCard(successCard);
             setButtonsEnabled(true);
@@ -455,4 +484,9 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
         listPopupWindow.show();
     }
 
+    public void onReceivedFriend(Friend friend) {
+        if (friend != null) {
+            friendIds.add(friend.getId());
+        }
+    }
 }

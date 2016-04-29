@@ -182,7 +182,8 @@
                     android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
                     android:paddingRight="@dimen/abc_list_item_padding_horizontal_material"
                     android:paddingTop="@dimen/abc_action_bar_icon_vertical_padding_material"
-                    android:paddingBottom="@dimen/abc_action_bar_icon_vertical_padding_material">
+                    android:paddingBottom="@dimen/abc_action_bar_icon_vertical_padding_material"
+                    android:gravity="center_vertical">
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -193,7 +194,10 @@
                         android:id="@+id/recipients_field"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"/>
+                        android:orientation="horizontal"
+                        android:layout_marginRight="@dimen/abc_button_padding_horizontal_material"
+                        android:layout_marginEnd="@dimen/abc_button_padding_horizontal_material">
+                </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>

@@ -1,5 +1,6 @@
 package com.zazoapp.client.network;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -10,6 +11,9 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.debug.DebugConfig;
+import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.utilities.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -172,6 +176,20 @@ public class FriendFinderRequests {
 
     private static String getServerHost() {
         return DebugConfig.Bool.USE_CUSTOM_SERVER.get() ? STAGING_HOST : PROD_HOST;
+    }
+
+    /**
+     *
+     * @param context
+     * @param response response string of add request
+     * @return friend if he was added, otherwise {@code null}
+     */
+    @Nullable public static Friend gotFriend(Context context, String response) {
+        AddResponse params = StringUtils.fromJson(response, AddResponse.class);
+        if (params.getFriendData() != null) {
+            return FriendFactory.getFactoryInstance().createWithServerParams(context, params.getFriendData());
+        }
+        return null;
     }
 
     public interface SuggestionsCallback {
