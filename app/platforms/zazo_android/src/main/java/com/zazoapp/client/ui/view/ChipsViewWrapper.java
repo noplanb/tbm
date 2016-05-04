@@ -9,6 +9,7 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.StringUtils;
 
@@ -21,13 +22,11 @@ public class ChipsViewWrapper {
     @InjectView(R.id.thumb_title) TextView thumbTitle;
     private View layout;
 
-    private final int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
-    private final int colors[];
-
+    private final ThumbsHelper tHelper;
     public ChipsViewWrapper(Context context) {
         layout = View.inflate(context, R.layout.chips_layout, null);
         ButterKnife.inject(this, layout);
-        colors = context.getResources().getIntArray(R.array.thumb_colors);
+        tHelper = new ThumbsHelper(context);
         Typeface tf = Convenience.getTypeface(context, "Roboto-Regular");
         title.setTypeface(tf);
         thumbTitle.setTypeface(tf);
@@ -40,8 +39,8 @@ public class ChipsViewWrapper {
     public void setTitle(String text) {
         title.setText(text);
         thumbTitle.setText(StringUtils.getInitials(text));
-        thumb.setImageResource(Convenience.getStringDependentItem(text, icons));
-        thumb.setFillColor(Convenience.getStringDependentItem(text, colors));
+        thumb.setImageResource(tHelper.getIcon(text));
+        thumb.setFillColor(tHelper.getColor(text));
     }
 
     public void setTitleWithIcon(String text, Bitmap icon) {

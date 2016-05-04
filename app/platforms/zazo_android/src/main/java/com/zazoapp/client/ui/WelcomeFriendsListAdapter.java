@@ -21,8 +21,8 @@ import butterknife.InjectView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.ui.WelcomeMultipleFragment.FriendReceiver;
+import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.ui.view.CircleThumbView;
-import com.zazoapp.client.utilities.Convenience;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,15 +34,7 @@ import java.util.List;
 class WelcomeFriendsListAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener {
     private LayoutInflater inflater;
     private List<FriendReceiver> receivers;
-    private final int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
-    private final int colors[];
-    private ColorMatrix grayedMatrix = new ColorMatrix();
-    private ColorMatrixColorFilter disabledFilter;
-
-    private final float MIN_SATURATION = 0.25f;
-    private final float MIN_ALPHA = 0.6f;
-    private final long ANIM_DURATION = 300;
-
+    private final ThumbsHelper tHelper;
     private OnItemStateChangedListener onItemStateChangedListener;
 
     interface OnItemStateChangedListener {
@@ -63,9 +55,7 @@ class WelcomeFriendsListAdapter extends BaseAdapter implements CompoundButton.On
                 return lhs.compareTo(rhs);
             }
         });
-        colors = context.getResources().getIntArray(R.array.thumb_colors);
-        grayedMatrix.setSaturation(MIN_SATURATION);
-        disabledFilter = new ColorMatrixColorFilter(grayedMatrix);
+        tHelper = new ThumbsHelper(context);
     }
 
     void setList(List<FriendReceiver> friends) {
@@ -133,13 +123,13 @@ class WelcomeFriendsListAdapter extends BaseAdapter implements CompoundButton.On
             h.thumb.setImageBitmap(f.thumbBitmap());
             h.thumb.setFillColor(Color.TRANSPARENT);
         } else {
-            h.thumb.setImageResource(Convenience.getStringDependentItem(f.getFullName(), icons));
-            h.thumb.setFillColor(Convenience.getStringDependentItem(f.getFullName(), colors));
+            h.thumb.setImageResource(tHelper.getIcon(f.getFullName()));
+            h.thumb.setFillColor(tHelper.getColor(f.getFullName()));
             h.thumbTitle.setText(f.getInitials());
         }
         if (smooth) {
             ValueAnimator animator = new ValueAnimator();
-            animator.setDuration(ANIM_DURATION);
+            animator.setDuration(tHelper.getDuration());
             animator.setInterpolator(new AccelerateInterpolator());
             if (enabled) {
                 animator.setFloatValues(0f, 1f);
@@ -154,8 +144,8 @@ class WelcomeFriendsListAdapter extends BaseAdapter implements CompoundButton.On
                 public void onAnimationUpdate(ValueAnimator animation) {
                     if (posId == position) {
                         float value = (float) animation.getAnimatedValue();
-                        h.leftLayout.setAlpha(value * (1 - MIN_ALPHA) + MIN_ALPHA);
-                        matrix.setSaturation(value * (1 - MIN_SATURATION) + MIN_SATURATION);
+                        h.leftLayout.setAlpha(tHelper.getAnimAlpha(value));
+                        matrix.setSaturation(tHelper.getAnimSaturation(value));
                         filter = new ColorMatrixColorFilter(matrix);
                         h.thumb.setColorFilter(filter);
                         h.thumb.setFillColorFilter(filter);
@@ -171,9 +161,9 @@ class WelcomeFriendsListAdapter extends BaseAdapter implements CompoundButton.On
                 h.thumb.setColorFilter(null);
                 h.thumb.setFillColorFilter(null);
             } else {
-                h.leftLayout.setAlpha(MIN_ALPHA);
-                h.thumb.setColorFilter(disabledFilter);
-                h.thumb.setFillColorFilter(disabledFilter);
+                h.leftLayout.setAlpha(tHelper.getMinAlpha());
+                h.thumb.setColorFilter(tHelper.getDisabledFilter());
+                h.thumb.setFillColorFilter(tHelper.getDisabledFilter());
             }
         }
 

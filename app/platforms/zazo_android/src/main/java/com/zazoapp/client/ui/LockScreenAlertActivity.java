@@ -22,7 +22,7 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationSuggestion;
-import com.zazoapp.client.utilities.Convenience;
+import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.utilities.StringUtils;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -40,8 +40,7 @@ public class LockScreenAlertActivity extends Activity {
     @InjectView(R.id.action_second_btn) Button secondButton;
     @InjectView(R.id.action_third_btn) Button thirdButton;
 
-    private int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
-    private int colors[];
+    private ThumbsHelper tHelper;
 	//-------------------
 	// Activity lifecycle
 	//-------------------
@@ -49,7 +48,7 @@ public class LockScreenAlertActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-        colors = getResources().getIntArray(R.array.thumb_colors);
+        tHelper = new ThumbsHelper(this);
         setupWindow();
         setContentView(R.layout.lock_screen_alert);
         ButterKnife.inject(this);
@@ -138,8 +137,8 @@ public class LockScreenAlertActivity extends Activity {
                 thumbImage.setImageBitmap(friend.thumbBitmap());
                 thumbTitle.setText("");
             } else {
-                thumbImage.setImageResource(Convenience.getStringDependentItem(friend.getDisplayName(), icons));
-                thumbImage.setFillColor(Convenience.getStringDependentItem(friend.getDisplayName(), colors));
+                thumbImage.setImageResource(tHelper.getIcon(friend.getDisplayName()));
+                thumbImage.setFillColor(tHelper.getColor(friend.getDisplayName()));
                 thumbTitle.setText(friend.getInitials());
                 thumbImage.setImageResource(R.drawable.ic_no_pic_z);
             }
@@ -153,8 +152,8 @@ public class LockScreenAlertActivity extends Activity {
             if (name == null) {
                 name = "";
             }
-            thumbImage.setImageResource(Convenience.getStringDependentItem(name, icons));
-            thumbImage.setFillColor(Convenience.getStringDependentItem(name, colors));
+            thumbImage.setImageResource(tHelper.getIcon(name));
+            thumbImage.setFillColor(tHelper.getColor(name));
             thumbTitle.setText(StringUtils.getInitials(name));
             mainButton.setText(R.string.action_add_joined_friend);
             secondButton.setText(R.string.action_ignore_joined_friend);
