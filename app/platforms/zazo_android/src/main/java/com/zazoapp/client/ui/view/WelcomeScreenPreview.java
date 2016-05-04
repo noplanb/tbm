@@ -44,4 +44,5 @@ public class WelcomeScreenPreview extends BasePreviewTextureFrame {
     public void setOnSizeChangedListener(OnSizeChangedListener listener) {
         onSizeChangedListener = listener;
     }
+
 }

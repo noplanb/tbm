@@ -2,10 +2,8 @@ package com.zazoapp.client.ui;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
-import android.graphics.drawable.ColorDrawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,7 +37,6 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
     private final int colors[];
     private ColorMatrix grayedMatrix = new ColorMatrix();
     private ColorMatrixColorFilter disabledFilter;
-    private ColorDrawable transparentDrawable = new ColorDrawable(Color.TRANSPARENT);
 
     private final float MIN_SATURATION = 0f;
     private final float MIN_ALPHA = 0.6f;
