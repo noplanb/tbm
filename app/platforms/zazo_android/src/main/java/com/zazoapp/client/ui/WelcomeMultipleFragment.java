@@ -32,6 +32,7 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.ThumbnailRetriever;
+import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.ui.view.ChipsViewWrapper;
 import com.zazoapp.client.ui.view.ThumbView;
 import com.zazoapp.client.ui.view.WelcomeScreenPreview;
@@ -288,8 +289,19 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         getActivity().finish();
         Intent intent = new Intent(getActivity(), MainActivity.class);
         intent.setAction(IntentHandlerService.IntentActions.SEND_VIDEO);
-        intent.putExtra(EXTRA_FRIEND_IDS, "ids");
-        intent.putExtra(EXTRA_VIDEO_PATH, "path");
+        ArrayList<String> friendIds = new ArrayList<>();
+        for (FriendReceiver receiver : receivers) {
+            if (receiver.isReceiver()) {
+                friendIds.add(receiver.getFriend().getId());
+            }
+        }
+        String videoId = VideoIdUtils.generateId();
+        String filePath = String.format("%s%s%s_%s.mp4", Config.homeDirPath(context), File.separator, "welcome", videoId);
+        File dest = new File(filePath);
+        File src = Config.recordingFile(context);
+        src.renameTo(dest);
+        intent.putStringArrayListExtra(EXTRA_FRIEND_IDS, friendIds);
+        intent.putExtra(EXTRA_VIDEO_PATH, filePath);
         startActivity(intent);
     }
 

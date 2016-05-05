@@ -18,7 +18,7 @@ public class NotificationSuggestion extends Suggestion implements Parcelable {
     }
 
     protected NotificationSuggestion(Parcel in) {
-        super(in.readString(), in.readArrayList(String.class.getClassLoader()));
+        super(in.readString(), in.readArrayList(null));
         nkey = in.readString();
     }
 
@@ -46,7 +46,7 @@ public class NotificationSuggestion extends Suggestion implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(getName());
-        dest.writeStringList(getPhones());
+        dest.writeList(getPhones());
         dest.writeString(nkey);
     }
 }

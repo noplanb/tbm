@@ -85,7 +85,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     static final String ADDED_FRIENDS = "added_friends";
     private static final String IS_ANYONE_ADDED = "is_anyone_added";
 
-    private boolean isAnyoneAdded = true;
+    private boolean isAnyoneAdded = false;
     private ArrayList<String> friendIds = new ArrayList<>();
 
     @Override

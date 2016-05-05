@@ -255,8 +255,6 @@ public class NotificationAlertManager {
                 makeJoinedFriendIntent(serviceIntent, IntentHandlerService.FriendJoinedActions.ADD), PendingIntent.FLAG_CANCEL_CURRENT);
         PendingIntent ignoreJoinedFriendIntent = PendingIntent.getService(context, 2,
                 makeJoinedFriendIntent(serviceIntent, IntentHandlerService.FriendJoinedActions.IGNORE), PendingIntent.FLAG_CANCEL_CURRENT);
-        PendingIntent viewJoinedFriendIntent = PendingIntent.getActivity(context, 3,
-                makeJoinedFriendIntent(activityIntent, IntentHandlerService.FriendJoinedActions.NOTIFY), PendingIntent.FLAG_CANCEL_CURRENT);
 
         String title = context.getString(R.string.new_friend_joined, name);
         NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
@@ -274,7 +272,7 @@ public class NotificationAlertManager {
         //mBuilder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.icons_plus));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             if (suggestion.hasMultiplePhones()) {
-                mBuilder.addAction(R.drawable.ic_info, context.getString(R.string.action_view), viewJoinedFriendIntent);
+                mBuilder.addAction(R.drawable.ic_info, context.getString(R.string.action_view), openAppIntent);
             } else {
                 mBuilder.addAction(R.drawable.ic_action_accept, context.getString(R.string.action_add_joined_friend), addJoinedFriendIntent);
             }

@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.debug.DebugConfig;
@@ -18,6 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -186,7 +188,7 @@ public class FriendFinderRequests {
      */
     @Nullable public static Friend gotFriend(Context context, String response) {
         AddResponse params = StringUtils.fromJson(response, AddResponse.class);
-        if (params.getFriendData() != null) {
+        if (params != null && params.getFriendData() != null) {
             return FriendFactory.getFactoryInstance().createWithServerParams(context, params.getFriendData());
         }
         return null;
@@ -228,21 +230,23 @@ public class FriendFinderRequests {
             private int id;
             //private String first_name;
             //private String last_name;
-            private String display_name;
+            @SerializedName("display_name")
+            private String displayName;
             //private String zazo_mkey;
             //private String zazo_id;
             //private int total_score;
-            private List<String> phone_numbers;
+            @SerializedName("phone_numbers")
+            private List<String> phoneNumbers;
 
             public int getId() {
                 return id;
             }
 
             public String getDisplayName() {
-                return display_name;
+                return displayName;
             }
             public List<String> getPhoneNumbers() {
-                return phone_numbers;
+                return phoneNumbers;
             }
         }
 
@@ -255,12 +259,13 @@ public class FriendFinderRequests {
 
     public static class AddResponse {
         private String status;
-        private LinkedTreeMap<String, String> data;
+        private InviteResponse data;
 
         public LinkedTreeMap<String, String> getFriendData() {
-            return data;
+            return data.getFriendData();
         }
-/*        private static class InviteResponse {
+
+        private static class InviteResponse {
             String id;
             String mkey;
             String first_name;
@@ -275,6 +280,22 @@ public class FriendFinderRequests {
             String connection_creator_mkey;
             String connection_status;
             String status;
-        }*/
+
+            LinkedTreeMap<String, String> getFriendData() {
+                LinkedTreeMap<String, String> data = new LinkedTreeMap<>();
+                data.put(FriendFactory.ServerParamKeys.ID, id);
+                data.put(FriendFactory.ServerParamKeys.MKEY, mkey);
+                data.put(FriendFactory.ServerParamKeys.FIRST_NAME, first_name);
+                data.put(FriendFactory.ServerParamKeys.LAST_NAME, last_name);
+                data.put(FriendFactory.ServerParamKeys.MOBILE_NUMBER, mobile_number);
+                data.put(FriendFactory.ServerParamKeys.HAS_APP, has_app);
+                data.put(FriendFactory.ServerParamKeys.CKEY, ckey);
+                data.put(FriendFactory.ServerParamKeys.CID, cid);
+                data.put(FriendFactory.ServerParamKeys.CONNECTION_CREATED_ON, connection_created_on);
+                data.put(FriendFactory.ServerParamKeys.CONNECTION_CREATOR_MKEY, connection_creator_mkey);
+                data.put(FriendFactory.ServerParamKeys.CONNECTION_STATUS, connection_status);
+                return data;
+            }
+        }
     }
 }

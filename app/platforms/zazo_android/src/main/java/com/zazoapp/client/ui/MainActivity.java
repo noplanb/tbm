@@ -21,6 +21,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String CURRENT_FRAGMENT_KEY = "current_zazo_fragment";
+    /** Set to true when onNewIntent is called right after onCreate */
     public static final String EXTRA_NEW_INTENT_AFTER_ON_CREATE = "new_intent_after_on_create";
     public static final String ACTION_SUGGESTIONS = "action_suggestions";
 

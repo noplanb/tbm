@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.AnimRes;
 import android.support.annotation.Nullable;
@@ -41,12 +42,16 @@ import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.core.VersionHandler;
+import com.zazoapp.client.debug.DebugUtils;
 import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Contact;
+import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
@@ -58,8 +63,14 @@ import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
 import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
+import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by skamenkovych@codeminders.com on 11/6/2015.
@@ -195,10 +206,36 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                     }
                     publishResult(ACTION_CODE_SHOW_SUGGESTIONS, null);
                     intent.putExtra(EXTRA_HANDLED, true);
+                    NotificationAlertManager.cancelNativeAlert(context, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
                 }
                 break;
             case IntentHandlerService.IntentActions.SEND_VIDEO:
-                DialogShower.showToast(getActivity(), "Send videos");
+                final Intent intentCopy = new Intent(intent);
+                AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        ArrayList<String> friendIds = intentCopy.getStringArrayListExtra(WelcomeMultipleFragment.EXTRA_FRIEND_IDS);
+                        String path = intentCopy.getStringExtra(WelcomeMultipleFragment.EXTRA_VIDEO_PATH);
+                        List<Friend> friends = FriendFactory.getFactoryInstance().all();
+                        File src = new File(path);
+                        for (String id : friendIds) {
+                            for (Friend friend : friends) {
+                                if (id.equals(friend.getId())) {
+                                    String videoId = VideoIdUtils.generateId();
+                                    File dst = friend.videoToFile(videoId);
+                                    try {
+                                        DebugUtils.copyFolder(src, dst);
+                                        friend.setNewOutgoingVideoId(videoId);
+                                        friend.requestUpload(videoId);
+                                    } catch (IOException e) {
+                                    }
+                                }
+                            }
+                        }
+                        return null;
+                    }
+                });
+                intent.setAction(IntentHandlerService.IntentActions.NONE);
                 break;
         }
     }
