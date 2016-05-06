@@ -459,7 +459,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                         public void error(String errorString) {
                             DialogShower.showToast(getApplicationContext(), R.string.ff_add_error_message);
                         }
-                    }, null);
+                    }, intent.getStringExtra(FriendJoinedIntentFields.CHOSEN_PHONE));
                     break;
                 case FriendJoinedActions.IGNORE:
                     NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
@@ -557,6 +557,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
     public static class FriendJoinedIntentFields {
         public static final String DATA = "data";
         public static final String ACTION = "action";
+        public static final String CHOSEN_PHONE = "chosen_phone";
     }
 
     public static class FriendJoinedActions {

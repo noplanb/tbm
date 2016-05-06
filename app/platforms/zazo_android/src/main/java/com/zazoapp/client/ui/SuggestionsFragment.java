@@ -467,7 +467,11 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
 
     public void displayPhoneChooserPopup(@NonNull final SuggestionsAdapter.OnPhoneItemSelected finishAction,
                                          @NonNull Suggestion suggestion, @NonNull View anchor) {
-        Context context = anchor.getContext();
+        displayPhoneChooserPopup(finishAction, suggestion, anchor, anchor.getContext());
+    }
+
+    public static void displayPhoneChooserPopup(@NonNull final SuggestionsAdapter.OnPhoneItemSelected finishAction,
+                                         @NonNull Suggestion suggestion, @NonNull View anchor, @NonNull Context context) {
         final ListPopupWindow listPopupWindow = new ListPopupWindow(context);
         listPopupWindow.setAdapter(new ArrayAdapter<>(context, R.layout.phone_popup_list_item, R.id.phone, suggestion.getPhones()));
         listPopupWindow.setContentWidth(Convenience.dpToPx(context, 170));

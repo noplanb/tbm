@@ -6,6 +6,7 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -194,8 +195,22 @@ public class LockScreenAlertActivity extends Activity {
         switch (v.getId()) {
             case R.id.action_main_btn:
                 if (isFriendJoinedIntent()) {
-                    dismiss();
-                    startServiceForAction(IntentHandlerService.FriendJoinedActions.ADD);
+                    final NotificationSuggestion suggestion = getIntent().getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
+                    if (suggestion != null && suggestion.hasMultiplePhones()) {
+                        ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(v.getContext(), R.style.AppTheme);
+                        SuggestionsFragment.displayPhoneChooserPopup(new SuggestionsAdapter.OnPhoneItemSelected() {
+                            @Override
+                            public void onPhoneItemSelected(int index) {
+                                Intent intent = getIntent();
+                                intent.putExtra(IntentHandlerService.FriendJoinedIntentFields.CHOSEN_PHONE, suggestion.getPhone(index));
+                                dismiss();
+                                startServiceForAction(IntentHandlerService.FriendJoinedActions.ADD);
+                            }
+                        }, suggestion, v, contextThemeWrapper);
+                    } else {
+                        dismiss();
+                        startServiceForAction(IntentHandlerService.FriendJoinedActions.ADD);
+                    }
                 } else {
                     startHomeActivity();
                 }
