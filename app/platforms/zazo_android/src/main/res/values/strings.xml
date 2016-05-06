@@ -208,6 +208,7 @@
 
     <string name="settings_allow_data_in_roaming">Zazo when roaming</string>
     <string name="settings_allow_data_in_roaming_hint">Send and receive Zazos when roaming</string>
+    <string name="settings_light_screen_for_notifications">Light screen for notifications</string>
 
     <string name="dev_previous"><![CDATA[<]]></string>
     <string name="dev_next"><![CDATA[>]]></string>

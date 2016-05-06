@@ -19,6 +19,7 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.Settings;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.notification.NotificationAlertManager;
@@ -113,13 +114,15 @@ public class LockScreenAlertActivity extends Activity {
 
 	private void setupWindow(){
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
-		LayoutParams lp = getWindow().getAttributes();
-		lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
-		lp.type = WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
-		getWindow().setAttributes(lp);
-	}
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
+        LayoutParams lp = getWindow().getAttributes();
+        if (Settings.Bool.LIGHT_SCREEN_FOR_NOTIFICATIONS.isSet()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+            lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
+        }
+        lp.type = WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
+        getWindow().setAttributes(lp);
+    }
 
     private void setupViews(Intent i) {
         titleText.setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));

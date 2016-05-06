@@ -15,6 +15,7 @@ public class Settings {
     public static final String FILE_NAME = "zazo_user_settings";
     public enum Bool {
         ALLOW_DATA_IN_ROAMING(true, R.string.settings_allow_data_in_roaming, R.string.settings_allow_data_in_roaming_hint),
+        LIGHT_SCREEN_FOR_NOTIFICATIONS(false, R.string.settings_light_screen_for_notifications, 0),
         ;
 
         private boolean value;

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import butterknife.ButterKnife;
@@ -35,7 +36,11 @@ public class SettingsFragment extends ZazoTopFragment {
         View v = inflater.inflate(R.layout.settings, null);
         ButterKnife.inject(this, v);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
-        settingsList.addView(getViewForPref(inflater, Settings.Bool.ALLOW_DATA_IN_ROAMING));
+        LinearLayout layout = new LinearLayout(v.getContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.addView(getViewForPref(inflater, Settings.Bool.ALLOW_DATA_IN_ROAMING));
+        layout.addView(getViewForPref(inflater, Settings.Bool.LIGHT_SCREEN_FOR_NOTIFICATIONS));
+        settingsList.addView(layout);
         return v;
     }
 
