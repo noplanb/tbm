@@ -120,6 +120,9 @@
     <string name="action_got_it">Got it</string>
     <string name="action_subscribe">Subscribe</string>
     <string name="action_done">Done</string>
+    <string name="action_add_joined_friend">Add</string>
+    <string name="action_ignore_joined_friend">Ignore</string>
+    <string name="action_unsubscribe">Unsubscribe</string>
 
     <plurals name="notification_title">
         <item quantity="one">%d new Zazo</item>
@@ -188,9 +191,6 @@
     <string name="add_contact">Add contact</string>
 
     <string name="new_friend_joined">%1$s joined Zazo!</string>
-    <string name="action_add_joined_friend">Add</string>
-    <string name="action_ignore_joined_friend">Ignore</string>
-    <string name="action_unsubscribe_joined_friend">Unsubscribe</string>
 
     <string name="suggestions">Suggestions</string>
     <string name="suggestions_empty">No more friends to suggest</string>
@@ -199,6 +199,7 @@
     <string name="ff_ignore_success_message">Ignored! %1$s was not added.</string>
     <string name="ff_ignore_error_message">Couldn\'t ignore friend</string>
     <string name="ff_unsubscribed_message">Unsubscribed! You will no longer receive notifications from Zazo when friends join.</string>
+    <string name="ff_subscribed_message">Subscribed! You will receive notifications from Zazo when friends join.</string>
     <string name="ff_subscription_failure">Failed to change subscription.</string>
     <plurals name="welcome_multiple_members_label">
         <item quantity="one">%d member</item>

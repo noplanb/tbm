@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -33,6 +34,7 @@ public class FriendFinderRequests {
     private static final String NOTIFICATION_API = "api/v1/notifications";
     private static final String CONTACTS_API = "api/v1/contacts";
     private static final String SUGGESTIONS_API = "api/v1/suggestions";
+    private static final String SUBSCRIPTIONS_API = "api/v1/subscriptions";
 
     public static void sendContacts(JSONArray contacts, @Nullable HttpRequest.Callbacks callbacks) {
         JSONObject object = new JSONObject();
@@ -116,12 +118,16 @@ public class FriendFinderRequests {
         }
     }
 
-    public static void unsubscribe(String nkey, @Nullable HttpRequest.Callbacks callbacks) {
-        requestNotificationApi("unsubscribe", nkey, callbacks);
+    public static void unsubscribe(@Nullable HttpRequest.Callbacks callbacks) {
+        requestSubscriptionsApi("unsubscribe", callbacks);
     }
 
-    public static void subscribe(String nkey, @Nullable HttpRequest.Callbacks callbacks) {
-        requestNotificationApi("subscribe", nkey, callbacks);
+    public static void subscribe(@Nullable HttpRequest.Callbacks callbacks) {
+        requestSubscriptionsApi("subscribe", callbacks);
+    }
+
+    public static void getSubscriptionsState(@NonNull SubscriptionsStateCallback callback) {
+        new GetSubscriptionsState(callback);
     }
 
     public static void getSuggestions(SuggestionsCallback callback) {
@@ -164,6 +170,19 @@ public class FriendFinderRequests {
         requestBuilder.build();
     }
 
+    private static void requestSubscriptionsApi(String action, @Nullable HttpRequest.Callbacks callbacks) {
+        if (DebugConfig.Bool.IMITATE_REQUESTS.get()) {
+            testRequest(callbacks);
+            return;
+        }
+        new HttpRequest.Builder()
+                .setUrl(getUrl(SUBSCRIPTIONS_API, action))
+                .setHost(getServerHost())
+                .setMethod(HttpRequest.POST)
+                .setCallbacks(callbacks)
+                .build();
+    }
+
     private static String getUrl(String... uri) {
         StringBuilder uriCombined = new StringBuilder();
         for (String s : uri) {
@@ -192,6 +211,68 @@ public class FriendFinderRequests {
             return FriendFactory.getFactoryInstance().createWithServerParams(context, params.getFriendData());
         }
         return null;
+    }
+
+    public interface SubscriptionsStateCallback {
+        void onReceivedSubscriptionsState(SubscriptionState state);
+    }
+
+    public enum SubscriptionState {
+        SUBSCRIBED("subscribed"),
+        UNSUBSCRIBED("unsubscribed"),
+        ERROR("");
+
+        private String data;
+        SubscriptionState(String s) {
+            data = s;
+        }
+
+        static SubscriptionState gotState(String status) {
+            for (SubscriptionState state : values()) {
+                if (state.data.equals(status)) {
+                    return state;
+                }
+            }
+            return ERROR;
+        }
+    }
+
+    private static class GetSubscriptionsState {
+        GetSubscriptionsState(final SubscriptionsStateCallback callback) {
+            new HttpRequest.Builder()
+                    .setUrl(getUrl(SUBSCRIPTIONS_API))
+                    .setHost(getServerHost())
+                    .setCallbacks(new HttpRequest.Callbacks() {
+                        @Override
+                        public void success(String response) {
+                            if (TextUtils.isEmpty(response)) {
+                                error(null);
+                            }
+                            Gson gson = new Gson();
+                            try {
+                                callback.onReceivedSubscriptionsState(SubscriptionState.gotState(gson.fromJson(response, SubscriptionStateData.class).getState()));
+                            } catch (JsonSyntaxException e) {
+                                error(e.getMessage());
+                            }
+                        }
+
+                        @Override
+                        public void error(String errorString) {
+                            callback.onReceivedSubscriptionsState(SubscriptionState.ERROR);
+                        }
+                    }).build();
+        }
+    }
+
+    private static class SubscriptionStateData {
+        private Map<String, Object> data;
+
+        String getState() {
+            if (data != null && data.containsKey("status")) {
+                return (String) data.get("status");
+            }
+            return "";
+        }
     }
 
     public interface SuggestionsCallback {
@@ -262,7 +343,7 @@ public class FriendFinderRequests {
         private InviteResponse data;
 
         public LinkedTreeMap<String, String> getFriendData() {
-            return data.getFriendData();
+            return data != null ? data.getFriendData() : null;
         }
 
         private static class InviteResponse {

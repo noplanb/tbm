@@ -85,6 +85,7 @@
                         android:layout_height="@dimen/thumb_icon_size"
                         android:src="@drawable/ic_suggestions_unsubscribed_mark"/>
                 <TextView
+                        android:id="@+id/subscription_label"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"

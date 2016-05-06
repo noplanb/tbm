@@ -161,7 +161,7 @@ public class LockScreenAlertActivity extends Activity {
             thumbTitle.setText(StringUtils.getInitials(name));
             mainButton.setText(R.string.action_add_joined_friend);
             secondButton.setText(R.string.action_ignore_joined_friend);
-            thirdButton.setText(R.string.action_unsubscribe_joined_friend);
+            thirdButton.setText(R.string.action_unsubscribe);
             thirdButton.setVisibility(View.VISIBLE);
         }
 	}
