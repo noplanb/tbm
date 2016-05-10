@@ -115,6 +115,10 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
         updateAllEmpty();
     }
 
+    /**
+     * Fills specified grid element with friend from bench if available
+     * @param ge
+     */
     public void moveNextFriendTo(GridElement ge) {
         ArrayList<Friend> list = friendsOnBench();
         Friend newFriend = (list.size() > 0) ? list.get(0): null;

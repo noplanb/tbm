@@ -452,6 +452,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     FriendFinderRequests.addFriend(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
+                            FriendFinderRequests.gotFriend(IntentHandlerService.this, response);
                             startSuggestionsActivity();
                         }
 
