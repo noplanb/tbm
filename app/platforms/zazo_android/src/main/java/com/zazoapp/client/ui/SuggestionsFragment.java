@@ -16,6 +16,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.ListPopupWindow;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -86,7 +87,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     static final String ADDED_FRIENDS = "added_friends";
     private static final String IS_ANYONE_ADDED = "is_anyone_added";
 
-    private boolean isAnyoneAdded = false;
+    private boolean isAnyoneAdded = true;
     private ArrayList<String> friendIds = new ArrayList<>();
 
     @Override
@@ -302,11 +303,11 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
         if (isAnyoneAdded) {
             Activity activity = getActivity();
             if (activity != null) {
+                activity.finish();
                 Intent intent = new Intent(activity, WelcomeScreenActivity.class);
                 intent.putExtra(FROM_APPLICATION, fromApplication());
                 intent.putStringArrayListExtra(ADDED_FRIENDS, friendIds);
                 activity.startActivity(intent);
-                activity.finish();
             }
         } else {
             super.onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));

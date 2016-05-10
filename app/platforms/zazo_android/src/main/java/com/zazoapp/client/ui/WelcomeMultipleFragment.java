@@ -5,11 +5,13 @@ import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.ListPopupWindow;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -75,7 +77,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     public static final String EXTRA_FRIEND_IDS = "friend_mkeys";
     public static final String EXTRA_VIDEO_PATH = "video_path";
     private Context context;
-    private WelcomeScreenPreview contentView;
+    private Handler handler;
     private Timer timer;
     private TimerTask updateTimerTask;
     private static final SimpleDateFormat timerFormatter = new SimpleDateFormat("mm:ss");
@@ -84,9 +86,15 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         context = inflater.getContext();
-        contentView = new WelcomeScreenPreview(context);
-        contentView.setOnSizeChangedListener(this);
-        ButterKnife.inject(this, contentView);
+        WelcomeScreenPreview view = new WelcomeScreenPreview(context);
+        handler = view.getHandler();
+        view.setOnSizeChangedListener(this);
+        ButterKnife.inject(this, view);
+        BaseManagerProvider managers = getManagers();
+        if (managers != null) {
+            CameraManager.setUsePreferredPreviewSize(true);
+            managers.getRecorder().addPreviewTo(view, false);
+        }
         up.setState(MaterialMenuDrawable.IconState.ARROW);
         friendsNotSent = FriendFactory.getFactoryInstance().allEnabled();
         Iterator<Friend> it = friendsNotSent.iterator();
@@ -106,7 +114,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         bottomSheet.setOnTouchListener(this);
         timer = new Timer();
 
-        return contentView;
+        return view;
     }
 
     @Override
@@ -117,24 +125,18 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onResume() {
+        super.onResume();
+        CameraManager.setUsePreferredPreviewSize(true);
         BaseManagerProvider managers = getManagers();
         if (managers != null) {
-            CameraManager.setUsePreferredPreviewSize(true);
-            managers.getRecorder().addPreviewTo(contentView, false);
+            managers.getRecorder().resume();
         }
     }
 
     @Override
-    public void onResume() {
-        super.onStart();
-        CameraManager.setUsePreferredPreviewSize(true);
-    }
-
-    @Override
     public void onPause() {
-        super.onStop();
+        super.onPause();
         CameraManager.setUsePreferredPreviewSize(false);
     }
 
@@ -170,7 +172,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     }
 
     private void setupThumb() {
-        String path = Config.recordingFilePath(contentView.getContext());
+        String path = Config.recordingFilePath(context);
         File recordedFile = new File(path);
         if (recordedFile .exists()) {
             videoActionsLayout.setVisibility(View.VISIBLE);
@@ -265,7 +267,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
                     });
                     date.setTime(date.getTime() + 1000);
                     if (date.getTime() > 300000) { // limit to 5 min
-                        contentView.post(new Runnable() {
+                        handler.post(new Runnable() {
                             @Override
                             public void run() {
                                 stopRecording();
@@ -273,7 +275,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
                         });
                     }
                 } else { // if recording was stopped due to some errors
-                    contentView.post(new Runnable() {
+                    handler.post(new Runnable() {
                         @Override
                         public void run() {
                             stopRecording();

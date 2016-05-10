@@ -138,8 +138,8 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     @Override
     public void addPreviewTo(ViewGroup container, boolean inCard) {
         BasePreviewTextureFrame frame = videoRecorder.getView();
-        if (frame == null) {
-            if (inCard) {
+        if (inCard) {
+            if (frame == null) {
                 GridPreviewFrame vrFrame = new GridPreviewFrame(context);
                 View blackBackground = new View(context);
                 blackBackground.setBackgroundColor(Color.BLACK);
@@ -161,11 +161,11 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
                     vrFrame.setOuterRecordingBorder(container);
                 }
                 frame = vrFrame;
-            } else {
-                frame = (BasePreviewTextureFrame) container;
             }
-            videoRecorder.setView(frame);
+        } else {
+            frame = (BasePreviewTextureFrame) container;
         }
+        videoRecorder.setView(frame);
         containerRef = new WeakReference<View>(container);
     }
 

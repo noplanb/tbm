@@ -25,6 +25,14 @@ public class WelcomeScreenActivity extends FragmentActivity {
         setContentView(R.layout.welcome_screen);
         managers = new BaseManagerHolder();
         managers.init(getApplicationContext(), this, null);
+        topFragment = (ZazoTopFragment) getSupportFragmentManager().findFragmentByTag("welcomeScreen");
+        if (topFragment == null) {
+            addNewFragment();
+        }
+        setupWindowParams();
+    }
+
+    private void addNewFragment() {
         topFragment = new WelcomeMultipleFragment();
         Bundle args = new Bundle();
         Intent intent = getIntent();
@@ -35,7 +43,6 @@ public class WelcomeScreenActivity extends FragmentActivity {
         topFragment.setArguments(args);
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.content_frame, topFragment, "welcomeScreen").commit();
-        setupWindowParams();
     }
 
     private void setupWindowParams() {
