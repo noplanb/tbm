@@ -6,12 +6,11 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.ListPopupWindow;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -38,6 +37,7 @@ import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.ui.view.ChipsViewWrapper;
 import com.zazoapp.client.ui.view.ThumbView;
 import com.zazoapp.client.ui.view.WelcomeScreenPreview;
+import com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
@@ -64,7 +64,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     @InjectView(R.id.bottom_sheet) View bottomSheet;
     @InjectView(R.id.number_members) TextView numberMembers;
     @InjectView(R.id.recipients_field) ViewGroup recipientsField;
-    @InjectView(R.id.record_btn) FloatingActionButton recordBtn;
+    @InjectView(R.id.record_btn) RotationCircleView recordBtn;
     @InjectView(R.id.recording_layout) View recordingLayout;
     @InjectView(R.id.recording_time_label) TextView recordingTimeLabel;
     @InjectView(R.id.stop_recording_btn) ImageView stopRecordingBtn;
@@ -81,13 +81,27 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     private Timer timer;
     private TimerTask updateTimerTask;
     private static final SimpleDateFormat timerFormatter = new SimpleDateFormat("mm:ss");
+    private CancelableTask recordIconAnimation;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        timer = new Timer();
+        handler = new Handler(Looper.getMainLooper());
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        timer.cancel();
+        timer = null;
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         context = inflater.getContext();
         WelcomeScreenPreview view = new WelcomeScreenPreview(context);
-        handler = view.getHandler();
         view.setOnSizeChangedListener(this);
         ButterKnife.inject(this, view);
         BaseManagerProvider managers = getManagers();
@@ -95,7 +109,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
             CameraManager.setUsePreferredPreviewSize(true);
             managers.getRecorder().addPreviewTo(view, false);
         }
-        up.setState(MaterialMenuDrawable.IconState.ARROW);
+        up.setState(MaterialMenuDrawable.IconState.X);
         friendsNotSent = FriendFactory.getFactoryInstance().allEnabled();
         Iterator<Friend> it = friendsNotSent.iterator();
         while (it.hasNext()) {
@@ -112,16 +126,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         recordingTimeLabel.setTypeface(Convenience.getTypeface(context));
         recordBtn.setOnTouchListener(this);
         bottomSheet.setOnTouchListener(this);
-        timer = new Timer();
-
         return view;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        timer.cancel();
-        timer = null;
     }
 
     @Override
@@ -131,6 +136,27 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         BaseManagerProvider managers = getManagers();
         if (managers != null) {
             managers.getRecorder().resume();
+        }
+        startRecordIconAnimation();
+    }
+
+    private void startRecordIconAnimation() {
+        stopRecordIconAnimation();
+        recordIconAnimation = new CancelableTask() {
+            @Override
+            protected void doTask() {
+                if (isResumed() && recordBtn.getVisibility() == View.VISIBLE) {
+                    recordBtn.getAnimationController().start();
+                    recordBtn.postDelayed(this, 6000);
+                }
+            }
+        };
+        recordBtn.postDelayed(recordIconAnimation, 2000);
+    }
+
+    private void stopRecordIconAnimation() {
+        if (recordIconAnimation != null) {
+            recordIconAnimation.cancel();
         }
     }
 
@@ -190,6 +216,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         } else {
             videoActionsLayout.setVisibility(View.GONE);
             recordBtn.setVisibility(View.VISIBLE);
+            startRecordIconAnimation();
         }
     }
 
@@ -201,6 +228,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
                 bottomSheet.setVisibility(View.INVISIBLE);
                 switchCameraIcon.setVisibility(View.INVISIBLE);
                 recordBtn.setVisibility(View.INVISIBLE);
+                stopRecordIconAnimation();
                 actionBar.setVisibility(View.INVISIBLE);
                 recordingLayout.setVisibility(View.VISIBLE);
             } else {
@@ -257,8 +285,12 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
             @Override
             public void run() {
                 BaseManagerProvider managers = getManagers();
+                final Handler handler = WelcomeMultipleFragment.this.handler;
+                if (handler == null) {
+                    return;
+                }
                 if (managers != null && managers.getRecorder().isRecording()) {
-                    recordingTimeLabel.post(new Runnable() {
+                    handler.post(new Runnable() {
                         String time = timerFormatter.format(date);
                         @Override
                         public void run() {

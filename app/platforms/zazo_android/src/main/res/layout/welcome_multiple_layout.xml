@@ -204,19 +204,21 @@
 
     </FrameLayout>
 
-    <android.support.design.widget.FloatingActionButton
+    <com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView
             android:id="@+id/record_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_record_white"
-            app:backgroundTint="@color/accent_2"
-            app:useCompatPadding="true"
-            app:elevation="4dp"
+            android:layout_width="@dimen/recording_icon_size"
+            android:layout_height="@dimen/recording_icon_size"
+            android:background="@drawable/ic_rec_fab_bgn"
+            app:rcv_bg_color="@android:color/transparent"
+            app:rcv_bg_ring_color="@android:color/transparent"
+            app:rcv_text="@string/tap_to_record"
+            app:rcv_text_color="@color/white"
+            app:rcv_icon_tint="@color/white"
+            app:rcv_bg_ring_thickness="11dp"
             android:layout_marginRight="@dimen/abc_control_inset_material"
             android:layout_marginEnd="@dimen/abc_control_inset_material"
             app:layout_anchor="@id/bottom_sheet"
-            app:layout_anchorGravity="top|end"
-            app:rippleColor="@color/ripple_material_dark"/>
+            app:layout_anchorGravity="top|end"/>
 
     <LinearLayout
             android:layout_width="wrap_content"

@@ -188,6 +188,7 @@
     <string name="contacts_groups_contacts">Contacts</string>
 
     <string name="hold_to_record">Hold to record</string>
+    <string name="tap_to_record">Tap to record</string>
     <string name="add_contact">Add contact</string>
 
     <string name="new_friend_joined">%1$s joined Zazo!</string>

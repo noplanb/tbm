@@ -2,6 +2,7 @@ package com.zazoapp.client.ui.view.rotationcircleview.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -119,6 +120,11 @@ public class RotationCircleView extends RelativeLayout {
         final int size = (int) typedArray.getDimension(R.styleable.RotationCircleView_rcv_fg_size,
                 ViewGroup.LayoutParams.MATCH_PARENT); // getResources().getDimension(R.dimen.rcv_default_fg_size)
         imageView.setImageDrawable(drawable);
+
+        int color = typedArray.getColor(R.styleable.RotationCircleView_rcv_icon_tint, 0);
+        if (color != 0) {
+            imageView.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+        }
 
         LayoutParams params = new LayoutParams(size, size);
         int margin = (int) background.getRingThickness() * 2;
