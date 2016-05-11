@@ -139,7 +139,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
                 break;
             case MAIN_FRAGMENT:
                 if (resultCode == MainFragment.ACTION_CODE_SHOW_SUGGESTIONS) {
-                    MainFragment mainFragment = (MainFragment) currentFragment;
+                    MainFragment mainFragment = (MainFragment) getSupportFragmentManager().findFragmentByTag("main" + MAIN_FRAGMENT);
                     currentFragmentId = SUGGESTIONS_INNER_FRAGMENT;
                     currentFragment = SuggestionsFragment.getInstance(getIntent());
                     currentFragment.setFragmentId(currentFragmentId);

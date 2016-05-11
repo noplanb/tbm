@@ -16,7 +16,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.ListPopupWindow;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -68,6 +67,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     @InjectView(R.id.suggestion_action_btn) Button suggestionActionButton;
     @InjectView(R.id.progress) ProgressBar progressBar;
     @InjectView(R.id.swipe_container) SwipeRefreshLayout swipeRefreshLayout;
+    @InjectView(R.id.support_swipe_container) View swipeSupportLayout;
     @InjectView(R.id.multiple_action_btn_layout) ViewGroup multipleActionsButtonLayout;
     @InjectView(R.id.suggestion_action_third_btn) Button thirdButton;
     @InjectView(R.id.suggestion_action_second_btn) Button secondButton;
@@ -332,6 +332,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
             public void onAnimationUpdate(ValueAnimator animation) {
                 int value = (int) animation.getAnimatedValue();
                 swipeRefreshLayout.setTranslationY(lastSuggestionCard.getHeight()-value);
+                swipeSupportLayout.setTranslationY(lastSuggestionCard.getHeight()-value);
             }
         });
         slideAnim.start();
@@ -346,6 +347,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
                 swipeRefreshLayout.setTranslationY(0);
+                swipeSupportLayout.setTranslationY(0);
                 attachSwipeLayoutTo(R.id.last_suggestion_card);
             }
         });
@@ -354,6 +356,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
             public void onAnimationUpdate(ValueAnimator animation) {
                 int value = (int) animation.getAnimatedValue();
                 swipeRefreshLayout.setTranslationY(lastSuggestionCard.getHeight()-value);
+                swipeSupportLayout.setTranslationY(lastSuggestionCard.getHeight()-value);
             }
         });
         slideAnim.start();
@@ -364,6 +367,10 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
         p.height = ViewGroup.LayoutParams.MATCH_PARENT;
         p.addRule(RelativeLayout.BELOW, id);
         swipeRefreshLayout.setLayoutParams(p);
+        p = (RelativeLayout.LayoutParams) swipeSupportLayout.getLayoutParams();
+        p.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        p.addRule(RelativeLayout.BELOW, id);
+        swipeSupportLayout.setLayoutParams(p);
     }
 
     @OnClick({R.id.test_add, R.id.test_remove})
@@ -454,7 +461,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     }
 
     private void doListViewAppearing() {
-        if (listView != null && listView.getAlpha() == 0) {
+        if (listView != null && listView.getVisibility() == View.INVISIBLE) {
             final float offset = Convenience.dpToPx(listView.getContext(), 50);
             progressBar.animate().alpha(0).translationY(-offset).setListener(
                     new AnimatorListenerAdapter() {
