@@ -256,27 +256,29 @@ public class NotificationAlertManager {
         PendingIntent ignoreJoinedFriendIntent = PendingIntent.getService(context, 2,
                 makeJoinedFriendIntent(serviceIntent, IntentHandlerService.FriendJoinedActions.IGNORE), PendingIntent.FLAG_CANCEL_CURRENT);
 
-        String title = context.getString(R.string.new_friend_joined, name);
+        String message = context.getString(R.string.new_friend_joined, name);
         NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
-        notiStyle.setBigContentTitle(title);
+        notiStyle.setBigContentTitle(name);
+        notiStyle.bigText(message);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
                 .setSmallIcon(getNotificationIcon())
-                .setContentTitle(title)
+                .setContentTitle(name)
+                .setContentText(message)
                 .setStyle(notiStyle)
                 .setColor(context.getResources().getColor(R.color.green))
                 .setAutoCancel(true);
         mBuilder.setContentIntent(openAppIntent);
         //mBuilder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.icons_plus));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            mBuilder.addAction(R.drawable.ic_action_cancel, context.getString(R.string.action_ignore_joined_friend), ignoreJoinedFriendIntent);
             if (suggestion.hasMultiplePhones()) {
-                mBuilder.addAction(R.drawable.ic_info, context.getString(R.string.action_view), openAppIntent);
+                mBuilder.addAction(R.drawable.ic_action_accept, context.getString(R.string.action_add_joined_friend), openAppIntent);
             } else {
                 mBuilder.addAction(R.drawable.ic_action_accept, context.getString(R.string.action_add_joined_friend), addJoinedFriendIntent);
             }
-            mBuilder.addAction(R.drawable.ic_action_cancel, context.getString(R.string.action_ignore_joined_friend), ignoreJoinedFriendIntent);
         }
 
         notificationManager.cancel(NotificationType.FRIEND_JOINED.id());
