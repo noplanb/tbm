@@ -16,6 +16,7 @@ import com.zazoapp.client.ui.animations.TextAnimations;
 import com.zazoapp.client.ui.animations.TransferProgressAnimation;
 import com.zazoapp.client.ui.animations.UnreadCountAnimation;
 import com.zazoapp.client.ui.animations.ViewedAnimation;
+import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.ui.view.ThumbView.MapArea;
 import com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView;
 import com.zazoapp.client.ui.view.transferview.DownloadingView;
@@ -59,12 +60,10 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     private FriendViewListener viewEventListener;
 
-    private final int colors[];
-    private final MapArea areas[] = {MapArea.LEFT_BOTTOM,  MapArea.RIGHT_TOP, MapArea.LEFT_TOP,  MapArea.LEFT_TOP, MapArea.RIGHT_BOTTOM, MapArea.LEFT_BOTTOM, MapArea.RIGHT_TOP, MapArea.RIGHT_BOTTOM};
-
+    private final ThumbsHelper tHelper;
     public GridElementView(Context context) {
         super(context);
-        colors = getResources().getIntArray(R.array.thumb_colors);
+        tHelper = new ThumbsHelper(context);
         init();
     }
 
@@ -220,10 +219,10 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     }
 
     public void setStubThumbnail(CharSequence text, int visibility) {
-        int color = Convenience.getStringDependentItem(text, colors);
+        int color = tHelper.getColor(text);
         imgThumb.setFillColor(color);
         imgThumb.setImageResource(R.drawable.navigation_background_pattern);
-        imgThumb.setMapArea(Convenience.getStringDependentItem(text, areas));
+        imgThumb.setMapArea(tHelper.getMapArea(text));
         imgThumb.setVisibility(visibility);
         holdToRecordView.getIconView().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
         holdToRecordView.getTextView().setTextColor(color);

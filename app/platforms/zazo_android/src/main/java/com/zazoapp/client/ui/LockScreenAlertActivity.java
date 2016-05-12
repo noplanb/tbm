@@ -25,8 +25,8 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationSuggestion;
 import com.zazoapp.client.ui.helpers.ThumbsHelper;
+import com.zazoapp.client.ui.view.ThumbView;
 import com.zazoapp.client.utilities.StringUtils;
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class LockScreenAlertActivity extends Activity {
 
@@ -36,7 +36,7 @@ public class LockScreenAlertActivity extends Activity {
     @InjectView(R.id.title_text) TextView titleText;
     @InjectView(R.id.subtitle_text) TextView subtitleText;
     @InjectView(R.id.logoImage) ImageView smallIconView;
-    @InjectView(R.id.thumbImage) CircleImageView thumbImage;
+    @InjectView(R.id.thumbImage) ThumbView thumbImage;
     @InjectView(R.id.thumb_title) TextView thumbTitle;
     @InjectView(R.id.action_main_btn) Button mainButton;
     @InjectView(R.id.action_second_btn) Button secondButton;
@@ -139,12 +139,13 @@ public class LockScreenAlertActivity extends Activity {
             }
             if (friend.thumbExists()) {
                 thumbImage.setImageBitmap(friend.thumbBitmap());
+                thumbImage.setMapArea(ThumbView.MapArea.FULL);
                 thumbTitle.setText("");
             } else {
-                thumbImage.setImageResource(tHelper.getIcon(friend.getDisplayName()));
+                thumbImage.setImageResource(R.drawable.navigation_background_pattern);
                 thumbImage.setFillColor(tHelper.getColor(friend.getDisplayName()));
+                thumbImage.setMapArea(tHelper.getMapArea(friend.getDisplayName()));
                 thumbTitle.setText(friend.getInitials());
-                thumbImage.setImageResource(R.drawable.ic_no_pic_z);
             }
             secondButton.setText(R.string.action_dismiss);
             mainButton.setText(R.string.action_view);
@@ -156,7 +157,8 @@ public class LockScreenAlertActivity extends Activity {
             if (name == null) {
                 name = "";
             }
-            thumbImage.setImageResource(tHelper.getIcon(name));
+            thumbImage.setImageResource(R.drawable.navigation_background_pattern);
+            thumbImage.setMapArea(tHelper.getMapArea(name));
             thumbImage.setFillColor(tHelper.getColor(name));
             thumbTitle.setText(StringUtils.getInitials(name));
             mainButton.setText(R.string.action_add_joined_friend);
