@@ -445,6 +445,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                 ContactsInfoCollector.collectContacts(getContentResolver(),  new ContactsInfoCollector.ContactsInfoCollectedCallback() {
                     @Override
                     public void onInfoCollected(final JSONArray contacts) {
+                        DialogShower.showToast(DebugSettingsActivity.this, "Sending...");
                         FriendFinderRequests.sendContacts(contacts, new HttpRequest.Callbacks() {
                             @Override
                             public void success(String response) {
