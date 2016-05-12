@@ -83,6 +83,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
 
     private static final String CARD_TYPE = "card_type";
     private static final String NOTIFICATION_DATA = "notification_data";
+    private static final String SUBACTION = "subaction";
     static final String FROM_APPLICATION = "from_application";
     static final String ADDED_FRIENDS = "added_friends";
     private static final String IS_ANYONE_ADDED = "is_anyone_added";
@@ -157,6 +158,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                         break;
                     case IntentHandlerService.FriendJoinedActions.NOTIFY:
                         bundle.putInt(CARD_TYPE, SuggestionCardType.NOTIFICATION.ordinal());
+                        bundle.putString(SUBACTION, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.SUBACTION));
                         break;
                     default:
                         bundle.putInt(CARD_TYPE, SuggestionCardType.NONE.ordinal());
@@ -280,22 +282,29 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                     displayPhoneChooserPopup(new SuggestionsAdapter.OnPhoneItemSelected() {
                         @Override
                         public void onPhoneItemSelected(int index) {
-                            FriendFinderRequests.addFriend(suggestion.getNkey(), new CardLayoutRequestCallback(SuggestionCardType.ADDED), suggestion.getPhone(index));
-                            cardRequestProgress.setVisibility(View.VISIBLE);
+                            addFriendFromNotification(suggestion.getPhone(index));
                         }
                     }, suggestion, v);
                 } else {
-                    FriendFinderRequests.addFriend(suggestion.getNkey(), new CardLayoutRequestCallback(SuggestionCardType.ADDED), null);
-                    cardRequestProgress.setVisibility(View.VISIBLE);
+                    addFriendFromNotification(null);
                 }
                 break;
             case R.id.suggestion_action_second_btn:
-                FriendFinderRequests.ignoreFriend(suggestion.getNkey(), new CardLayoutRequestCallback(SuggestionCardType.IGNORED));
+                ignoreFriendFromNotification();
                 break;
             case R.id.suggestion_action_third_btn:
                 FriendFinderRequests.unsubscribe(new CardLayoutRequestCallback(SuggestionCardType.UNSUBSCRIBED));
                 break;
         }
+    }
+
+    public void ignoreFriendFromNotification() {
+        FriendFinderRequests.ignoreFriend(suggestion.getNkey(), new CardLayoutRequestCallback(SuggestionCardType.IGNORED));
+    }
+
+    public void addFriendFromNotification(String phone) {
+        FriendFinderRequests.addFriend(suggestion.getNkey(), new CardLayoutRequestCallback(SuggestionCardType.ADDED), phone);
+        cardRequestProgress.setVisibility(View.VISIBLE);
     }
 
     private void finishInvitation() {
@@ -437,6 +446,19 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                 secondButton.setText(R.string.action_ignore_joined_friend);
                 thirdButton.setText(R.string.action_unsubscribe);
                 addIgnoreMark.setVisibility(View.INVISIBLE);
+                String subaction = getArguments().getString(SUBACTION);
+                if (subaction != null) {
+                    switch (subaction) {
+                        case IntentHandlerService.FriendJoinedActions.ADD:
+                            if (!suggestion.hasMultiplePhones()) { // not necessary check as for multiple phones it will be opened without subaction
+                                addFriendFromNotification(null);
+                            }
+                            break;
+                        case IntentHandlerService.FriendJoinedActions.IGNORE:
+                            ignoreFriendFromNotification();
+                            break;
+                    }
+                }
             }
                 break;
             case SUBSCRIPTION_OFF:

@@ -558,6 +558,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
     public static class FriendJoinedIntentFields {
         public static final String DATA = "data";
         public static final String ACTION = "action";
+        public static final String SUBACTION = "subaction";
         public static final String CHOSEN_PHONE = "chosen_phone";
     }
 

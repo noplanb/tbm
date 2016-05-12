@@ -251,10 +251,10 @@ public class NotificationAlertManager {
         Intent serviceIntent = new Intent(friendJoinedIntent);
         serviceIntent.setClass(context.getApplicationContext(), IntentHandlerService.class);
         PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-        PendingIntent addJoinedFriendIntent = PendingIntent.getService(context, 1,
-                makeJoinedFriendIntent(serviceIntent, IntentHandlerService.FriendJoinedActions.ADD), PendingIntent.FLAG_CANCEL_CURRENT);
-        PendingIntent ignoreJoinedFriendIntent = PendingIntent.getService(context, 2,
-                makeJoinedFriendIntent(serviceIntent, IntentHandlerService.FriendJoinedActions.IGNORE), PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent addJoinedFriendIntent = PendingIntent.getActivity(context, 1,
+                makeSuggestionIntent(activityIntent, IntentHandlerService.FriendJoinedActions.ADD), PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent ignoreJoinedFriendIntent = PendingIntent.getActivity(context, 2,
+                makeSuggestionIntent(activityIntent, IntentHandlerService.FriendJoinedActions.IGNORE), PendingIntent.FLAG_CANCEL_CURRENT);
 
         String message = context.getString(R.string.new_friend_joined, name);
         NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
@@ -365,6 +365,14 @@ public class NotificationAlertManager {
         Intent i = new Intent(intent);
         i.setAction(IntentHandlerService.IntentActions.FRIEND_JOINED);
         i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, friendJoinedAction);
+        return i;
+    }
+
+    private static Intent makeSuggestionIntent(Intent intent, String subaction) {
+        Intent i = new Intent(intent);
+        i.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
+        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.NOTIFY);
+        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.SUBACTION, subaction);
         return i;
     }
 
