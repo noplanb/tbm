@@ -10,6 +10,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/black"/>
+
     <TextureView
             android:id="@+id/video_preview"
             android:layout_width="match_parent"
@@ -19,7 +20,7 @@
             android:id="@+id/zazo_action_bar"
             style="@style/ZazoActionBar"
             android:background="@drawable/top_scrim"
-            android:clickable="true">
+            android:clickable="false">
 
         <LinearLayout
                 android:id="@+id/home"
@@ -28,13 +29,14 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true">
+                android:clickable="false">
 
             <com.balysv.materialmenu.MaterialMenuView
                     android:id="@+id/up"
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
-                    android:padding="@dimen/actionbar_item_padding"/>
+                    android:padding="@dimen/actionbar_item_padding"
+                    android:visibility="gone"/>
 
             <TextView
                     android:layout_width="wrap_content"
@@ -53,6 +55,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="invisible">
+
         <TextView
                 android:id="@+id/recording_time_label"
                 android:layout_width="wrap_content"
@@ -67,6 +70,7 @@
                 android:textSize="@dimen/text_large"
                 android:text="00:00"
                 android:layout_marginTop="@dimen/abc_action_bar_content_inset_material"/>
+
         <ImageView
                 android:id="@+id/stop_recording_btn"
                 android:layout_width="@dimen/recording_icon_size"
@@ -77,12 +81,13 @@
                 android:layout_centerHorizontal="true"
                 />
     </RelativeLayout>
+
     <FrameLayout
             android:id="@+id/bottom_sheet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:behavior_hideable="false"
-            app:behavior_peekHeight="200dp"
+            app:behavior_peekHeight="300dp"
             android:background="@drawable/bottom_sheet_bgn"
             app:layout_behavior="@string/bottom_sheet_behavior">
 
@@ -147,6 +152,7 @@
                             android:textAllCaps="true"
                             android:text="@string/welcome_friends_redo_action"
                             />
+
                     <Button
                             android:id="@+id/send_btn"
                             android:layout_width="wrap_content"
@@ -160,48 +166,53 @@
                             />
                 </LinearLayout>
             </RelativeLayout>
-
-            <TextView
-                    android:id="@+id/number_members"
+            <RelativeLayout
+                    android:id="@+id/recipients_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="@dimen/text_normal"
-                    android:textColor="@color/suggestion_notice"
                     android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
                     android:paddingRight="@dimen/abc_list_item_padding_horizontal_material"
                     android:paddingTop="@dimen/abc_action_bar_icon_vertical_padding_material"
-                    android:paddingBottom="@dimen/abc_action_bar_icon_vertical_padding_material"/>
-            <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/main_btn_bgn"/>
-            <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
-                    android:paddingRight="@dimen/abc_list_item_padding_horizontal_material"
-                    android:paddingTop="@dimen/abc_action_bar_icon_vertical_padding_material"
-                    android:paddingBottom="@dimen/abc_action_bar_icon_vertical_padding_material"
-                    android:gravity="center_vertical">
+                    android:paddingBottom="@dimen/abc_action_bar_icon_vertical_padding_material">
                 <TextView
+                        android:id="@+id/to_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/text_normal"
                         android:textColor="@color/suggestion_notice"
-                        android:text="@string/to_label"/>
+                        android:text="@string/to_label"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignTop="@+id/recipients_field_top"
+                        android:layout_alignBottom="@+id/recipients_field_top"
+                        android:gravity="center_vertical"/>
                 <LinearLayout
-                        android:id="@+id/recipients_field"
+                        android:id="@+id/recipients_field_top"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
+                        android:layout_toRightOf="@id/to_label"
+                        android:layout_toEndOf="@id/to_label"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginRight="@dimen/recording_icon_size"
+                        android:layout_marginEnd="@dimen/recording_icon_size"/>
+                <LinearLayout
+                        android:id="@+id/recipients_field_bottom"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_below="@id/recipients_field_top"
+                        android:layout_toRightOf="@id/to_label"
+                        android:layout_toEndOf="@id/to_label"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginTop="@dimen/abc_button_padding_horizontal_material"
                         android:layout_marginRight="@dimen/abc_button_padding_horizontal_material"
-                        android:layout_marginEnd="@dimen/abc_button_padding_horizontal_material">
-                </LinearLayout>
-            </LinearLayout>
+                        android:layout_marginEnd="@dimen/abc_button_padding_horizontal_material"/>
 
+            </RelativeLayout>
         </LinearLayout>
-
     </FrameLayout>
 
     <com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView
@@ -227,6 +238,7 @@
             app:layout_anchor="@id/bottom_sheet"
             app:layout_anchorGravity="top|center_horizontal"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
         <ImageView
                 android:id="@+id/switch_camera_icon"
                 android:layout_width="@dimen/thumb_icon_size"

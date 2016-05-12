@@ -12,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.ListPopupWindow;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.TextureView;
@@ -44,6 +43,8 @@ import com.zazoapp.client.utilities.DialogShower;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -62,8 +63,8 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     @InjectView(R.id.video_preview) TextureView preview;
     @InjectView(R.id.switch_camera_icon) ImageView switchCameraIcon;
     @InjectView(R.id.bottom_sheet) View bottomSheet;
-    @InjectView(R.id.number_members) TextView numberMembers;
-    @InjectView(R.id.recipients_field) ViewGroup recipientsField;
+    @InjectView(R.id.recipients_field_top) ViewGroup recipientsTopField;
+    @InjectView(R.id.recipients_field_bottom) ViewGroup recipientsBottomField;
     @InjectView(R.id.record_btn) RotationCircleView recordBtn;
     @InjectView(R.id.recording_layout) View recordingLayout;
     @InjectView(R.id.recording_time_label) TextView recordingTimeLabel;
@@ -122,7 +123,12 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         for (Friend friend : friendsNotSent) {
             receivers.add(new FriendReceiver(friend, true));
         }
-        numberMembers.setText(getResources().getQuantityString(R.plurals.welcome_multiple_members_label, friendsNotSent.size(), friendsNotSent.size()));
+        Collections.sort(receivers, new Comparator<FriendReceiver>() {
+            @Override
+            public int compare(FriendReceiver lhs, FriendReceiver rhs) {
+                return lhs.compareTo(rhs);
+            }
+        });
         recordingTimeLabel.setTypeface(Convenience.getTypeface(context));
         recordBtn.setOnTouchListener(this);
         bottomSheet.setOnTouchListener(this);
@@ -172,11 +178,6 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
 
     private void showActionBar() {
         actionBar.animate().alpha(1).start();
-    }
-
-    @OnClick(R.id.home)
-    public void onBackClicked() {
-        onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
     }
 
     @OnClick(R.id.stop_recording_btn)
@@ -368,19 +369,37 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     }
 
     private void fillChips() {
-        int maxWidth = recipientsField.getMeasuredWidth();
         ChipsViewWrapper more = new ChipsViewWrapper(context);
         more.setMore();
         more.getView().measure(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         int moreWidth = more.getView().getMeasuredWidth();
-        recipientsField.removeAllViewsInLayout();
         List<FriendReceiver> rs = new ArrayList<>();
         for (FriendReceiver receiver : receivers) {
             if (receiver.isReceiver()) {
                 rs.add(receiver);
             }
         }
+        int maxWidth = recipientsTopField.getMeasuredWidth();
+        recipientsTopField.removeAllViewsInLayout();
+        recipientsBottomField.removeAllViewsInLayout();
         int i = 0;
+        for (; i < rs.size(); i++) {
+            ChipsViewWrapper cvh = new ChipsViewWrapper(context);
+            Friend friend = rs.get(i).getFriend();
+            if (friend.thumbExists()) {
+                cvh.setTitleWithIcon(friend.getFullName(), friend.thumbBitmap());
+            } else {
+                cvh.setTitle(friend.getFullName());
+            }
+            cvh.getView().measure(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            if (cvh.getView().getMeasuredWidth() < maxWidth) {
+                maxWidth -= cvh.getView().getMeasuredWidth();
+                recipientsTopField.addView(cvh.getView());
+            } else {
+                break;
+            }
+        }
+        maxWidth = recipientsBottomField.getMeasuredWidth();
         for (; i < rs.size(); i++) {
             ChipsViewWrapper cvh = new ChipsViewWrapper(context);
             Friend friend = rs.get(i).getFriend();
@@ -393,7 +412,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
             if (cvh.getView().getMeasuredWidth() + moreWidth < maxWidth
                     || (i == rs.size() - 1) && cvh.getView().getMeasuredWidth() < maxWidth) {
                 maxWidth -= cvh.getView().getMeasuredWidth();
-                recipientsField.addView(cvh.getView());
+                recipientsBottomField.addView(cvh.getView());
             } else {
                 break;
             }
@@ -401,20 +420,21 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         if (i < rs.size()) {
             ChipsViewWrapper cvh = new ChipsViewWrapper(context);
             cvh.setMore();
-            recipientsField.addView(cvh.getView());
+            recipientsBottomField.addView(cvh.getView());
         }
+        recipientsBottomField.requestLayout();
     }
 
-    @OnClick(R.id.recipients_field)
+    @OnClick(R.id.recipients_layout)
     public void displayRecipientChooserPopup() {
         final ListPopupWindow listPopupWindow = new ListPopupWindow(context);
         WelcomeFriendsListAdapter adapter = new WelcomeFriendsListAdapter(getActivity(), receivers);
         adapter.setOnItemStateChangedListener(this);
         listPopupWindow.setAdapter(adapter);
-        listPopupWindow.setContentWidth(recipientsField.getWidth() + Convenience.dpToPx(context, 8));
+        listPopupWindow.setContentWidth(recipientsBottomField.getWidth() + Convenience.dpToPx(context, 8));
         listPopupWindow.setDropDownGravity(Gravity.START);
         listPopupWindow.setListSelector(getResources().getDrawable(R.drawable.options_popup_item_bg));
-        listPopupWindow.setAnchorView(recipientsField);
+        listPopupWindow.setAnchorView(recipientsTopField);
         listPopupWindow.setVerticalOffset(Convenience.dpToPx(context, 16));
         if (receivers.size() > 5) {
             TypedArray a = context.getTheme().obtainStyledAttributes(new int[]{android.R.attr.listPreferredItemHeight});
@@ -434,13 +454,6 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
 
     @Override
     public void onItemStateChanged(int position, FriendReceiver receiver) {
-        int recipientsCount = 0;
-        for (FriendReceiver friendReceiver : receivers) {
-            if (friendReceiver.isReceiver()) {
-                recipientsCount++;
-            }
-        }
-        numberMembers.setText(getResources().getQuantityString(R.plurals.welcome_multiple_members_label, recipientsCount, recipientsCount));
         fillChips();
     }
 
