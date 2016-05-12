@@ -264,6 +264,7 @@ public class NotificationAlertManager {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+                .setSound(getNotificationToneUri(context))
                 .setSmallIcon(getNotificationIcon())
                 .setContentTitle(name)
                 .setContentText(message)
