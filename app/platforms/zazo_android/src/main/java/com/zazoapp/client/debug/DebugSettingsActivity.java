@@ -442,6 +442,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
         sendContacts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                DialogShower.showToast(DebugSettingsActivity.this, "Collecting...");
                 ContactsInfoCollector.collectContacts(getContentResolver(),  new ContactsInfoCollector.ContactsInfoCollectedCallback() {
                     @Override
                     public void onInfoCollected(final JSONArray contacts) {
