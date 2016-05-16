@@ -490,7 +490,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             super.onAnimationEnd(animation);
-                            if (listView != null) {
+                            if (listView != null && adapter !=null && adapter.getItemCount() > 0) {
                                 listView.setTranslationY(offset);
                                 listView.setVisibility(View.VISIBLE);
                                 listView.setAlpha(0f);
