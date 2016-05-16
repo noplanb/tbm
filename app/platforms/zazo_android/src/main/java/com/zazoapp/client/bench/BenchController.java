@@ -98,6 +98,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         // if it is just a friend on bench, move it to grid
         Friend friend = friendFactory.find(bo.friendId);
         if (friend != null) {
+            // TODO swap friends
             GridManager.getInstance().moveFriendToGrid(friend);
             hideBench();
             return;

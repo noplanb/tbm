@@ -113,6 +113,7 @@ public class InviteManager implements InviteHelper {
                 });
                 listener.onShowProgressDialog(null, context.getString(R.string.dialog_checking_title));
             } else {
+                // TODO swap friends
                 moveFriendToGrid();
             }
             return;
