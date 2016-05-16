@@ -1,6 +1,7 @@
 package com.zazoapp.client.debug;
 
 import android.content.Context;
+import com.zazoapp.client.BuildConfig;
 import com.zazoapp.client.core.PreferencesHelper;
 
 import java.util.HashSet;
@@ -40,7 +41,8 @@ public class DebugConfig {
         FORCE_CONFIRMATION_CALL(false),
         SEND_INCORRECT_FILE_SIZE(false),
         ALLOW_RESEND(false),
-        ALLOW_SEND_CONTACTS(false),
+        ALLOW_SEND_CONTACTS(!BuildConfig.DEBUG),
+        IMITATE_REQUESTS(false),
         ;
 
         private boolean value;

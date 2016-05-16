@@ -3,7 +3,6 @@ package com.zazoapp.client.ui;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.SwitchCompat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -11,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import butterknife.ButterKnife;
@@ -25,7 +25,7 @@ import com.zazoapp.client.ui.animations.SlideHorizontalFadeAnimation;
 /**
  * Created by skamenkovych@codeminders.com on 1/22/2016.
  */
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends ZazoTopFragment {
 
     @InjectView(R.id.settings_list) ScrollView settingsList;
     @InjectView(R.id.up) MaterialMenuView up;
@@ -36,7 +36,11 @@ public class SettingsFragment extends Fragment {
         View v = inflater.inflate(R.layout.settings, null);
         ButterKnife.inject(this, v);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
-        settingsList.addView(getViewForPref(inflater, Settings.Bool.ALLOW_DATA_IN_ROAMING));
+        LinearLayout layout = new LinearLayout(v.getContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.addView(getViewForPref(inflater, Settings.Bool.ALLOW_DATA_IN_ROAMING));
+        layout.addView(getViewForPref(inflater, Settings.Bool.LIGHT_SCREEN_FOR_NOTIFICATIONS));
+        settingsList.addView(layout);
         return v;
     }
 

@@ -1,11 +1,14 @@
 package com.zazoapp.client.ui;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.AnimRes;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -39,12 +42,16 @@ import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.core.VersionHandler;
+import com.zazoapp.client.debug.DebugUtils;
 import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Contact;
+import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
@@ -56,8 +63,14 @@ import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.dialogs.SelectPhoneNumberDialog;
 import com.zazoapp.client.ui.dialogs.SendLinkThroughDialog;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
+import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by skamenkovych@codeminders.com on 11/6/2015.
@@ -74,9 +87,12 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public static final int SENDLINK_DIALOG = 3;
     public static final int NO_SIM_DIALOG = 4;
 
+    public static final int ACTION_CODE_SHOW_SUGGESTIONS = 1;
+
     private static final String TAB = "mf_tab";
     private static final int TAB_MAIN = 0;
     private static final int TAB_FRIENDS = 1;
+    private static final String EXTRA_HANDLED = "extra_handled";
 
     private GcmHandler gcmHandler;
     private VersionHandler versionHandler;
@@ -92,12 +108,16 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     private boolean isNavigationOpened;
 
     private ZazoPagerAdapter pagerAdapter;
+
+    private ZazoTopFragment topFragment;
+
     @InjectView(R.id.action_bar_icon) ImageView actionBarIcon;
     @InjectView(R.id.tabs) TabLayout tabsLayout;
     @InjectView(R.id.navigation_view) NavigationView navigationView;
     @InjectView(R.id.menu_view) MaterialMenuView menuView;
     @InjectView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @InjectView(R.id.content_frame) ViewPager contentFrame;
+    @InjectView(R.id.tutorial_parent_layout) View tutorialParent;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -169,9 +189,54 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     }
 
     private void handleIntent(Intent intent) {
-        if (intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
-            // TODO Do action specified in https://zazo.fogbugz.com/f/cases/1062/
-            intent.setAction(IntentHandlerService.IntentActions.NONE);
+        if (intent == null || intent.getAction() == null) {
+            return;
+        }
+        switch (intent.getAction()) {
+            case Intent.ACTION_VIEW:
+                // TODO Do action specified in https://zazo.fogbugz.com/f/cases/1062/
+                intent.setAction(IntentHandlerService.IntentActions.NONE);
+                break;
+            case IntentHandlerService.IntentActions.SUGGESTIONS:
+                if (!intent.getBooleanExtra(EXTRA_HANDLED, false)) {
+                    if (topFragment != null) {
+                        getFragmentManager().popBackStack();
+                        topFragment = null;
+                        tutorialParent.setVisibility(View.VISIBLE);
+                    }
+                    publishResult(ACTION_CODE_SHOW_SUGGESTIONS, null);
+                    intent.putExtra(EXTRA_HANDLED, true);
+                    NotificationAlertManager.cancelNativeAlert(context, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
+                }
+                break;
+            case IntentHandlerService.IntentActions.SEND_VIDEO:
+                final Intent intentCopy = new Intent(intent);
+                AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        ArrayList<String> friendIds = intentCopy.getStringArrayListExtra(WelcomeMultipleFragment.EXTRA_FRIEND_IDS);
+                        String path = intentCopy.getStringExtra(WelcomeMultipleFragment.EXTRA_VIDEO_PATH);
+                        List<Friend> friends = FriendFactory.getFactoryInstance().all();
+                        File src = new File(path);
+                        for (String id : friendIds) {
+                            for (Friend friend : friends) {
+                                if (id.equals(friend.getId())) {
+                                    String videoId = VideoIdUtils.generateId();
+                                    File dst = friend.videoToFile(videoId);
+                                    try {
+                                        DebugUtils.copyFolder(src, dst);
+                                        friend.setNewOutgoingVideoId(videoId);
+                                        friend.requestUpload(videoId);
+                                    } catch (IOException e) {
+                                    }
+                                }
+                            }
+                        }
+                        return null;
+                    }
+                });
+                intent.setAction(IntentHandlerService.IntentActions.NONE);
+                break;
         }
     }
 
@@ -375,19 +440,32 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     }
 
     private void showEditFriends() {
-        FragmentTransaction tr = getFragmentManager().beginTransaction();
-        tr.setCustomAnimations(R.anim.slide_left_fade_in, R.anim.slide_right_fade_out, R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
-        tr.add(R.id.top_frame, new ManageFriendsFragment());
-        tr.addToBackStack(null);
-        tr.commit();
+        showTopFragment(new ManageFriendsFragment(), R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
     }
 
     private void showSettings() {
-        FragmentTransaction tr = getFragmentManager().beginTransaction();
-        tr.setCustomAnimations(R.anim.slide_left_fade_in, R.anim.slide_right_fade_out, R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
-        tr.add(R.id.top_frame, new SettingsFragment());
+        showTopFragment(new SettingsFragment(), R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
+    }
+
+    private void showSuggestions(@Nullable Intent intent) {
+        showTopFragment(SuggestionsFragment.getInstance(intent), R.anim.slide_bottom_fade_in, R.anim.slide_bottom_fade_out);
+    }
+
+    public void showTopFragment(ZazoTopFragment f, @AnimRes int in, @AnimRes int out) {
+        FragmentTransaction tr = getChildFragmentManager().beginTransaction();
+        tr.setCustomAnimations(in, out, in, out);
+        tr.add(R.id.top_frame, f);
         tr.addToBackStack(null);
         tr.commit();
+        f.setOnBackListener(new ZazoTopFragment.OnBackListener() {
+            @Override
+            public void onBack() {
+                topFragment = null;
+                tutorialParent.setVisibility(View.VISIBLE);
+            }
+        });
+        topFragment = f;
+        tutorialParent.setVisibility(View.INVISIBLE);
     }
 
     private void inviteFriends() {
@@ -432,6 +510,9 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
             case R.id.navigation_item_contacts:
                 selectTab(TAB_FRIENDS);
                 break;
+            case R.id.navigation_item_suggestions:
+                showSuggestions(null);
+                break;
             default:
                 DialogShower.showToast(context, String.valueOf(item.getTitle()));
                 break;
@@ -466,8 +547,12 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         }
     }
 
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch(keyCode) {
+        if (topFragment != null) {
+            return topFragment.onKeyDown(keyCode, event);
+        }
+        switch (keyCode) {
             case KeyEvent.KEYCODE_MENU:
                 toggleNavigationPanel();
                 return true;
@@ -531,10 +616,13 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     }
 
     @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
+    public void onWindowFocusChanged(Activity activity, boolean hasFocus) {
+        super.onWindowFocusChanged(activity, hasFocus);
         if (gridFragment != null) {
             gridFragment.onWindowFocusChanged(hasFocus);
+        }
+        if (hasFocus) {
+            handleIntent(activity.getIntent());
         }
     }
 

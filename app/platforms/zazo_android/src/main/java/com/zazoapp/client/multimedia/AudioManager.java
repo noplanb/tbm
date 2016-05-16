@@ -6,9 +6,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.Build;
 import android.util.Log;
-import com.zazoapp.client.features.Features;
-import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.features.Features;
+import com.zazoapp.client.ui.BaseManagerProvider;
 
 /**
  * Created by skamenkovych@codeminders.com on 4/20/2015.
@@ -19,7 +19,7 @@ public class AudioManager implements SensorEventListener, AudioController {
 
     private android.media.AudioManager.OnAudioFocusChangeListener focusChangeListener;
     private android.media.AudioManager audioManager;
-    private ZazoManagerProvider managerProvider;
+    private BaseManagerProvider managerProvider;
     private boolean hasFocus;
     private boolean isSpeakerPhoneOn = true;
     private boolean isProximityClose = false;
@@ -28,7 +28,7 @@ public class AudioManager implements SensorEventListener, AudioController {
             ? android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
             : android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT;
 
-    public AudioManager(Context context, ZazoManagerProvider managerProvider) {
+    public AudioManager(Context context, BaseManagerProvider managerProvider) {
         audioManager = (android.media.AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         this.managerProvider = managerProvider;
         initAudioFocusListener();
@@ -120,11 +120,12 @@ public class AudioManager implements SensorEventListener, AudioController {
             return;
         }
         if (enable) {
-            isSpeakerPhoneOn = !isProximityClose;
-            if (isProximityClose) {
-                audioManager.setMode(android.media.AudioManager.MODE_IN_COMMUNICATION);
-            } else {
+            // if feature is locked - always true, otherwise opposite to isProximityClose
+            isSpeakerPhoneOn = !managerProvider.getFeatures().isUnlocked(Features.Feature.EARPIECE) || !isProximityClose;
+            if (isSpeakerPhoneOn) {
                 audioManager.setMode(android.media.AudioManager.MODE_NORMAL);
+            } else {
+                audioManager.setMode(android.media.AudioManager.MODE_IN_COMMUNICATION);
             }
             audioManager.setSpeakerphoneOn(isSpeakerPhoneOn);
             managerProvider.getPlayer().changeAudioStream();

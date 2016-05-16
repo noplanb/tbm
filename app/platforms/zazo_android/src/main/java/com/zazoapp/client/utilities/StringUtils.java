@@ -1,6 +1,8 @@
 package com.zazoapp.client.utilities;
 
 import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -51,16 +53,20 @@ public class StringUtils {
      * @param json JSON string
      * @return LinkedTreeMap with data or null if JSON string is broken
      */
-    public static LinkedTreeMap<String, String> linkedTreeMapWithJson(String json) {
+    @Nullable public static LinkedTreeMap<String, String> linkedTreeMapWithJson(String json) {
+        return fromJson(json, LinkedTreeMap.class);
+    }
+
+    @Nullable public static <T> T fromJson(String json, @NonNull Class<T> classOfT) {
         Gson g = new Gson();
-        LinkedTreeMap<String, String> data;
+        T t;
         try {
-            data = g.fromJson(json, LinkedTreeMap.class);
+            t = g.fromJson(json, classOfT);
         } catch (JsonSyntaxException e) {
             Log.d("ZazoJsonParser", e.getMessage());
             return null;
         }
-        return data;
+        return t;
     }
 
     /**
@@ -120,6 +126,19 @@ public class StringUtils {
             initials.append(b.toUpperCase().charAt(0));
         }
         return initials.toString();
+    }
+
+    public static String getInitials(String a) {
+        if (a != null && !a.isEmpty()) {
+            String[] split = a.split(" ", 2);
+            if (split.length == 2) {
+                return getInitials(split[0], split[1]);
+            } else {
+                return getInitials(split[0], null);
+            }
+        } else {
+            return "";
+        }
     }
 
     public static CharSequence getFirstLetter(CharSequence sequence) {

@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bgn_main">
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black"/>
+
+    <TextureView
+            android:id="@+id/video_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    <RelativeLayout
+            android:id="@+id/zazo_action_bar"
+            style="@style/ZazoActionBar"
+            android:background="@drawable/top_scrim"
+            android:clickable="false">
+
+        <LinearLayout
+                android:id="@+id/home"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="false">
+
+            <com.balysv.materialmenu.MaterialMenuView
+                    android:id="@+id/up"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/actionbar_item_padding"
+                    android:visibility="gone"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    android:text="@string/welcome_friends"
+                    android:textSize="@dimen/text_very_large"
+                    android:textColor="@color/actionbar_textcolor"
+                    />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+            android:id="@+id/recording_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible">
+
+        <TextView
+                android:id="@+id/recording_time_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/recording_time_label_bgn"
+                android:drawableLeft="@drawable/ic_rec"
+                android:drawablePadding="5dp"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_large"
+                android:text="00:00"
+                android:layout_marginTop="@dimen/abc_action_bar_content_inset_material"/>
+
+        <ImageView
+                android:id="@+id/stop_recording_btn"
+                android:layout_width="@dimen/recording_icon_size"
+                android:layout_height="@dimen/recording_icon_size"
+                android:src="@drawable/ic_stop_recording"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/abc_action_bar_content_inset_material"
+                android:layout_centerHorizontal="true"
+                />
+    </RelativeLayout>
+
+    <FrameLayout
+            android:id="@+id/bottom_sheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:behavior_hideable="false"
+            app:behavior_peekHeight="300dp"
+            android:background="@drawable/bottom_sheet_bgn"
+            app:layout_behavior="@string/bottom_sheet_behavior">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="vertical">
+
+            <RelativeLayout
+                    android:id="@+id/video_actions_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
+                    android:paddingRight="@dimen/abc_list_item_padding_horizontal_material"
+                    android:paddingTop="@dimen/abc_action_bar_icon_vertical_padding_material"
+                    android:paddingBottom="@dimen/abc_action_bar_icon_vertical_padding_material"
+                    android:visibility="gone"
+                    android:background="@color/primary">
+
+                <com.zazoapp.client.ui.view.ThumbView
+                        android:id="@+id/video_thumb"
+                        android:layout_width="@dimen/thumb_icon_size"
+                        android:layout_height="@dimen/thumb_icon_size"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:scaleType="centerCrop"
+                        android:layout_centerVertical="true"
+                        android:background="@color/switch_thumb_disabled_material_dark"
+                        />
+                <TextView
+                        android:id="@+id/video_duration_text"
+                        android:layout_width="@dimen/thumb_icon_size"
+                        android:layout_height="@dimen/thumb_icon_size"
+                        android:gravity="bottom|center_horizontal"
+                        android:layout_alignLeft="@id/video_thumb"
+                        android:layout_alignTop="@id/video_thumb"
+                        android:layout_alignRight="@id/video_thumb"
+                        android:layout_alignBottom="@id/video_thumb"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_small"
+                        android:text="00:00"
+                        android:background="@drawable/bottom_scrim"
+                        android:layout_centerVertical="true"/>
+
+                <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:orientation="horizontal"
+                        android:layout_centerVertical="true">
+
+                    <Button
+                            android:id="@+id/redo_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Widget.AppCompat.Button.Borderless"
+                            android:textColor="@color/welcome_screen_redo"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:textSize="@dimen/text_large"
+                            android:textAllCaps="true"
+                            android:text="@string/welcome_friends_redo_action"
+                            />
+
+                    <Button
+                            android:id="@+id/send_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Widget.AppCompat.Button.Borderless"
+                            android:textColor="@color/welcome_screen_send"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:textSize="@dimen/text_large"
+                            android:textAllCaps="true"
+                            android:text="@string/welcome_friends_send_action"
+                            />
+                </LinearLayout>
+            </RelativeLayout>
+            <RelativeLayout
+                    android:id="@+id/recipients_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
+                    android:paddingRight="@dimen/abc_list_item_padding_horizontal_material"
+                    android:paddingTop="@dimen/abc_action_bar_icon_vertical_padding_material"
+                    android:paddingBottom="@dimen/abc_action_bar_icon_vertical_padding_material">
+                <TextView
+                        android:id="@+id/to_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/text_normal"
+                        android:textColor="@color/suggestion_notice"
+                        android:text="@string/to_label"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignTop="@+id/recipients_field_top"
+                        android:layout_alignBottom="@+id/recipients_field_top"
+                        android:gravity="center_vertical"/>
+                <LinearLayout
+                        android:id="@+id/recipients_field_top"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_toRightOf="@id/to_label"
+                        android:layout_toEndOf="@id/to_label"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginRight="@dimen/recording_icon_size"
+                        android:layout_marginEnd="@dimen/recording_icon_size"/>
+                <LinearLayout
+                        android:id="@+id/recipients_field_bottom"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_below="@id/recipients_field_top"
+                        android:layout_toRightOf="@id/to_label"
+                        android:layout_toEndOf="@id/to_label"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginTop="@dimen/abc_button_padding_horizontal_material"
+                        android:layout_marginRight="@dimen/abc_button_padding_horizontal_material"
+                        android:layout_marginEnd="@dimen/abc_button_padding_horizontal_material"/>
+
+            </RelativeLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+    <com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView
+            android:id="@+id/record_btn"
+            android:layout_width="@dimen/recording_icon_size"
+            android:layout_height="@dimen/recording_icon_size"
+            android:background="@drawable/ic_rec_fab_bgn"
+            app:rcv_bg_color="@android:color/transparent"
+            app:rcv_bg_ring_color="@android:color/transparent"
+            app:rcv_text="@string/tap_to_record"
+            app:rcv_text_color="@color/white"
+            app:rcv_icon_tint="@color/white"
+            app:rcv_bg_ring_thickness="11dp"
+            android:layout_marginRight="@dimen/abc_control_inset_material"
+            android:layout_marginEnd="@dimen/abc_control_inset_material"
+            app:layout_anchor="@id/bottom_sheet"
+            app:layout_anchorGravity="top|end"/>
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="70dp"
+            app:layout_anchor="@id/bottom_sheet"
+            app:layout_anchorGravity="top|center_horizontal"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ImageView
+                android:id="@+id/switch_camera_icon"
+                android:layout_width="@dimen/thumb_icon_size"
+                android:layout_height="@dimen/thumb_icon_size"
+                android:src="@drawable/ic_camera_switch"
+                android:padding="3dp"/>
+    </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>

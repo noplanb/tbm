@@ -89,13 +89,19 @@
             android:name=".ui.LockScreenAlertActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.Black.NoTitleBar" />
+            android:theme="@style/AppTheme.LockScreen" />
         <activity
                 android:name=".debug.DebugSettingsActivity"
                 android:launchMode="singleTask"
                 android:screenOrientation="portrait"
                 android:theme="@style/DebugTheme"/>
-
+        <activity
+                android:name=".ui.WelcomeScreenActivity"
+                android:launchMode="singleTask"
+                android:screenOrientation="portrait"
+                android:windowSoftInputMode="stateAlwaysHidden|adjustNothing"
+                android:theme="@style/AppTheme"
+                />
         <receiver
             android:name=".notification.gcm.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >

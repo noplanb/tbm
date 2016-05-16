@@ -26,8 +26,8 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
+import com.zazoapp.client.ui.BaseManagerProvider;
 import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
-import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.animations.TextAnimations;
 import com.zazoapp.client.ui.view.GestureControlledLayout;
 import com.zazoapp.client.ui.view.NineViewGroup;
@@ -64,7 +64,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private VideoProgressBar progressBar;
     @InjectView(R.id.grid_view) NineViewGroup nineViewGroup;
 	private boolean videosAreDownloading;
-    private ZazoManagerProvider managerProvider;
+    private BaseManagerProvider managerProvider;
     private Timer timer = new Timer();
     private TimerTask onStartTask;
     private ZoomController zoomController;
@@ -72,7 +72,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
 
 
-    public VideoPlayer(FragmentActivity activity, ZazoManagerProvider managerProvider) {
+    public VideoPlayer(FragmentActivity activity, BaseManagerProvider managerProvider) {
         this.activity = activity;
         this.managerProvider = managerProvider;
         blockScreen = ButterKnife.findById(activity, R.id.block_screen);
@@ -132,7 +132,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     @Override
-    public void togglePlayOverView(View view, String friendId) {
+    public boolean togglePlayOverView(View view, String friendId) {
         boolean needToPlay = !(isPlaying() && friendId.equals(this.friendId));
 
         // Always stop first so that the notification goes out to reset the view we were on in case it was still playing and we are switching to another view.
@@ -143,8 +143,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         if (needToPlay) {
             setPlayerOverView(view);
-            start();
+            return start();
         }
+        return false;
     }
 
     @Override
@@ -181,7 +182,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     //----------------------
 	// Private state machine
 	//----------------------
-	private void start(){
+	private boolean start(){
 		Log.i(TAG, "start");
 
 		determineIfDownloading();
@@ -198,10 +199,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 		    } else {
 		        Log.w(TAG, "No playable video.");
 		    }
-		    return;
+		    return false;
 		}
 		play();
-        managerProvider.getTutorial().onVideoStartPlaying();
+        return true;
 	}
 
     private void play(){

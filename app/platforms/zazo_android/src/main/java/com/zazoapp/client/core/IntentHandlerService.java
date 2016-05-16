@@ -35,6 +35,8 @@ import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
+import com.zazoapp.client.notification.NotificationSuggestion;
+import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
@@ -435,36 +437,37 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         }
 
         private void handleFriendJoinedIntent() {
-            String friendJoinedAction = intent.getStringExtra(FriendJoinedIntentFields.ACTION);
+            final String friendJoinedAction = intent.getStringExtra(FriendJoinedIntentFields.ACTION);
             if (friendJoinedAction == null) {
                 return;
             }
-            final String name = intent.getStringExtra(FriendJoinedIntentFields.NAME);
-            String nkey = intent.getStringExtra(FriendJoinedIntentFields.NKEY);
+            NotificationSuggestion suggestion = intent.getParcelableExtra(FriendJoinedIntentFields.DATA);
+            String nkey = suggestion.getNkey();
             switch (friendJoinedAction) {
                 case FriendJoinedActions.NOTIFY:
-                    NotificationAlertManager.alertFriendJoined(IntentHandlerService.this, nkey, name);
+                    NotificationAlertManager.alertFriendJoined(IntentHandlerService.this, new Intent(intent));
                     break;
                 case FriendJoinedActions.ADD:
                     NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
                     FriendFinderRequests.addFriend(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
-                            DialogShower.showToast(getApplicationContext(), getString(R.string.ff_add_success_message, name));
+                            FriendFinderRequests.gotFriend(IntentHandlerService.this, response);
+                            startSuggestionsActivity();
                         }
 
                         @Override
                         public void error(String errorString) {
                             DialogShower.showToast(getApplicationContext(), R.string.ff_add_error_message);
                         }
-                    });
+                    }, intent.getStringExtra(FriendJoinedIntentFields.CHOSEN_PHONE));
                     break;
                 case FriendJoinedActions.IGNORE:
                     NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
                     FriendFinderRequests.ignoreFriend(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
-                            DialogShower.showToast(getApplicationContext(), R.string.ff_ignore_success_message);
+                            startSuggestionsActivity();
                         }
 
                         @Override
@@ -473,7 +476,43 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                         }
                     });
                     break;
+                case FriendJoinedActions.UNSUBSCRIBE:
+                    NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
+                    FriendFinderRequests.unsubscribe(new HttpRequest.Callbacks() {
+                        @Override
+                        public void success(String response) {
+                            startSuggestionsActivity();
+                        }
+
+                        @Override
+                        public void error(String errorString) {
+                            DialogShower.showToast(getApplicationContext(), R.string.ff_subscription_failure);
+                        }
+                    });
+                    break;
+                case FriendJoinedActions.SUBSCRIBE:
+                    NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
+                    FriendFinderRequests.subscribe(new HttpRequest.Callbacks() {
+                        @Override
+                        public void success(String response) {
+                            startSuggestionsActivity();
+                        }
+
+                        @Override
+                        public void error(String errorString) {
+                            DialogShower.showToast(getApplicationContext(), R.string.ff_subscription_failure);
+                        }
+                    });
+                    break;
             }
+        }
+
+        private void startSuggestionsActivity() {
+            Intent startIntent = new Intent(intent);
+            startIntent.setClass(getApplicationContext(), MainActivity.class);
+            startIntent.setAction(IntentActions.SUGGESTIONS);
+            startIntent.addFlags(Intent.FLAG_FROM_BACKGROUND);
+            startActivity(startIntent);
         }
 
         //--------
@@ -512,12 +551,15 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         public static final String SMS_RESULT = "smsResult";
         public static final String SAVE_MODEL = "saveModel";
         public static final String FRIEND_JOINED = "friend_joined";
+        public static final String SUGGESTIONS = "suggestions";
+        public static final String SEND_VIDEO = "send_video";
     }
 
     public static class FriendJoinedIntentFields {
-        public static final String NAME = "friend_name";
+        public static final String DATA = "data";
         public static final String ACTION = "action";
-        public static final String NKEY = "nkey";
+        public static final String SUBACTION = "subaction";
+        public static final String CHOSEN_PHONE = "chosen_phone";
     }
 
     public static class FriendJoinedActions {

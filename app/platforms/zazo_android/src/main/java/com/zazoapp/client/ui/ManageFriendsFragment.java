@@ -6,10 +6,8 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.SwitchCompat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -37,9 +35,9 @@ import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.animations.SlideHorizontalFadeAnimation;
+import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.ui.view.FilterWatcher;
 import com.zazoapp.client.ui.view.SearchPanel;
-import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -51,7 +49,7 @@ import java.util.List;
 /**
  * Created by skamenkovych@codeminders.com on 8/14/2015.
  */
-public class ManageFriendsFragment extends Fragment implements View.OnTouchListener {
+public class ManageFriendsFragment extends ZazoTopFragment implements View.OnTouchListener {
 
     @InjectView(R.id.friends_list) ListView listView;
     @InjectView(R.id.up) MaterialMenuView up;
@@ -98,16 +96,8 @@ public class ManageFriendsFragment extends Fragment implements View.OnTouchListe
 
         private LayoutInflater inflater;
         private List<Friend> friends;
-        private final int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
-        private final int colors[];
-        private ColorMatrix grayedMatrix = new ColorMatrix();
-        private ColorMatrixColorFilter disabledFilter;
-        private ColorDrawable transparentDrawable = new ColorDrawable(Color.TRANSPARENT);
-
-        private final float MIN_SATURATION = 0.25f;
-        private final float MIN_ALPHA = 0.6f;
-        private final long ANIM_DURATION = 300;
         private Filter filter;
+        private ThumbsHelper tHelper;
 
         FriendsAdapter(Activity context) {
             ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(context.getBaseContext(), R.style.AppTheme_SwitchCompat);
@@ -119,9 +109,7 @@ public class ManageFriendsFragment extends Fragment implements View.OnTouchListe
                     return lhs.getFullName().compareTo(rhs.getFullName());
                 }
             });
-            colors = context.getResources().getIntArray(R.array.thumb_colors);
-            grayedMatrix.setSaturation(MIN_SATURATION);
-            disabledFilter = new ColorMatrixColorFilter(grayedMatrix);
+            tHelper = new ThumbsHelper(context);
         }
 
         void setList(List<Friend> friends) {
@@ -209,17 +197,17 @@ public class ManageFriendsFragment extends Fragment implements View.OnTouchListe
                 h.thumb.setImageBitmap(f.thumbBitmap());
                 h.thumb.setFillColor(Color.TRANSPARENT);
             } else if (f.hasApp()) {
-                h.thumb.setImageResource(Convenience.getStringDependentItem(f.getFullName(), icons));
-                h.thumb.setFillColor(Convenience.getStringDependentItem(f.getFullName(), colors));
+                h.thumb.setImageResource(tHelper.getIcon(f.getFullName()));
+                h.thumb.setFillColor(tHelper.getColor(f.getFullName()));
                 h.thumbTitle.setText(f.getInitials());
             } else {
-                h.thumb.setImageDrawable(transparentDrawable);
+                h.thumb.setImageDrawable(tHelper.getTransparentDrawable());
                 h.thumb.setFillColor(Color.GRAY);
                 h.thumbTitle.setText(f.getInitials());
             }
             if (smooth) {
                 ValueAnimator animator = new ValueAnimator();
-                animator.setDuration(ANIM_DURATION);
+                animator.setDuration(tHelper.getDuration());
                 animator.setInterpolator(new AccelerateInterpolator());
                 if (enabled) {
                     animator.setFloatValues(0f, 1f);
@@ -234,8 +222,8 @@ public class ManageFriendsFragment extends Fragment implements View.OnTouchListe
                     public void onAnimationUpdate(ValueAnimator animation) {
                         if (posId == position) {
                             float value = (float) animation.getAnimatedValue();
-                            h.leftLayout.setAlpha(value * (1 - MIN_ALPHA) + MIN_ALPHA);
-                            matrix.setSaturation(value * (1 - MIN_SATURATION) + MIN_SATURATION);
+                            h.leftLayout.setAlpha(tHelper.getAnimAlpha(value));
+                            matrix.setSaturation(tHelper.getAnimSaturation(value));
                             filter = new ColorMatrixColorFilter(matrix);
                             h.thumb.setColorFilter(filter);
                         } else {
@@ -249,8 +237,8 @@ public class ManageFriendsFragment extends Fragment implements View.OnTouchListe
                     h.leftLayout.setAlpha(1f);
                     h.thumb.setColorFilter(null);
                 } else {
-                    h.leftLayout.setAlpha(MIN_ALPHA);
-                    h.thumb.setColorFilter(disabledFilter);
+                    h.leftLayout.setAlpha(tHelper.getMinAlpha());
+                    h.thumb.setColorFilter(tHelper.getDisabledFilter());
                 }
             }
 

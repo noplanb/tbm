@@ -11,14 +11,14 @@ import android.view.ViewGroup;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.GridElement;
-import com.zazoapp.client.model.GridElementFactory;
+import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.Recorder;
 import com.zazoapp.client.multimedia.VideoRecorder;
-import com.zazoapp.client.ui.ZazoManagerProvider;
+import com.zazoapp.client.ui.BaseManagerProvider;
 import com.zazoapp.client.ui.animations.CameraAnimation;
-import com.zazoapp.client.ui.view.PreviewTextureFrame;
+import com.zazoapp.client.ui.view.BasePreviewTextureFrame;
+import com.zazoapp.client.ui.view.GridPreviewFrame;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
@@ -34,11 +34,11 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
 
     private final VideoRecorder videoRecorder;
     private final Context context;
-    private final ZazoManagerProvider managerProvider;
+    private final BaseManagerProvider managerProvider;
     private volatile boolean cameraSwitchAllowed = true;
     private WeakReference<View> containerRef;
 
-    public VideoRecorderManager(Context context, ZazoManagerProvider managerProvider) {
+    public VideoRecorderManager(Context context, BaseManagerProvider managerProvider) {
         this.context = context;
         videoRecorder = new VideoRecorder(context);
         videoRecorder.addExceptionHandlerDelegate(this);
@@ -47,24 +47,30 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     }
 
     @Override
-    public void start(String friendId) {
-        GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(friendId);
-        if (!ge.hasFriend())
-            return;
+    public boolean start(String friendId) {
         if (!Convenience.checkAndNotifyNoSpace(context)) {
-            return;
+            return false;
         }
         if (!cameraSwitchAllowed) {
             DialogShower.showToast(context, R.string.toast_camera_is_switching);
-            return;
+            return false;
         }
-        Friend f = ge.getFriend();
-        f.setLastActionTime();
-        if (videoRecorder.startRecording(f)) {
-            Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
+
+        Friend f = FriendFactory.getFactoryInstance().find(friendId);
+        boolean startedRecording = videoRecorder.startRecording(f);
+        if (f != null) {
+            f.setLastActionTime();
+            if (startedRecording) {
+                Log.i(TAG, "onRecordStart: START RECORDING: " + f.get(Friend.Attributes.FIRST_NAME));
+            } else {
+                Dispatch.dispatch("onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
+            }
+        } else if (startedRecording) {
+            Log.i(TAG, "onRecordStart: START RECORDING with no friend");
         } else {
-            Dispatch.dispatch("onRecordStart: unable to start recording" + f.get(Friend.Attributes.FIRST_NAME));
+            Dispatch.dispatch("onRecordStart: unable to start recording");
         }
+        return startedRecording;
     }
 
     @Override
@@ -75,13 +81,8 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     }
 
     @Override
-    public void stop() {
-        if (videoRecorder.stopRecording(false)) {
-            Friend f = videoRecorder.getCurrentFriend();
-            Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
-            f.requestUpload(f.getOutgoingVideoId());
-            managerProvider.getTutorial().onVideoRecorded(f);
-        }
+    public boolean stop() {
+        return videoRecorder.stopRecording(false);
     }
 
     // ---------------------------------------
@@ -91,8 +92,8 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     public void unableToSetPreview() {
         DialogShower.showToast(context, R.string.toast_unable_to_set_preview);
         final View container = containerRef.get();
-        if (container != null && videoRecorder.getView().getAlpha() == 0) {
-            CameraAnimation.animateIn(videoRecorder.getView(), null);
+        if (container != null && videoRecorder.getView().getSwitchAnimationView().getAlpha() == 0) {
+            CameraAnimation.animateIn(videoRecorder.getView().getSwitchAnimationView(), null);
         }
     }
 
@@ -135,27 +136,36 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
     }
 
     @Override
-    public void addPreviewTo(ViewGroup container) {
-        PreviewTextureFrame vrFrame = (PreviewTextureFrame) videoRecorder.getView();
-        View blackBackground = new View(context);
-        blackBackground.setBackgroundColor(Color.BLACK);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            CardView cardView = new CardView(context);
-            cardView.addView(blackBackground, new ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            cardView.addView(vrFrame, new ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            container.addView(cardView, new ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            container.setBackgroundResource(R.drawable.card_empty);
+    public void addPreviewTo(ViewGroup container, boolean inCard) {
+        BasePreviewTextureFrame frame = videoRecorder.getView();
+        if (inCard) {
+            if (frame == null) {
+                GridPreviewFrame vrFrame = new GridPreviewFrame(context);
+                View blackBackground = new View(context);
+                blackBackground.setBackgroundColor(Color.BLACK);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    CardView cardView = new CardView(context);
+                    cardView.addView(blackBackground, new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    cardView.addView(vrFrame, new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    container.addView(cardView, new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    container.setBackgroundResource(R.drawable.card_empty);
+                } else {
+                    container.addView(blackBackground, new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    container.addView(vrFrame, new GridPreviewFrame.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    container.setBackgroundResource(R.drawable.card);
+                    vrFrame.setOuterRecordingBorder(container);
+                }
+                frame = vrFrame;
+            }
         } else {
-            container.addView(blackBackground, new ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            container.addView(vrFrame, new PreviewTextureFrame.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            container.setBackgroundResource(R.drawable.card);
-            vrFrame.setOuterRecordingBorder(container);
+            frame = (BasePreviewTextureFrame) container;
         }
+        videoRecorder.setView(frame);
         containerRef = new WeakReference<View>(container);
     }
 
@@ -167,7 +177,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
                 @Override
                 protected void onPreExecute() {
                     super.onPreExecute();
-                    View switchCameraIcon = ((PreviewTextureFrame) videoRecorder.getView()).getCameraIconView();
+                    View switchCameraIcon = videoRecorder.getView().getCameraIconView();
                     switchCameraIcon.animate().setDuration(400).rotationYBy(180).start();
                 }
 
@@ -182,7 +192,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
                 protected void onPostExecute(Void aVoid) {
                     final View container = containerRef.get();
                     if (container != null) {
-                        CameraAnimation.animateOut(videoRecorder.getView(), new Runnable() {
+                        CameraAnimation.animateOut(videoRecorder.getView().getSwitchAnimationView(), new Runnable() {
                             @Override
                             public void run() {
                                 videoRecorder.setPreviewListener(VideoRecorderManager.this);
@@ -198,7 +208,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
 
     @Override
     public void indicateSwitchCameraFeature() {
-        PreviewTextureFrame frame = (PreviewTextureFrame) videoRecorder.getView();
+        BasePreviewTextureFrame frame = videoRecorder.getView();
         frame.setSwitchCameraIndication();
     }
 
@@ -218,7 +228,7 @@ public class VideoRecorderManager implements VideoRecorder.VideoRecorderExceptio
         videoRecorder.setPreviewListener(null);
         final View container = containerRef.get();
         if (container != null) {
-            CameraAnimation.animateIn(videoRecorder.getView(), null);
+            CameraAnimation.animateIn(videoRecorder.getView().getSwitchAnimationView(), null);
         }
     }
 }

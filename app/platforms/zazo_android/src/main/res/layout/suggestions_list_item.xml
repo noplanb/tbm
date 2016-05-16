@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:layout_width="match_parent"
+             android:layout_height="?android:attr/listPreferredItemHeight">
+
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="@dimen/abc_list_item_padding_horizontal_material"
+                android:paddingRight="@dimen/abc_list_item_padding_horizontal_material">
+
+            <Button
+                    android:id="@+id/add_btn"
+                    style="@style/BorderlessFlatActionButton.Small"
+                    android:text="@string/action_add_joined_friend"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"/>
+
+            <Button
+                    android:id="@+id/undo_btn"
+                    style="@style/BorderlessFlatActionButton.Small"
+                    android:text="@string/action_undo"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:visibility="invisible"/>
+
+            <ImageView
+                    android:id="@+id/checkbox"
+                    android:layout_width="50dp"
+                    android:layout_height="@dimen/small_icon_size"
+                    android:src="@drawable/ic_action_accept_white"
+                    android:tint="@color/primary"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:visibility="invisible"/>
+
+            <Button
+                    android:id="@+id/ignore_btn"
+                    style="@style/BorderlessFlatActionButton.Small"
+                    android:text="@string/action_ignore_joined_friend"
+                    android:textColor="@color/dialog_text_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@id/add_btn"
+                    android:layout_toStartOf="@id/add_btn"/>
+
+            <RelativeLayout
+                    android:id="@+id/left_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_toLeftOf="@id/ignore_btn"
+                    android:layout_toStartOf="@id/ignore_btn">
+                <com.zazoapp.client.ui.view.CircleThumbView
+                        android:id="@+id/thumb"
+                        android:layout_width="@dimen/thumb_icon_size"
+                        android:layout_height="@dimen/thumb_icon_size"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:src="@drawable/bgn_thumb_2"
+                        app:civ_fill_color="@color/accent_2"
+                />
+                <TextView
+                        android:id="@+id/thumb_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@id/thumb"
+                        android:layout_alignStart="@id/thumb"
+                        android:layout_alignRight="@id/thumb"
+                        android:layout_alignEnd="@id/thumb"
+                        android:layout_alignTop="@id/thumb"
+                        android:layout_alignBottom="@id/thumb"
+                        android:text="AB"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_xlarge"
+                        android:gravity="center"
+                />
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@id/thumb"
+                        android:layout_toEndOf="@id/thumb"
+                        android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
+                        android:paddingRight="?android:attr/listPreferredItemPaddingRight"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp">
+                    <TextView
+                            android:id="@+id/name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:gravity="center_vertical"
+                            android:text="J.J. Philips Abramson"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:layout_weight="1"
+                            android:textSize="@dimen/text_large"
+                            android:textColor="@color/contacts_name_text" />
+                </LinearLayout>
+            </RelativeLayout>
+
+        </RelativeLayout>
+        <RelativeLayout
+                android:id="@+id/progress_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:visibility="invisible">
+            <fr.castorflex.android.circularprogressbar.CircularProgressBar
+                    android:id="@+id/progress"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_centerInParent="true"/>
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/dialog_body_bg"
+                    android:alpha="0.5"/>
+
+        </RelativeLayout>
+
+</FrameLayout>

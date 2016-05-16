@@ -28,6 +28,7 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.helpers.ContactsManager;
+import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.ui.view.FilterWatcher;
 import com.zazoapp.client.ui.view.SearchPanel;
 import com.zazoapp.client.ui.view.TextImageView;
@@ -97,6 +98,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         // if it is just a friend on bench, move it to grid
         Friend friend = friendFactory.find(bo.friendId);
         if (friend != null) {
+            // TODO swap friends
             GridManager.getInstance().moveFriendToGrid(friend);
             hideBench();
             return;
@@ -166,7 +168,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             listView.setTextFilterEnabled(true);
             if (adapter.isDataSetReady()) {
                 listView.setAdapter(adapter);
-                applyFilter(searchPanel.getText());
+                applyFilter("");
                 doListViewAppearing();
             }
             slidingHeading.setVisibility(View.VISIBLE);
@@ -259,9 +261,14 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 if (isViewAttached()) {
-                    listView.setAdapter(null);
-                    adapter.setList(list);
-                    listView.setAdapter(adapter);
+                    boolean groupsCountChanged = adapter.getViewTypeCount() != list.getGroupCount();
+                    if (groupsCountChanged) {
+                        listView.setAdapter(null);
+                        adapter.setList(list);
+                        listView.setAdapter(adapter);
+                    } else {
+                        adapter.setList(list);
+                    }
                     applyFilter(searchPanel.getText());
                     if (listView.getVisibility() != View.VISIBLE) {
                         doListViewAppearing();
@@ -402,14 +409,12 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         private SearchFilter filter;
         private BenchObjectList list;
         private List<ContactsGroup> groups;
-
-        private final int icons[] = {R.drawable.bgn_thumb_1, R.drawable.bgn_thumb_2, R.drawable.bgn_thumb_3, R.drawable.bgn_thumb_4};
-        private final int colors[];
+        private ThumbsHelper tHelper;
 
         public BenchAdapter(Context context) {
             this.context = context;
             this.list = null;
-            colors = context.getResources().getIntArray(R.array.thumb_colors);
+            tHelper = new ThumbsHelper(context);
         }
 
         public boolean isDataSetReady() {
@@ -431,7 +436,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
         @Override
         public int getViewTypeCount() {
-            return list.isEmpty() ? 1 : list.getGroupCount();
+            return (list == null || list.isEmpty()) ? 1 : list.getGroupCount();
         }
 
         @Override
@@ -480,8 +485,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     holder.thumb.setImageBitmap(friend.thumbBitmap());
                     holder.thumbTitle.setText("");
                 } else {
-                    holder.thumb.setImageResource(Convenience.getStringDependentItem(item.displayName, icons));
-                    holder.thumb.setFillColor(Convenience.getStringDependentItem(item.displayName, colors));
+                    holder.thumb.setImageResource(tHelper.getIcon(item.displayName));
+                    holder.thumb.setFillColor(tHelper.getColor(item.displayName));
                     holder.thumbTitle.setText(friend.getInitials());
                 }
                 if (friend.incomingVideoNotViewedCount() > 0) {
@@ -496,8 +501,8 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     holder.unreadCountLayout.setVisibility(View.GONE);
                 }
             } else {
-                holder.thumb.setImageResource(Convenience.getStringDependentItem(item.displayName, icons));
-                holder.thumb.setFillColor(Convenience.getStringDependentItem(item.displayName, colors));
+                holder.thumb.setImageResource(tHelper.getIcon(item.displayName));
+                holder.thumb.setFillColor(tHelper.getColor(item.displayName));
                 holder.thumbTitle.setText(StringUtils.getInitials(item.firstName, item.lastName));
                 holder.thumb.setBorderWidth(0);
                 holder.thumb.setBorderOverlay(false);
@@ -598,13 +603,19 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
+                BenchObjectList newList = (BenchObjectList) results.values;
                 if (isViewAttached()) {
-                    listView.setAdapter(null);
-                    setList((BenchObjectList) results.values);
-                    listView.setAdapter(adapter);
+                    boolean groupsCountChanged = adapter.getViewTypeCount() != newList.getGroupCount();
+                    if (groupsCountChanged) {
+                        listView.setAdapter(null);
+                        setList(newList);
+                        listView.setAdapter(adapter);
+                    } else {
+                        setList(newList);
+                    }
                     adapter.notifyDataSetChanged();
                 } else {
-                    setList((BenchObjectList) results.values);
+                    setList(newList);
                 }
             }
         }

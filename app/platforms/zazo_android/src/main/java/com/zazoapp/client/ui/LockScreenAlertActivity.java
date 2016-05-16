@@ -6,6 +6,7 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -13,17 +14,35 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.Settings;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.notification.NotificationAlertManager;
+import com.zazoapp.client.notification.NotificationSuggestion;
+import com.zazoapp.client.ui.helpers.ThumbsHelper;
+import com.zazoapp.client.ui.view.ThumbView;
+import com.zazoapp.client.utilities.StringUtils;
 
 public class LockScreenAlertActivity extends Activity {
 
 	private static final String TAG = LockScreenAlertActivity.class.getSimpleName();
 
     private boolean isStopped = true;
+    @InjectView(R.id.title_text) TextView titleText;
+    @InjectView(R.id.subtitle_text) TextView subtitleText;
+    @InjectView(R.id.logoImage) ImageView smallIconView;
+    @InjectView(R.id.thumbImage) ThumbView thumbImage;
+    @InjectView(R.id.thumb_title) TextView thumbTitle;
+    @InjectView(R.id.action_main_btn) Button mainButton;
+    @InjectView(R.id.action_second_btn) Button secondButton;
+    @InjectView(R.id.action_third_btn) Button thirdButton;
+
+    private ThumbsHelper tHelper;
 	//-------------------
 	// Activity lifecycle
 	//-------------------
@@ -31,9 +50,11 @@ public class LockScreenAlertActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-		setupWindow();
-		setContentView(R.layout.lock_screen_alert);
-		setupViews(getIntent());
+        tHelper = new ThumbsHelper(this);
+        setupWindow();
+        setContentView(R.layout.lock_screen_alert);
+        ButterKnife.inject(this);
+        setupViews(getIntent());
 	}
 
 	@Override
@@ -78,7 +99,6 @@ public class LockScreenAlertActivity extends Activity {
 		super.onStart();
         isStopped = false;
         Log.i(TAG, "onStart");
-		setupListeners();
 	}
 
 	@SuppressLint("NewApi")
@@ -94,33 +114,57 @@ public class LockScreenAlertActivity extends Activity {
 
 	private void setupWindow(){
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
-		LayoutParams lp = getWindow().getAttributes();
-		lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
-		lp.type = WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
-		getWindow().setAttributes(lp);
-	}
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES);
+        LayoutParams lp = getWindow().getAttributes();
+        if (Settings.Bool.LIGHT_SCREEN_FOR_NOTIFICATIONS.isSet()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+            lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
+        }
+        lp.type = WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
+        getWindow().setAttributes(lp);
+    }
 
-	private void setupViews(Intent i){
-		((TextView) this.findViewById(R.id.titleTextView)).setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));
-		((TextView) this.findViewById(R.id.subtitleTextView)).setText(i.getStringExtra(NotificationAlertManager.SUB_TITLE_KEY));
-		((ImageView) this.findViewById(R.id.logoImage)).setBackgroundResource(i.getIntExtra(NotificationAlertManager.SMALL_ICON_KEY, 0));
-        ImageView thumbImage = (ImageView) this.findViewById(R.id.thumbImage);
+    private void setupViews(Intent i) {
+        titleText.setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));
+        subtitleText.setText(i.getStringExtra(NotificationAlertManager.SUB_TITLE_KEY));
+        int smallIconId = i.getIntExtra(NotificationAlertManager.SMALL_ICON_KEY, 0);
+        if (smallIconId != 0) {
+            smallIconView.setBackgroundResource(R.drawable.ic_zazo_blue);
+        }
         if (IntentHandlerService.IntentActions.PLAY_VIDEO.equals(i.getAction())) {
             Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
-
+            if (friend == null) {
+                dismiss();
+                return;
+            }
             if (friend.thumbExists()) {
                 thumbImage.setImageBitmap(friend.thumbBitmap());
+                thumbImage.setMapArea(ThumbView.MapArea.FULL);
+                thumbTitle.setText("");
             } else {
-                thumbImage.setImageResource(R.drawable.ic_no_pic_z);
+                thumbImage.setImageResource(R.drawable.navigation_background_pattern);
+                thumbImage.setFillColor(tHelper.getColor(friend.getDisplayName()));
+                thumbImage.setMapArea(tHelper.getMapArea(friend.getDisplayName()));
+                thumbTitle.setText(friend.getInitials());
             }
-            ((Button) findViewById(R.id.btnDismiss)).setText(R.string.action_dismiss);
-            ((Button) findViewById(R.id.btnView)).setText(R.string.action_view);
+            secondButton.setText(R.string.action_dismiss);
+            mainButton.setText(R.string.action_view);
+            thirdButton.setText("");
+            thirdButton.setVisibility(View.INVISIBLE);
         } else if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(i.getAction())) {
-            thumbImage.setImageResource(R.drawable.ic_launcher);
-            ((Button) findViewById(R.id.btnDismiss)).setText(R.string.action_ignore_joined_friend);
-            ((Button) findViewById(R.id.btnView)).setText(R.string.action_add_joined_friend);
+            NotificationSuggestion suggestion = i.getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
+            String name = suggestion.getName();
+            if (name == null) {
+                name = "";
+            }
+            thumbImage.setImageResource(R.drawable.navigation_background_pattern);
+            thumbImage.setMapArea(tHelper.getMapArea(name));
+            thumbImage.setFillColor(tHelper.getColor(name));
+            thumbTitle.setText(StringUtils.getInitials(name));
+            mainButton.setText(R.string.action_add_joined_friend);
+            secondButton.setText(R.string.action_ignore_joined_friend);
+            thirdButton.setText(R.string.action_unsubscribe);
+            thirdButton.setVisibility(View.VISIBLE);
         }
 	}
 
@@ -150,34 +194,55 @@ public class LockScreenAlertActivity extends Activity {
 		super.onBackPressed();
 		dismiss();
 	}
-	
-	private void setupListeners(){
-		Button btnDismiss = (Button) findViewById(R.id.btnDismiss);
-		btnDismiss.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				dismiss();
-                if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction())) {
-                    Intent i = new Intent(getIntent());
-                    i.setClass(getApplicationContext(), IntentHandlerService.class);
-                    i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.IGNORE);
-                }
-			}
-		});
 
-		Button btnView = (Button) findViewById(R.id.btnView);
-		btnView.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-                if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction())) {
-                    dismiss();
-                    Intent i = new Intent(getIntent());
-                    i.setClass(getApplicationContext(), IntentHandlerService.class);
-                    i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.ADD);
+    @OnClick({R.id.action_main_btn, R.id.action_second_btn, R.id.action_third_btn})
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.action_main_btn:
+                if (isFriendJoinedIntent()) {
+                    final NotificationSuggestion suggestion = getIntent().getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
+                    if (suggestion != null && suggestion.hasMultiplePhones()) {
+                        ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(v.getContext(), R.style.AppTheme);
+                        SuggestionsFragment.displayPhoneChooserPopup(new SuggestionsAdapter.OnPhoneItemSelected() {
+                            @Override
+                            public void onPhoneItemSelected(int index) {
+                                Intent intent = getIntent();
+                                intent.putExtra(IntentHandlerService.FriendJoinedIntentFields.CHOSEN_PHONE, suggestion.getPhone(index));
+                                dismiss();
+                                startServiceForAction(IntentHandlerService.FriendJoinedActions.ADD);
+                            }
+                        }, suggestion, v, contextThemeWrapper);
+                    } else {
+                        dismiss();
+                        startServiceForAction(IntentHandlerService.FriendJoinedActions.ADD);
+                    }
                 } else {
                     startHomeActivity();
                 }
-			}
-		});
-	}
+                break;
+            case R.id.action_second_btn:
+                dismiss();
+                if (isFriendJoinedIntent()) {
+                    startServiceForAction(IntentHandlerService.FriendJoinedActions.IGNORE);
+                }
+                break;
+            case R.id.action_third_btn:
+                dismiss();
+                if (isFriendJoinedIntent()) {
+                    startServiceForAction(IntentHandlerService.FriendJoinedActions.UNSUBSCRIBE);
+                }
+                break;
+        }
+    }
+
+    private boolean isFriendJoinedIntent() {
+        return IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction());
+    }
+
+    private void startServiceForAction(String action) {
+        Intent i = new Intent(getIntent());
+        i.setClass(getApplicationContext(), IntentHandlerService.class);
+        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, action);
+        startService(i);
+    }
 }

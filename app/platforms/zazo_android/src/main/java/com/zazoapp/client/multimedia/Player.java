@@ -12,7 +12,7 @@ public interface Player {
      *
      */
     void init(View rootView);
-    void togglePlayOverView(View view, String friendId);
+    boolean togglePlayOverView(View view, String friendId);
     void stop();
     void release();
     void setVolume(float volume);
@@ -29,4 +29,52 @@ public interface Player {
         void onCompletion(String friendId);
         void onVideoPlaybackError(String friendId, String videoId);
     }
+
+    Player STUB = new Player() {
+        @Override
+        public void init(View rootView) {
+        }
+
+        @Override
+        public boolean togglePlayOverView(View view, String friendId) {
+            return false;
+        }
+
+        @Override
+        public void stop() {
+        }
+
+        @Override
+        public void release() {
+        }
+
+        @Override
+        public void setVolume(float volume) {
+        }
+
+        @Override
+        public void registerStatusCallbacks(StatusCallbacks statusCallback) {
+        }
+
+        @Override
+        public void unregisterStatusCallbacks(StatusCallbacks statusCallback) {
+        }
+
+        @Override
+        public boolean isPlaying() {
+            return false;
+        }
+
+        @Override
+        public void rewind(int msec) {
+        }
+
+        @Override
+        public void restartAfter(int delay) {
+        }
+
+        @Override
+        public void changeAudioStream() {
+        }
+    };
 }

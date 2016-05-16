@@ -84,6 +84,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         super.onResume();
         Logger.i(TAG, "onResume");
         setupSpinFeature(getActivity());
+        CameraManager.setUsePreferredPreviewSize(false);
         getManagerProvider().getRecorder().resume();
     }
 
@@ -155,7 +156,8 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return;
         }
         Log.i(TAG, "layoutVideoRecorder: adding videoRecorder preview");
-        getManagerProvider().getRecorder().addPreviewTo(fl);
+        CameraManager.setUsePreferredPreviewSize(false);
+        getManagerProvider().getRecorder().addPreviewTo(fl, true);
     }
 
     // -------------------------------
@@ -206,7 +208,9 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return;
         }
         View view = nineViewGroup.getSurroundingFrame(index);
-        getManagerProvider().getPlayer().togglePlayOverView(view, friendId);
+        if (getManagerProvider().getPlayer().togglePlayOverView(view, friendId)) {
+            getManagerProvider().getTutorial().onVideoStartPlaying();
+        }
     }
 
     // -------------------
@@ -349,9 +353,20 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         }
 
         @Override
-        public boolean onEndLongpress() {
+        public boolean onEndLongpress(int position) {
             Log.d(TAG, "onEndLongpress");
-            getManagerProvider().getRecorder().stop();
+            if (getManagerProvider().getRecorder().stop()) {
+                GridElement ge = GridElementFactory.getFactoryInstance().get(position);
+                String friendId = ge.getFriendId();
+                if (friendId != null && !friendId.equals("")) {
+                    Friend f = FriendFactory.getFactoryInstance().find(friendId);
+                    if (f != null) {
+                        Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
+                        f.requestUpload(f.getOutgoingVideoId());
+                        getManagerProvider().getTutorial().onVideoRecorded(f);
+                    }
+                }
+            }
             return false;
         }
 

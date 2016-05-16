@@ -117,6 +117,63 @@
         </TableLayout>
 
         <LinearLayout style="@style/DevDivider.Layout">
+            <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Registration options"/><View style="@style/DevDivider.Line"/>
+        </LinearLayout>
+        <Switch
+                android:id="@+id/custom_server"
+                style="@style/DevSwitch"
+                android:text="Use custom server"
+                android:enabled="false"/>
+
+        <Switch
+                android:id="@+id/server_force_sms"
+                style="@style/DevSwitch"
+                android:text="Force SMS during registration"
+                android:enabled="false"/>
+        <Switch
+                android:id="@+id/server_force_call"
+                style="@style/DevSwitch"
+                android:text="Force Call during registration"
+                android:enabled="false"/>
+        <LinearLayout
+                android:id="@+id/server_host_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/server_host_label"
+                    style="@style/DevText"
+                    android:text="Server host: "/>
+
+            <android.support.v7.widget.AppCompatEditText
+                    android:id="@+id/server_host"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:inputType="textUri"
+                    style="@style/DevEditText"/>
+        </LinearLayout>
+        <LinearLayout
+                android:id="@+id/server_uri_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+            <TextView
+                    android:id="@+id/server_uri_label"
+                    style="@style/DevText"
+                    android:text="Server uri: "/>
+
+            <android.support.v7.widget.AppCompatEditText
+                    android:id="@+id/server_uri"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:inputType="textUri"
+                    style="@style/DevEditText"/>
+        </LinearLayout>
+
+        <LinearLayout style="@style/DevDivider.Layout">
             <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Debug options"/><View style="@style/DevDivider.Line"/>
         </LinearLayout>
 
@@ -158,9 +215,11 @@
                         android:text="Throw"/>
             </LinearLayout>
         </LinearLayout>
+
         <LinearLayout style="@style/DevDivider.Layout">
             <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Customization"/><View style="@style/DevDivider.Line"/>
         </LinearLayout>
+
         <Switch
                 android:id="@+id/send_sms"
                 style="@style/DevSwitch"
@@ -234,62 +293,10 @@
                     android:text="Send"/>
         </LinearLayout>
 
-        <LinearLayout style="@style/DevDivider.Layout">
-            <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Registration options"/><View style="@style/DevDivider.Line"/>
-        </LinearLayout>
         <Switch
-                android:id="@+id/custom_server"
+                android:id="@+id/imitate_requests"
                 style="@style/DevSwitch"
-                android:text="Use custom server"
-                android:enabled="false"/>
-
-        <Switch
-                android:id="@+id/server_force_sms"
-                style="@style/DevSwitch"
-                android:text="Force SMS during registration"
-                android:enabled="false"/>
-        <Switch
-                android:id="@+id/server_force_call"
-                style="@style/DevSwitch"
-                android:text="Force Call during registration"
-                android:enabled="false"/>
-        <LinearLayout
-                android:id="@+id/server_host_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-            <TextView
-                    android:id="@+id/server_host_label"
-                    style="@style/DevText"
-                    android:text="Server host: "/>
-
-            <android.support.v7.widget.AppCompatEditText
-                    android:id="@+id/server_host"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:inputType="textUri"
-                    style="@style/DevEditText"/>
-        </LinearLayout>
-        <LinearLayout
-                android:id="@+id/server_uri_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-            <TextView
-                    android:id="@+id/server_uri_label"
-                    style="@style/DevText"
-                    android:text="Server uri: "/>
-
-            <android.support.v7.widget.AppCompatEditText
-                    android:id="@+id/server_uri"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:inputType="textUri"
-                    style="@style/DevEditText"/>
-        </LinearLayout>
+                android:text="Imitate requests (FF)"/>
 
         <LinearLayout style="@style/DevDivider.Layout">
             <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Tutorial"/><View style="@style/DevDivider.Line"/>

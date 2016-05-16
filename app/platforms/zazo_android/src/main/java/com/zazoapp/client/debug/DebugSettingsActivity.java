@@ -442,9 +442,11 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
         sendContacts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                DialogShower.showToast(DebugSettingsActivity.this, "Collecting...");
                 ContactsInfoCollector.collectContacts(getContentResolver(),  new ContactsInfoCollector.ContactsInfoCollectedCallback() {
                     @Override
                     public void onInfoCollected(final JSONArray contacts) {
+                        DialogShower.showToast(DebugSettingsActivity.this, "Sending...");
                         FriendFinderRequests.sendContacts(contacts, new HttpRequest.Callbacks() {
                             @Override
                             public void success(String response) {
@@ -458,6 +460,15 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                         });
                     }
                 });
+            }
+        });
+
+        Switch imitateRequests = (Switch) findViewById(R.id.imitate_requests);
+        imitateRequests.setChecked(DebugConfig.Bool.IMITATE_REQUESTS.get());
+        imitateRequests.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                DebugConfig.set(DebugConfig.Bool.IMITATE_REQUESTS, isChecked);
             }
         });
     }

@@ -22,6 +22,8 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
+        <item name="spbStyle">@style/ZHorizontalProgressBar</item>
+        <item name="cpbStyle">@style/ZCircularProgressBar</item>
     </style>
 
     <!-- Application theme. -->
@@ -34,6 +36,12 @@
         <item name="android:windowBackground">@color/light_grey_new</item>
         <item name="android:dialogTheme">@style/DevDialog</item>
         <item name="android:editTextStyle">@style/DevEditText</item>
+    </style>
+
+    <style name="AppTheme.LockScreen">
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:colorBackground">@color/black</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 
     <style name="ZazoActionBar" parent="@android:style/Widget.Holo.ActionBar">
@@ -170,4 +178,37 @@
         <item name="colorAccent">@color/green</item>
     </style>
 
+    <style name="BorderlessFlatActionButton" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:background">@drawable/suggestion_action_btn_bg_blue</item>
+        <item name="android:textColor">@color/dialog_action_text</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">@dimen/text_small</item>
+    </style>
+
+    <style name="BorderlessFlatActionButton.Small">
+        <item name="android:layout_height">36dp</item>
+        <item name="android:minWidth">50dp</item>
+        <item name="android:paddingLeft">4dp</item>
+        <item name="android:paddingRight">4dp</item>
+        <item name="android:background">@drawable/suggestion_action_btn_bg</item>
+    </style>
+
+    <style name="ZHorizontalProgressBar" parent="SmoothProgressBar">
+        <item name="spb_progressiveStart_speed">2</item>
+        <item name="spb_progressiveStop_speed">3.4</item>
+        <item name="spb_interpolator">spb_interpolator_acceleratedecelerate</item>
+        <item name="spb_colors">@array/progress_colors</item>
+        <item name="spb_progressiveStart_activated">false</item>
+        <item name="spb_stroke_width">1dp</item>
+        <item name="spb_gradients">true</item>
+    </style>
+
+    <style name="ZCircularProgressBar" parent="CircularProgressBar">
+        <item name="cpb_colors">@array/progress_colors</item>
+    </style>
 </resources>

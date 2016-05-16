@@ -38,6 +38,7 @@
         <attr name="rcv_bg_ring_thickness" format="dimension" />
         <!-- ICON VIEW -->
         <attr name="rcv_icon_src" format="integer" />
+        <attr name="rcv_icon_tint" format="color" />
         <!-- TEXT VIEW -->
         <attr name="rcv_text" format="string" />
         <attr name="rcv_text_size" format="dimension" />
@@ -72,5 +73,9 @@
 
     <declare-styleable name="ShadowedStatusLayout">
         <attr name="solid_background_color" format="color"/>
+    </declare-styleable>
+
+    <declare-styleable name="StatusIndicator">
+        <attr name="ratio" format="float"/>
     </declare-styleable>
 </resources>

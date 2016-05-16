@@ -116,6 +116,14 @@
 
     <string name="action_view">View</string>
     <string name="action_dismiss">Dismiss</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_got_it">Got it</string>
+    <string name="action_subscribe">Subscribe</string>
+    <string name="action_done">Done</string>
+    <string name="action_add_joined_friend">Add</string>
+    <string name="action_ignore_joined_friend">Ignore</string>
+    <string name="action_unsubscribe">Unsubscribe</string>
+
     <plurals name="notification_title">
         <item quantity="one">%d new Zazo</item>
         <item quantity="other">%d new Zazos</item>
@@ -152,6 +160,9 @@
     <string name="feature_carousel_hint">Move a friend.\nDrag a friend to any position</string>
 
     <string name="manage_friends">Edit friends</string>
+    <string name="welcome_friends">Record a welcome Zazo</string>
+    <string name="welcome_friends_send_action">Send</string>
+    <string name="welcome_friends_redo_action">Redo</string>
 
     <string name="send_feedback">Send feedback</string>
     <string name="feedback_subject">Feedback</string>
@@ -165,6 +176,7 @@
     <string name="navigation_edit_friends">Edit Zazo Friends</string>
     <string name="navigation_new_group">New Group</string>
     <string name="navigation_contacts">Contacts</string>
+    <string name="navigation_suggestions">Suggestions</string>
     <string name="navigation_settings">Settings</string>
     <string name="navigation_help">Help &amp; Feedback</string>
 
@@ -176,20 +188,29 @@
     <string name="contacts_groups_contacts">Contacts</string>
 
     <string name="hold_to_record">Hold to record</string>
+    <string name="tap_to_record">Tap to record</string>
     <string name="add_contact">Add contact</string>
 
     <string name="new_friend_joined">%1$s joined Zazo!</string>
-    <string name="action_add_joined_friend">Add</string>
-    <string name="action_ignore_joined_friend">Ignore</string>
-    <string name="action_unsubscribe_joined_friend">Unsubscribe</string>
 
-    <string name="ff_add_success_message">You and %1$s are connected! Happy Zazoing.</string>
+    <string name="suggestions">Suggestions</string>
+    <string name="suggestions_empty">No more friends to suggest</string>
+    <string name="ff_add_success_message">You and %1$s are connected!</string>
     <string name="ff_add_error_message">Couldn\'t add friend</string>
-    <string name="ff_ignore_success_message">Ignored!</string>
+    <string name="ff_ignore_success_message">Ignored! %1$s was not added.</string>
     <string name="ff_ignore_error_message">Couldn\'t ignore friend</string>
+    <string name="ff_unsubscribed_message">Unsubscribed! You will no longer receive notifications from Zazo when friends join.</string>
+    <string name="ff_subscribed_message">Subscribed! You will receive notifications from Zazo when friends join.</string>
+    <string name="ff_subscription_failure">Failed to change subscription.</string>
+    <plurals name="welcome_multiple_members_label">
+        <item quantity="one">%d member</item>
+        <item quantity="other">%d members</item>
+    </plurals>
+    <string name="to_label">To:</string>
 
     <string name="settings_allow_data_in_roaming">Zazo when roaming</string>
     <string name="settings_allow_data_in_roaming_hint">Send and receive Zazos when roaming</string>
+    <string name="settings_light_screen_for_notifications">Light screen for notifications</string>
 
     <string name="dev_previous"><![CDATA[<]]></string>
     <string name="dev_next"><![CDATA[>]]></string>

@@ -11,12 +11,13 @@ public interface Recorder {
      *
      * @param friendId
      */
-    void start(String friendId);
+    boolean start(String friendId);
 
     /**
      * Ends recording and save the result
+     * @return true if video file was successfully recorded
      */
-    void stop();
+    boolean stop();
 
     /**
      * Cancels recording. Do not save anything
@@ -51,8 +52,9 @@ public interface Recorder {
      * Set up preview to parent container
      *
      * @param container
+     * @param inCard if false - container must be an instance of {@link com.zazoapp.client.ui.view.BasePreviewTextureFrame}
      */
-    void addPreviewTo(ViewGroup container);
+    void addPreviewTo(ViewGroup container, boolean inCard);
 
     /**
      * Switches front/back cameras
