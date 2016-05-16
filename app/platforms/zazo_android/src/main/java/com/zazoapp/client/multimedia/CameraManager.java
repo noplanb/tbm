@@ -233,8 +233,12 @@ public class CameraManager {
         // If 320x240 exists then use it
         selectedVideoSize = getVideoSize(supportedVideoSizes, 320, 240);
         if (selectedVideoSize == null) {
-            sortVideoSizeByAscendingWidth(supportedVideoSizes);
-            selectedVideoSize = getSizeWithAspect(supportedVideoSizes);
+            if (supportedVideoSizes != null) {
+                sortVideoSizeByAscendingWidth(supportedVideoSizes);
+                selectedVideoSize = getSizeWithAspect(supportedVideoSizes);
+            } else {
+                selectedVideoSize = videoSize;
+            }
         }
 
         // Set antibanding
@@ -320,6 +324,9 @@ public class CameraManager {
 
     private static Camera.Size getVideoSize(List <Camera.Size> videoSizes, int width, int height){
         Camera.Size r = null;
+        if (videoSizes == null) {
+            return null;
+        }
         for (Camera.Size size : videoSizes){
             if (size.width == width && size.height == height){
                 r = size;

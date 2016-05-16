@@ -201,7 +201,10 @@ public class TutorialLayout extends FrameLayout {
             additionalViewRect = Convenience.getViewRect(view);
             shiftRectVertically(getTutorialRect(), additionalViewRect);
             view.buildDrawingCache();
-            additionalViewBitmap = Bitmap.createBitmap(view.getDrawingCache());
+            Bitmap cache = view.getDrawingCache();
+            if (cache != null) {
+                additionalViewBitmap = Bitmap.createBitmap(cache);
+            }
             view.destroyDrawingCache();
         } else {
             additionalViewBitmap = null;
