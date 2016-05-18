@@ -90,7 +90,7 @@
     <color name="suggestion_action_button_bgn">#eea5caec</color>
 
     <color name="welcome_screen_redo">#DAE9F8</color>
-    <color name="welcome_screen_send">@color/white</color>
+    <color name="welcome_screen_send">@color/welcome_action</color>
 
     <color name="chips_background">#E7E7E7</color>
 </resources>

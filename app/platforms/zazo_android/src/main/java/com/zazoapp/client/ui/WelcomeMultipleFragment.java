@@ -18,6 +18,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.ButterKnife;
@@ -72,6 +73,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
     @InjectView(R.id.video_actions_layout) View videoActionsLayout;
     @InjectView(R.id.video_thumb) ThumbView videoThumb;
     @InjectView(R.id.video_duration_text) TextView videoDurationText;
+    @InjectView(R.id.send_btn) Button sendButton;
     private ArrayList<Friend> friendsNotSent;
     private List<FriendReceiver> receivers;
 
@@ -368,7 +370,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         fillChips();
     }
 
-    private void fillChips() {
+    private int fillChips() {
         ChipsViewWrapper more = new ChipsViewWrapper(context);
         more.setMore();
         more.getView().measure(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -421,8 +423,10 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
             ChipsViewWrapper cvh = new ChipsViewWrapper(context);
             cvh.setMore();
             recipientsBottomField.addView(cvh.getView());
+            i++;
         }
         recipientsBottomField.requestLayout();
+        return i;
     }
 
     @OnClick(R.id.recipients_layout)
@@ -454,7 +458,8 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
 
     @Override
     public void onItemStateChanged(int position, FriendReceiver receiver) {
-        fillChips();
+        int chipsCount = fillChips();
+        sendButton.setEnabled(chipsCount > 0);
     }
 
     public static class FriendReceiver implements Comparable<FriendReceiver> {
