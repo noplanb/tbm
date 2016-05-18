@@ -204,6 +204,9 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                         topFragment = null;
                         tutorialParent.setVisibility(View.VISIBLE);
                     }
+                    if (drawerLayout.isDrawerOpen(Gravity.LEFT)) {
+                        drawerLayout.closeDrawer(Gravity.LEFT);
+                    }
                     publishResult(ACTION_CODE_SHOW_SUGGESTIONS, null);
                     intent.putExtra(EXTRA_HANDLED, true);
                     NotificationAlertManager.cancelNativeAlert(context, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
