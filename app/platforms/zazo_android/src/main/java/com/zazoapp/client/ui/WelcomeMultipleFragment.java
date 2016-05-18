@@ -376,6 +376,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         more.getView().measure(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         int moreWidth = more.getView().getMeasuredWidth();
         List<FriendReceiver> rs = new ArrayList<>();
+        List<ChipsViewWrapper> cvhForBottom = new ArrayList<>();
         for (FriendReceiver receiver : receivers) {
             if (receiver.isReceiver()) {
                 rs.add(receiver);
@@ -384,8 +385,8 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         int maxWidth = recipientsTopField.getMeasuredWidth();
         recipientsTopField.removeAllViewsInLayout();
         recipientsBottomField.removeAllViewsInLayout();
-        int i = 0;
-        for (; i < rs.size(); i++) {
+        int chipsCount = 0;
+        for (int i = 0; i < rs.size(); i++) {
             ChipsViewWrapper cvh = new ChipsViewWrapper(context);
             Friend friend = rs.get(i).getFriend();
             if (friend.thumbExists()) {
@@ -397,36 +398,32 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
             if (cvh.getView().getMeasuredWidth() < maxWidth) {
                 maxWidth -= cvh.getView().getMeasuredWidth();
                 recipientsTopField.addView(cvh.getView());
+                chipsCount++;
             } else {
-                break;
+                cvhForBottom.add(cvh);
             }
         }
-        maxWidth = recipientsBottomField.getMeasuredWidth();
-        for (; i < rs.size(); i++) {
-            ChipsViewWrapper cvh = new ChipsViewWrapper(context);
-            Friend friend = rs.get(i).getFriend();
-            if (friend.thumbExists()) {
-                cvh.setTitleWithIcon(friend.getFullName(), friend.thumbBitmap());
-            } else {
-                cvh.setTitle(friend.getFullName());
+        if (chipsCount >= 1) {
+            maxWidth = recipientsBottomField.getMeasuredWidth();
+            for (int i = 0; i < cvhForBottom.size(); i++) {
+                ChipsViewWrapper cvh = cvhForBottom.get(i);
+                if (cvh.getView().getMeasuredWidth() + moreWidth < maxWidth
+                        || (i == cvhForBottom.size() - 1) && cvh.getView().getMeasuredWidth() < maxWidth) {
+                    maxWidth -= cvh.getView().getMeasuredWidth();
+                    recipientsBottomField.addView(cvh.getView());
+                    chipsCount++;
+                }
             }
-            cvh.getView().measure(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            if (cvh.getView().getMeasuredWidth() + moreWidth < maxWidth
-                    || (i == rs.size() - 1) && cvh.getView().getMeasuredWidth() < maxWidth) {
-                maxWidth -= cvh.getView().getMeasuredWidth();
-                recipientsBottomField.addView(cvh.getView());
-            } else {
-                break;
+            if (chipsCount < rs.size()) {
+                recipientsBottomField.addView(more.getView());
+                chipsCount++;
             }
-        }
-        if (i < rs.size()) {
-            ChipsViewWrapper cvh = new ChipsViewWrapper(context);
-            cvh.setMore();
-            recipientsBottomField.addView(cvh.getView());
-            i++;
+        } else if (chipsCount < rs.size()) {
+            recipientsTopField.addView(more.getView());
+            chipsCount++;
         }
         recipientsBottomField.requestLayout();
-        return i;
+        return chipsCount;
     }
 
     @OnClick(R.id.recipients_layout)

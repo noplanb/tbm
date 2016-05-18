@@ -196,7 +196,8 @@
                         android:layout_alignParentRight="true"
                         android:layout_alignParentEnd="true"
                         android:layout_marginRight="@dimen/recording_icon_size"
-                        android:layout_marginEnd="@dimen/recording_icon_size"/>
+                        android:layout_marginEnd="@dimen/recording_icon_size"
+                        android:minHeight="@dimen/chips_height"/>
                 <LinearLayout
                         android:id="@+id/recipients_field_bottom"
                         android:layout_width="match_parent"
