@@ -458,6 +458,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                             ignoreFriendFromNotification();
                             break;
                     }
+                    getArguments().putString(SUBACTION, null);
                 }
             }
                 break;
