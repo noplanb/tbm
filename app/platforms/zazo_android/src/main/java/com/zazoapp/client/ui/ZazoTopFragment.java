@@ -1,6 +1,7 @@
 package com.zazoapp.client.ui;
 
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.KeyEvent;
 
 /**
@@ -20,7 +21,10 @@ public class ZazoTopFragment extends Fragment {
                     onBackListener.onBack();
                 }
                 onBackPressed();
-                getFragmentManager().popBackStack();
+                FragmentManager fm = getFragmentManager();
+                if (fm != null) {
+                    fm.popBackStack();
+                }
                 return true;
         }
         return false;
