@@ -428,7 +428,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                 addedIgnoredLayout.setVisibility(View.VISIBLE);
                 String name = suggestion.getName();
                 suggestionName.setText(name);
-                suggestionInfo.setText(added ? getString(R.string.ff_add_success_message, name) : getString(R.string.ff_ignore_success_message, name));
+                suggestionInfo.setText(added ? context.getString(R.string.ff_add_success_message, name) : context.getString(R.string.ff_ignore_success_message, name));
                 addIgnoreMark.setEnabled(added);
                 addIgnoreMark.setVisibility(View.VISIBLE);
                 lastSuggestionCard.setVisibility(View.VISIBLE);
@@ -441,7 +441,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                 addedIgnoredLayout.setVisibility(View.VISIBLE);
                 String name = suggestion.getName();
                 suggestionName.setText(name);
-                suggestionInfo.setText(getString(R.string.new_friend_joined, name));
+                suggestionInfo.setText(context.getString(R.string.new_friend_joined, name));
                 mainButton.setText(R.string.action_add_joined_friend);
                 secondButton.setText(R.string.action_ignore_joined_friend);
                 thirdButton.setText(R.string.action_unsubscribe);
@@ -479,7 +479,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                 attachSwipeLayoutTo(R.id.zazo_action_bar);
                 break;
         }
-        suggestionActionButton.setText(cardType.actionId != 0 ? getString(cardType.actionId) : "");
+        suggestionActionButton.setText(cardType.actionId != 0 ? context.getString(cardType.actionId) : "");
         currentCardType = cardType;
     }
 

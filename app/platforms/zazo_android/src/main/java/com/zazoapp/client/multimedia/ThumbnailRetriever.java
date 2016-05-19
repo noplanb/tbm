@@ -92,7 +92,7 @@ public class ThumbnailRetriever {
     }
 
     private static long getPos(long duration) {
-        return (duration > 2500) ? duration - 2000 : duration / 2;
+        return (duration > 2500) ? duration - 200 : duration / 2;
     }
 
     public class ThumbnailBrokenException extends Exception {
