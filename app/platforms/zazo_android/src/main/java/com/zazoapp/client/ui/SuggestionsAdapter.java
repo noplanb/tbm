@@ -35,6 +35,7 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
 
     private final ThumbsHelper tHelper;
     private static final int MAX_ITEMS = 10;
+    private static final int LAST = 1;
 
     private OnItemStateChangedListener onItemStateChangedListener;
 
@@ -95,8 +96,22 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
     }
 
     @Override
+    public int getItemViewType(int position) {
+        return suggestions.size() == position + 1 ? LAST : 0;
+    }
+
+    @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = layoutInflater.inflate(R.layout.suggestions_list_item, parent, false);
+        View itemView;
+        switch (viewType) {
+            case LAST:
+                itemView = layoutInflater.inflate(R.layout.suggestions_list_last_item, parent, false);
+                break;
+            default:
+                itemView = layoutInflater.inflate(R.layout.suggestions_list_item, parent, false);
+                break;
+        }
+
         return new ViewHolder(itemView, this);
     }
 
