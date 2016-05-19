@@ -564,6 +564,10 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                     managerHolder.getTutorial().dismissHint();
                     return true;
                 }
+                if (drawerLayout.isDrawerOpen(Gravity.LEFT)) {
+                    drawerLayout.closeDrawer(Gravity.LEFT);
+                    return true;
+                }
                 if (managerHolder.getBenchViewManager().isBenchShown()) {
                     boolean result = tabsLayout.getSelectedTabPosition() != TAB_MAIN;
                     managerHolder.getBenchViewManager().hideBench();
