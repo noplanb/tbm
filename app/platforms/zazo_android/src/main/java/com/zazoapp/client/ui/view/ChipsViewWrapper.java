@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -25,6 +27,9 @@ public class ChipsViewWrapper {
     private final ThumbsHelper tHelper;
     public ChipsViewWrapper(Context context) {
         layout = View.inflate(context, R.layout.chips_layout, null);
+        if (layout.getLayoutParams() == null) {
+            layout.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
         ButterKnife.inject(this, layout);
         tHelper = new ThumbsHelper(context);
         Typeface tf = Convenience.getTypeface(context, "Roboto-Regular");

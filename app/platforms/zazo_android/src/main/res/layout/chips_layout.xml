@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:orientation="vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:paddingLeft="@dimen/abc_button_padding_horizontal_material"
                 android:paddingStart="@dimen/abc_button_padding_horizontal_material">
     <RelativeLayout
@@ -39,27 +39,21 @@
                     android:gravity="center"
                     />
         </RelativeLayout>
-        <LinearLayout
+        <TextView
+                android:id="@+id/title"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/small_icon_size"
+                android:layout_height="match_parent"
+                android:text="Alan Turing"
+                android:gravity="center_vertical"
+                android:textSize="@dimen/text_small"
+                android:textColor="@color/black"
+                android:ellipsize="marquee"
+                android:singleLine="true"
+                android:alpha="0.87"
                 android:layout_toRightOf="@id/thumb_layout"
                 android:layout_toEndOf="@id/thumb_layout"
-                android:layout_marginRight="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp">
-            <TextView
-                    android:id="@+id/title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="Alan Turing"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/text_small"
-                    android:textColor="@color/black"
-                    android:ellipsize="marquee"
-                    android:singleLine="true"
-                    android:alpha="0.87"/>
-        </LinearLayout>
+                android:paddingRight="12dp"
+                android:paddingLeft="8dp"/>
     </RelativeLayout>
 
 </RelativeLayout>
