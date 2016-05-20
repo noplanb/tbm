@@ -48,17 +48,11 @@ public class NotificationAlertManager {
     public enum Tone {
         BEEP,
         FEATURE_UNLOCK,
+        ZAZO
         ;
-
+        private int tone;
         int get() {
-            switch (this) {
-                case BEEP:
-                    return beepTone;
-                case FEATURE_UNLOCK:
-                    return featureUnlockTone;
-                default:
-                    return 0;
-            }
+            return tone;
         }
     }
 
@@ -75,8 +69,6 @@ public class NotificationAlertManager {
 	private static final String subTitle = Config.appName;
 
     private static SoundPool soundPool;
-    private static int beepTone;
-    private static int featureUnlockTone;
 
     private static Bitmap largeImage(Friend friend){
 		return friend.sqThumbBitmap();
@@ -167,8 +159,9 @@ public class NotificationAlertManager {
         } else {
             soundPool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
         }
-        beepTone = soundPool.load(context, R.raw.beep, 1);
-        featureUnlockTone = soundPool.load(context, R.raw.feature_unlock, 1);
+        Tone.BEEP.tone = soundPool.load(context, R.raw.beep, 1);
+        Tone.FEATURE_UNLOCK.tone = soundPool.load(context, R.raw.feature_unlock, 1);
+        Tone.ZAZO.tone = soundPool.load(context, R.raw.notification_tone, 1);
 
         for (int i = 1; i < NotificationType.NOT_CLOSING_SEPARATOR.id(); i++) {
             cancelNativeAlert(context, i);
@@ -189,7 +182,9 @@ public class NotificationAlertManager {
 
     public static float getVelocity(Context context, int stream) {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        return audioManager.getStreamVolume(stream);
+        float maxVolume = audioManager.getStreamMaxVolume(stream);
+        float volume = audioManager.getStreamVolume(stream);
+        return (maxVolume > 1) ? volume / maxVolume : volume;
     }
 
 	// Private 
@@ -209,7 +204,7 @@ public class NotificationAlertManager {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .setSound(getNotificationToneUri(context))
+                .setSound(getNotificationToneUri(context), AudioManager.STREAM_NOTIFICATION)
                 .setSmallIcon(getNotificationIcon())
                 .setContentTitle(title)
                 .setStyle(notiStyle)
