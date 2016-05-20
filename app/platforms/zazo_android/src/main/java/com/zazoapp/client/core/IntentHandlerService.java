@@ -441,6 +441,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             if (friendJoinedAction == null) {
                 return;
             }
+            NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
             NotificationSuggestion suggestion = intent.getParcelableExtra(FriendJoinedIntentFields.DATA);
             String nkey = suggestion.getNkey();
             switch (friendJoinedAction) {
@@ -448,7 +449,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     NotificationAlertManager.alertFriendJoined(IntentHandlerService.this, new Intent(intent));
                     break;
                 case FriendJoinedActions.ADD:
-                    NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
                     FriendFinderRequests.addFriend(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
@@ -463,7 +463,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     }, intent.getStringExtra(FriendJoinedIntentFields.CHOSEN_PHONE));
                     break;
                 case FriendJoinedActions.IGNORE:
-                    NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
                     FriendFinderRequests.ignoreFriend(nkey, new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
@@ -477,7 +476,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     });
                     break;
                 case FriendJoinedActions.UNSUBSCRIBE:
-                    NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
                     FriendFinderRequests.unsubscribe(new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {
@@ -491,7 +489,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     });
                     break;
                 case FriendJoinedActions.SUBSCRIBE:
-                    NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
                     FriendFinderRequests.subscribe(new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {

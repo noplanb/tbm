@@ -198,6 +198,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                 intent.setAction(IntentHandlerService.IntentActions.NONE);
                 break;
             case IntentHandlerService.IntentActions.SUGGESTIONS:
+                NotificationAlertManager.cancelNativeAlert(context, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
                 if (!intent.getBooleanExtra(EXTRA_HANDLED, false)) {
                     if (topFragment != null) {
                         getFragmentManager().popBackStack();
@@ -209,7 +210,6 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                     }
                     publishResult(ACTION_CODE_SHOW_SUGGESTIONS, null);
                     intent.putExtra(EXTRA_HANDLED, true);
-                    NotificationAlertManager.cancelNativeAlert(context, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
                 }
                 break;
             case IntentHandlerService.IntentActions.SEND_VIDEO:

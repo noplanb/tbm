@@ -243,8 +243,6 @@ public class NotificationAlertManager {
         Intent activityIntent = new Intent(friendJoinedIntent);
         activityIntent.setClass(context.getApplicationContext(), MainActivity.class);
         activityIntent.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
-        Intent serviceIntent = new Intent(friendJoinedIntent);
-        serviceIntent.setClass(context.getApplicationContext(), IntentHandlerService.class);
         PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         PendingIntent addJoinedFriendIntent = PendingIntent.getActivity(context, 1,
                 makeSuggestionIntent(activityIntent, IntentHandlerService.FriendJoinedActions.ADD), PendingIntent.FLAG_CANCEL_CURRENT);
@@ -354,13 +352,6 @@ public class NotificationAlertManager {
         Uri uri = new Uri.Builder().appendPath(IntentHandlerService.IntentActions.PLAY_VIDEO).appendQueryParameter(
                 IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
         i.setData(uri);
-        return i;
-    }
-
-    public static Intent makeJoinedFriendIntent(Intent intent, String friendJoinedAction) {
-        Intent i = new Intent(intent);
-        i.setAction(IntentHandlerService.IntentActions.FRIEND_JOINED);
-        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, friendJoinedAction);
         return i;
     }
 
