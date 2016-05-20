@@ -3,7 +3,9 @@ package com.zazoapp.client.tutorial;
 import android.app.Activity;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import butterknife.ButterKnife;
@@ -32,6 +34,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     public static final String BOX_KEY = "view_id";
 
     private TutorialLayout tutorialLayout;
+    private DrawerLayout drawer;
     private Activity activity;
     private ZazoManagerProvider managers;
     private PreferencesHelper preferences;
@@ -43,6 +46,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
     public Tutorial(Activity activity, ZazoManagerProvider managerProvider) {
         this.activity = activity;
         tutorialLayout = ButterKnife.findById(activity, R.id.tutorial_layout);
+        drawer = ButterKnife.findById(activity, R.id.drawer_layout);
         managers = managerProvider;
         preferences = new PreferencesHelper(TbmApplication.getInstance());
         tutorialLayout.setOnTouchListener(this);
@@ -208,6 +212,9 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
         Log.i(TAG, "Show hint " + hint + " " + Convenience.getViewRect(view));
         if (managers.getBenchViewManager().isBenchShown() && !managers.getInviteHelper().isInvitationInProcess()) {
             managers.getBenchViewManager().hideBench();
+        }
+        if (drawer.isDrawerOpen(Gravity.LEFT)) {
+            drawer.closeDrawer(Gravity.LEFT);
         }
         current = hint;
         tutorialLayout.setHintText(text);

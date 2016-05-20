@@ -113,16 +113,13 @@
 
             <android.support.v7.widget.AppCompatButton
                     android:id="@+id/action_main_btn"
-                    style="@style/Widget.AppCompat.Button"
-                    app:backgroundTint="@color/suggestions_btn_tint"
+                    style="@style/SuggestionMainButton"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:minWidth="64dp"
                     android:paddingLeft="16dp"
                     android:paddingRight="16dp"
-                    android:textColor="@color/white"
-                    android:textAllCaps="true"
                     android:text="@string/action_view"/>
 
         </LinearLayout>

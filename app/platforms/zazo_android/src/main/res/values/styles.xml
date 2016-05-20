@@ -24,6 +24,10 @@
         <item name="colorAccent">@color/accent</item>
         <item name="spbStyle">@style/ZHorizontalProgressBar</item>
         <item name="cpbStyle">@style/ZCircularProgressBar</item>
+        <item name="colorButtonNormal">@color/gray</item>
+        <item name="colorControlNormal">@color/primary</item>
+        <item name="colorControlActivated">@color/primary</item>
+        <item name="colorControlHighlight">@color/blue_accent</item>
     </style>
 
     <!-- Application theme. -->
@@ -32,11 +36,15 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
-    <style name="DebugTheme" parent="AppTheme">
+    <style name="DebugBaseTheme" parent="AppBaseTheme">
         <item name="android:windowBackground">@color/light_grey_new</item>
         <item name="android:dialogTheme">@style/DevDialog</item>
         <item name="android:editTextStyle">@style/DevEditText</item>
+        <item name="colorControlNormal">@color/material_deep_teal_500</item>
+        <item name="colorControlActivated">@color/material_deep_teal_500</item>
+        <item name="colorControlHighlight">@color/material_deep_teal_200</item>
     </style>
+    <style name="DebugTheme" parent="DebugBaseTheme"/>
 
     <style name="AppTheme.LockScreen">
         <item name="android:windowBackground">@color/black</item>
@@ -187,6 +195,14 @@
         <item name="android:background">@drawable/suggestion_action_btn_bg_blue</item>
         <item name="android:textColor">@color/dialog_action_text</item>
         <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">@dimen/text_small</item>
+    </style>
+    <style name="SuggestionMainButton" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:background">@drawable/btn_colored_material</item>
+        <item name="backgroundTint">@color/suggestions_btn_tint</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:gravity">center</item>
         <item name="android:textSize">@dimen/text_small</item>
     </style>
 

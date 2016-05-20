@@ -325,10 +325,10 @@ public class VideoRecorder implements SurfaceTextureListener {
 
     private void adjustPreviewRatio() {
         Matrix matrix = new Matrix();
-        Camera camera = CameraManager.getCamera(context);
-        if (camera == null)
+        Camera.Size realSize = CameraManager.getPreviewSize();
+        if (realSize == null) {
             return;
-        Camera.Size realSize = camera.getParameters().getPreviewSize();
+        }
         float realAspect = realSize.width / (float) realSize.height;
         float viewAspect = preview.getPreviewHeight() / (float) preview.getPreviewWidth();
         float scaleX, scaleY;

@@ -193,15 +193,13 @@
                     android:textColor="@color/suggestions_secondary_action_btn"/>
             <android.support.v7.widget.AppCompatButton
                     android:id="@+id/suggestion_action_main_btn"
-                    style="@style/Widget.AppCompat.Button"
-                    app:backgroundTint="@color/suggestions_btn_tint"
+                    style="@style/SuggestionMainButton"
                     android:layout_width="wrap_content"
                     android:layout_height="44dp"
                     android:minWidth="64dp"
                     android:paddingLeft="8dp"
                     android:paddingRight="8dp"
-                    android:textAllCaps="true"
-                    android:textColor="@color/white"/>
+                    />
 
         </LinearLayout>
     </RelativeLayout>
@@ -291,18 +289,14 @@
                 android:id="@+id/test_add"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                style="@style/Widget.AppCompat.Button"
-                app:backgroundTint="@color/suggestions_btn_tint"
-                android:textColor="@color/white"
+                style="@style/SuggestionMainButton"
                 android:text="Add"
                 />
         <android.support.v7.widget.AppCompatButton
                 android:id="@+id/test_remove"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                style="@style/Widget.AppCompat.Button"
-                app:backgroundTint="@color/suggestions_btn_tint"
-                android:textColor="@color/white"
+                style="@style/SuggestionMainButton"
                 android:text="Remove"
                 />
     </LinearLayout>

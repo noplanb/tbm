@@ -18,14 +18,9 @@
         <item name="colorAccent">@color/blue_accent</item>
     </style>
 
-    <style name="DebugTheme" parent="AppBaseTheme">
-        <item name="android:windowBackground">@color/light_grey_new</item>
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-        <!-- To Make Navigation Drawer Fill Status Bar and become Transparent Too -->
+    <style name="DebugTheme" parent="DebugBaseTheme">
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@color/status_bar_dev_color</item>
-        <item name="android:dialogTheme">@style/DevDialog</item>
-        <item name="android:editTextStyle">@style/DevEditText</item>
     </style>
     <style name="EditTextStyle" parent="Widget.AppCompat.EditText">
         <item name="android:textColorHint">@color/search_hint</item>
