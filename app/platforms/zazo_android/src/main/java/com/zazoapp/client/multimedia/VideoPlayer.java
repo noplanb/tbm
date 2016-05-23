@@ -18,6 +18,7 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
@@ -351,7 +352,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     private boolean videoIsPlayable(){
         File f = friend.videoFromFile(videoId);
-        return f.exists() && f.length() > 100;
+        return f.exists() && f.length() > Config.getMinVideoSize();
     }
 
     private void waitAndNotifyWhenStart() {

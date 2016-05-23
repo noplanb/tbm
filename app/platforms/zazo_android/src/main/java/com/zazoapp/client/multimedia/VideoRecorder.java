@@ -140,7 +140,7 @@ public class VideoRecorder implements SurfaceTextureListener {
                 rval = true;
                 long fileLength = Config.recordingFile(context).length();
                 Logger.i(TAG, String.format("Recorded file %s : %d", Config.recordingFilePath(context), fileLength));
-                if (fileLength < 100) {
+                if (fileLength <= Config.getMinVideoSize()) {
                     throw new RuntimeException("File is too short");
                 }
                 if (currentFriend != null)

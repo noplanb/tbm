@@ -27,6 +27,10 @@ public class Config {
 
     private static File publicDir = null;
 
+    public static int getMinVideoSize() {
+        return 2000;
+    }
+
 	public static File getPublicDir() {
 		if (publicDir !=null) 
 			return publicDir;

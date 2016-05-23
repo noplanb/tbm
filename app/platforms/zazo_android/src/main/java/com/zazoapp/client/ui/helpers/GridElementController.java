@@ -85,7 +85,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onRecordClicked() {
-        GridElementAnimation.holdToRec(gridElementView).start();
+        onThumbViewClicked();
     }
 
     @Override
