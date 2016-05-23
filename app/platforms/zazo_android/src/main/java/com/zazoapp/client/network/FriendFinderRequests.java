@@ -195,7 +195,7 @@ public class FriendFinderRequests {
         return "http://" + getServerHost();
     }
 
-    private static String getServerHost() {
+    public static String getServerHost() {
         return DebugConfig.Bool.USE_CUSTOM_SERVER.get() ? STAGING_HOST : PROD_HOST;
     }
 

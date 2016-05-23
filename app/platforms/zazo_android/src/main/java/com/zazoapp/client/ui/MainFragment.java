@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.AnimRes;
@@ -52,6 +53,7 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.multimedia.VideoIdUtils;
+import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.gcm.GcmHandler;
@@ -195,6 +197,17 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         switch (intent.getAction()) {
             case Intent.ACTION_VIEW:
                 // TODO Do action specified in https://zazo.fogbugz.com/f/cases/1062/
+                Uri uri = intent.getData();
+                if (uri == null || uri.getHost() == null) {
+                    return;
+                }
+                if (FriendFinderRequests.getServerHost().equals(uri.getHost())) {
+                    List<String> paths = uri.getPathSegments();
+                    if (paths.size() != 3 || !"w".equalsIgnoreCase(paths.get(0))) {
+                        return;
+                    }
+                    showSuggestions(null);
+                }
                 intent.setAction(IntentHandlerService.IntentActions.NONE);
                 break;
             case IntentHandlerService.IntentActions.SUGGESTIONS:
