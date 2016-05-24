@@ -404,7 +404,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         private boolean zoomed;
         private Runnable zoomRollback;
         private float zoomRatio = 0f;
-        private ZoomGestureRecognizer gestureRecognizer;
+        private PlayControlGestureRecognizer gestureRecognizer;
         private float initialX;
         private float initialY;
         private int initialWidth;
@@ -416,7 +416,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             views.add(videoBody);
             views.addAll(nineViewGroup.getNineViews());
             views.add(videoRootLayout);
-            gestureRecognizer = new ZoomGestureRecognizer(activity, videoRootLayout, views);
+            gestureRecognizer = new PlayControlGestureRecognizer(activity, videoRootLayout, views);
             videoRootLayout.setGestureRecognizer(gestureRecognizer);
         }
 
@@ -437,14 +437,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             zoomed = false;
         }
 
-        private class ZoomGestureRecognizer extends ViewGroupGestureRecognizer.Stub {
+        private class PlayControlGestureRecognizer extends ViewGroupGestureRecognizer.Stub {
             private long lastTime;
             private long previousLastTime;
             private boolean isInited;
             private double startOffsetX;
             private double startOffsetY;
 
-            public ZoomGestureRecognizer(Activity a, ViewGroup vg, ArrayList<View> tvs) {
+            public PlayControlGestureRecognizer(Activity a, ViewGroup vg, ArrayList<View> tvs) {
                 super(a, tvs);
             }
 
@@ -555,8 +555,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             }
 
             @Override
-            public boolean isSlidingSupported() {
-                return managerProvider.getFeatures().isUnlocked(Features.Feature.PLAY_FULLSCREEN);
+            public boolean isSlidingSupported(int direction) {
+                switch (direction) {
+                    case DIRECTION_HORIZONTAL:
+                        return managerProvider.getFeatures().isUnlocked(Features.Feature.PAUSE_PLAYBACK);
+                    case DIRECTION_VERTICAL:
+                        return managerProvider.getFeatures().isUnlocked(Features.Feature.PLAY_FULLSCREEN);
+                }
+                return false;
             }
 
             @Override

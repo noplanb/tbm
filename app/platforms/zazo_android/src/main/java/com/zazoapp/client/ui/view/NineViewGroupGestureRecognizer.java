@@ -122,8 +122,8 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
     }
 
     @Override
-    public boolean isSlidingSupported() {
-        return nineViewGroup.getSpinStrategy() != null && nineViewGroup.isSpinEnabled();
+    public boolean isSlidingSupported(int direction) {
+        return direction == DIRECTION_VERTICAL && nineViewGroup.getSpinStrategy() != null && nineViewGroup.isSpinEnabled();
     }
 
     @Override

@@ -34,9 +34,12 @@ public abstract class ViewGroupGestureRecognizer {
 
     public abstract boolean isSliding();
 
-    public abstract boolean isSlidingSupported();
+    public abstract boolean isSlidingSupported(int direction);
 
     public abstract boolean isAbortGestureAllowed();
+
+    public static final int DIRECTION_HORIZONTAL    = 0x03;
+    public static final int DIRECTION_VERTICAL      = 0x30;
 
     public static class Stub extends ViewGroupGestureRecognizer {
 
@@ -95,7 +98,7 @@ public abstract class ViewGroupGestureRecognizer {
         }
 
         @Override
-        public boolean isSlidingSupported() {
+        public boolean isSlidingSupported(int direction) {
             return false;
         }
 
@@ -269,7 +272,8 @@ public abstract class ViewGroupGestureRecognizer {
                     // Happens when the backing window view gets the down event. Just ignore.
                     return;
                 case MotionEvent.ACTION_MOVE:
-                    if (isSlidingSupported() && isMoving(event)) {
+                    if (isSlidingSupported(DIRECTION_VERTICAL) && isMoving(event, DIRECTION_VERTICAL) ||
+                            isSlidingSupported(DIRECTION_HORIZONTAL) && isMoving(event, DIRECTION_HORIZONTAL)) {
                         startMove(targetView, downPosition[0], downPosition[1], event.getX() - downPosition[0], event.getY() - downPosition[1]);
                         move(targetView, event.getX() - downPosition[0], event.getY() - downPosition[1]);
                         if (longPressTask != null) {
@@ -456,12 +460,22 @@ public abstract class ViewGroupGestureRecognizer {
         }
     }
 
-    private boolean isMoving(MotionEvent event) {
-        //double a2 = Math.pow(downPosition[0] - (double) event.getX(), 2D);
-        //double b2 = Math.pow(downPosition[1] - (double) event.getY(), 2D);
-        //double limit = Math.pow(activity.getResources().getDimension(R.dimen.nine_view_sliding_min_bounce), 2D);
+    private boolean isMoving(MotionEvent event, int direction) {
         double limit = activity.getResources().getDimension(R.dimen.nine_view_sliding_min_bounce);
-        double bounce = Math.abs(downPosition[1] - (double) event.getY());
+        double bounce;
+        switch (direction) {
+            case DIRECTION_HORIZONTAL:
+                bounce = Math.abs(downPosition[0] - (double) event.getX());
+                break;
+            case DIRECTION_VERTICAL:
+                bounce = Math.abs(downPosition[1] - (double) event.getY());
+                break;
+            default:
+                limit = Math.pow(limit, 2D);
+                double a2 = Math.pow(downPosition[0] - (double) event.getX(), 2D);
+                double b2 = Math.pow(downPosition[1] - (double) event.getY(), 2D);
+                bounce = a2 + b2;
+        }
         return bounce > limit;
     }
 

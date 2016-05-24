@@ -68,7 +68,7 @@ public class Logger {
             printToFile(string + "\t" + string2);
     }
 
-    public static void i(String tag, String markers, int... params) {
+    public static void i(String tag, String markers, double... params) {
         StringBuilder builder = new StringBuilder();
         String[] markerArray = (markers != null) ? markers.split(" ") : null;
         for (int i = 0; i < params.length; i++) {
