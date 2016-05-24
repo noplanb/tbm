@@ -320,8 +320,9 @@ public class Friend extends ActiveModel{
     }
 
     public ArrayList<IncomingVideo> getSortedIncomingPlayableVideos(){
-        Log.i(TAG, "getSortedIncomingPlayableVideos: " + sortVideosByTimeStamp(getIncomingPlayableVideos()));
-        return sortVideosByTimeStamp(getIncomingPlayableVideos());
+        ArrayList<IncomingVideo> list = sortVideosByTimeStamp(getIncomingPlayableVideos());
+        Log.i(TAG, "getSortedIncomingPlayableVideos: " + list);
+        return list;
     }
     
     public String getFirstPlayableVideoId(){
@@ -368,6 +369,19 @@ public class Friend extends ActiveModel{
             IncomingVideo v = videoList.get(i);
             if (v.getId().equals(videoId)) {
                 return i + 1;
+            }
+        }
+        return 0;
+    }
+
+    public static int getCurrentVideoPositionInList(String videoId, List<IncomingVideo> videoList) {
+        if (videoList.size() == 0) {
+            return -1;
+        }
+        for (int i = 0; i < videoList.size(); i++) {
+            IncomingVideo v = videoList.get(i);
+            if (v.getId().equals(videoId)) {
+                return i;
             }
         }
         return 0;

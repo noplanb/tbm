@@ -302,6 +302,17 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         setCurrentVideoId((posId >= 0) ? videos.get(posId).getId() : null);
     }
 
+    private void setCurrentVideoToPrevious() {
+        List<IncomingVideo> videos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
+        int posId = Friend.getCurrentVideoPositionInList(videoId, videos) - 1;
+        if (posId < 0) {
+            return;
+        }
+        currentVideoNumber = posId + 1;
+        numberOfVideos = videos.size();
+        setCurrentVideoId((posId >= 0) ? videos.get(posId).getId() : null);
+    }
+
     private void setCurrentVideoId(String videoId) {
         this.videoId = videoId;
         TextAnimations.animateAlpha(twDate, StringUtils.getEventTime(videoId));
@@ -527,17 +538,33 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
             @Override
             public void startMove(View target, double startX, double startY, double offsetX, double offsetY) {
-                if (videoBody.equals(target) && !(zoomAnimator != null && zoomAnimator.isStarted())) {
+                if (!(zoomAnimator != null && zoomAnimator.isStarted())) {
                     startOffsetX = offsetX;
                     startOffsetY = offsetY;
                     isInited = true;
-                    if (!zoomed) {
-                        initialWidth = videoBody.getWidth();
-                        initialHeight = videoBody.getHeight();
-                        initialX = videoBody.getTranslationX();
-                        initialY = videoBody.getTranslationY();
+                    if (Math.abs(offsetX) > Math.abs(offsetY)) {
+                        if (isSlidingSupported(DIRECTION_HORIZONTAL)) {
+                            if (offsetX > 0) {      // Swipe right
+                                if (currentVideoNumber != numberOfVideos) {
+                                    setCurrentVideoToNext();
+                                    play();
+                                }
+                            } else {                // Swipe left
+                                if (videoView.getCurrentPosition() < 5000) {
+                                    setCurrentVideoToPrevious();
+                                }
+                                play();
+                            }
+                        }
+                    } else if (videoBody.equals(target) && isSlidingSupported(DIRECTION_VERTICAL)) {
+                        if (!zoomed) {
+                            initialWidth = videoBody.getWidth();
+                            initialHeight = videoBody.getHeight();
+                            initialX = videoBody.getTranslationX();
+                            initialY = videoBody.getTranslationY();
+                        }
+                        animateZoom(!zoomed);
                     }
-                    animateZoom(!zoomed);
                 }
             }
 
