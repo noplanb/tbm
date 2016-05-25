@@ -43,6 +43,6 @@
 
     <dimen name="video_indicator_min_text_size">8sp</dimen>
     <dimen name="video_indicator_size">24dp</dimen>
-    <dimen name="video_indicator_offset">-11dp</dimen>
+    <dimen name="video_indicator_offset">-10.5dp</dimen>
     <dimen name="chips_height">@dimen/small_icon_size</dimen>
 </resources>

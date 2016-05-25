@@ -67,12 +67,12 @@ public class VideoProgressBarAnimation {
         final Holder h = new Holder(view);
         float valueOffset = (start) ? 0f : 1f;
         ValueAnimator animator = ValueAnimator.ofFloat(view.getAlpha(), 1f - valueOffset);
-        animator.setDuration(400);
+        animator.setDuration((start) ? 600 : 400);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value = (float) animation.getAnimatedValue();
-                h.progressBar.setAlpha(value);
+                h.progressBar.setAlpha(Math.min(value * 1.5f, 1f));
                 h.textView.setScaleX(value);
                 h.textView.setScaleY(value);
                 h.progressBar.setSecondaryProgress(value);

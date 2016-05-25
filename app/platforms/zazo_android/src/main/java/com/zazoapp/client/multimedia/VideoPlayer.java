@@ -383,6 +383,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                     if (videoView.isPlaying()) {
                                         videoRootLayout.animate().alpha(1).start();
                                         zoomController.setEnabled(true);
+                                        VideoProgressBar.Scheme.SchemeBuilder schemeBuilder = new VideoProgressBar.Scheme.SchemeBuilder();
+                                        for (int i = 0; i < numberOfVideos; i++) {
+                                            schemeBuilder.addBar();
+                                        }
+                                        progressBar.setScheme(schemeBuilder.build());
                                         progressBar.doAppearing();
                                         progressBar.setCurrent(currentVideoNumber, true);
                                         int duration = videoView.getDuration() - videoView.getCurrentPosition();
