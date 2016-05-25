@@ -10,6 +10,7 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
@@ -47,7 +48,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Player {
+public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Player, View.OnTouchListener {
 
     private static final String TAG = VideoPlayer.class.getSimpleName();
 
@@ -78,6 +79,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         this.managerProvider = managerProvider;
         blockScreen = ButterKnife.findById(activity, R.id.block_screen);
         progressBar = ButterKnife.findById(activity, R.id.video_progress_bar);
+        progressBar.setOnTouchListener(this);
     }
 
     @Override
@@ -414,6 +416,38 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             onStartTask.cancel();
             onStartTask = null;
         }
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (v.getId() == R.id.video_progress_bar) {
+            return handleProgressBarTouchEvent(event);
+        }
+        return false;
+    }
+
+    private boolean handleProgressBarTouchEvent(MotionEvent event) {
+        int action = event.getAction();
+        float x = event.getX();
+        float progress = x / progressBar.getWidth();
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                videoView.pause();
+                progressBar.pause();
+                break;
+            case MotionEvent.ACTION_UP:
+                progressBar.setProgress(progress);
+                videoView.start();
+                // TODO recalculate current
+                int duration = videoView.getDuration() - videoView.getCurrentPosition();
+                progressBar.animateProgress(progressBar.getProgress(),
+                        currentVideoNumber / (float) numberOfVideos, duration);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                progressBar.setProgress(progress);
+                break;
+        }
+        return true;
     }
 
     private class ZoomController {
