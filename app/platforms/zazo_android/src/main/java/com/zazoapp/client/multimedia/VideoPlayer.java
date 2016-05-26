@@ -552,6 +552,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             private long lastTime;
             private long previousLastTime;
             private boolean isInited;
+            private int gestureDirection;
             private double startOffsetX;
             private double startOffsetY;
 
@@ -642,28 +643,18 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     startOffsetX = offsetX;
                     startOffsetY = offsetY;
                     isInited = true;
-                    if (Math.abs(offsetX) > Math.abs(offsetY)) {
-                        if (isSlidingSupported(DIRECTION_HORIZONTAL)) {
-                            if (offsetX > 0) {      // Swipe right
-                                if (currentVideoNumber != numberOfVideos) {
-                                    setCurrentVideoToNext();
-                                    play();
-                                }
-                            } else {                // Swipe left
-                                if (videoView.getCurrentPosition() < 5000) {
-                                    setCurrentVideoToPrevious();
-                                }
-                                play();
+                    if (Math.abs(offsetX) <= Math.abs(offsetY)) {
+                        if (videoBody.equals(target) && isSlidingSupported(DIRECTION_VERTICAL)) {
+                            if (!zoomed) {
+                                initialWidth = videoBody.getWidth();
+                                initialHeight = videoBody.getHeight();
+                                initialX = videoBody.getTranslationX();
+                                initialY = videoBody.getTranslationY();
                             }
+                            animateZoom(!zoomed);
                         }
-                    } else if (videoBody.equals(target) && isSlidingSupported(DIRECTION_VERTICAL)) {
-                        if (!zoomed) {
-                            initialWidth = videoBody.getWidth();
-                            initialHeight = videoBody.getHeight();
-                            initialX = videoBody.getTranslationX();
-                            initialY = videoBody.getTranslationY();
-                        }
-                        animateZoom(!zoomed);
+                    } else {
+                        gestureDirection = DIRECTION_HORIZONTAL;
                     }
                 }
             }
@@ -673,6 +664,22 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (!isInited) {
                     return;
                 }
+                if (Math.abs(offsetX) > Math.abs(offsetY) && gestureDirection == DIRECTION_HORIZONTAL) {
+                    if (isSlidingSupported(DIRECTION_HORIZONTAL)) {
+                        if (offsetX > 0) {      // Swipe right
+                            if (currentVideoNumber != numberOfVideos) {
+                                setCurrentVideoToNext();
+                                play();
+                            }
+                        } else {                // Swipe left
+                            if (videoView.getCurrentPosition() < 5000) {
+                                setCurrentVideoToPrevious();
+                            }
+                            play();
+                        }
+                    }
+                }
+                gestureDirection = 0;
                 isInited = false; // TODO after parking animation
             }
 
