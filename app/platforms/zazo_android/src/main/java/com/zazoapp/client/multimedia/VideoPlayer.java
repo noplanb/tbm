@@ -8,6 +8,7 @@ import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.support.annotation.FloatRange;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -70,9 +71,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private Timer timer = new Timer();
     private TimerTask onStartTask;
     private ZoomController zoomController;
+    private float mediaVolume = 1.0f;
 
     private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
-
+    private List<IncomingVideo> playingVideos;
+    private volatile boolean isSeekAllowed = true;
 
     public VideoPlayer(FragmentActivity activity, BaseManagerProvider managerProvider) {
         this.activity = activity;
@@ -180,6 +183,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @Override
     public void setVolume(float volume) {
         videoView.setVolume(volume);
+        mediaVolume = volume;
     }
 
     //----------------------
@@ -208,7 +212,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         return true;
 	}
 
-    private void play(){
+    private void play() {
+        play(0f);
+    }
+
+    private void play(@FloatRange(from = 0.0f, to = 1.0f, toInclusive = false) final float progress) {
         Log.i(TAG, "play");
         if (!managerProvider.getAudioController().gainFocus()) {
             DialogShower.showToast(activity, R.string.toast_could_not_get_audio_focus);
@@ -224,6 +232,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
+                    videoView.seekTo((int) (videoView.getDuration() * progress));
                     videoView.start();
                     waitAndNotifyWhenStart();
                 }
@@ -242,11 +251,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 }
             });
             videoView.setVideoPath(path);
+
         } else {
-			onCompletion(null);
-		}
-	}
-    
+            onCompletion(null);
+        }
+    }
+
     @Override
     public void onPrepared(MediaPlayer mp) {
         Log.d(TAG, "onPrepared");
@@ -290,29 +300,37 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     private void setCurrentVideoToFirst() {
-        List<IncomingVideo> videos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
-        setCurrentVideoId(Friend.getFirstVideoIdInList(videos));
+        playingVideos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
+        setCurrentVideoId(Friend.getFirstVideoIdInList(playingVideos));
         currentVideoNumber = (videoId != null) ? 1 : 0;
-        numberOfVideos = videos.size();
+        numberOfVideos = playingVideos.size();
     }
 
     private void setCurrentVideoToNext() {
-        List<IncomingVideo> videos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
-        int posId = Friend.getNextVideoPositionInList(videoId, videos);
+        playingVideos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
+        int posId = Friend.getNextVideoPositionInList(videoId, playingVideos);
         currentVideoNumber = posId + 1;
-        numberOfVideos = videos.size();
-        setCurrentVideoId((posId >= 0) ? videos.get(posId).getId() : null);
+        numberOfVideos = playingVideos.size();
+        setCurrentVideoId((posId >= 0) ? playingVideos.get(posId).getId() : null);
     }
 
     private void setCurrentVideoToPrevious() {
-        List<IncomingVideo> videos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
-        int posId = Friend.getCurrentVideoPositionInList(videoId, videos) - 1;
+        playingVideos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
+        int posId = Friend.getCurrentVideoPositionInList(videoId, playingVideos) - 1;
         if (posId < 0) {
             return;
         }
         currentVideoNumber = posId + 1;
-        numberOfVideos = videos.size();
-        setCurrentVideoId((posId >= 0) ? videos.get(posId).getId() : null);
+        numberOfVideos = playingVideos.size();
+        setCurrentVideoId((posId >= 0) ? playingVideos.get(posId).getId() : null);
+    }
+
+    private void jumpToVideo(int pos) {
+        if (playingVideos == null || playingVideos.isEmpty() || pos < 0 || playingVideos.size() < pos || pos + 1 == currentVideoNumber) {
+            return;
+        }
+        currentVideoNumber = pos + 1;
+        setCurrentVideoId(playingVideos.get(pos).getId());
     }
 
     private void setCurrentVideoId(String videoId) {
@@ -383,6 +401,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                 public void run() {
                                     // checks if it is playing to eliminate the case of released player
                                     if (videoView.isPlaying()) {
+                                        isSeekAllowed = true;
                                         videoRootLayout.animate().alpha(1).start();
                                         zoomController.setEnabled(true);
                                         VideoProgressBar.Scheme.SchemeBuilder schemeBuilder = new VideoProgressBar.Scheme.SchemeBuilder();
@@ -432,22 +451,64 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         float progress = x / progressBar.getWidth();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+                videoView.setVolume(0f);
                 videoView.pause();
                 progressBar.pause();
                 break;
             case MotionEvent.ACTION_UP:
-                progressBar.setProgress(progress);
-                videoView.start();
-                // TODO recalculate current
-                int duration = videoView.getDuration() - videoView.getCurrentPosition();
-                progressBar.animateProgress(progressBar.getProgress(),
-                        currentVideoNumber / (float) numberOfVideos, duration);
+                videoView.setVolume(mediaVolume);
+                float currentVideoProgress = setVideoProgress(progress, false, true);
+                play(currentVideoProgress);
                 break;
             case MotionEvent.ACTION_MOVE:
-                progressBar.setProgress(progress);
+                setVideoProgress(progress, true, isSeekAllowed);
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                videoView.setVolume(mediaVolume);
                 break;
         }
         return true;
+    }
+
+    /**
+     *
+     * @param fullProgress
+     * @param allowLoad
+     * @param seek
+     * @return currentVideoProgress
+     */
+    private float setVideoProgress(float fullProgress, boolean allowLoad, boolean seek) {
+        progressBar.setProgress(fullProgress);
+        int pos = (int) Math.floor(fullProgress * numberOfVideos);
+        final float curProgress = fullProgress * numberOfVideos - pos;
+        if ((currentVideoNumber != pos + 1)) {
+            jumpToVideo(pos);
+            if (allowLoad) {
+                progressBar.setCurrent(currentVideoNumber, true);
+                isSeekAllowed = false;
+                final String path = friend.videoFromPath(videoId);
+                videoView.setOnPreparedListener(new OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        videoView.seekTo((int) (curProgress * videoView.getDuration()));
+                        isSeekAllowed = true;
+                    }
+                });
+                videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+                        mp.reset();
+                        isSeekAllowed = false;
+                        return true;
+                    }
+                });
+                videoView.setVideoPath(path);
+            }
+
+        } else if (seek) {
+            videoView.seekTo((int) (curProgress * videoView.getDuration()));
+        }
+        return curProgress;
     }
 
     private class ZoomController {
