@@ -68,15 +68,17 @@ public class VideoProgressBar extends FrameLayout {
 
     public void setCurrent(int current, boolean animate) {
         final String currentText = (current > 0) ? String.valueOf(current) : "";
-        if (animate) {
-            VideoProgressBarAnimation.animateValueChange(sliderView, new Runnable() {
-                @Override
-                public void run() {
-                    sliderView.setText(currentText);
-                }
-            }, null);
-        } else {
-            sliderView.setText(currentText);
+        if (!currentText.equals(sliderView.getText())) {
+            if (animate) {
+                VideoProgressBarAnimation.animateValueChange(sliderView, new Runnable() {
+                    @Override
+                    public void run() {
+                        sliderView.setText(currentText);
+                    }
+                }, null);
+            } else {
+                sliderView.setText(currentText);
+            }
         }
         this.current = current;
     }

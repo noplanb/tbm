@@ -484,7 +484,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         if ((currentVideoNumber != pos + 1)) {
             jumpToVideo(pos);
             if (allowLoad) {
-                progressBar.setCurrent(currentVideoNumber, true);
+                progressBar.setCurrent(currentVideoNumber, false);
                 isSeekAllowed = false;
                 final String path = friend.videoFromPath(videoId);
                 videoView.setOnPreparedListener(new OnPreparedListener() {
