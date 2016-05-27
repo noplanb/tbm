@@ -46,13 +46,17 @@ public class ThumbnailRetriever {
             long pos = getPos(nativeDuration);
             thumb = nativeRetriever.getFrameAtTime(pos*1000);
             if (thumb == null) {
-                Log.e(TAG, "native: Error getting thumb");
+                Log.e(TAG, "native: Error getting thumb at " + pos);
                 thumb = nativeRetriever.getFrameAtTime(nativeDuration*1000);
                 if (thumb == null) {
                     Log.e(TAG, "native: Error getting end frame");
                     thumb = nativeRetriever.getFrameAtTime();
                     if (thumb == null) {
-                        markFailed("native: Error getting representative frame", path);
+                        Log.e(TAG, "native: Error getting key frame");
+                        thumb = nativeRetriever.getFrameAtTime(nativeDuration/2 * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
+                        if (thumb == null) {
+                            markFailed("native: Error getting representative frame", path);
+                        }
                     }
                 }
             }
