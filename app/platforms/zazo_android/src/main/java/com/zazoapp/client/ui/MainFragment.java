@@ -586,6 +586,10 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                     managerHolder.getBenchViewManager().hideBench();
                     return result;
                 }
+                if (managerHolder.getPlayer().isPlaying()) {
+                    managerHolder.getPlayer().stop();
+                    return true;
+                }
                 break;
         }
         return false;
