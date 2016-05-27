@@ -563,16 +563,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             @Override
             public boolean click(View v) {
                 if (videoBody.equals(v)) {
-                    if (managerProvider.getFeatures().isUnlocked(Features.Feature.PAUSE_PLAYBACK)) {
-                        if (videoView.isPlaying()) {
-                            videoView.pause();
-                            progressBar.pause();
-                        } else {
-                            videoView.start();
-                            int duration = videoView.getDuration() - videoView.getCurrentPosition();
-                            progressBar.animateProgress(progressBar.getProgress(),
-                                    currentVideoNumber / (float) numberOfVideos, duration);
-                        }
+                    if (videoView.isPlaying()) {
+                        videoView.pause();
+                        progressBar.pause();
+                    } else {
+                        videoView.start();
+                        int duration = videoView.getDuration() - videoView.getCurrentPosition();
+                        progressBar.animateProgress(progressBar.getProgress(),
+                                currentVideoNumber / (float) numberOfVideos, duration);
                     }
                 } else {
                     if (isPlaying()) {
