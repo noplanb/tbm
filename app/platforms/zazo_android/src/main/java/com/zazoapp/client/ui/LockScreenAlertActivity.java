@@ -209,12 +209,12 @@ public class LockScreenAlertActivity extends Activity {
                                 Intent intent = getIntent();
                                 intent.putExtra(IntentHandlerService.FriendJoinedIntentFields.CHOSEN_PHONE, suggestion.getPhone(index));
                                 dismiss();
-                                startServiceForAction(IntentHandlerService.FriendJoinedActions.ADD);
+                                openSuggestions(IntentHandlerService.FriendJoinedActions.ADD);
                             }
                         }, suggestion, v, contextThemeWrapper);
                     } else {
                         dismiss();
-                        startServiceForAction(IntentHandlerService.FriendJoinedActions.ADD);
+                        openSuggestions(IntentHandlerService.FriendJoinedActions.ADD);
                     }
                 } else {
                     startHomeActivity();
@@ -223,13 +223,13 @@ public class LockScreenAlertActivity extends Activity {
             case R.id.action_second_btn:
                 dismiss();
                 if (isFriendJoinedIntent()) {
-                    startServiceForAction(IntentHandlerService.FriendJoinedActions.IGNORE);
+                    openSuggestions(IntentHandlerService.FriendJoinedActions.IGNORE);
                 }
                 break;
             case R.id.action_third_btn:
                 dismiss();
                 if (isFriendJoinedIntent()) {
-                    startServiceForAction(IntentHandlerService.FriendJoinedActions.UNSUBSCRIBE);
+                    openSuggestions(IntentHandlerService.FriendJoinedActions.UNSUBSCRIBE);
                 }
                 break;
         }
@@ -239,10 +239,10 @@ public class LockScreenAlertActivity extends Activity {
         return IntentHandlerService.IntentActions.FRIEND_JOINED.equals(getIntent().getAction());
     }
 
-    private void startServiceForAction(String action) {
-        Intent i = new Intent(getIntent());
-        i.setClass(getApplicationContext(), IntentHandlerService.class);
-        i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, action);
-        startService(i);
+    private void openSuggestions(String action) {
+        Intent i = NotificationAlertManager.makeSuggestionIntent(getIntent(), action);
+        i.setClass(this, MainActivity.class);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        startActivity(i);
     }
 }

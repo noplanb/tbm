@@ -355,7 +355,7 @@ public class NotificationAlertManager {
         return i;
     }
 
-    private static Intent makeSuggestionIntent(Intent intent, String subaction) {
+    public static Intent makeSuggestionIntent(Intent intent, String subaction) {
         Intent i = new Intent(intent);
         i.setAction(IntentHandlerService.IntentActions.SUGGESTIONS);
         i.putExtra(IntentHandlerService.FriendJoinedIntentFields.ACTION, IntentHandlerService.FriendJoinedActions.NOTIFY);
