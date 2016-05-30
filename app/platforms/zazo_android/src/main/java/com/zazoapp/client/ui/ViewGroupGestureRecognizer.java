@@ -112,6 +112,7 @@ public abstract class ViewGroupGestureRecognizer {
     // ---------
     private final String TAG = ViewGroupGestureRecognizer.class.getSimpleName();
     private static final Integer LONGPRESS_TIME = 500;
+    protected static final int FLING_TIME = 200;
 
     // -----
     // State

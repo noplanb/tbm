@@ -440,7 +440,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (v.getId() == R.id.video_progress_bar) {
-            return handleProgressBarTouchEvent(event);
+            if (managerProvider.getFeatures().isUnlocked(Features.Feature.PAUSE_PLAYBACK)) {
+                return handleProgressBarTouchEvent(event);
+            }
         }
         return false;
     }
@@ -551,10 +553,16 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         private class PlayControlGestureRecognizer extends ViewGroupGestureRecognizer.Stub {
             private long lastTime;
             private long previousLastTime;
+            private long startTime;
             private boolean isInited;
             private int gestureDirection;
+            private double gestureSign;
             private double startOffsetX;
             private double startOffsetY;
+            private double previousOffsetX;
+            private double previousOffsetY;
+            private boolean isFirstMove = false;
+            private boolean isNextPreviousAdvancePossible = false;
 
             public PlayControlGestureRecognizer(Activity a, ViewGroup vg, ArrayList<View> tvs) {
                 super(a, tvs);
@@ -628,11 +636,26 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
             @Override
             public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY) {
-                if (!videoBody.equals(target)) {
+                if (!isInited) {
                     return;
                 }
                 previousLastTime = lastTime;
                 lastTime = System.nanoTime();
+                if (gestureDirection == DIRECTION_HORIZONTAL) {
+                    if (!isFirstMove) {
+                        if (Math.signum(offsetX - previousOffsetX) != gestureSign
+                                || (lastTime - startTime) > FLING_TIME * 1000000) {
+                            isNextPreviousAdvancePossible = false;
+                        }
+                    }
+                    if (!isNextPreviousAdvancePossible) {
+                        MotionEvent event = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_MOVE, (float) (startX + offsetX), 0f, 0);
+                        handleProgressBarTouchEvent(event);
+                    }
+                }
+                previousOffsetX = offsetX;
+                previousOffsetY = offsetY;
+                isFirstMove = false;
             }
 
             @Override
@@ -640,9 +663,13 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (!(zoomAnimator != null && zoomAnimator.isStarted())) {
                     startOffsetX = offsetX;
                     startOffsetY = offsetY;
+                    previousOffsetX = offsetX;
+                    previousOffsetY = offsetY;
                     isInited = true;
+                    isFirstMove = true;
                     if (Math.abs(offsetX) <= Math.abs(offsetY)) {
                         if (videoBody.equals(target) && isSlidingSupported(DIRECTION_VERTICAL)) {
+                            gestureSign = Math.signum(offsetY);
                             if (!zoomed) {
                                 initialWidth = videoBody.getWidth();
                                 initialHeight = videoBody.getHeight();
@@ -651,8 +678,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                             }
                             animateZoom(!zoomed);
                         }
-                    } else {
+                    } else if (isSlidingSupported(DIRECTION_HORIZONTAL)) {
                         gestureDirection = DIRECTION_HORIZONTAL;
+                        isNextPreviousAdvancePossible = true;
+                        gestureSign = Math.signum(offsetX);
+                        startTime = System.nanoTime();
+                        lastTime = previousLastTime;
+                        MotionEvent event = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_DOWN, (float) (startX + offsetX), 0f, 0);
+                        handleProgressBarTouchEvent(event);
                     }
                 }
             }
@@ -662,8 +695,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (!isInited) {
                     return;
                 }
-                if (Math.abs(offsetX) > Math.abs(offsetY) && gestureDirection == DIRECTION_HORIZONTAL) {
-                    if (isSlidingSupported(DIRECTION_HORIZONTAL)) {
+                Log.i(TAG, "endMove");
+                if ((System.nanoTime() - startTime) > FLING_TIME * 1000000) {
+                    isNextPreviousAdvancePossible = false;
+                }
+                if (gestureDirection == DIRECTION_HORIZONTAL) {
+                    if (isNextPreviousAdvancePossible) {
                         if (offsetX > 0) {      // Swipe right
                             if (currentVideoNumber != numberOfVideos) {
                                 setCurrentVideoToNext();
@@ -675,9 +712,13 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                             }
                             play();
                         }
+                    } else {
+                        MotionEvent event = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_UP, (float) (startX + offsetX), 0f, 0);
+                        handleProgressBarTouchEvent(event);
                     }
                 }
                 gestureDirection = 0;
+                isNextPreviousAdvancePossible = false;
                 isInited = false; // TODO after parking animation
             }
 
