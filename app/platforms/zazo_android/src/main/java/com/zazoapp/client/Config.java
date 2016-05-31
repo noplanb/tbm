@@ -15,15 +15,15 @@ public class Config {
 //    public static final String SERVER_HOST = "192.168.1.82";
 //    public static final int SERVER_PORT = 3000;
 //    public static final String SERVER_URI = "http://"+SERVER_HOST+":" + SERVER_PORT;
-
-    private static final String STAGE_HOST = "staging.zazoapp.com";
+    public static final String APP_DOMAIN = "zazoapp.com";
+    private static final String STAGE_HOST = "staging." + APP_DOMAIN;
     private static final String STAGE_URI = "http://" + STAGE_HOST;
-    private static final String SERVER_HOST = "prod.zazoapp.com";
+    private static final String SERVER_HOST = "prod." + APP_DOMAIN;
     private static final String SERVER_URI = "http://" + SERVER_HOST;
 
     public static final String appName = "Zazo";
-    public static final String legacyLandingPageUrl = "zazoapp.com/l/";
-    public static final String landingPageUrl = "zazoapp.com/c/";
+    public static final String legacyLandingPageUrl = APP_DOMAIN + "/l/";
+    public static final String landingPageUrl = APP_DOMAIN + "/c/";
 
     private static File publicDir = null;
 

@@ -21,6 +21,7 @@ import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridManager;
+import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.HttpRequest;
@@ -402,16 +403,20 @@ public class InviteManager implements InviteHelper {
     }
 
     private String getDefaultInviteMessage() {
-        String landingPage;
+        User user = UserFactory.current_user();
+        if (user == null || friend == null) {
+            return context.getString(R.string.dialog_invite_sms_no_user_message, Config.APP_DOMAIN, Config.appName);
+        }
+        String url;
         String id;
-        if (friend != null && !TextUtils.isEmpty(friend.getCid())) {
-            landingPage = Config.landingPageUrl;
+        if (!TextUtils.isEmpty(friend.getCid())) {
+            url = Config.landingPageUrl;
             id = friend.getCid();
         } else {
-            landingPage = Config.legacyLandingPageUrl;
-            id = UserFactory.current_user().getId();
+            url = Config.legacyLandingPageUrl;
+            id = user.getId();
         }
-        return context.getString(R.string.dialog_invite_sms_message, Config.appName, landingPage, id);
+        return context.getString(R.string.dialog_invite_sms_message, friend.getFirstName(), Config.appName, url, id, user.getFirstName());
     }
 
     private boolean sendSms(String body, Activity activity) {

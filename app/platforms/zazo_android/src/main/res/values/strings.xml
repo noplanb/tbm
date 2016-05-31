@@ -51,7 +51,8 @@
     <string name="dialog_send_sms_failure_message">It looks like you can\'t or didn\'t send an invitation link. Perhaps you can just call or email %1$s and tell them about %2$s.</string>
     <string name="dialog_select_phone_number">Select number to invite %1$s</string>
     <string name="dialog_invite_sms_title">Send Link</string>
-    <string name="dialog_invite_sms_message">I sent you a message on %1$s. Get the app: %2$s%3$s</string>
+    <string name="dialog_invite_sms_message">%1$s, I sent you a quick video message on %2$s. I use it pretty often. To see my message download Zazo from the app store or here: %3$s%4$s. Yes, it\'s legit/safe to install. -%5$s</string>
+    <string name="dialog_invite_sms_no_user_message">I sent you a quick video message on %1$s. I use it pretty often. To see my message download Zazo from the app store or here: %2$s. Yes, it\'s legit/safe to install</string>
     <string name="dialog_invite_sms_action">Send</string>
     <string name="dialog_invite_send_through_sms">Send as SMS</string>
     <string name="dialog_invite_send_through_other">Send via…</string>
