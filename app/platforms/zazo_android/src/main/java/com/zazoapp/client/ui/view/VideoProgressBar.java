@@ -191,6 +191,7 @@ public class VideoProgressBar extends FrameLayout {
         setProgress(0);
         appearingAnimation = VideoProgressBarAnimation.getTerminalAnimation(this, true);
         appearingAnimation.start();
+        setEnabled(true);
     }
 
     public void doDisappearing() {
@@ -200,6 +201,7 @@ public class VideoProgressBar extends FrameLayout {
         appearingAnimation = VideoProgressBarAnimation.getTerminalAnimation(this, false);
         appearingAnimation.start();
         setCurrent(0, false);
+        setEnabled(false);
     }
 
     public void pause() {
