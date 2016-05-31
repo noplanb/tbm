@@ -49,11 +49,18 @@ public enum HintType {
     FEATURE_DELETE_FRIEND(R.string.feature_delete_friend_hint, R.string.tutorial_got_it, Features.Feature.DELETE_FRIEND) {
         @Override
         void show(TutorialLayout layout, View view, Tutorial tutorial, PreferencesHelper prefs) {
-            View parent = (View) layout.getParent();
-            if (parent != null) {
-                View button = parent.findViewById(R.id.menu_view);
+            ViewParent parent = layout;
+            while (parent != null) {
+                parent = parent.getParent();
+                if (parent instanceof View && ((View) parent).getId() == R.id.fragment_root) {
+                    break;
+                }
+            }
+            View rootView = (View) parent;
+            if (rootView != null) {
+                View button = rootView.findViewById(R.id.menu_view);
                 if (button != null) {
-                    layout.dimExceptForView(button, parent);
+                    layout.dimExceptForView(button, rootView);
                 }
             }
         }
@@ -153,7 +160,7 @@ public enum HintType {
                         return hasOneFriend() && unviewedCount == 0 &&
                                 ((firstInSession && current == null) || current == RECORD) && prefs.getBoolean(getPrefName(), true);
                     }
-                    return hasOneFriend() && unviewedCount == 0 && firstInSession && ((firstInSession && current == null) || current == RECORD) && prefs.getBoolean(getPrefName(), true);
+                    return hasOneFriend() && unviewedCount == 0 && ((firstInSession && current == null) || current == RECORD) && prefs.getBoolean(getPrefName(), true);
             }
             return false;
         }
