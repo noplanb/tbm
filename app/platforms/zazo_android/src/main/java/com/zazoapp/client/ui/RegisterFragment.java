@@ -658,4 +658,9 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
             }
         }
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        return false;
+    }
 }
