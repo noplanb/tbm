@@ -59,6 +59,8 @@ public class Features {
         }
     }
 
+    public static final boolean FLING_FEATURE_ALLOWED = false;
+
     private static final String PREF_SHOW_LAST_FEATURE = "pref_show_last_feature";
     private static final long[] awardVibrationPattern = {50, 300, 90, 100, 90, 100, 90, 330};
     private FragmentActivity activity;

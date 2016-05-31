@@ -680,7 +680,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         }
                     } else if (isSlidingSupported(DIRECTION_HORIZONTAL)) {
                         gestureDirection = DIRECTION_HORIZONTAL;
-                        isNextPreviousAdvancePossible = true;
+                        isNextPreviousAdvancePossible = Features.FLING_FEATURE_ALLOWED;
                         gestureSign = Math.signum(offsetX);
                         startTime = System.nanoTime();
                         lastTime = previousLastTime;
