@@ -208,7 +208,7 @@ public class FriendFinderRequests {
     @Nullable public static Friend gotFriend(Context context, String response) {
         AddResponse params = StringUtils.fromJson(response, AddResponse.class);
         if (params != null && params.getFriendData() != null) {
-            return FriendFactory.getFactoryInstance().createWithServerParams(context, params.getFriendData());
+            return FriendFactory.getFactoryInstance().createWithServerParams(context, params.getFriendData(), true);
         }
         return null;
     }

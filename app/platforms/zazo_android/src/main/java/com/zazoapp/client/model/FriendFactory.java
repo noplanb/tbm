@@ -131,16 +131,18 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
      * 
      * @param context
      * @param params server params
+     * @param notify true to notify callbacks about changes
      * @return Returns a friend only if a new one was created. It only creates a new friend if
      * none was found with the same id as in params. Returns null if friend is already exist.
      */
-    public Friend createWithServerParams(Context context, LinkedTreeMap<String, String> params){
+    public Friend createWithServerParams(Context context, LinkedTreeMap<String, String> params, boolean notify){
         Log.i(TAG, "createFriendFromServerParams: " + params);
         if (existsWithId(params.get(ServerParamKeys.ID))){
             Log.i(TAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
             return null;
         }
         Friend f = makeInstance(context);
+        f.notifyOnChanged(false);
         f.set(Friend.Attributes.FIRST_NAME, params.get(ServerParamKeys.FIRST_NAME));
         f.set(Friend.Attributes.LAST_NAME, params.get(ServerParamKeys.LAST_NAME));
         f.set(Friend.Attributes.ID, params.get(ServerParamKeys.ID));
@@ -151,7 +153,11 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         f.setHasApp(servHasApp(params));
         f.setLastActionTime();
         setConnectionParams(f, params);
-        notifyStatusChanged(f);
+        f.notifyOnChanged(true);
+        if (notify) {
+            f.notifyCallbacks(true);
+            notifyStatusChanged(f);
+        }
         return f;
     }
 
@@ -172,7 +178,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
             if (f != null) {
                 f = updateWithServerParams(context, f, friendParams);
             } else {
-                f = createWithServerParams(context, friendParams);
+                f = createWithServerParams(context, friendParams, true);
             }
             // if friend was updated or created then move him to grid
             if (f != null) {

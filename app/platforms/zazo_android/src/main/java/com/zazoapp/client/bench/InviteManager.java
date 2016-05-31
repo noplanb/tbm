@@ -65,6 +65,7 @@ public class InviteManager implements InviteHelper {
     private InviteDialogListener listener;
     private boolean isInvitationInProcess;
     private boolean isNudging;
+    private boolean friendWasAdded;
 
     public InviteManager(Context context) {
         this.context = context;
@@ -93,6 +94,7 @@ public class InviteManager implements InviteHelper {
         isInvitationInProcess = true;
         isNudging = false;
         lastInvitedFriend = null;
+        friendWasAdded = false;
         final Friend friend = friendMatchingContact(bo.mobileNumber);
         if (friend != null) {
             this.friend = friend;
@@ -272,8 +274,9 @@ public class InviteManager implements InviteHelper {
 
         if (checkIsFailureAndShowDialog(params))
             return;
-        friend = FriendFactory.getFactoryInstance().createWithServerParams(context, params);
+        friend = FriendFactory.getFactoryInstance().createWithServerParams(context, params, false);
         if (friend != null) {
+            friendWasAdded = true;
             if (friend.hasApp()) {
                 finishInvitation();
             } else {
@@ -400,6 +403,7 @@ public class InviteManager implements InviteHelper {
     public void cancelInvitation() {
         isInvitationInProcess = false;
         isNudging = false;
+        friendWasAdded = false;
     }
 
     private String getDefaultInviteMessage() {
@@ -459,6 +463,7 @@ public class InviteManager implements InviteHelper {
             listener.onFinishInvitation();
         }
         GridManager.getInstance().moveFriendToGrid(friend);
+        friendWasAdded = false;
     }
 
 	// Not used as the intent coming back into home context is unnecessarily disruptive.
@@ -494,4 +499,7 @@ public class InviteManager implements InviteHelper {
         return hasSim() || !DebugConfig.Bool.SEND_SMS.get();
     }
 
+    public boolean isFriendWasAdded() {
+        return friendWasAdded;
+    }
 }

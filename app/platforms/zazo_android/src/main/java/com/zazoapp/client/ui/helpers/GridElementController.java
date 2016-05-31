@@ -371,12 +371,13 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onModelUpdated(boolean changed) {
-        pendingAnim = changed;
+        boolean afterInvite = managerProvider.getInviteHelper().getLastInvitedFriend() != null;
+        pendingAnim = !afterInvite;
         if (changed) {
             updateContentFromUi();
             managerProvider.getBenchViewManager().updateBench();
         }
-        boolean afterInvite = managerProvider.getInviteHelper().getLastInvitedFriend() != null;
+
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -385,7 +386,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         gridElement.getFriend());
             }
         });
-        if (!afterInvite) {
+        if (pendingAnim) {
             highLightElementForFriend();
         }
     }
