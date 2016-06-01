@@ -550,6 +550,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         public static final String FRIEND_JOINED = "friend_joined";
         public static final String SUGGESTIONS = "suggestions";
         public static final String SEND_VIDEO = "send_video";
+        public static final String SHOW_AWARD = "show_award";
     }
 
     public static class FriendJoinedIntentFields {

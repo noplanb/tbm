@@ -31,6 +31,7 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.notification.NotificationAlertManager;
+import com.zazoapp.client.ui.MainActivity;
 import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedReader;
@@ -384,7 +385,8 @@ public class Convenience {
             Log.d(TAG, "Not enough space");
             String title = context.getString(R.string.alert_not_enough_space_title);
             String message = context.getString(R.string.alert_not_enough_space_message);
-            NotificationAlertManager.alert(context, title, message, null, NotificationAlertManager.NotificationType.NO_SPACE_LEFT.id());
+            Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
+            NotificationAlertManager.alert(context, title, message, null, NotificationAlertManager.NotificationType.NO_SPACE_LEFT.id(), intent);
             LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(ON_NOT_ENOUGH_SPACE_ACTION));
         }
         return result;

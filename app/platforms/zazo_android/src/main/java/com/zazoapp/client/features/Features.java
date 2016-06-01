@@ -1,8 +1,10 @@
 package com.zazoapp.client.features;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.debug.DebugConfig;
@@ -10,6 +12,7 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.notification.NotificationAlertManager;
+import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
@@ -167,10 +170,12 @@ public class Features {
         } else {
             prefs.putBoolean(PREF_SHOW_LAST_FEATURE, true);
             if (!TbmApplication.getInstance().isForeground() || Convenience.screenIsLockedOrOff(activity)) {
+                Intent intent = new Intent(activity.getApplicationContext(), MainActivity.class);
+                intent.setAction(IntentHandlerService.IntentActions.SHOW_AWARD);
                 NotificationAlertManager.alert(activity,
                         activity.getString(R.string.feature_unlock_message),
                         activity.getString(R.string.feature_unlock_discover_message),
-                        awardVibrationPattern, NotificationAlertManager.NotificationType.FEATURE_AWARD.id());
+                        awardVibrationPattern, NotificationAlertManager.NotificationType.FEATURE_AWARD.id(), intent);
             }
         }
     }

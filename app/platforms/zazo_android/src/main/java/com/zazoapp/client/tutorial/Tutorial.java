@@ -284,4 +284,10 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
             dismissHint();
         }
     }
+
+    public void showAward() {
+        if (managers.getFeatures().shouldShowAwardDialog() && !isShown()) {
+            managers.getFeatures().showFeatureAwardDialog(managers, managers.getFeatures().lastUnlockedFeature());
+        }
+    }
 }

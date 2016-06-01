@@ -241,6 +241,13 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return;
         }
 
+        if (IntentHandlerService.IntentActions.SHOW_AWARD.equals(action)) {
+            Logger.i(TAG, "handleIntentAction: show award");
+            getManagerProvider().getTutorial().showAward();
+            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
+            return;
+        }
+
         if (action == null || data == null) {
             Logger.i(TAG, "handleIntentAction: no action or data. Exiting.");
             return;
@@ -256,6 +263,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             Logger.i(TAG, "handleIntentAction: play video");
             currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             play(friendId);
+            return;
         }
 
         // Not used as I decided pending intent coming back from sending sms is

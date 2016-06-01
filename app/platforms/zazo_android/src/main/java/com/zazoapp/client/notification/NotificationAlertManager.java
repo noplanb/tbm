@@ -112,10 +112,9 @@ public class NotificationAlertManager {
         postNativeFriendJoinedAlert(context, friendJoinedIntent);
     }
 
-    public static void alert(Context context, String title, String subTitle, long[] vibratePattern, int id) {
+    public static void alert(Context context, String title, String subTitle, long[] vibratePattern, int id, Intent activityIntent) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
-        PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, activityIntent, 0);
 
         NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
         notiStyle.setBigContentTitle(title);
