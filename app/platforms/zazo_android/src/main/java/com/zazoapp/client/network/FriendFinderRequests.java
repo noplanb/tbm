@@ -207,8 +207,11 @@ public class FriendFinderRequests {
      */
     @Nullable public static Friend gotFriend(Context context, String response) {
         AddResponse params = StringUtils.fromJson(response, AddResponse.class);
-        if (params != null && params.getFriendData() != null) {
-            return FriendFactory.getFactoryInstance().createWithServerParams(context, params.getFriendData(), true);
+        if (params != null) {
+            LinkedTreeMap<String, String> friendData = params.getFriendData();
+            if (friendData != null) {
+                return FriendFactory.getFactoryInstance().createWithServerParams(context, friendData, true);
+            }
         }
         return null;
     }
@@ -289,6 +292,7 @@ public class FriendFinderRequests {
                         public void success(String response) {
                             if (TextUtils.isEmpty(response)) {
                                 callback.onReceivedSuggestions(null);
+                                return;
                             }
                             Gson gson = new Gson();
                             try {

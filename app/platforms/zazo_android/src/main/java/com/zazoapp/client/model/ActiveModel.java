@@ -38,12 +38,16 @@ public abstract class ActiveModel {
     public ActiveModel set(String a, String v) {
         if (attributes.containsKey(a)) {
             Log.i(TAG, "setting " + a + " : " + v);
+            if (v == null) {
+                v = "";
+                Dispatch.dispatch(new NullPointerException("" + this.getClass().getSimpleName() + " try to set null value"), "Try to set null value in model");
+            }
             String oldValue = attributes.put(a, v);
             if (!v.equals(oldValue)) {
                 notifyCallbacks(true);
             }
         } else {
-            Dispatch.dispatch("ERROR: set: " + a + " is not an attr. This should neve happen");
+            Dispatch.dispatch("ERROR: set: " + a + " is not an attr. This should never happen");
             throw new RuntimeException();
         }
         return this;

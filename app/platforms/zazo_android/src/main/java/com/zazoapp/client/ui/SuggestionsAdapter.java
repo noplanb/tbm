@@ -296,7 +296,9 @@ class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHol
 
         @Override
         public void success(String response) {
-            fragment.onReceivedFriend(FriendFinderRequests.gotFriend(layoutInflater.getContext(), response));
+            if (successState == ContactSuggestion.State.ADDED) {
+                fragment.onReceivedFriend(FriendFinderRequests.gotFriend(layoutInflater.getContext(), response));
+            }
             finishRequest(true);
         }
 
