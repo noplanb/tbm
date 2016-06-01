@@ -242,18 +242,16 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
         public void handle() {
             Log.i(TAG, "handle:");
+            if (isStoringIntent()) {
+                handleStoringIntent();
+            } else if (!User.isRegistered(getApplicationContext())) {
             // This should never happen except perhaps when debugging and notifications are coming in even though
             // the user is not registered.
-            if (!User.isRegistered(getApplicationContext())) {
-                Log.i(TAG, "Got an intent but user was not registered. Not processing it.");
-                return;
-            }
-            if (isDownloadIntent()) {
+                Dispatch.dispatch(intent, "IntentHandler: No user", "Got an intent but user was not registered. Not processing it.");
+            } else if (isDownloadIntent()) {
                 handleDownloadIntent();
             } else if (isUploadIntent()) {
                 handleUploadIntent();
-            } else if (isStoringIntent()) {
-                handleStoringIntent();
             } else if (isFriendJoinedIntent()) {
                 handleFriendJoinedIntent();
             }

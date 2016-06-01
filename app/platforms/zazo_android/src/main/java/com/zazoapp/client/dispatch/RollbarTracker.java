@@ -66,16 +66,21 @@ public class RollbarTracker implements ErrorTracker {
     public void trackData(JSONObject data) {
         LinkedTreeMap<String, String> params = new LinkedTreeMap<>();
         Iterator<String> keys = data.keys();
+        String messageTag = "data";
         try {
             while (keys.hasNext()) {
                 String key = keys.next();
-                params.put(key, data.getString(key));
+                if (Dispatch.MESSAGE_TAG.equals(key)) {
+                    messageTag = data.getString(key);
+                } else {
+                    params.put(key, data.getString(key));
+                }
             }
         } catch (JSONException e) {
             return;
         }
         setUpUser();
-        Rollbar.reportMessage("data", ErrorLevel.INFO.name(), params);
+        Rollbar.reportMessage(messageTag, ErrorLevel.INFO.name(), params);
     }
 
     @Override

@@ -1,7 +1,11 @@
 package com.zazoapp.client.dispatch;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.util.Log;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -12,6 +16,8 @@ public class Dispatch {
 
     private static boolean includeLogcat = true;
     private static ErrorTracker tracker;
+
+    public static final String MESSAGE_TAG = "message_tag";
 
     public static void setIncludeLogcat(boolean includeLogcat) {
         Dispatch.includeLogcat = includeLogcat;
@@ -68,7 +74,35 @@ public class Dispatch {
         });
     }
 
-    public static void dispatch(final JSONObject data, Throwable tr) {
+    public static void dispatch(Intent intent, @Nullable String tag, @Nullable String message) {
+        if (tag != null && message != null) {
+            Log.i(tag, message);
+        }
+        JSONObject data = new JSONObject();
+        try {
+            data.put(MESSAGE_TAG, tag);
+            data.put("message", message);
+            if (intent != null) {
+                data.put("intent", intent.toString());
+                Bundle extras = intent.getExtras();
+                if (extras != null) {
+                    for (String key : extras.keySet()) {
+                        try {
+                            data.put(key, extras.get(key));
+                        } catch (JSONException e) {
+                            data.put(key, "-not valid data-");
+                        }
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            dispatch(e, "Couldn't send json data");
+            // no need return, send data anyway
+        }
+        dispatch(data, null);
+    }
+
+    public static void dispatch(final JSONObject data, @Nullable Throwable tr) {
         if (tr != null) {
             Log.e(TAG, "dispatch", tr);
         }
