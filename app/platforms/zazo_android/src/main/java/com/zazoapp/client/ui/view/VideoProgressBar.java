@@ -40,6 +40,8 @@ public class VideoProgressBar extends FrameLayout {
     private Animator appearingAnimation;
     private Scheme scheme = new VideoProgressBar.Scheme.SchemeBuilder().build();
     private int current;
+    private int barPadding;
+    private int layoutPadding;
 
     public VideoProgressBar(Context context) {
         this(context, null);
@@ -58,6 +60,8 @@ public class VideoProgressBar extends FrameLayout {
         LayoutInflater.from(getContext()).inflate(R.layout.playback_slider, this);
         ButterKnife.inject(this);
         progressLineHeight = Convenience.dpToPx(getContext(), 3f);
+        barPadding = Convenience.dpToPx(getContext(), 2);
+        layoutPadding = getContext().getResources().getDimensionPixelSize(R.dimen.abc_action_bar_content_inset_material);
     }
 
     public void setScheme(Scheme scheme) {
@@ -110,7 +114,7 @@ public class VideoProgressBar extends FrameLayout {
     }
 
     private void setSliderPosition() {
-        sliderView.setX((getWidth() - sliderView.getWidth()) * progress);
+        sliderView.setX((getWidth() - (layoutPadding + barPadding) * 2) * progress - sliderView.getWidth() / 2 + layoutPadding);
     }
 
     public void setSecondaryProgress(@FloatRange(from = 0f, to = 1f) float progress) {
@@ -135,10 +139,10 @@ public class VideoProgressBar extends FrameLayout {
                 }, new float[]{0f, 0.1f, 0.8f, 0.9f}, Shader.TileMode.CLAMP));
         secondaryPaint.setShader(new LinearGradient(0, 0, 0, progressLineHeight,
                 new int[]{
-                        Color.parseColor("#999999"),
-                        Color.parseColor("#a5a5a5"),
-                        Color.parseColor("#a5a5a5"),
-                        Color.parseColor("#888888")
+                        Color.parseColor("#8aeeeeee"),
+                        Color.parseColor("#8affffff"),
+                        Color.parseColor("#8affffff"),
+                        Color.parseColor("#8aeeeeee")
                 }, new float[]{0f, 0.1f, 0.8f, 0.9f}, Shader.TileMode.CLAMP));
     }
 
@@ -149,14 +153,14 @@ public class VideoProgressBar extends FrameLayout {
         canvas.save();
         canvas.translate(0, cY - progressLineHeight / 2f);
         int barsCount = Math.max(scheme.getBarCount(), 1);
-        int barPadding = Convenience.dpToPx(getContext(), 2);
-        int maxBarSize = getWidth() / barsCount - 2 * barPadding;
+        int left = barPadding + layoutPadding;
+        int maxRight = getWidth() - left;
+        int maxBarSize = (maxRight - left - barPadding * (barsCount - 1) * 2) / barsCount;
         float scaledProgress = barsCount * progress;
         float curProgress = scaledProgress - (int) scaledProgress;
         float scaledSecProgress = barsCount * secondaryProgress;
         float curSecProgress = scaledSecProgress - (int)  scaledSecProgress;
-        int left = barPadding;
-        int maxRight = getWidth() - barPadding;
+
         float radius = Convenience.dpToPx(getContext(), 1f);
         drawRoundRect.top = 0;
         drawRoundRect.bottom = progressLineHeight;
@@ -208,6 +212,10 @@ public class VideoProgressBar extends FrameLayout {
         if (progressAnimator != null) {
             progressAnimator.cancel();
         }
+    }
+
+    public int getLayoutPadding() {
+        return layoutPadding;
     }
 
     public static class Scheme {

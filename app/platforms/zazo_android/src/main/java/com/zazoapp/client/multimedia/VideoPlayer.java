@@ -450,7 +450,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private boolean handleProgressBarTouchEvent(MotionEvent event) {
         int action = event.getAction();
         float x = event.getX();
-        float progress = x / progressBar.getWidth();
+        float progress;
+        if (x <= progressBar.getLayoutPadding()) {
+            progress = 0f;
+        } else if (x >= progressBar.getWidth() - progressBar.getLayoutPadding()) {
+            progress = 1f;
+        } else {
+            progress = (x - progressBar.getLayoutPadding()) / (progressBar.getWidth() - progressBar.getLayoutPadding() * 2);
+        }
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 videoView.setVolume(0f);
@@ -481,7 +488,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
      */
     private float setVideoProgress(float fullProgress, boolean allowLoad, boolean seek) {
         progressBar.setProgress(fullProgress);
-        int pos = (int) Math.floor(fullProgress * numberOfVideos);
+        int pos = (int) Math.max(Math.floor(fullProgress * numberOfVideos - 0.0001), 0);
         final float curProgress = fullProgress * numberOfVideos - pos;
         if ((currentVideoNumber != pos + 1)) {
             jumpToVideo(pos);
