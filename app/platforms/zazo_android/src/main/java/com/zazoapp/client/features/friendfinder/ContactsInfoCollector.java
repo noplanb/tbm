@@ -1,6 +1,7 @@
 package com.zazoapp.client.features.friendfinder;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
@@ -11,10 +12,14 @@ import android.text.TextUtils;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.bench.BenchDataHandler.SmsColumnNames;
+import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.features.friendfinder.vectors.ContactVector;
 import com.zazoapp.client.features.friendfinder.vectors.EmailVector;
 import com.zazoapp.client.features.friendfinder.vectors.MobileVector;
 import com.zazoapp.client.features.friendfinder.vectors.SNVectorFactory;
+import com.zazoapp.client.network.FriendFinderRequests;
+import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import org.json.JSONArray;
@@ -236,5 +241,33 @@ public class ContactsInfoCollector {
             c.close();
         }
         return info;
+    }
+
+    public static void checkAndSend(Context context) {
+        final PreferencesHelper prefs = new PreferencesHelper(context);
+        final String lastSendKey = "contacts_last_send_time_key";
+        long lastTime = Long.parseLong(prefs.getString(lastSendKey, "0"));
+        long week = 604800000; // 7 * 24 * 60 * 60 * 1000
+        long currentTime = System.currentTimeMillis();
+        if (!DebugConfig.Bool.ALLOW_SEND_CONTACTS.get()) {
+            return;
+        }
+        if (currentTime - lastTime > week) {
+            ContactsInfoCollector.collectContacts(context.getContentResolver(), new ContactsInfoCollector.ContactsInfoCollectedCallback() {
+                @Override
+                public void onInfoCollected(final JSONArray contacts) {
+                    FriendFinderRequests.sendContacts(contacts, new HttpRequest.Callbacks() {
+                        @Override
+                        public void success(String response) {
+                            prefs.putString(lastSendKey, String.valueOf(System.currentTimeMillis()));
+                        }
+
+                        @Override
+                        public void error(String errorString) {
+                        }
+                    });
+                }
+            });
+        }
     }
 }

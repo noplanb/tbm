@@ -47,6 +47,7 @@ import com.zazoapp.client.debug.DebugUtils;
 import com.zazoapp.client.debug.ZazoGestureListener;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
+import com.zazoapp.client.features.friendfinder.ContactsInfoCollector;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -188,6 +189,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         super.onResume();
         managerHolder.registerManagers();
         handleIntent(getActivity().getIntent());
+        ContactsInfoCollector.checkAndSend(context);
     }
 
     private void handleIntent(Intent intent) {
