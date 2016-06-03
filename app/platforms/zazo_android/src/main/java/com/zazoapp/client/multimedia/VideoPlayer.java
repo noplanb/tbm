@@ -229,10 +229,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             managerProvider.getAudioController().setSpeakerPhoneOn(true);
             final String path = friend.videoFromPath(videoId);
             videoView.setOnPreparedListener(new OnPreparedListener() {
+                boolean firstOpening = true;
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
-                    videoView.seekTo((int) (videoView.getDuration() * progress));
+                    if (firstOpening) {
+                        videoView.seekTo((int) (videoView.getDuration() * progress));
+                        firstOpening = false;
+                    }
                     videoView.start();
                     waitAndNotifyWhenStart();
                 }
