@@ -64,7 +64,7 @@ public abstract class BasePreviewTextureFrame extends FrameLayout {
         return textureView.getHeight();
     }
 
-    public void setSwitchCameraIndication() {
+    public final void setSwitchCameraIndication() {
         switchCameraIcon.setVisibility(Features.Feature.SWITCH_CAMERA.isUnlocked(getContext()) ? VISIBLE : INVISIBLE);
     }
 }
