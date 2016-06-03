@@ -220,9 +220,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                         topFragment = null;
                         tutorialParent.setVisibility(View.VISIBLE);
                     }
-                    if (drawerLayout.isDrawerOpen(Gravity.LEFT)) {
-                        drawerLayout.closeDrawer(Gravity.LEFT);
-                    }
+                    closeDrawerIfOpened();
                     publishResult(ACTION_CODE_SHOW_SUGGESTIONS, null);
                     intent.putExtra(EXTRA_HANDLED, true);
                 }
@@ -258,12 +256,24 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         }
     }
 
+    /**
+     * @return true if drawer was opened, false otherwise
+     */
+    private boolean closeDrawerIfOpened() {
+        if (drawerLayout.isDrawerOpen(Gravity.LEFT)) {
+            drawerLayout.closeDrawer(Gravity.LEFT);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void onPause() {
         super.onPause();
         if (managerHolder.getBenchViewManager().isBenchShown()) {
             managerHolder.getBenchViewManager().hideBench();
         }
+        closeDrawerIfOpened();
         releaseManagers();
     }
 
@@ -579,8 +589,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                     managerHolder.getTutorial().dismissHint();
                     return true;
                 }
-                if (drawerLayout.isDrawerOpen(Gravity.LEFT)) {
-                    drawerLayout.closeDrawer(Gravity.LEFT);
+                if (closeDrawerIfOpened()) {
                     return true;
                 }
                 if (managerHolder.getBenchViewManager().isBenchShown()) {
