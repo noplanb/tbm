@@ -62,6 +62,7 @@ public class VideoProgressBar extends FrameLayout {
         progressLineHeight = Convenience.dpToPx(getContext(), 3f);
         barPadding = Convenience.dpToPx(getContext(), 2);
         layoutPadding = getContext().getResources().getDimensionPixelSize(R.dimen.abc_action_bar_content_inset_material);
+        setEnabled(false);
     }
 
     public void setScheme(Scheme scheme) {
