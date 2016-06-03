@@ -155,8 +155,8 @@
     <string name="feature_switch_camera_hint">Tap to switch camera</string>
     <string name="feature_abort_recording_hint">Abort a recording.\nDrag finger away while recording</string>
     <string name="feature_delete_friend_hint">Delete a friend. Tap menu. And chose Edit friends</string>
-    <string name="feature_play_fullscreen_hint">Drag while playing to play full screen</string>
-    <string name="feature_pause_playback_hint">Slide right and left to scrub</string>
+    <string name="feature_play_fullscreen_hint">Drag up or down while playing to play full screen</string>
+    <string name="feature_pause_playback_hint">Swipe right and left anywhere on screen while playing to fast forward and rewind</string>
     <string name="feature_earpiece_hint">Play quietly.\nTap to play. Then hold phone to ear</string>
     <string name="feature_carousel_hint">Move a friend.\nDrag a friend to any position</string>
 
