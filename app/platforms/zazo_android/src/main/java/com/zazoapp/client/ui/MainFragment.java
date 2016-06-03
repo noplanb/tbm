@@ -485,11 +485,13 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         tr.add(R.id.top_frame, f);
         tr.addToBackStack(null);
         tr.commit();
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.LEFT);
         f.setOnBackListener(new ZazoTopFragment.OnBackListener() {
             @Override
             public void onBack() {
                 topFragment = null;
                 tutorialParent.setVisibility(View.VISIBLE);
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.LEFT);
             }
         });
         topFragment = f;

@@ -56,6 +56,9 @@ public class SettingsFragment extends ZazoTopFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.home:
+                if (getOnBackListener() != null) {
+                    getOnBackListener().onBack();
+                }
                 getFragmentManager().popBackStack();
                 break;
         }

@@ -81,6 +81,9 @@ public class ManageFriendsFragment extends ZazoTopFragment implements View.OnTou
         switch (v.getId()) {
             case R.id.home:
                 searchPanel.hideKeyboard();
+                if (getOnBackListener() != null) {
+                    getOnBackListener().onBack();
+                }
                 getFragmentManager().popBackStack();
                 break;
         }

@@ -36,4 +36,8 @@ public class ZazoTopFragment extends Fragment {
     public void setOnBackListener(OnBackListener listener) {
         onBackListener = listener;
     }
+
+    protected OnBackListener getOnBackListener() {
+        return onBackListener;
+    }
 }
