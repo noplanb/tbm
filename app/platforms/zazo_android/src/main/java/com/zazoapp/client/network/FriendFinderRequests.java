@@ -287,6 +287,7 @@ public class FriendFinderRequests {
             new HttpRequest.Builder()
                     .setUrl(getUrl(SUGGESTIONS_API))
                     .setHost(getServerHost())
+                    .setTimeout(5)
                     .setCallbacks(new HttpRequest.Callbacks() {
                         @Override
                         public void success(String response) {

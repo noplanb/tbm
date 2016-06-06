@@ -240,21 +240,19 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                     if (adapter.getItemCount() == 0) {
                         emptySuggestions.setVisibility(View.VISIBLE);
                         emptySuggestionsText.setText(R.string.suggestions_empty);
-                        if (listView != null) {
-                            listView.setVisibility(View.INVISIBLE);
-                        }
+                        listView.setVisibility(View.VISIBLE);
+                        listView.setAlpha(0f);
                     } else {
-                        doListViewAppearing();
                         emptySuggestions.setVisibility(View.INVISIBLE);
                     }
                 } else {
                     adapter.clear();
                     emptySuggestions.setVisibility(View.VISIBLE);
                     emptySuggestionsText.setText(R.string.suggestions_cant_load);
-                    if (listView != null) {
-                        listView.setVisibility(View.INVISIBLE);
-                    }
+                    listView.setVisibility(View.VISIBLE);
+                    listView.setAlpha(0f);
                 }
+                doListViewAppearing();
             }
         });
     }
@@ -496,14 +494,14 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     }
 
     private void doListViewAppearing() {
-        if (listView != null && listView.getVisibility() == View.INVISIBLE) {
+        if (listView != null && (listView.getVisibility() == View.INVISIBLE || listView.getAlpha() < 1)) {
             final float offset = Convenience.dpToPx(listView.getContext(), 50);
             progressBar.animate().alpha(0).translationY(-offset).setListener(
                     new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             super.onAnimationEnd(animation);
-                            if (listView != null && adapter !=null && adapter.getItemCount() > 0) {
+                            if (listView != null && adapter != null && adapter.getItemCount() > 0) {
                                 listView.setTranslationY(offset);
                                 listView.setVisibility(View.VISIBLE);
                                 listView.setAlpha(0f);

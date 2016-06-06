@@ -14,19 +14,18 @@ import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.auth.AuthScope;
 import cz.msebera.android.httpclient.auth.UsernamePasswordCredentials;
-import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
-import cz.msebera.android.httpclient.client.methods.HttpGet;
-import cz.msebera.android.httpclient.client.methods.HttpPost;
-import cz.msebera.android.httpclient.client.methods.HttpUriRequest;
+import cz.msebera.android.httpclient.client.entity.EntityBuilder;
+import cz.msebera.android.httpclient.client.methods.RequestBuilder;
 import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 import cz.msebera.android.httpclient.conn.scheme.Scheme;
 import cz.msebera.android.httpclient.conn.scheme.SchemeRegistry;
 import cz.msebera.android.httpclient.conn.ssl.SSLSocketFactory;
-import cz.msebera.android.httpclient.entity.StringEntity;
+import cz.msebera.android.httpclient.entity.ContentType;
 import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
 import cz.msebera.android.httpclient.impl.conn.SingleClientConnManager;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 import cz.msebera.android.httpclient.params.CoreProtocolPNames;
+import cz.msebera.android.httpclient.params.HttpConnectionParams;
 import cz.msebera.android.httpclient.protocol.HTTP;
 import org.json.JSONObject;
 
@@ -34,7 +33,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,6 +56,7 @@ public class HttpRequest {
     private LinkedTreeMap<String, String> sParams;
     private JSONObject jsonParams;
     private Callbacks callbacks;
+    private int timeout;
     
     //------------------------------------------------------------------
     // Application level success and failure handling (not http failure)
@@ -156,6 +155,7 @@ public class HttpRequest {
         pass = builder.pass;
         jsonParams = builder.jsonParams;
         callbacks = builder.callbacks;
+        timeout = builder.timeout;
         AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
     }
 
@@ -172,6 +172,7 @@ public class HttpRequest {
         private Callbacks callbacks;
         private JSONObject jsonParams;
         private String host;
+        private int timeout = -1;
 
         public Builder setUrl(String url) {
             this.url = url;
@@ -218,6 +219,16 @@ public class HttpRequest {
             return this;
         }
 
+        /**
+         *
+         * @param timeout in seconds
+         * @return
+         */
+        public Builder setTimeout(int timeout) {
+            this.timeout = timeout;
+            return this;
+        }
+
         public HttpRequest build() {
             if (TextUtils.isEmpty(url) && TextUtils.isEmpty(uri)) {
                 throw new IllegalStateException("At least one from url or uri must be set");
@@ -255,10 +266,13 @@ public class HttpRequest {
         String sUrl = (url == null) ? Config.fullUrl(uri) : url;
         String sHost = (host == null) ? Config.getServerHost() : host;
         String result = "";
-
         DefaultHttpClient http = new DefaultHttpClient();
         http.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Android");
         http.getParams().setParameter("Accept-Charset", "UTF-8");
+        if (timeout > 0) {
+            HttpConnectionParams.setConnectionTimeout(http.getParams(), timeout * 1000);
+            HttpConnectionParams.setSoTimeout(http.getParams(), timeout *1000);
+        }
         if (securedConnection) {
             SchemeRegistry schemeRegistry = new SchemeRegistry();
             schemeRegistry.register(new Scheme("https",
@@ -282,24 +296,22 @@ public class HttpRequest {
                 new UsernamePasswordCredentials(login, pass)
         );
 
-        HttpUriRequest request;
+        RequestBuilder rb;
         if (isPost()) {
-            request = new HttpPost(sUrl);
+            rb = RequestBuilder.post();
             if (jsonParams != null) {
-                StringEntity entity = new StringEntity(jsonParams.toString(), Charset.forName("UTF-8"));
-                request.addHeader(HTTP.CONTENT_TYPE, "application/json");
-                ((HttpPost)request).setEntity(entity);
-            } else {
-                if (sParams != null && sParams.size() > 0) {
-                    List<NameValuePair> nameValuePairs = new LinkedList<NameValuePair>();
-                    for (String s : sParams.keySet()) {
-                        nameValuePairs.add(new BasicNameValuePair(s, sParams.get(s)));
-                    }
-                    ((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                rb.setEntity(EntityBuilder.create()
+                        .setText(jsonParams.toString())
+                        .setContentType(ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), "UTF-8")).build());
+                rb.addHeader(HTTP.CONTENT_TYPE, "application/json");
+            } else if (sParams != null && sParams.size() > 0) {
+                for (String s : sParams.keySet()) {
+                    rb.addParameter(s, sParams.get(s));
                 }
             }
         } else {
-            if (sParams != null && sParams.size() > 0){
+            rb = RequestBuilder.get();
+            if (sParams != null && sParams.size() > 0) {
                 sUrl+="?";
                 List<NameValuePair> params = new LinkedList<NameValuePair>();
                 for (String s : sParams.keySet()) {
@@ -307,9 +319,10 @@ public class HttpRequest {
                 }
                 sUrl+= URLEncodedUtils.format(params, "utf-8");
             }
-            request = new HttpGet(sUrl);
         }
-        HttpResponse response = http.execute(request);
+        rb.setUri(sUrl);
+
+        HttpResponse response = http.execute(rb.build());
 
         if (response.getStatusLine().getStatusCode() != 200) {
             Log.e(TAG, sUrl + "\n" + response.getStatusLine().getStatusCode() + " "
