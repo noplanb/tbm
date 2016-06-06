@@ -15,7 +15,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelFactory;
 import com.zazoapp.client.model.ActiveModelsHandler;
@@ -31,15 +30,11 @@ import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileUploadService;
-import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
-import com.zazoapp.client.notification.NotificationSuggestion;
-import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Convenience;
-import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.Logger;
 
 import java.util.ArrayList;
@@ -439,75 +434,11 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             if (friendJoinedAction == null) {
                 return;
             }
-            NotificationAlertManager.cancelNativeAlert(IntentHandlerService.this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
-            NotificationSuggestion suggestion = intent.getParcelableExtra(FriendJoinedIntentFields.DATA);
-            String nkey = suggestion.getNkey();
             switch (friendJoinedAction) {
                 case FriendJoinedActions.NOTIFY:
                     NotificationAlertManager.alertFriendJoined(IntentHandlerService.this, new Intent(intent));
                     break;
-                case FriendJoinedActions.ADD:
-                    FriendFinderRequests.addFriend(nkey, new HttpRequest.Callbacks() {
-                        @Override
-                        public void success(String response) {
-                            FriendFinderRequests.gotFriend(IntentHandlerService.this, response);
-                            startSuggestionsActivity();
-                        }
-
-                        @Override
-                        public void error(String errorString) {
-                            DialogShower.showToast(getApplicationContext(), R.string.ff_add_error_message);
-                        }
-                    }, intent.getStringExtra(FriendJoinedIntentFields.CHOSEN_PHONE));
-                    break;
-                case FriendJoinedActions.IGNORE:
-                    FriendFinderRequests.ignoreFriend(nkey, new HttpRequest.Callbacks() {
-                        @Override
-                        public void success(String response) {
-                            startSuggestionsActivity();
-                        }
-
-                        @Override
-                        public void error(String errorString) {
-                            DialogShower.showToast(getApplicationContext(), R.string.ff_ignore_error_message);
-                        }
-                    });
-                    break;
-                case FriendJoinedActions.UNSUBSCRIBE:
-                    FriendFinderRequests.unsubscribe(new HttpRequest.Callbacks() {
-                        @Override
-                        public void success(String response) {
-                            startSuggestionsActivity();
-                        }
-
-                        @Override
-                        public void error(String errorString) {
-                            DialogShower.showToast(getApplicationContext(), R.string.ff_subscription_failure);
-                        }
-                    });
-                    break;
-                case FriendJoinedActions.SUBSCRIBE:
-                    FriendFinderRequests.subscribe(new HttpRequest.Callbacks() {
-                        @Override
-                        public void success(String response) {
-                            startSuggestionsActivity();
-                        }
-
-                        @Override
-                        public void error(String errorString) {
-                            DialogShower.showToast(getApplicationContext(), R.string.ff_subscription_failure);
-                        }
-                    });
-                    break;
             }
-        }
-
-        private void startSuggestionsActivity() {
-            Intent startIntent = new Intent(intent);
-            startIntent.setClass(getApplicationContext(), MainActivity.class);
-            startIntent.setAction(IntentActions.SUGGESTIONS);
-            startIntent.addFlags(Intent.FLAG_FROM_BACKGROUND);
-            startActivity(startIntent);
         }
 
         //--------

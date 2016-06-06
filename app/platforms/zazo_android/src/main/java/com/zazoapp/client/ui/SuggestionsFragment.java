@@ -85,6 +85,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     private static final String CARD_TYPE = "card_type";
     private static final String NOTIFICATION_DATA = "notification_data";
     private static final String SUBACTION = "subaction";
+    private static final String CHOSEN_PHONE = "chosen_phone";
     static final String FROM_APPLICATION = "from_application";
     static final String ADDED_FRIENDS = "added_friends";
     private static final String IS_ANYONE_ADDED = "is_anyone_added";
@@ -160,6 +161,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                     case IntentHandlerService.FriendJoinedActions.NOTIFY:
                         bundle.putInt(CARD_TYPE, SuggestionCardType.NOTIFICATION.ordinal());
                         bundle.putString(SUBACTION, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.SUBACTION));
+                        bundle.putString(CHOSEN_PHONE, intent.getStringExtra(IntentHandlerService.FriendJoinedIntentFields.CHOSEN_PHONE));
                         break;
                     default:
                         bundle.putInt(CARD_TYPE, SuggestionCardType.NONE.ordinal());
@@ -460,9 +462,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                 if (subaction != null) {
                     switch (subaction) {
                         case IntentHandlerService.FriendJoinedActions.ADD:
-                            if (!suggestion.hasMultiplePhones()) { // not necessary check as for multiple phones it will be opened without subaction
-                                addFriendFromNotification(null);
-                            }
+                            addFriendFromNotification(getArguments().getString(CHOSEN_PHONE));
                             break;
                         case IntentHandlerService.FriendJoinedActions.IGNORE:
                             ignoreFriendFromNotification();
@@ -591,7 +591,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     }
 
     public void onReceivedFriend(Friend friend) {
-        if (friend != null) {
+        if (friend != null && friend != Friend.EMPTY) {
             friendIds.add(friend.getId());
         }
     }

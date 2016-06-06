@@ -85,6 +85,7 @@
     <string name="toast_could_not_get_audio_focus">Could not get audio focus. Probably you are in call</string>
     <string name="toast_could_not_sync">Could not sync</string>
     <string name="toast_camera_is_switching">Please wait. Camera is not ready yet</string>
+    <string name="toast_already_added">Friend is already connected with you</string>
 
     <string name="recording">Recording</string>
     <string name="register_first_name">Your First Name</string>

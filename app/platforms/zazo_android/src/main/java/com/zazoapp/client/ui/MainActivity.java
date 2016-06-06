@@ -15,6 +15,7 @@ import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.dispatch.ZazoAnalytics;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.utilities.Logger;
 
 public class MainActivity extends FragmentActivity implements TaskFragmentListener {
@@ -101,6 +102,7 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
                     currentFragment = new RegisterFragment();
                     break;
                 case SUGGESTIONS_FRAGMENT:
+                    NotificationAlertManager.cancelNativeAlert(this, NotificationAlertManager.NotificationType.FRIEND_JOINED.id());
                     currentFragment = SuggestionsFragment.getInstance(getIntent());
                     break;
                 default:

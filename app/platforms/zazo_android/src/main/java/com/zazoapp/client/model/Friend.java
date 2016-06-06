@@ -38,6 +38,8 @@ public class Friend extends ActiveModel{
     private static final String MP4 = ".mp4";
     private static final String PNG = ".png";
 
+    public static final Friend EMPTY = new Friend();
+
     public interface VideoStatusChangedCallback {
         void onVideoStatusChanged(Friend friend);
     }

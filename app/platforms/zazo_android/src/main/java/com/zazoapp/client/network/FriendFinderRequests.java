@@ -11,9 +11,11 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.R;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -203,11 +205,15 @@ public class FriendFinderRequests {
      *
      * @param context
      * @param response response string of add request
-     * @return friend if he was added, otherwise {@code null}
+     * @return friend if he was added, {@link Friend#EMPTY} if it was already added before, otherwise {@code null}
      */
     @Nullable public static Friend gotFriend(Context context, String response) {
         AddResponse params = StringUtils.fromJson(response, AddResponse.class);
         if (params != null) {
+            if (params.alreadyAdded()) {
+                DialogShower.showToast(context, R.string.toast_already_added);
+                return Friend.EMPTY;
+            }
             LinkedTreeMap<String, String> friendData = params.getFriendData();
             if (friendData != null) {
                 return FriendFactory.getFactoryInstance().createWithServerParams(context, friendData, true);
@@ -351,6 +357,10 @@ public class FriendFinderRequests {
             return data != null ? data.getFriendData() : null;
         }
 
+        public boolean alreadyAdded() {
+            return data != null && "already_added".equalsIgnoreCase(data.status);
+        }
+
         private static class InviteResponse {
             String id;
             String mkey;
@@ -381,6 +391,10 @@ public class FriendFinderRequests {
                 data.put(FriendFactory.ServerParamKeys.CONNECTION_CREATOR_MKEY, connection_creator_mkey);
                 data.put(FriendFactory.ServerParamKeys.CONNECTION_STATUS, connection_status);
                 return data;
+            }
+
+            public String getStatus() {
+                return status;
             }
         }
     }
