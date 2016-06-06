@@ -74,6 +74,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     @InjectView(R.id.suggestion_action_main_btn) Button mainButton;
     @InjectView(R.id.card_request_progress) ProgressBar cardRequestProgress;
     @InjectView(R.id.empty_suggestions) View emptySuggestions;
+    @InjectView(R.id.empty_suggestions_text) TextView emptySuggestionsText;
     @InjectView(R.id.fab) FloatingActionButton fab;
 
     private SuggestionsAdapter adapter;
@@ -231,7 +232,6 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                     return;
                 }
                 swipeRefreshLayout.setRefreshing(false);
-                doListViewAppearing();
                 if (data != null) {
                     adapter.clear();
                     for (FriendFinderRequests.SuggestionsData.Suggestion suggestion : data.getSuggestions()) {
@@ -239,8 +239,20 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                     }
                     if (adapter.getItemCount() == 0) {
                         emptySuggestions.setVisibility(View.VISIBLE);
+                        emptySuggestionsText.setText(R.string.suggestions_empty);
+                        if (listView != null) {
+                            listView.setVisibility(View.INVISIBLE);
+                        }
                     } else {
+                        doListViewAppearing();
                         emptySuggestions.setVisibility(View.INVISIBLE);
+                    }
+                } else {
+                    adapter.clear();
+                    emptySuggestions.setVisibility(View.VISIBLE);
+                    emptySuggestionsText.setText(R.string.suggestions_cant_load);
+                    if (listView != null) {
+                        listView.setVisibility(View.INVISIBLE);
                     }
                 }
             }

@@ -196,6 +196,7 @@
 
     <string name="suggestions">Suggestions</string>
     <string name="suggestions_empty">No more friends to suggest</string>
+    <string name="suggestions_cant_load">Couldn\'t load suggestions. Try again later.</string>
     <string name="ff_add_success_message">You and %1$s are connected!</string>
     <string name="ff_add_error_message">Couldn\'t add friend</string>
     <string name="ff_ignore_success_message">Ignored! %1$s was not added.</string>
