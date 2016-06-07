@@ -206,7 +206,7 @@ public class ContactsManager {
 
 	private ArrayList<LinkedTreeMap<String, String>> phoneNumberObjectsWithRawContactIds(String rawContactIds) {
 		ArrayList<LinkedTreeMap<String, String>> r = new ArrayList<LinkedTreeMap<String, String>>();
-		String[] projection = { CommonDataKinds.Phone.NUMBER, CommonDataKinds.Phone.TYPE };
+		String[] projection = { CommonDataKinds.Phone.NUMBER, CommonDataKinds.Phone.TYPE, CommonDataKinds.Phone.LABEL };
 		String selection = Data.RAW_CONTACT_ID + " IN(" + rawContactIds + ") AND " + Data.MIMETYPE + "= '"
 				+ CommonDataKinds.Phone.CONTENT_ITEM_TYPE + "'";
 
@@ -218,7 +218,7 @@ public class ContactsManager {
 			do {
 				LinkedTreeMap<String, String> e = new LinkedTreeMap<String, String>();
 				int pt = c.getInt(c.getColumnIndex(CommonDataKinds.Phone.TYPE));
-				String phoneType = (String) CommonDataKinds.Phone.getTypeLabel(context.getResources(), pt, "");
+				String phoneType = (String) CommonDataKinds.Phone.getTypeLabel(context.getResources(), pt, c.getString(c.getColumnIndex(CommonDataKinds.Phone.LABEL)));
 				e.put(Contact.PhoneNumberKeys.PHONE_TYPE, phoneType);
 				e.put(Contact.PhoneNumberKeys.PHONE_TYPE_INT, pt + "");
 				e.put(Contact.PhoneNumberKeys.PHONE_NUMBER, c.getString(c.getColumnIndex(CommonDataKinds.Phone.NUMBER)));
