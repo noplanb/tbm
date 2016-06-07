@@ -35,6 +35,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 public class InviteManager implements InviteHelper {
@@ -429,7 +430,9 @@ public class InviteManager implements InviteHelper {
         Log.i(TAG, "sendSms: " + addr + ": " + body);
         if (DebugConfig.Bool.SEND_SMS.get()) {
             try {
-                SmsManager.getDefault().sendTextMessage(addr, null, body, null, null);
+                SmsManager sms = SmsManager.getDefault();
+                ArrayList<String> parts = sms.divideMessage(body);
+                sms.sendMultipartTextMessage(addr, null, parts, null, null);
             } catch (RuntimeException e) {
                 Dispatch.dispatch(e.getMessage());
                 Bundle data = new Bundle();
@@ -438,7 +441,6 @@ public class InviteManager implements InviteHelper {
                 activity.startActivityForResult(InviteIntent.SMS.getIntent(data), InviteIntent.INVITATION_REQUEST_ID);
                 return false;
             }
-
         } else {
             listener.onShowInfoDialog("Fake SMS invitation", "It is a fake SMS invitation to number " + addr
                     + " with text: \"" + body + "\"");
