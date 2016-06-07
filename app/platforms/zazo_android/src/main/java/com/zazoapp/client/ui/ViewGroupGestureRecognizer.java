@@ -170,20 +170,22 @@ public abstract class ViewGroupGestureRecognizer {
     // equivalent overriden methods.
 
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (state == State.LONGPRESS)
-            intercept = true;
+        if (enabled) {
+            if (state == State.LONGPRESS)
+                intercept = true;
 
-        if (ev.getAction() == MotionEvent.ACTION_DOWN)
-            intercept = false;
-        handleTouchEvent(ev);
-        if (state == State.IDLE) {
-            move(null, 0, 0);
-        }
-        if (state == State.IDLE && longPressTask != null) {
-            longPressTask.cancel();
-        }
-        if (state == State.SLIDING) {
-            intercept = true;
+            if (ev.getAction() == MotionEvent.ACTION_DOWN)
+                intercept = false;
+            handleTouchEvent(ev);
+            if (state == State.IDLE) {
+                move(null, 0, 0);
+            }
+            if (state == State.IDLE && longPressTask != null) {
+                longPressTask.cancel();
+            }
+            if (state == State.SLIDING) {
+                intercept = true;
+            }
         }
         return enabled;
     }

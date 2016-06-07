@@ -53,6 +53,7 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.multimedia.Player;
 import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
@@ -80,7 +81,7 @@ import java.util.List;
  */
 public class MainFragment extends ZazoFragment implements UnexpectedTerminationHelper.TerminationCallback, VersionHandler.Callback,
         ActionInfoDialogFragment.ActionInfoDialogListener, InviteManager.InviteDialogListener, SelectPhoneNumberDialog.Callbacks,
-        DoubleActionDialogFragment.DoubleActionDialogListener, DrawerLayout.DrawerListener, NavigationView.OnNavigationItemSelectedListener, BenchController.BenchListener {
+        DoubleActionDialogFragment.DoubleActionDialogListener, DrawerLayout.DrawerListener, NavigationView.OnNavigationItemSelectedListener, BenchController.BenchListener, Player.StatusCallbacks {
 
     private static final String TAG = MainFragment.class.getSimpleName();
 
@@ -188,6 +189,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public void onResume() {
         super.onResume();
         managerHolder.registerManagers();
+        managerHolder.getPlayer().registerStatusCallbacks(this);
         handleIntent(getActivity().getIntent());
         ContactsInfoCollector.checkAndSend(context);
     }
@@ -313,6 +315,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     private void releaseManagers() {
         managerHolder.unregisterManagers();
+        managerHolder.getPlayer().unregisterStatusCallbacks(this);
     }
 
     @Override
@@ -566,6 +569,25 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         if (tab != null) {
             tab.select();
         }
+    }
+
+    @Override
+    public void onVideoPlaying(String friendId, String videoId) {
+        closeDrawerIfOpened();
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.LEFT);
+    }
+
+    @Override
+    public void onVideoStopPlaying(String friendId) {
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.LEFT);
+    }
+
+    @Override
+    public void onCompletion(String friendId) {
+    }
+
+    @Override
+    public void onVideoPlaybackError(String friendId, String videoId) {
     }
 
     private class MainActivityReceiver extends BroadcastReceiver {

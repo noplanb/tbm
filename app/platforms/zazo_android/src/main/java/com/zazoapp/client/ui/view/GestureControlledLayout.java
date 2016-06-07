@@ -38,11 +38,14 @@ public class GestureControlledLayout extends FrameLayout {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        boolean handled = true;
+        boolean handled = false;
         if (gestureRecognizer != null) {
             handled = gestureRecognizer.dispatchTouchEvent(ev);
         }
-        return handled && super.dispatchTouchEvent(ev);
+        if (!handled) {
+            super.dispatchTouchEvent(ev);
+        }
+        return handled;
     }
 
     @Override
