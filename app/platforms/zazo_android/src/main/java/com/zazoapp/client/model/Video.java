@@ -44,6 +44,11 @@ public abstract class Video extends ActiveModel {
         return new ArrayList<>(Arrays.asList(a));
     }
 
+    @Override
+    public boolean validate() {
+        return notEmpty(getId());
+    }
+
     // Video status
     public void setVideoStatus(int status){
         set(Attributes.STATUS, ((Integer) status).toString());

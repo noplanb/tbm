@@ -18,6 +18,11 @@ public class GridElement extends ActiveModel {
         return new ArrayList<>(Arrays.asList(a));
     }
 
+    @Override
+    public boolean validate() {
+        return true;
+    }
+
     public Friend getFriend() {
         String fid = attributes.get(Attributes.FRIEND_ID);
         if (fid.equals(""))

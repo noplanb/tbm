@@ -92,6 +92,11 @@ public class Friend extends ActiveModel{
     }
 
     @Override
+    public boolean validate() {
+        return notEmpty(getId()) && (notEmpty(getFirstName()) || notEmpty(get(Attributes.LAST_NAME))) && notEmpty(getMkey());
+    }
+
+    @Override
     public void init(Context context) {
         super.init(context);
         setOutgoingVideoStatus(OutgoingVideo.Status.NONE);

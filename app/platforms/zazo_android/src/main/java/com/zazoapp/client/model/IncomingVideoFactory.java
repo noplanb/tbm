@@ -27,4 +27,9 @@ public class IncomingVideoFactory extends ActiveModelFactory<IncomingVideo> {
     public Class<IncomingVideo> getModelClass() {
         return IncomingVideo.class;
     }
+
+    @Override
+    protected boolean checkAndNormalize() {
+        return false;
+    }
 }

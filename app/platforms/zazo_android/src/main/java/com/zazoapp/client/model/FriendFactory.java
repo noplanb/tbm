@@ -246,6 +246,19 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         super.destroyAll(context);
     }
 
+    @Override
+    protected boolean checkAndNormalize() {
+        boolean result = false;
+        ArrayList<Friend> friends = all();
+        for (Friend friend : friends) {
+            if (!friend.validate()) {
+                instances.remove(friend);
+                result = true;
+            }
+        }
+        return result;
+    }
+
     //----------------------------
     // VideoStatusChange callbacks
     //----------------------------

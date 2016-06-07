@@ -71,6 +71,15 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         setCallbacks();
     }
 
+    public void checkAndNormalize() {
+        if (friendFactory.checkAndNormalize()) {
+            save(friendFactory);
+        }
+        if (gridElementFactory.checkAndNormalize()) {
+            save(gridElementFactory);
+        }
+    }
+
     public void saveAll() {
         for (ActiveModelFactory<?> factory : getFactories()) {
             save(factory);
@@ -131,6 +140,7 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
             factory.save(context);
         } else {
             Log.i(TAG, String.format("Not Saving %s. No instances found", model));
+            factory.deleteSaveFile(context);
         }
     }
 

@@ -21,6 +21,11 @@ public class OutgoingVideoFactory extends ActiveModelFactory<OutgoingVideo>  {
         return OutgoingVideo.class;
     }
 
+    @Override
+    protected boolean checkAndNormalize() {
+        return false;
+    }
+
     public ArrayList<OutgoingVideo> allWithFriendId(String friendId) {
         return allWhere(Video.Attributes.FRIEND_ID, friendId);
     }

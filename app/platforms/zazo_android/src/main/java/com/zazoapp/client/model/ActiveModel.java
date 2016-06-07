@@ -1,6 +1,7 @@
 package com.zazoapp.client.model;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.dispatch.Dispatch;
@@ -38,10 +39,6 @@ public abstract class ActiveModel {
     public ActiveModel set(String a, String v) {
         if (attributes.containsKey(a)) {
             Log.i(TAG, "setting " + a + " : " + v);
-            if (v == null) {
-                v = "";
-                Dispatch.dispatch(new NullPointerException("" + this.getClass().getSimpleName() + " try to set null value"), "Try to set null value in model");
-            }
             String oldValue = attributes.put(a, v);
             if (!v.equals(oldValue)) {
                 notifyCallbacks(true);
@@ -97,6 +94,12 @@ public abstract class ActiveModel {
      */
     protected void notifyOnChanged(boolean notify) {
         notifyOnChanged = notify;
+    }
+
+    public abstract boolean validate();
+
+    public static boolean notEmpty(String value) {
+        return !TextUtils.isEmpty(value);
     }
 
     public interface ModelChangeCallback {

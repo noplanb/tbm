@@ -41,6 +41,11 @@ public class UserFactory extends ActiveModelFactory<User> {
     }
 
     @Override
+    protected boolean checkAndNormalize() {
+        return false;
+    }
+
+    @Override
     public Class<User> getModelClass() {
         return User.class;
     }

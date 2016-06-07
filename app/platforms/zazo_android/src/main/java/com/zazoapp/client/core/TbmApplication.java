@@ -111,6 +111,7 @@ public class TbmApplication extends Application {
     private void loadDataModel() {
         activeModelsHandler = ActiveModelsHandler.getInstance(this);
         activeModelsHandler.ensureAll();
+        activeModelsHandler.checkAndNormalize();
         GridManager.getInstance().initGrid(this);
         addTerminationCallback(activeModelsHandler);
     }

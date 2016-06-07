@@ -1,5 +1,7 @@
 package com.zazoapp.client.model;
 
+import java.util.ArrayList;
+
 public class GridElementFactory extends ActiveModelFactory<GridElement> {
 
 	private static GridElementFactory instance = null;
@@ -42,5 +44,21 @@ public class GridElementFactory extends ActiveModelFactory<GridElement> {
     @Override
     public Class<GridElement> getModelClass() {
         return GridElement.class;
+    }
+
+    @Override
+    protected boolean checkAndNormalize() {
+        boolean result = false;
+        ArrayList<GridElement> allElements = all();
+        for (GridElement ge : allElements) {
+            if (ge.hasFriend()) {
+                Friend friend = ge.getFriend();
+                if (friend == null || !friend.validate()) {
+                    ge.setFriend(null, false);
+                    result = true;
+                }
+            }
+        }
+        return result;
     }
 }

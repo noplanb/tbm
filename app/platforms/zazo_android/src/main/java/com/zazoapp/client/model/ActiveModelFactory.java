@@ -223,6 +223,12 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
         notifyCallbacks = notify;
     }
 
+    /**
+     *
+     * @return true if it was normalized
+     */
+    protected abstract boolean checkAndNormalize();
+
     public interface ModelChangeCallback {
         void onModelChanged(ActiveModelFactory<?> factory, ModelChangeType changeType);
     }

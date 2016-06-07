@@ -55,7 +55,12 @@ public class User extends ActiveModel{
     public String getId(){
     	return get(User.Attributes.ID);
     }
-    
+
+    @Override
+    public boolean validate() {
+        return true;
+    }
+
     public String getFirstName(){
     	return get(User.Attributes.FIRST_NAME);
     }
