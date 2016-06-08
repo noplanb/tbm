@@ -862,7 +862,15 @@ public class Friend extends ActiveModel{
     }
     
     public String getFirstInitialDotLast(){
-        return get(Attributes.FIRST_NAME).charAt(0) + ". " + get(Attributes.LAST_NAME);
+        String firstName = getFirstName();
+        String lastName = get(Attributes.LAST_NAME);
+        if (notEmpty(firstName) && notEmpty(lastName)) {
+            return firstName.charAt(0) + ". " + lastName;
+        } else if (notEmpty(firstName)) {
+            return firstName;
+        } else {
+            return lastName;
+        }
     }
 
     public String getFullName() {
