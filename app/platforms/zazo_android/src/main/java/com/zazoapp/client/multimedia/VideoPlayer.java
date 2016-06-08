@@ -444,9 +444,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (v.getId() == R.id.video_progress_bar) {
-            if (managerProvider.getFeatures().isUnlocked(Features.Feature.PAUSE_PLAYBACK)) {
-                return handleProgressBarTouchEvent(event);
-            }
+            return !managerProvider.getFeatures().isUnlocked(Features.Feature.PAUSE_PLAYBACK) || handleProgressBarTouchEvent(event);
         }
         return false;
     }
