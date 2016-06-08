@@ -33,10 +33,12 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
     public static final String INTENT_KEY = "intent";
     public static final String SEND_SMS_KEY = "send_sms";
     public static final String APP_NAME_KEY = "application_name";
+    private static final String TAG = SendLinkThroughDialog.class.getSimpleName();
     private String phoneNumber;
     private Set<String> emails;
     private RadioGroup radioGroup;
     private AppInfo selectedAppInfo;
+    private ListPopupWindow selectAppPopup;
 
     public static DialogFragment getInstance(int id, String phoneNumber, Context context, String message, DialogListener listener) {
         String title = context.getString(R.string.dialog_invite_sms_title);
@@ -54,8 +56,22 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
         phoneNumber = getArguments().getString(InviteIntent.PHONE_NUMBER_KEY);
         radioGroup = (RadioGroup) View.inflate(getActivity(), R.layout.send_through_layout, null);
         radioGroup.setOnCheckedChangeListener(this);
+        radioGroup.findViewById(R.id.send_through_other).setOnClickListener(this);
         radioGroup.check(R.id.send_through_sms);
         setCustomView(radioGroup);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.send_through_other:
+                if (selectAppPopup == null || !selectAppPopup.isShowing()) {
+                    showSelectAppPopup();
+                }
+                break;
+            default:
+                super.onClick(v);
+        }
     }
 
     @Override
@@ -63,36 +79,40 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
         ButterKnife.findById(getView(), R.id.btn_dialog_ok).setEnabled(
                 positiveButtonMightBeEnabled() && !getEditedMessage().isEmpty());
         if (checkedId == R.id.send_through_other && (((RadioButton) group.findViewById(R.id.send_through_other)).isChecked())) {
-            List<AppInfo> apps = getApplications(getActivity().getApplicationContext(), getIntentBundle());
-            if (apps.isEmpty()) {
-                DialogShower.showToast(getActivity(), R.string.no_supported_app_available);
-                group.check(R.id.send_through_sms);
-                return;
-            }
-            final ListPopupWindow popupWindow = new ListPopupWindow(getActivity());
-            final RadioButton otherButton = ButterKnife.findById(group, R.id.send_through_other);
-            popupWindow.setAdapter(new ApplicationAdapter(getActivity(), apps));
-            popupWindow.setAnchorView(otherButton);
-            popupWindow.setModal(true); // to dismiss only popup on touch outside
-            popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
-                @Override
-                public void onDismiss() {
-                    if (selectedAppInfo == null) {
-                        group.check(R.id.send_through_sms);
-                        DialogShower.showToast(getActivity(), R.string.no_app_selected);
-                    }
-                }
-            });
-            popupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    selectedAppInfo = (AppInfo) parent.getItemAtPosition(position);
-                    otherButton.setText(getString(R.string.dialog_invite_send_through_other_selected, selectedAppInfo.loadName(getActivity())));
-                    popupWindow.dismiss();
-                }
-            });
-            popupWindow.show();
+            showSelectAppPopup();
         }
+    }
+
+    private void showSelectAppPopup() {
+        List<AppInfo> apps = getApplications(getActivity().getApplicationContext(), getIntentBundle());
+        if (apps.isEmpty()) {
+            DialogShower.showToast(getActivity(), R.string.no_supported_app_available);
+            radioGroup.check(R.id.send_through_sms);
+            return;
+        }
+        selectAppPopup = new ListPopupWindow(getActivity());
+        final RadioButton otherButton = ButterKnife.findById(radioGroup, R.id.send_through_other);
+        selectAppPopup.setAdapter(new ApplicationAdapter(getActivity(), apps));
+        selectAppPopup.setAnchorView(otherButton);
+        selectAppPopup.setModal(true); // to dismiss only popup on touch outside
+        selectAppPopup.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                if (selectedAppInfo == null) {
+                    radioGroup.check(R.id.send_through_sms);
+                    DialogShower.showToast(getActivity(), R.string.no_app_selected);
+                }
+            }
+        });
+        selectAppPopup.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedAppInfo = (AppInfo) parent.getItemAtPosition(position);
+                otherButton.setText(getString(R.string.dialog_invite_send_through_other_selected, selectedAppInfo.loadName(getActivity())));
+                selectAppPopup.dismiss();
+            }
+        });
+        selectAppPopup.show();
     }
 
     @Override
