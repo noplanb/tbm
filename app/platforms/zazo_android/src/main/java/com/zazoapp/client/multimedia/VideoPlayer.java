@@ -595,6 +595,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     if (isPlaying()) {
                         animateZoom(false);
                         stop();
+                        notifyCompletion();
                         return true;
                     }
                 }

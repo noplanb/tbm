@@ -579,11 +579,11 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     @Override
     public void onVideoStopPlaying(String friendId) {
-        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.LEFT);
     }
 
     @Override
     public void onCompletion(String friendId) {
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.LEFT);
     }
 
     @Override
