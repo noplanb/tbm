@@ -10,10 +10,6 @@ import com.zazoapp.client.R;
  */
 public class WelcomeScreenPreview extends BasePreviewTextureFrame {
 
-    public interface OnSizeChangedListener {
-        void onSizeChanged(int w, int h);
-    }
-
     private OnSizeChangedListener onSizeChangedListener;
 
     public WelcomeScreenPreview(Context context) {

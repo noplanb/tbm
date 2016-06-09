@@ -253,7 +253,7 @@ public class InviteManager implements InviteHelper {
     private static class UpdateInviteeInfoRequest extends HttpRequest {
 
         public UpdateInviteeInfoRequest(JSONObject json) {
-            super("invitation/update_friend", json, "POST", null);
+            super("invitation/update_friend", json, HttpRequest.POST, null);
         }
 
         static void updateInviteeInfo(Context context, Friend invitee, @Nullable String contactId) {
@@ -392,7 +392,7 @@ public class InviteManager implements InviteHelper {
         params.put("messaging_platform", name);
         params.put("message_status", success ? HttpRequest.StatusValues.STATUS_SUCCESS :
                 HttpRequest.StatusValues.STATUS_FAILURE);
-        new HttpRequest("invitation/direct_invite_message", params, "POST");
+        new HttpRequest("invitation/direct_invite_message", params, HttpRequest.POST);
     }
 
     @Override

@@ -28,6 +28,8 @@ import butterknife.InjectView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.utilities.Convenience;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by skamenkovych@codeminders.com on 5/6/2015.
  */
@@ -58,6 +60,11 @@ public class TutorialLayout extends FrameLayout {
     @InjectView(R.id.tutorial_hint) TextView tutorialHintView;
     @InjectView(R.id.tutorial_btn) Button gotItButton;
 
+    private WeakReference<View> helpViewRef;
+    private WeakReference<View> additionalViewRef;
+    private WeakReference<View> backgroundViewRef;
+    private boolean shouldUpdateViews;
+
     public TutorialLayout(Context context) {
         this(context, null);
     }
@@ -86,7 +93,6 @@ public class TutorialLayout extends FrameLayout {
 
     public void dim() {
         dimmed = true;
-        shiftRectToBackground(arrowAnchorRect);
         shiftRectToBackground(dimExcludedRect);
         shiftRectToBackground(additionalViewRect);
         shiftRectToBackground(arrowAnchorRect);
@@ -136,12 +142,11 @@ public class TutorialLayout extends FrameLayout {
         tutorialHintView.setTypeface(tf);
         if (arrowAnchorRect == null) {
             bitmapPaint.setColorFilter(null);
-            arrowAnchorRect = dimExcludedRect;
         } else {
             bitmapPaint.setColorFilter(new PorterDuffColorFilter(Color.parseColor("#A8A8A8"), PorterDuff.Mode.MULTIPLY));
         }
         if (backgroundViewRect.height() == 0) {
-            setBackgroundViewRect(getTutorialRect());
+            setBackgroundView(this);
         }
         int bWidth = (int) backgroundViewRect.width();
         int bHeight = (int) backgroundViewRect.height();
@@ -167,7 +172,7 @@ public class TutorialLayout extends FrameLayout {
         } else if (dimExcludedRect.left > bWidth / 2) {
             arrowPosition = arrowPosition.right();
         }
-        ArrowPosition.setUpArrowView(arrowView, tutorialHintView, arrowAnchorRect, arrowPosition, getWidth(), getHeight());
+        ArrowPosition.setUpArrowView(arrowView, tutorialHintView, getArrowAnchorRect(), arrowPosition, getMeasuredWidth(), getMeasuredHeight());
     }
 
     private void setUpGotItButton() {
@@ -179,17 +184,24 @@ public class TutorialLayout extends FrameLayout {
         }
     }
 
+    private RectF getArrowAnchorRect() {
+        return (arrowAnchorRect == null) ? dimExcludedRect : arrowAnchorRect;
+    }
+
     /**
      * Helper method to call dim() except for specified view
      */
     public void dimExceptForView(View view, View backgroundView) {
         reset();
-        setBackgroundViewRect(Convenience.getViewRect(backgroundView));
+        setBackgroundView(backgroundView);
         setHelpView(view);
         dim();
     }
 
     public void setHelpView(View view) {
+        if (getViewFromRef(helpViewRef) != view) {
+            helpViewRef = new WeakReference<>(view);
+        }
         setExcludedRect(Convenience.getViewRect(view));
         view.buildDrawingCache();
         helpViewBitmap = Bitmap.createBitmap(view.getDrawingCache());
@@ -198,6 +210,9 @@ public class TutorialLayout extends FrameLayout {
 
     public void setAdditionalView(@Nullable View view) {
         if (view != null) {
+            if (getViewFromRef(additionalViewRef) != view) {
+                additionalViewRef = new WeakReference<>(view);
+            }
             additionalViewRect = Convenience.getViewRect(view);
             shiftRectVertically(getTutorialRect(), additionalViewRect);
             view.buildDrawingCache();
@@ -208,6 +223,7 @@ public class TutorialLayout extends FrameLayout {
             view.destroyDrawingCache();
         } else {
             additionalViewBitmap = null;
+            additionalViewRef = null;
         }
     }
 
@@ -325,9 +341,13 @@ public class TutorialLayout extends FrameLayout {
 
     /**
      * Set location rect of View on which tutorial will be shown
-     * @param rect
+     * @param view
      */
-    public void setBackgroundViewRect(RectF rect) {
+    public void setBackgroundView(View view) {
+        if (getViewFromRef(backgroundViewRef) != view) {
+            backgroundViewRef = new WeakReference<>(view);
+        }
+        RectF rect = Convenience.getViewRect(view);
         backgroundViewRect.set(rect);
         shiftRectVertically(getTutorialRect(), backgroundViewRect);
     }
@@ -376,11 +396,56 @@ public class TutorialLayout extends FrameLayout {
         tutorialRect = null;
         helpViewBitmap = null;
         additionalViewBitmap = null;
+        additionalViewRef = null;
+        backgroundViewRef = null;
+        helpViewRef = null;
+    }
+
+    public void updateViews() {
+        if (!dimmed) {
+            return;
+        }
+        if (getMeasuredHeight() != getHeight()) {
+            shouldUpdateViews = true;
+            return;
+        }
+        View backgroundView = getViewFromRef(backgroundViewRef);
+        if (backgroundView != null) {
+            setBackgroundView(backgroundView);
+        }
+        View helpView = getViewFromRef(helpViewRef);
+        if (helpView != null) {
+            setHelpView(helpView);
+        }
+        View additionalView = getViewFromRef(additionalViewRef);
+        if (additionalView != null) {
+            setAdditionalView(additionalView);
+        }
+        shiftRectToBackground(dimExcludedRect);
+        shiftRectToBackground(additionalViewRect);
+        shiftRectToBackground(arrowAnchorRect);
+        shiftRectToBackground(backgroundViewRect);
+        setUpHintText();
+    }
+
+    private View getViewFromRef(WeakReference<View> ref) {
+        return (ref != null) ? ref.get() : null;
     }
 
     public interface OnTutorialEventListener {
         void onDismiss();
         void onDimmed();
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if (changed) {
+            tutorialRect = null;
+            if (shouldUpdateViews) {
+                updateViews();
+            }
+        }
     }
 
     public enum ArrowPosition {

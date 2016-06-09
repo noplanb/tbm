@@ -47,7 +47,7 @@ public class NotificationHandler {
         params.put(NotificationHandler.DataKeys.FROM_MKEY, UserFactory.getCurrentUserMkey());
         params.put(NotificationHandler.DataKeys.SENDER_NAME, UserFactory.current_user().getFirstName());
         params.put(NotificationHandler.DataKeys.VIDEO_ID, videoId);
-        new SendNotification("notification/send_video_received", params, "POST");
+        new SendNotification("notification/send_video_received", params, HttpRequest.POST);
     }
 
     public static void sendForVideoStatusUpdate(Friend friend, String videoId, String status) {
@@ -56,7 +56,7 @@ public class NotificationHandler {
         params.put(NotificationHandler.DataKeys.TO_MKEY, UserFactory.getCurrentUserMkey());
         params.put(NotificationHandler.DataKeys.STATUS, status);
         params.put("video_id", videoId);
-        new SendNotification("notification/send_video_status_update", params, "POST");
+        new SendNotification("notification/send_video_status_update", params, HttpRequest.POST);
     }
 
     private static class SendNotification extends HttpRequest {

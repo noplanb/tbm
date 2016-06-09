@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -42,6 +41,7 @@ import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.StringUtils;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -72,6 +72,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private TimerTask onStartTask;
     private ZoomController zoomController;
     private float mediaVolume = 1.0f;
+    private WeakReference<View> targetViewRef;
 
     private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
     private List<IncomingVideo> playingVideos;
@@ -148,7 +149,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         friend = FriendFactory.getFactoryInstance().find(friendId);
 
         if (needToPlay) {
-            setPlayerOverView(view);
+            zoomController.clearState();
+            targetViewRef = new WeakReference<View>(view);
+            setPlayerOverTargetView();
+            twDate.setText("");
             return start();
         }
         return false;
@@ -283,10 +287,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     //---------------
     // Helper methods
     //---------------
-    private void setPlayerOverView(View view) {
-        zoomController.clearState();
-        LayoutParams params = new FrameLayout.LayoutParams(view.getWidth(), view.getHeight());
-        videoBody.setLayoutParams(params);
+    private void setPlayerOverTargetView() {
+        View view = (targetViewRef != null) ? targetViewRef.get() : null;
+        if (view == null) {
+            return;
+        }
         videoBody.setX(view.getX());
         videoBody.setY(view.getY());
         videoBody.setTag(R.id.box_id, view.getId());
@@ -296,7 +301,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             twDate.setY(view.getY() - twDate.getHeight()); // for other place it above
         }
         twDate.setX(view.getX());
-        twDate.setText("");
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(view.getWidth(), view.getHeight());
+        videoBody.setLayoutParams(params);
     }
 
     private void determineIfDownloading() {
@@ -383,6 +389,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             blockScreen.unlock(true);
         }
         videoView.changeAudioStream(managerProvider.getAudioController().isSpeakerPhoneOn());
+    }
+
+    @Override
+    public void updatePlayerPosition() {
+        setPlayerOverTargetView();
     }
 
     private boolean videoIsPlayable(){

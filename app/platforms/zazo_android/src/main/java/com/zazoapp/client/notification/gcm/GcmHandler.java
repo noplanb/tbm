@@ -163,7 +163,7 @@ public class GcmHandler {
 		params.put("mkey", UserFactory.getCurrentUserMkey());
 		params.put("push_token", regid);
 		params.put("device_platform", "android");
-	    new GCMPostPushToken("notification/set_push_token", params, "POST");
+	    new GCMPostPushToken("notification/set_push_token", params, HttpRequest.POST);
 	}
 	
 	class GCMPostPushToken extends HttpRequest {

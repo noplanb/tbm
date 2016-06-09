@@ -335,7 +335,7 @@ public class RemoteStorageHandler {
         if (key2 != null)
             params.put(DataKeys.KEY2_KEY, key2);
         params.put(DataKeys.VALUE_KEY, value);
-        new SetRemote("kvstore/set", params, "POST");
+        new SetRemote("kvstore/set", params, HttpRequest.POST);
     }
 
 	private static class SetRemote extends HttpRequest {

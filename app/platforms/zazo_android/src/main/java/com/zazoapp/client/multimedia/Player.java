@@ -22,6 +22,7 @@ public interface Player {
     void rewind(int msec);
     void restartAfter(int delay);
     void changeAudioStream();
+    void updatePlayerPosition();
 
     interface StatusCallbacks {
         void onVideoPlaying(String friendId, String videoId);
@@ -75,6 +76,10 @@ public interface Player {
 
         @Override
         public void changeAudioStream() {
+        }
+
+        @Override
+        public void updatePlayerPosition() {
         }
     };
 }

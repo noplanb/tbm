@@ -35,6 +35,7 @@ import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.ThumbnailRetriever;
 import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.ui.view.ChipsViewWrapper;
+import com.zazoapp.client.ui.view.OnSizeChangedListener;
 import com.zazoapp.client.ui.view.ThumbView;
 import com.zazoapp.client.ui.view.WelcomeScreenPreview;
 import com.zazoapp.client.ui.view.rotationcircleview.view.RotationCircleView;
@@ -55,7 +56,7 @@ import java.util.TimerTask;
 /**
  * Created by skamenkovych@codeminders.com on 4/18/2016.
  */
-public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnTouchListener, WelcomeScreenPreview.OnSizeChangedListener, WelcomeFriendsListAdapter.OnItemStateChangedListener {
+public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnTouchListener, OnSizeChangedListener, WelcomeFriendsListAdapter.OnItemStateChangedListener {
 
     private static final String TAG = WelcomeMultipleFragment.class.getSimpleName();
 

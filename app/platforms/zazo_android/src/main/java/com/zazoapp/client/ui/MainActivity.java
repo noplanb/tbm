@@ -46,10 +46,6 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         Logger.i(TAG, "onNewIntent " + intent);
-        Intent currentIntent = getIntent();
-        if (currentIntent != null && Intent.ACTION_MAIN.equals(currentIntent.getAction())) {
-            intent.putExtra(EXTRA_NEW_INTENT_AFTER_ON_CREATE, true);
-        }
         setIntent(intent);
     }
 

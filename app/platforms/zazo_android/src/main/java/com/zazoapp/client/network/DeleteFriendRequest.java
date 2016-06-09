@@ -8,7 +8,7 @@ import com.zazoapp.client.model.Friend;
  */
 public class DeleteFriendRequest extends HttpRequest {
     DeleteFriendRequest(LinkedTreeMap<String, String> params, Callbacks callbacks) {
-        super("connection/set_visibility", params, "POST", callbacks);
+        super("connection/set_visibility", params, HttpRequest.POST, callbacks);
     }
 
     public static void makeRequest(Friend friend, boolean delete, Callbacks callbacks) {

@@ -376,6 +376,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (changed) {
             updateContentFromUi();
             managerProvider.getBenchViewManager().updateBench();
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    managerProvider.getTutorial().update();
+                }
+            });
         }
 
         uiHandler.post(new Runnable() {

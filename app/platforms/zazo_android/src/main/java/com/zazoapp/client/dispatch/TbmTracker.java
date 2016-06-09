@@ -253,7 +253,7 @@ public class TbmTracker implements ErrorTracker {
     private static class DispatchPost extends HttpRequest {
 
         public DispatchPost(String uri, final LinkedTreeMap<String, String> params, final String storedPath) {
-            super(uri, params, "POST", new Callbacks() {
+            super(uri, params, HttpRequest.POST, new Callbacks() {
 
                 @Override
                 public void success(String response_string) {

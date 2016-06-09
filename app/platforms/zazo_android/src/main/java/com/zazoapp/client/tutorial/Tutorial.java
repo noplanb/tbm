@@ -290,4 +290,11 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
             managers.getFeatures().showFeatureAwardDialog(managers, managers.getFeatures().lastUnlockedFeature());
         }
     }
+
+    public void update() {
+        if (isShown()) {
+            Log.i(TAG, "update");
+            tutorialLayout.updateViews();
+        }
+    }
 }

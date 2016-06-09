@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
@@ -40,7 +39,7 @@ import com.zazoapp.client.utilities.Logger;
 
 import java.util.ArrayList;
 
-public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener, NineViewGroup.SpinChangedListener, Features.FeatureChangedCallback, ViewTreeObserver.OnGlobalLayoutListener {
+public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener, NineViewGroup.SpinChangedListener, Features.FeatureChangedCallback {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
     private static final String PREF_SPIN_OFFSET = "spin_offset";
@@ -50,8 +49,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     private NineViewGroup nineViewGroup;
 
     private boolean viewLoaded;
-    private boolean globalLayoutComplete;
-    private boolean globalLayoutWasCalled;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,7 +66,6 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
         setupVideoPlayer(v);
         setupNineViewGroup(v);
-        v.getViewTreeObserver().addOnGlobalLayoutListener(this);
         return v;
     }
 
@@ -104,10 +100,16 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         nineViewGroup.setChildLayoutCompleteListener(new LayoutCompleteListener() {
             @Override
             public void onLayoutComplete() {
+                Logger.i(TAG, "onLayoutComplete " + viewLoaded);
                 if (!viewLoaded) {
                     setupGridElements();
                     layoutVideoRecorder();
                     viewLoaded = true;
+                }
+                getManagerProvider().getPlayer().updatePlayerPosition();
+                getManagerProvider().getTutorial().update();
+                if (isFocused(false)) {
+                    handleIntentAction(getActivity().getIntent());
                 }
             }
         });
@@ -226,7 +228,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             Logger.i(TAG, "handleIntentAction: no intent. Exiting.");
             return;
         }
-        if (!globalLayoutComplete) {
+        if (!viewLoaded) {
             Logger.i(TAG, "handleIntentAction: View is not loaded yet or showed to user. Ignore for now.");
             return;
         }
@@ -301,37 +303,17 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         }
     }
 
-    @Override
-    public void onGlobalLayout() {
+    private boolean isFocused(boolean activityFocused) {
         Activity activity = getActivity();
-        boolean focused = activity != null && activity.hasWindowFocus() && !NotificationAlertManager.screenIsLocked(activity);
-        Logger.i(TAG, "OnGlobalLayout " + viewLoaded + " " + focused);
-        if (viewLoaded) {
-            globalLayoutWasCalled = true;
-        }
-        if (viewLoaded && focused) {
-            globalLayoutComplete = true;
-            handleIntentAction(getActivity().getIntent());
-        } else {
-            globalLayoutComplete = false;
-        }
+        return activity != null && (activity.hasWindowFocus() || activityFocused) && !NotificationAlertManager.screenIsLocked(activity);
     }
 
     public void onWindowFocusChanged(boolean hasFocus) {
         Logger.i(TAG, "onWindowFocusChanged " + hasFocus);
         Intent intent = getActivity().getIntent();
-        if (globalLayoutWasCalled && !globalLayoutComplete && hasFocus
-                && intent != null && !intent.hasExtra(MainActivity.EXTRA_NEW_INTENT_AFTER_ON_CREATE)) {
-            globalLayoutComplete = true;
-            handleIntentAction(getActivity().getIntent());
+        if (isFocused(hasFocus) && intent != null) {
+            handleIntentAction(intent);
         }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Logger.i(TAG, "onStop");
-        globalLayoutComplete = false;
     }
 
     //------------------------------

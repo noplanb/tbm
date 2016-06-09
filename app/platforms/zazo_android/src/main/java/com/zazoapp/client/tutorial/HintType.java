@@ -397,8 +397,7 @@ public enum HintType {
             }
             View view = nineViewGroup.getFrame(frameBox);
             setAdditionalView(layout, view);
-            layout.setExcludedRect(Convenience.getViewRect(view));
-            layout.setBackgroundViewRect(Convenience.getViewRect(nineViewGroup));
+            layout.setBackgroundView(nineViewGroup);
             layout.setHelpView(view);
             layout.dim();
             return true;
@@ -411,7 +410,7 @@ public enum HintType {
         layout.setExcludedRect(Convenience.getViewRect(view));
         NineViewGroup nineViewGroup = getNineViewGroup(view);
         if (nineViewGroup != null) {
-            layout.setBackgroundViewRect(Convenience.getViewRect(nineViewGroup));
+            layout.setBackgroundView(nineViewGroup);
         }
         layout.setHelpView(view);
     }

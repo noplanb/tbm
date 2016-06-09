@@ -10,6 +10,7 @@ import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Logger;
+import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.auth.AuthScope;
@@ -323,20 +324,22 @@ public class HttpRequest {
         rb.setUri(sUrl);
 
         HttpResponse response = http.execute(rb.build());
-
+        HttpEntity entity = response.getEntity();
+        if (entity != null) {
+            BufferedReader br = new BufferedReader( new InputStreamReader(/*con.getInputStream()*/entity.getContent()));
+            String l;
+            while ( (l = br.readLine()) != null ){
+                result += l;
+            }
+            br.close();
+        }
         if (response.getStatusLine().getStatusCode() != 200) {
-            Log.e(TAG, sUrl + "\n" + response.getStatusLine().getStatusCode() + " "
-                    + response.getStatusLine().getReasonPhrase());
+            String answer = (result.isEmpty()) ? "" : " respond: " + result;
+            Logger.e(TAG, sUrl + "\n" + response.getStatusLine().getStatusCode() + " "
+                    + response.getStatusLine().getReasonPhrase() + answer);
             throw new IOException(response.getStatusLine().getStatusCode() + " "
-                    + response.getStatusLine().getReasonPhrase());
+                    + response.getStatusLine().getReasonPhrase() + answer);
         }
-
-        BufferedReader br = new BufferedReader( new InputStreamReader(/*con.getInputStream()*/response.getEntity().getContent()) );
-        String l;
-        while ( (l = br.readLine()) != null ){
-            result += l;
-        }
-        br.close();
 
         return result;
     }
