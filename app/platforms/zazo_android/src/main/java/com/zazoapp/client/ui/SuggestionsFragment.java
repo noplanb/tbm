@@ -453,7 +453,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                 addedIgnoredLayout.setVisibility(View.VISIBLE);
                 String name = suggestion.getName();
                 suggestionName.setText(name);
-                suggestionInfo.setText(context.getString(R.string.new_friend_joined, name));
+                suggestionInfo.setText(context.getString(R.string.new_friend_suggestion, name));
                 mainButton.setText(R.string.action_add_joined_friend);
                 secondButton.setText(R.string.action_ignore_joined_friend);
                 thirdButton.setText(R.string.action_unsubscribe);

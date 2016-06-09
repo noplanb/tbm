@@ -248,7 +248,7 @@ public class NotificationAlertManager {
         PendingIntent ignoreJoinedFriendIntent = PendingIntent.getActivity(context, 2,
                 makeSuggestionIntent(activityIntent, IntentHandlerService.FriendJoinedActions.IGNORE), PendingIntent.FLAG_CANCEL_CURRENT);
 
-        String message = context.getString(R.string.new_friend_joined, name);
+        String message = context.getString(R.string.new_friend_suggestion, name);
         NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
         notiStyle.setBigContentTitle(name);
         notiStyle.bigText(message);
@@ -337,7 +337,7 @@ public class NotificationAlertManager {
         NotificationSuggestion suggestion = i.getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
         String name = suggestion.getName();
         i.putExtra(TITLE_KEY, name);
-        i.putExtra(SUB_TITLE_KEY, context.getString(R.string.new_friend_joined, name));
+        i.putExtra(SUB_TITLE_KEY, context.getString(R.string.new_friend_suggestion, name));
         i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         i.addFlags(Intent.FLAG_FROM_BACKGROUND);
         //i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK); // This is probably not necessary since the activity has launch mode singleInstance.

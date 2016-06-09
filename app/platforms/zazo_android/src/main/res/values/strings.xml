@@ -194,6 +194,7 @@
     <string name="add_contact">Add contact</string>
 
     <string name="new_friend_joined">%1$s joined Zazo!</string>
+    <string name="new_friend_suggestion">Would %1$s enjoy Zazo?</string>
 
     <string name="suggestions">Suggestions</string>
     <string name="suggestions_empty">No more friends to suggest</string>
