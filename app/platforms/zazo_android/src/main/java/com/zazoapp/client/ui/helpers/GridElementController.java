@@ -210,6 +210,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         gridElementView.showResendButton(DebugConfig.Bool.ALLOW_RESEND.get() && friend.videoToFile(friend.getOutgoingVideoId()).exists());
         ((View) container.getParent()).invalidate();
         container.setVisibility(View.VISIBLE); // as content is loaded, display view
+        if (force) {
+            managerProvider.getTutorial().updateForView(container);
+        }
     }
 
     private void animateUnreadCountChanging(Runnable endAction) {

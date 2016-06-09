@@ -297,4 +297,10 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
             tutorialLayout.updateViews();
         }
     }
+
+    public void updateForView(View view) {
+        if (view == tutorialLayout.getHelpView()) {
+            update();
+        }
+    }
 }

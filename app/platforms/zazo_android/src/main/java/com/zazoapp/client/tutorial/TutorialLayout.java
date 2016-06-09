@@ -134,6 +134,9 @@ public class TutorialLayout extends FrameLayout {
             }
         });
         dimAnimator.start();
+        if (getHeight() == 0) {
+            shouldUpdateViews = true;
+        }
     }
 
     private void setUpHintText() {
@@ -426,6 +429,10 @@ public class TutorialLayout extends FrameLayout {
         shiftRectToBackground(arrowAnchorRect);
         shiftRectToBackground(backgroundViewRect);
         setUpHintText();
+    }
+
+    public View getHelpView() {
+        return getViewFromRef(helpViewRef);
     }
 
     private View getViewFromRef(WeakReference<View> ref) {
