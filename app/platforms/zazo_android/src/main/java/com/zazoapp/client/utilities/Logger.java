@@ -156,10 +156,12 @@ public class Logger {
         // Remove old logs
         if (!logFile.exists()) {
             File[] logs = logsFolder.listFiles();
-            Date weekAgo = new Date(date.getTime() - 604800000);
-            for (File log : logs) {
-                if (log.isFile() && weekAgo.getTime() > log.lastModified()) {
-                    log.delete();
+            if (logs != null) {
+                Date weekAgo = new Date(date.getTime() - 604800000);
+                for (File log : logs) {
+                    if (log.isFile() && weekAgo.getTime() > log.lastModified()) {
+                        log.delete();
+                    }
                 }
             }
         }
