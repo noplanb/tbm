@@ -139,7 +139,9 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
                 if (resultCode == MainFragment.ACTION_CODE_SHOW_SUGGESTIONS) {
                     MainFragment mainFragment = (MainFragment) getSupportFragmentManager().findFragmentByTag("main" + MAIN_FRAGMENT);
                     currentFragmentId = SUGGESTIONS_INNER_FRAGMENT;
-                    currentFragment = SuggestionsFragment.getInstance(getIntent());
+                    Intent intent = new Intent(getIntent());
+                    intent.putExtra(SuggestionsFragment.BACK_TO_APP_ON_FINISH, true);
+                    currentFragment = SuggestionsFragment.getInstance(intent);
                     currentFragment.setFragmentId(currentFragmentId);
                     mainFragment.showTopFragment(currentFragment, R.anim.fade_in, R.anim.fade_out);
                 }

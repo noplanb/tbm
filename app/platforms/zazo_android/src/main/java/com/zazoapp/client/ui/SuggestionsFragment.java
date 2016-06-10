@@ -88,6 +88,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
     private static final String CHOSEN_PHONE = "chosen_phone";
     static final String FROM_APPLICATION = "from_application";
     static final String ADDED_FRIENDS = "added_friends";
+    static final String BACK_TO_APP_ON_FINISH = "back_to_app_on_finish";
     private static final String IS_ANYONE_ADDED = "is_anyone_added";
 
     private boolean isAnyoneAdded = false;
@@ -169,6 +170,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                 }
                 bundle.putParcelable(NOTIFICATION_DATA, intent.getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA));
                 bundle.putBoolean(FROM_APPLICATION, false);
+                bundle.putBoolean(BACK_TO_APP_ON_FINISH, intent.getBooleanExtra(BACK_TO_APP_ON_FINISH, false));
             }
         }
         //noinspection deprecation
@@ -305,9 +307,13 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                 ignoreFriendFromNotification();
                 break;
             case R.id.suggestion_action_third_btn:
-                FriendFinderRequests.unsubscribe(new CardLayoutRequestCallback(SuggestionCardType.UNSUBSCRIBED));
+                unsubscribe();
                 break;
         }
+    }
+
+    private void unsubscribe() {
+        FriendFinderRequests.unsubscribe(new CardLayoutRequestCallback(SuggestionCardType.UNSUBSCRIBED));
     }
 
     public void ignoreFriendFromNotification() {
@@ -326,7 +332,7 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
             if (activity != null) {
                 activity.finish();
                 Intent intent = new Intent(activity, WelcomeScreenActivity.class);
-                intent.putExtra(FROM_APPLICATION, fromApplication());
+                intent.putExtra(FROM_APPLICATION, fromApplication() || backToApp());
                 intent.putStringArrayListExtra(ADDED_FRIENDS, friendIds);
                 activity.startActivity(intent);
             }
@@ -467,6 +473,9 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
                         case IntentHandlerService.FriendJoinedActions.IGNORE:
                             ignoreFriendFromNotification();
                             break;
+                        case IntentHandlerService.FriendJoinedActions.UNSUBSCRIBE:
+                            unsubscribe();
+                            break;
                     }
                     getArguments().putString(SUBACTION, null);
                 }
@@ -514,6 +523,10 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
 
     private boolean fromApplication() {
         return getArguments().getBoolean(FROM_APPLICATION, true);
+    }
+
+    private boolean backToApp() {
+        return getArguments().getBoolean(BACK_TO_APP_ON_FINISH, false);
     }
 
     @Override

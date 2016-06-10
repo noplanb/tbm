@@ -208,12 +208,10 @@ public class LockScreenAlertActivity extends Activity {
                             public void onPhoneItemSelected(int index) {
                                 Intent intent = getIntent();
                                 intent.putExtra(IntentHandlerService.FriendJoinedIntentFields.CHOSEN_PHONE, suggestion.getPhone(index));
-                                dismiss();
                                 openSuggestions(IntentHandlerService.FriendJoinedActions.ADD);
                             }
                         }, suggestion, v, contextThemeWrapper);
                     } else {
-                        dismiss();
                         openSuggestions(IntentHandlerService.FriendJoinedActions.ADD);
                     }
                 } else {
@@ -221,15 +219,17 @@ public class LockScreenAlertActivity extends Activity {
                 }
                 break;
             case R.id.action_second_btn:
-                dismiss();
                 if (isFriendJoinedIntent()) {
                     openSuggestions(IntentHandlerService.FriendJoinedActions.IGNORE);
+                } else {
+                    dismiss();
                 }
                 break;
             case R.id.action_third_btn:
-                dismiss();
                 if (isFriendJoinedIntent()) {
                     openSuggestions(IntentHandlerService.FriendJoinedActions.UNSUBSCRIBE);
+                } else {
+                    dismiss();
                 }
                 break;
         }
@@ -244,5 +244,6 @@ public class LockScreenAlertActivity extends Activity {
         i.setClass(this, MainActivity.class);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         startActivity(i);
+        finish();
     }
 }
