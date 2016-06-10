@@ -29,6 +29,7 @@ import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.multimedia.CameraManager;
@@ -197,7 +198,10 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         cancelTimerTask();
         actionBar.setVisibility(View.VISIBLE);
         bottomSheet.setVisibility(View.VISIBLE);
-        switchCameraIcon.setVisibility(View.VISIBLE);
+        WelcomeScreenPreview v = (WelcomeScreenPreview) getView();
+        if (v != null) {
+            v.setSwitchCameraIndication();
+        }
         setupThumb();
     }
 
@@ -255,9 +259,11 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
 
     @OnClick({R.id.video_preview, R.id.switch_camera_icon})
     public void onPreviewClicked(View v) {
-        BaseManagerProvider managers = getManagers();
-        if (managers != null) {
-            managers.getRecorder().switchCamera();
+        if (Features.Feature.SWITCH_CAMERA.isUnlocked(context)) {
+            BaseManagerProvider managers = getManagers();
+            if (managers != null) {
+                managers.getRecorder().switchCamera();
+            }
         }
     }
 
