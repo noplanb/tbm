@@ -56,6 +56,8 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
 
     @InjectView(R.id.suggestions_list) RecyclerView listView;
     @InjectView(R.id.up) MaterialMenuView up;
+    @InjectView(R.id.action_bar_icon) ImageView actionBarIcon;
+    @InjectView(R.id.action_bar_title) TextView actionBarTitle;
     @InjectView(R.id.unsubscribed_layout) ViewGroup unsubscribedLayout;
     @InjectView(R.id.added_ignored_layout) ViewGroup addedIgnoredLayout;
     @InjectView(R.id.last_suggestion_card) ViewGroup lastSuggestionCard;
@@ -194,8 +196,12 @@ public class SuggestionsFragment extends ZazoFragment implements SwipeRefreshLay
         swipeRefreshLayout.setColorSchemeResources(R.color.thumb_color_blue, R.color.thumb_color_cyan, R.color.thumb_color_teal, R.color.thumb_color_deep_purple, R.color.thumb_color_indigo);
         if (fromApplication()) {
             up.setState(MaterialMenuDrawable.IconState.ARROW);
+            actionBarTitle.setVisibility(View.VISIBLE);
+            actionBarIcon.setVisibility(View.GONE);
         } else {
             up.setVisibility(View.GONE);
+            actionBarTitle.setVisibility(View.GONE);
+            actionBarIcon.setVisibility(View.VISIBLE);
             v.findViewById(R.id.home).setClickable(false);
         }
         cardRequestProgress.setInterpolator(new FastOutSlowInInterpolator());

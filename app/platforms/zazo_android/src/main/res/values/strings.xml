@@ -122,8 +122,8 @@
     <string name="action_got_it">Got it</string>
     <string name="action_subscribe">Subscribe</string>
     <string name="action_done">Done</string>
-    <string name="action_add_joined_friend">Add</string>
-    <string name="action_ignore_joined_friend">Ignore</string>
+    <string name="action_add_joined_friend">Invite</string>
+    <string name="action_ignore_joined_friend">Skip</string>
     <string name="action_unsubscribe">Unsubscribe</string>
 
     <plurals name="notification_title">
@@ -200,9 +200,9 @@
     <string name="suggestions_empty">No more friends to suggest</string>
     <string name="suggestions_cant_load">Couldn\'t load suggestions.\nTry again later.</string>
     <string name="ff_add_success_message">You and %1$s are connected!</string>
-    <string name="ff_add_error_message">Couldn\'t add friend</string>
-    <string name="ff_ignore_success_message">Ignored! %1$s was not added.</string>
-    <string name="ff_ignore_error_message">Couldn\'t ignore friend</string>
+    <string name="ff_add_error_message">Couldn\'t invite friend</string>
+    <string name="ff_ignore_success_message">Skipped! %1$s was not invited.</string>
+    <string name="ff_ignore_error_message">Couldn\'t skip</string>
     <string name="ff_unsubscribed_message">Unsubscribed! You will no longer receive notifications from Zazo when friends join.</string>
     <string name="ff_subscribed_message">Subscribed! You will receive notifications from Zazo when friends join.</string>
     <string name="ff_subscription_failure">Failed to change subscription.</string>
