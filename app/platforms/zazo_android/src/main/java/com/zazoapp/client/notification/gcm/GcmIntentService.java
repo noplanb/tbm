@@ -3,6 +3,7 @@ package com.zazoapp.client.notification.gcm;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.gson.Gson;
@@ -13,6 +14,7 @@ import com.zazoapp.client.debug.DebugUtils;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.notification.NotificationSuggestion;
@@ -118,6 +120,10 @@ public class GcmIntentService extends IntentService {
         Gson g = new Gson();
         FriendJoinedAdditions additions = StringUtils.fromJson(intent.getStringExtra(NotificationHandler.DataKeys.ADDITIONS), FriendJoinedAdditions.class);
         if (additions != null) {
+            if (!TextUtils.isEmpty(additions.owner_mkey) && !additions.owner_mkey.equals(UserFactory.getCurrentUserMkey())) {
+                Dispatch.dispatch("handleFriendJoined: Addressed user is different from current. Skip notification");
+                return;
+            }
             Intent i = new Intent(IntentHandlerService.IntentActions.FRIEND_JOINED);
             NotificationSuggestion suggestion = new NotificationSuggestion(additions.friend_name,
                     intent.getStringExtra(NotificationHandler.DataKeys.NKEY), additions.phone_numbers);
@@ -137,6 +143,7 @@ public class GcmIntentService extends IntentService {
     private static class FriendJoinedAdditions {
         String friend_name;
         ArrayList<String> phone_numbers;
+        String owner_mkey;
     }
 
 }
