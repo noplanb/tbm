@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Pair;
 import com.google.gson.internal.LinkedTreeMap;
+import com.zazoapp.client.network.aws.S3CredentialsStore;
 
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -93,5 +95,32 @@ public final class PreferencesHelper {
             }
         }
         editor.commit();
+    }
+
+    public static String toShortString(String name, PreferencesHelper helper) {
+        Map<String, Pair<String, String>> map = helper.getAll();
+        StringBuilder b = new StringBuilder(map.size() * 28);
+        b.append(name).append(": ");
+        if (map.isEmpty()) {
+            b.append("{}");
+        } else {
+            b.append('{');
+            Iterator<Map.Entry<String, Pair<String, String>>> it = map.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, Pair<String, String>> entry = it.next();
+                String key = entry.getKey();
+                b.append(key).append('=');
+                if (S3CredentialsStore.SECRET_KEY.equals(key) || S3CredentialsStore.ACCESS_KEY_ID.equals(key)) {
+                    continue;
+                }
+                Pair<String, String> value = entry.getValue();
+                b.append(value.second);
+                if (it.hasNext()) {
+                    b.append(", ");
+                }
+            }
+            b.append('}');
+        }
+        return b.toString();
     }
 }

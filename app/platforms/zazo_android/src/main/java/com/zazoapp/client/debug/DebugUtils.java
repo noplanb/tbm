@@ -13,6 +13,7 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.Settings;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.User;
@@ -252,6 +253,7 @@ public final class DebugUtils {
             return 0;
         }
         Dispatch.dispatch(object, null);
+        Dispatch.dispatchUserInfo(TbmApplication.getContext());
         return days;
     }
 

@@ -2,6 +2,9 @@ package com.zazoapp.client.dispatch;
 
 import android.content.Context;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.core.PreferencesHelper;
+import com.zazoapp.client.core.Settings;
+import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -9,6 +12,8 @@ import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.model.OutgoingVideoFactory;
+import com.zazoapp.client.model.User;
+import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.NetworkConfig;
 
 import java.io.File;
@@ -24,6 +29,16 @@ public class UserInfoCollector {
 
     public static String collect(Context context) {
         StringBuilder info = new StringBuilder();
+        User user = UserFactory.current_user();
+        if (user != null) {
+            info.append(user.toString()).append("\n\n");
+        }
+        PreferencesHelper appSettings = new PreferencesHelper(context);
+        info.append(PreferencesHelper.toShortString("AppS", appSettings)).append("\n\n");
+        PreferencesHelper debugSettings = new PreferencesHelper(context, DebugConfig.DEBUG_SETTINGS);
+        info.append(PreferencesHelper.toShortString("DebugS", debugSettings)).append("\n\n");
+        PreferencesHelper userSettings = new PreferencesHelper(context, Settings.FILE_NAME);
+        info.append(PreferencesHelper.toShortString("UserS", userSettings)).append("\n\n");
         ArrayList<Friend> friends = FriendFactory.getFactoryInstance().all();
         ArrayList<IncomingVideo> incomingVideos = IncomingVideoFactory.getFactoryInstance().all();
         if (friends.size() > 0) {
@@ -55,7 +70,9 @@ public class UserInfoCollector {
         }
         for (Friend friend : friends) {
             incomingVideos = friend.getIncomingVideos();
-            addRow(info, friend.getFullName(), "", "", "", "");
+            if (!incomingVideos.isEmpty()) {
+                addRow(info, friend.getFullName(), "", "", "", "");
+            }
             for (IncomingVideo video : incomingVideos) {
                 List<String> list = new ArrayList<>();
                 list.add(video.getId());

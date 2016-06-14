@@ -77,6 +77,7 @@ public abstract class ActiveModel {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(this.getClass().getSimpleName());
+        builder.append(" ");
         for (String s : attributes.values()) {
             builder.append(s).append(", ");
         }
