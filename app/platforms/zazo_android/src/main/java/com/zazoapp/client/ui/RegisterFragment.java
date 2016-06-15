@@ -639,6 +639,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         ActiveModelsHandler.getInstance(getContext()).saveAll();
         dismissProgressDialog();
         ZazoAnalytics.trackEvent(AFInAppEventType.COMPLETE_REGISTRATION);
+        ZazoAnalytics.setUser();
         publishResult(0, null);
     }
 
