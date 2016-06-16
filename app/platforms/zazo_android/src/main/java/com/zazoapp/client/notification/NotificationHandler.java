@@ -27,6 +27,7 @@ public class NotificationHandler {
         public static final String ADDITIONS = "additions";
         public static final String NKEY = "nkey";
 
+        public static final String CONDITION = "condition";
     }
 
     public static class StatusEnum {
@@ -38,7 +39,12 @@ public class NotificationHandler {
         public static final String VIDEO_RECEIVED = "video_received";
         public static final String VIDEO_STATUS_UPDATE = "video_status_update";
         public static final String LOG_REQUEST = "log_request";
+        public static final String USER_DATA_REQUEST = "user_data_request";
         public static final String FRIEND_JOINED = "friend_joined";
+    }
+
+    public static class Condition {
+        public static final String NO_USER = "no_user";
     }
 
     public static void sendForVideoReceived(Friend friend, String videoId) {

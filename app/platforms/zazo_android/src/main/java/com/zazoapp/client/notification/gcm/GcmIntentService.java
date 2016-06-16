@@ -12,8 +12,10 @@ import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.debug.DebugUtils;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.dispatch.UserInfoCollector;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.notification.NotificationHandler;
@@ -28,32 +30,32 @@ import java.util.ArrayList;
  * GcmBroadcastReciever.
  */
 public class GcmIntentService extends IntentService {
-	private final String TAG = "GCM " + this.getClass().getSimpleName();
+    private final String TAG = "GCM " + this.getClass().getSimpleName();
 
-	public GcmIntentService() {
-		super("GcmIntentService");
-	}
+    public GcmIntentService() {
+        super("GcmIntentService");
+    }
 
-	@Override
-	protected void onHandleIntent(Intent intent) {
-		Bundle extras = intent.getExtras();
-		GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
-		// The getMessageType() intent parameter must be the intent you received
-		// in your BroadcastReceiver.
-		String messageType = gcm.getMessageType(intent);
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        Bundle extras = intent.getExtras();
+        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+        // The getMessageType() intent parameter must be the intent you received
+        // in your BroadcastReceiver.
+        String messageType = gcm.getMessageType(intent);
 
-		if (!extras.isEmpty()) { // has effect of unparcelling Bundle
-			/*
-			 * Filter messages based on message type. Since it is likely that
+        if (!extras.isEmpty()) { // has effect of unparcelling Bundle
+            /*
+             * Filter messages based on message type. Since it is likely that
 			 * GCM will be extended in the future with new message types, just
 			 * ignore any message types you're not interested in, or that you
 			 * don't recognize.
 			 */
             Logger.i(TAG, "" + messageType + " " + extras);
-			if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
-				// Not used
-			} else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
-				// Not used
+            if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
+                // Not used
+            } else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
+                // Not used
             } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
                 Log.i(TAG, "onHandleIntent: extras = " + extras.toString());
                 if (extras.containsKey(NotificationHandler.DataKeys.SERVER_HOST)) {
@@ -69,6 +71,24 @@ public class GcmIntentService extends IntentService {
                         } else if (NotificationHandler.TypeEnum.LOG_REQUEST.equalsIgnoreCase(type)) {
                             DebugUtils.dispatchExtendedLogs(extras.getString(NotificationHandler.DataKeys.DATE_START),
                                     extras.getString(NotificationHandler.DataKeys.DATE_END));
+                        } else if (NotificationHandler.TypeEnum.USER_DATA_REQUEST.equalsIgnoreCase(type)) {
+                            Logger.i(TAG, "USER_DATA_REQUEST " + extras);
+                            String condition = extras.getString(NotificationHandler.DataKeys.CONDITION);
+                            boolean acceptCondition = true;
+                            if (!TextUtils.isEmpty(condition)) {
+                                switch (condition) {
+                                    case NotificationHandler.Condition.NO_USER:
+                                        acceptCondition = !User.isRegistered(getApplicationContext());
+                                        break;
+                                    default:
+                                        acceptCondition = false;
+                                }
+                            }
+                            if (acceptCondition) {
+                                Intent pushInfo = new Intent(type);
+                                pushInfo.putExtra("user_data", UserInfoCollector.collect(getApplicationContext()));
+                                Dispatch.dispatch(pushInfo, type + " " + condition, null);
+                            }
                         } else {
                             Dispatch.dispatch("onHandleIntent: ERROR: unknown intent type in notification payload.");
                         }
@@ -81,40 +101,40 @@ public class GcmIntentService extends IntentService {
             }
         }
         // Release the wake lock provided by the WakefulBroadcastReceiver.
-		GcmBroadcastReceiver.completeWakefulIntent(intent);
-	}
+        GcmBroadcastReceiver.completeWakefulIntent(intent);
+    }
 
-	// ---------
-	// Handle video status update
-	// ---------
-	private void handleVideoStatusUpdate(Intent intent) {
-		String status = intent.getStringExtra(NotificationHandler.DataKeys.STATUS);
-		String videoId = intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID);
-		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
-		
-		// Normalize from notification naming convention to internal.
-		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
-		if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.DOWNLOADED)) {
-			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingVideo.Status.DOWNLOADED);
-		} else if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.VIEWED)) {
-			intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingVideo.Status.VIEWED);
-		} else {
-			Dispatch.dispatch("handleVideoStatusUpdate: ERROR got unknow sent video status");
-		}
-		startDataHolderService(intent);
-	}
+    // ---------
+    // Handle video status update
+    // ---------
+    private void handleVideoStatusUpdate(Intent intent) {
+        String status = intent.getStringExtra(NotificationHandler.DataKeys.STATUS);
+        String videoId = intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID);
+        intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
 
-	// --------
-	// Handling video received
-	// ---------
-	private void handleVideoReceived(Intent intent) {
-		Log.i(TAG, "handleVideoReceived:");
-		// Normalize from notification naming convention to internal.
-		intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
-		intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingVideo.Status.NEW);
-		intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID)); 
-		startDataHolderService(intent);
-	}
+        // Normalize from notification naming convention to internal.
+        intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.DOWNLOADED)) {
+            intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingVideo.Status.DOWNLOADED);
+        } else if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.VIEWED)) {
+            intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingVideo.Status.VIEWED);
+        } else {
+            Dispatch.dispatch("handleVideoStatusUpdate: ERROR got unknow sent video status");
+        }
+        startDataHolderService(intent);
+    }
+
+    // --------
+    // Handling video received
+    // ---------
+    private void handleVideoReceived(Intent intent) {
+        Log.i(TAG, "handleVideoReceived:");
+        // Normalize from notification naming convention to internal.
+        intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+        intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingVideo.Status.NEW);
+        intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID));
+        startDataHolderService(intent);
+    }
 
     private void handleFriendJoined(Intent intent) {
         Gson g = new Gson();
