@@ -255,10 +255,10 @@ public class CameraManager {
                 break;
             }
         }
-        if (cparams.getSupportedFocusModes().contains(
-                Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
-            cparams.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-        }
+        //if (cparams.getSupportedFocusModes().contains(
+        //        Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+        //    cparams.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+        //}
         if(isSupportedMaxPreviewFpsRange)
             cparams.setPreviewFpsRange(30000, 30000);
         else{
