@@ -33,6 +33,7 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.FriendGetter;
 import com.zazoapp.client.core.RemoteStorageHandler;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.debug.DebugSettingsActivity;
 import com.zazoapp.client.dispatch.ZazoAnalytics;
@@ -93,6 +94,13 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     private static final String KEY_AUTH = "rf_auth";
     private static final String KEY_MKEY = "rf_mkey";
     private Bundle registerData;
+    private Context context;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        context = TbmApplication.getContext();
+    }
 
     @Nullable
     @Override
@@ -119,7 +127,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
 
     private void setAdditionalViewHeight() {
         ViewGroup.LayoutParams lp = additionalView.getLayoutParams();
-        lp.height = (int) (Convenience.getScreenDimensions(getContext()).y * 0.6);
+        lp.height = (int) (Convenience.getScreenDimensions(context).y * 0.6);
         additionalView.setLayoutParams(lp);
     }
 
@@ -128,8 +136,8 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     //-----
     private void initUser() {
         UserFactory userFactory = UserFactory.getFactoryInstance();
-        userFactory.destroyAll(getContext());
-        user = userFactory.makeInstance(getContext());
+        userFactory.destroyAll(context);
+        user = userFactory.makeInstance(context);
     }
 
     //----------
@@ -161,7 +169,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     }
 
     private void prefillTextFields() {
-        Contact contact = new ContactsManager(getContext()).userProfile(getContext());
+        Contact contact = new ContactsManager(context).userProfile(context);
         Log.i(TAG, "profile: " + contact);
 
         if(contact == null)
@@ -415,7 +423,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     // Click listeners
     //----------------
     private void setupListeners() {
-        countryCodeTxt.setAdapter(new CountryCodeAdapter(getContext()));
+        countryCodeTxt.setAdapter(new CountryCodeAdapter(context));
         countryCodeTxt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -453,7 +461,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    int maxWidth = Convenience.dpToPx(getContext(), 350);
+                    int maxWidth = Convenience.dpToPx(context, 350);
                     int width = lastNameTxt.getWidth();
                     countryCodeTxt.setDropDownWidth(Math.min(width, maxWidth));
                 }
@@ -499,15 +507,15 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     //-------------
     private void addShortcutIcon(){
 
-        Intent shortcutIntent = new Intent(getContext(), MainActivity.class);
+        Intent shortcutIntent = new Intent(context, MainActivity.class);
 
         Intent addIntent = new Intent();
         addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
         addIntent.putExtra("duplicate", false);
         addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, Config.appName);
-        addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(getContext(), R.drawable.ic_launcher));
+        addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(context, R.drawable.ic_launcher));
         addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
-        getContext().sendBroadcast(addIntent);
+        context.sendBroadcast(addIntent);
     }
 
     private void showProgressDialog(@StringRes int message) {
@@ -591,7 +599,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         user.set(User.Attributes.ID, params.get(UserFactory.ServerParamKeys.ID));
         user.set(User.Attributes.MKEY, params.get(UserFactory.ServerParamKeys.MKEY));
         user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
-        new RegFriendGetter(getContext(), true).getFriends();
+        new RegFriendGetter(context, true).getFriends();
     }
 
     private class RegFriendGetter extends FriendGetter {
@@ -616,7 +624,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     // Get S3 credentials
     //-------------------
     private void getAWSCredentials(){
-        new RegS3CredentialsGetter(getContext());
+        new RegS3CredentialsGetter(context);
     }
 
     private class RegS3CredentialsGetter extends S3CredentialsGetter {
@@ -636,7 +644,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
 
     private void regComplete() {
         user.set(User.Attributes.REGISTERED, "true");
-        ActiveModelsHandler.getInstance(getContext()).saveAll();
+        ActiveModelsHandler.getInstance(context).saveAll();
         dismissProgressDialog();
         ZazoAnalytics.trackEvent(AFInAppEventType.COMPLETE_REGISTRATION);
         ZazoAnalytics.setUser();
@@ -644,7 +652,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     }
 
     private void debugPage() {
-        Intent intent = new Intent(getActivity(), DebugSettingsActivity.class);
+        Intent intent = new Intent(context, DebugSettingsActivity.class);
         intent.putExtra(DebugSettingsActivity.EXTRA_FROM_REGISTER_SCREEN, true);
         startActivityForResult(intent, DEBUG_SCREEN_CODE);
     }
@@ -654,7 +662,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         if (requestCode == DEBUG_SCREEN_CODE) {
             countryCodeTxt.setText("");
             user = UserFactory.current_user();
-            if (User.isRegistered(getContext())) {
+            if (User.isRegistered(context)) {
                 getAWSCredentials();
             }
         }
