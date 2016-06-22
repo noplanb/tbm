@@ -216,6 +216,11 @@
     <string name="settings_allow_data_in_roaming_hint">Send and receive Zazos when roaming</string>
     <string name="settings_light_screen_for_notifications">Light screen for notifications</string>
 
+    <string name="ge_menu_fullscreen">Fullscreen</string>
+    <string name="ge_menu_transcript">Convert to text</string>
+    <string name="ge_menu_chat">Send text</string>
+    <string name="ge_menu_details">Details</string>
+
     <string name="dev_previous"><![CDATA[<]]></string>
     <string name="dev_next"><![CDATA[>]]></string>
 </resources>

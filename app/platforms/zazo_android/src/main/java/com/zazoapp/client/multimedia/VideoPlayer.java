@@ -152,7 +152,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         if (needToPlay) {
             playOptions = options;
             zoomController.clearState();
-            targetViewRef = new WeakReference<View>(view);
+            targetViewRef = new WeakReference<>(view);
             setPlayerOverTargetView();
             twDate.setText("");
             return start();

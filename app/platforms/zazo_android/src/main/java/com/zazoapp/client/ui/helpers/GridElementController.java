@@ -1,11 +1,16 @@
 package com.zazoapp.client.ui.helpers;
 
+import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.ListPopupWindow;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.model.ActiveModel;
@@ -14,16 +19,18 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.multimedia.PlayOptions;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.animations.GridElementAnimation;
+import com.zazoapp.client.ui.view.GridElementMenuAdapter;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.StringUtils;
 
 /**
- * Created by User on 1/30/2015.
+ * Created by skamenkovych@codeminders.com on 1/30/2015.
  */
 public class GridElementController implements GridElementView.ClickListener, VideoPlayer.StatusCallbacks,
         GridElementView.FriendViewListener, ActiveModel.ModelChangeCallback, Friend.VideoStatusChangedCallback {
@@ -119,6 +126,49 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     @Override
+    public void onOverflowClicked() {
+        showMenu();
+    }
+
+    private void showMenu() {
+        final ListPopupWindow listPopupWindow = new ListPopupWindow(activity, null, android.support.v7.appcompat.R.attr.popupMenuStyle, 0);
+        final GridElementMenuAdapter adapter = new GridElementMenuAdapter(activity);
+        listPopupWindow.setAdapter(adapter);
+        listPopupWindow.setContentWidth(adapter.measureContentWidth());
+        listPopupWindow.setDropDownGravity(Gravity.END);
+        //listPopupWindow.setListSelector(activity.getResources().getDrawable(R.drawable.options_popup_item_bg));
+        listPopupWindow.setListSelector(activity.getResources().getDrawable(R.drawable.bg_transparent_circle));
+        listPopupWindow.setAnchorView(gridElementView.findViewById(R.id.name_layout));
+        if (adapter.getCount() > 5) {
+            TypedArray a = activity.getTheme().obtainStyledAttributes(new int[]{android.R.attr.listPreferredItemHeightSmall});
+            int itemHeight = a.getDimensionPixelSize(0, -1);
+            listPopupWindow.setHeight(itemHeight < 0 ? -1 : itemHeight * 5);
+            a.recycle();
+        }
+        listPopupWindow.setModal(true);
+        listPopupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                GridElementMenuOption item = adapter.getItem(position);
+                Context context = view.getContext();
+                switch (item) {
+                    case FULLSCREEN:
+                        managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId(), PlayOptions.FULLSCREEN);
+                        break;
+                    case CHAT:
+                        break;
+                    case TRANSCRIPT:
+                        break;
+                    case DETAILS:
+                        break;
+                }
+                listPopupWindow.dismiss();
+            }
+        });
+        listPopupWindow.show();
+    }
+
+    @Override
     public void onVideoPlaying(String friendId, String videoId) {
         if (isForMe(friendId)) {
             Log.d(TAG, "onVideoPlaying " + friendId);
@@ -209,6 +259,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
         gridElementView.showResendButton(DebugConfig.Bool.ALLOW_RESEND.get() && friend.videoToFile(friend.getOutgoingVideoId()).exists());
         ((View) container.getParent()).invalidate();
+        gridElementView.showOverflow(shouldShowOverflow());
         container.setVisibility(View.VISIBLE); // as content is loaded, display view
         if (force) {
             managerProvider.getTutorial().updateForView(container);
@@ -424,5 +475,13 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         IncomingVideo newestIncomingVideo = friend.newestIncomingVideo();
         String videoTimestamp = (newestIncomingVideo != null) ? newestIncomingVideo.getId() : null;
         return StringUtils.getEventTime(videoTimestamp);
+    }
+
+    private boolean shouldShowOverflow() {
+        Friend friend = gridElement.getFriend();
+        if (friend == null || !friend.hasIncomingPlayableVideos()) {
+            return false;
+        }
+        return true/*Features.Feature.PLAY_FULLSCREEN.isUnlocked(activity)*/;
     }
 }

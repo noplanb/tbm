@@ -30,6 +30,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         void onEmptyViewClicked();
         void onThumbViewClicked();
         void onResendClicked();
+        void onOverflowClicked();
 	}
 
     public interface FriendViewListener {
@@ -55,6 +56,9 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     @InjectView(R.id.card_empty_text) TextView emptyText;
     @InjectView(R.id.card_layout) RelativeLayout cardLayout;
     @InjectView(R.id.resend_last) ImageView btnResend;
+    @InjectView(R.id.overflow) ImageView btnOverflow;
+    @InjectView(R.id.left_boundary) View overflowLeftBoundary;
+    @InjectView(R.id.name_layout) View nameLayout;
 
 	private ClickListener mClickListener;
 
@@ -94,6 +98,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
         mEmptyView.setOnLongClickListener(this);
         imgThumb.setOnClickListener(this);
         btnResend.setOnClickListener(this);
+        nameLayout.setOnClickListener(this);
     }
 
     @Override
@@ -128,6 +133,9 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
             case R.id.resend_last:
                 mClickListener.onResendClicked();
                 v.animate().rotationBy(-180).setDuration(400).start();
+                break;
+            case R.id.name_layout:
+                mClickListener.onOverflowClicked();
                 break;
         }
     }
@@ -273,5 +281,10 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public boolean isReadyToAnimate() {
         return getMeasuredWidth() != 0;
+    }
+
+    public void showOverflow(boolean visible) {
+        btnOverflow.setVisibility(visible ? VISIBLE : GONE);
+        overflowLeftBoundary.setVisibility(visible ? VISIBLE : GONE);
     }
 }

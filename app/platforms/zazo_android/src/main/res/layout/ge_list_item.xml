@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/list_item"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:paddingLeft="16dip"
+              android:paddingRight="16dip"
+              android:minWidth="196dip"
+              android:orientation="horizontal"
+              android:background="@drawable/options_popup_item_bg">
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="?android:attr/listPreferredItemHeightSmall"
+            android:layout_gravity="center_vertical"
+            android:duplicateParentState="true"
+            android:alpha="@integer/primary_text_alpha">
+
+        <ImageView
+                android:id="@+id/icon"
+                android:layout_width="32dip"
+                android:layout_height="32dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="8dip"
+                android:duplicateParentState="true"/>
+
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textAppearance="?attr/textAppearanceLargePopupMenu"
+                android:duplicateParentState="true"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:fadingEdge="horizontal"
+                android:textColor="@color/black"/>
+
+    </LinearLayout>
+
+</LinearLayout>

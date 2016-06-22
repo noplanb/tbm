@@ -16,7 +16,7 @@
             <item android:id="@android:id/mask">
                 <shape android:shape="rectangle">
                     <corners android:topLeftRadius="@dimen/popup_radius"
-                            android:topRightRadius="@dimen/popup_radius"/>
+                             android:topRightRadius="@dimen/popup_radius"/>
                     <solid android:color="@color/dialog_body_bg"/>
                 </shape>
             </item>

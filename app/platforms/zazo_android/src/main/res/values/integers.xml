@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="anim_duration">250</integer>
+    <item name="primary_text_alpha" format="float" type="integer">0.87</item>
 </resources>
