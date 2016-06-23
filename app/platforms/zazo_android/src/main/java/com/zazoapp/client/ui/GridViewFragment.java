@@ -210,7 +210,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return;
         }
         View view = nineViewGroup.getSurroundingFrame(index);
-        if (getManagerProvider().getPlayer().togglePlayOverView(view, friendId)) {
+        if (getManagerProvider().getPlayer().togglePlayOverView(view, friendId, 0)) {
             getManagerProvider().getTutorial().onVideoStartPlaying();
         }
     }

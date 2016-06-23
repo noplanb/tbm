@@ -73,6 +73,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private ZoomController zoomController;
     private float mediaVolume = 1.0f;
     private WeakReference<View> targetViewRef;
+    @PlayFlags private int playFlags;
 
     private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
     private List<IncomingVideo> playingVideos;
@@ -139,7 +140,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     @Override
-    public boolean togglePlayOverView(View view, String friendId) {
+    public boolean togglePlayOverView(View view, String friendId, @PlayFlags int options) {
         boolean needToPlay = !(isPlaying() && friendId.equals(this.friendId));
 
         // Always stop first so that the notification goes out to reset the view we were on in case it was still playing and we are switching to another view.
@@ -149,6 +150,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         friend = FriendFactory.getFactoryInstance().find(friendId);
 
         if (needToPlay) {
+            playFlags = options;
             zoomController.clearState();
             targetViewRef = new WeakReference<View>(view);
             setPlayerOverTargetView();
@@ -419,6 +421,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                         isSeekAllowed = true;
                                         videoRootLayout.animate().alpha(1).start();
                                         zoomController.setEnabled(true);
+                                        if (PlayOptions.isFullscreen(playFlags)) {
+                                            zoomController.animateToFullscreen();
+                                        }
                                         VideoProgressBar.Scheme.SchemeBuilder schemeBuilder = new VideoProgressBar.Scheme.SchemeBuilder();
                                         for (int i = 0; i < numberOfVideos; i++) {
                                             schemeBuilder.addBar();
@@ -691,13 +696,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     if (Math.abs(offsetX) <= Math.abs(offsetY)) {
                         if (videoBody.equals(target) && isSlidingSupported(DIRECTION_VERTICAL)) {
                             gestureSign = Math.signum(offsetY);
-                            if (!zoomed) {
-                                initialWidth = videoBody.getWidth();
-                                initialHeight = videoBody.getHeight();
-                                initialX = videoBody.getTranslationX();
-                                initialY = videoBody.getTranslationY();
+                            if (zoomed) {
+                                animateZoom(false);
+                            } else {
+                                animateToFullscreen();
                             }
-                            animateZoom(!zoomed);
                         }
                     } else if (isSlidingSupported(DIRECTION_HORIZONTAL)) {
                         gestureDirection = DIRECTION_HORIZONTAL;
@@ -763,6 +766,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             public boolean isAbortGestureAllowed() {
                 return nineViewGroup.getGestureRecognizer().isAbortGestureAllowed();
             }
+        }
+
+        public void animateToFullscreen() {
+            initialWidth = videoBody.getWidth();
+            initialHeight = videoBody.getHeight();
+            initialX = videoBody.getTranslationX();
+            initialY = videoBody.getTranslationY();
+            animateZoom(true);
         }
 
         private void animateZoom(final boolean zoomIn) {

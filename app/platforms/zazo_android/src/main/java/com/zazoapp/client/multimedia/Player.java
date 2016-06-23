@@ -1,6 +1,10 @@
 package com.zazoapp.client.multimedia;
 
+import android.support.annotation.IntDef;
 import android.view.View;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Created by skamenkovych@codeminders.com on 4/21/2015.
@@ -12,7 +16,7 @@ public interface Player {
      *
      */
     void init(View rootView);
-    boolean togglePlayOverView(View view, String friendId);
+    boolean togglePlayOverView(View view, String friendId, @PlayFlags int options);
     void stop();
     void release();
     void setVolume(float volume);
@@ -37,7 +41,7 @@ public interface Player {
         }
 
         @Override
-        public boolean togglePlayOverView(View view, String friendId) {
+        public boolean togglePlayOverView(View view, String friendId, int options) {
             return false;
         }
 
@@ -82,4 +86,8 @@ public interface Player {
         public void updatePlayerPosition() {
         }
     };
+
+    @IntDef(flag = true, value = {PlayOptions.FULLSCREEN})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface PlayFlags {}
 }

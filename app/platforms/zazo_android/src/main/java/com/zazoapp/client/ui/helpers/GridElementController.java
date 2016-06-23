@@ -99,7 +99,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         // Otherwise show toast "Video is not playable"
         Friend friend = gridElement.getFriend();
         if (friend.hasIncomingPlayableVideos()) {
-            if (managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId())) {
+            if (managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId(), 0)) {
                 managerProvider.getTutorial().onVideoStartPlaying();
             }
             managerProvider.getTutorial().onVideoStartPlayingByUser();
