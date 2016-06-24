@@ -158,6 +158,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                     case CHAT:
                         break;
                     case TRANSCRIPT:
+                        managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId(), PlayOptions.TRANSCRIPT);
                         break;
                     case DETAILS:
                         break;

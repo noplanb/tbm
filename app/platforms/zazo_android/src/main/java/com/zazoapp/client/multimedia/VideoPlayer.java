@@ -73,7 +73,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private ZoomController zoomController;
     private float mediaVolume = 1.0f;
     private WeakReference<View> targetViewRef;
-    @PlayFlags private int playOptions;
+    private PlayOptions playOptions;
 
     private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
     private List<IncomingVideo> playingVideos;
@@ -150,7 +150,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         friend = FriendFactory.getFactoryInstance().find(friendId);
 
         if (needToPlay) {
-            playOptions = options;
+            playOptions = new PlayOptions(options);
             zoomController.clearState();
             targetViewRef = new WeakReference<>(view);
             setPlayerOverTargetView();
@@ -421,11 +421,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                         isSeekAllowed = true;
                                         videoRootLayout.animate().alpha(1).start();
                                         zoomController.setEnabled(true);
-                                        if (PlayOptions.isFullscreen(playOptions)) {
+                                        if (playOptions.hasFlags(PlayOptions.FULLSCREEN)) {
                                             if (!zoomController.zoomed) {
                                                 zoomController.animateToFullscreen();
                                             }
-                                            playOptions = PlayOptions.clearFlags(playOptions, PlayOptions.FULLSCREEN);
+                                            playOptions.clearFlags(PlayOptions.FULLSCREEN);
                                         }
                                         VideoProgressBar.Scheme.SchemeBuilder schemeBuilder = new VideoProgressBar.Scheme.SchemeBuilder();
                                         for (int i = 0; i < numberOfVideos; i++) {

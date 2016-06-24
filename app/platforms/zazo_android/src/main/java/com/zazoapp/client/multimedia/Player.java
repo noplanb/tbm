@@ -87,7 +87,7 @@ public interface Player {
         }
     };
 
-    @IntDef(flag = true, value = {PlayOptions.FULLSCREEN})
+    @IntDef(flag = true, value = {PlayOptions.FULLSCREEN, PlayOptions.TRANSCRIPT})
     @Retention(RetentionPolicy.SOURCE)
     @interface PlayFlags {}
 }

@@ -5,13 +5,18 @@ package com.zazoapp.client.multimedia;
  */
 public class PlayOptions {
     public static final int FULLSCREEN = 0x0001;
+    public static final int TRANSCRIPT = 0x0002;
 
-    public static boolean isFullscreen(@Player.PlayFlags int options) {
-        return (options & FULLSCREEN) > 0;
+    @Player.PlayFlags private int options;
+    public PlayOptions(@Player.PlayFlags int options) {
+        this.options = options;
     }
 
-    public static @Player.PlayFlags int clearFlags(@Player.PlayFlags int options, @Player.PlayFlags int flags) {
+    public boolean hasFlags(@Player.PlayFlags int flags) {
+        return (options & flags) > 0;
+    }
+
+    public void clearFlags(@Player.PlayFlags int flags) {
         options = options & ~flags;
-        return options;
     }
 }
