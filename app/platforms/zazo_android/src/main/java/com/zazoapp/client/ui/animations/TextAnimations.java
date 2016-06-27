@@ -10,6 +10,9 @@ import android.widget.TextView;
  */
 public class TextAnimations {
     public static void animateAlpha(final TextView view, final CharSequence newValue) {
+        if (newValue.equals(view.getText())) {
+            return;
+        }
         final ValueAnimator anim2 = ValueAnimator.ofFloat(0, 1);
         int duration = 300;
         anim2.setDuration(duration);

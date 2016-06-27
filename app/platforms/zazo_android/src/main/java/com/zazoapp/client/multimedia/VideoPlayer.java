@@ -9,13 +9,14 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.support.annotation.FloatRange;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -42,9 +43,13 @@ import com.zazoapp.client.utilities.StringUtils;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -59,10 +64,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private Friend friend;
     private int currentVideoNumber = 0;
     private int numberOfVideos = 0;
-    @InjectView(R.id.video_view) VideoView videoView;
-    @InjectView(R.id.video_body) ViewGroup videoBody;
     @InjectView(R.id.video_root_layout) GestureControlledLayout videoRootLayout;
-    @InjectView(R.id.tw_date) TextView twDate;
     private TouchBlockScreen blockScreen;
     private VideoProgressBar progressBar;
     @InjectView(R.id.grid_view) NineViewGroup nineViewGroup;
@@ -74,6 +76,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private float mediaVolume = 1.0f;
     private WeakReference<View> targetViewRef;
     private PlayOptions playOptions;
+    private PresenterHelper presenterHelper;
 
     private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
     private List<IncomingVideo> playingVideos;
@@ -90,10 +93,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @Override
     public void init(View rootView) {
         ButterKnife.inject(this, rootView);
-        this.videoView.setOnCompletionListener(this);
-        this.videoView.setOnPreparedListener(this);
-        twDate.setTypeface(Convenience.getTypeface(activity));
-        zoomController = new ZoomController();
+        presenterHelper = new PresenterHelper();
         blockScreen.setUnlockListener(new TouchBlockScreen.UnlockListener() {
             @Override
             public void onUnlockGesture() {
@@ -151,10 +151,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         if (needToPlay) {
             playOptions = new PlayOptions(options);
-            zoomController.clearState();
             targetViewRef = new WeakReference<>(view);
-            setPlayerOverTargetView();
-            twDate.setText("");
+            if (playOptions.hasFlags(PlayOptions.TRANSCRIPT)) {
+                presenterHelper.setCurrentPresentation(Presenter.Type.TRANSCRIPTION);
+            } else {
+                presenterHelper.setCurrentPresentation(Presenter.Type.PLAYER);
+            }
+            zoomController.clearState();
+            presenterHelper.initStateForTarget();
             return start();
         }
         return false;
@@ -163,18 +167,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @Override
     public void stop(){
         Log.i(TAG, "stop");
-        if (videoView != null && videoBody != null) {
-            videoRootLayout.animate().alpha(0f).start();
-            zoomController.setEnabled(false);
-            progressBar.doDisappearing();
-            //need to clear videoView because of last frame of already viewed video appear before new one start playing
-            //TODO need to fix delay with black frame (or first video frame)
-            //videoView.setVisibility(View.INVISIBLE);
-            //videoView.setVisibility(View.VISIBLE);
-            videoView.stopPlayback();
-            videoView.setVideoURI(null);
-            videoView.suspend();
-        }
+        presenterHelper.stopPresentation();
         blockScreen.unlock(true);
         managerProvider.getAudioController().setSpeakerPhoneOn(false);
         cancelWaitingForStart();
@@ -188,7 +181,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     @Override
     public void setVolume(float volume) {
-        videoView.setVolume(volume);
+        presenterHelper.setVolume(volume);
         mediaVolume = volume;
     }
 
@@ -222,7 +215,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         play(0f);
     }
 
-    private void play(@FloatRange(from = 0.0f, to = 1.0f, toInclusive = false) final float progress) {
+    private void play(@FloatRange(from = 0.0f, to = 1.0f, toInclusive = false) float progress) {
         Log.i(TAG, "play");
         if (!managerProvider.getAudioController().gainFocus()) {
             DialogShower.showToast(activity, R.string.toast_could_not_get_audio_focus);
@@ -233,35 +226,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         if (videoIsPlayable()) {
             managerProvider.getAudioController().setSpeakerPhoneOn(true);
-            final String path = friend.videoFromPath(videoId);
-            videoView.setOnPreparedListener(new OnPreparedListener() {
-                boolean firstOpening = true;
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
-                    if (firstOpening) {
-                        videoView.seekTo((int) (videoView.getDuration() * progress));
-                        firstOpening = false;
-                    }
-                    videoView.start();
-                    waitAndNotifyWhenStart();
-                }
-            });
-            videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mp, int what, int extra) {
-                    final String brokenVideoId = videoId;
-                    cancelWaitingForStart();
-                    mp.reset();
-                    onCompletion(mp);
-                    //friend.setAndNotifyIncomingVideoStatus(brokenVideoId, IncomingVideo.Status.FAILED_PERMANENTLY);
-                    notifyPlaybackError();
-                    Dispatch.dispatch(String.format("Error while playing video %s %d %d", brokenVideoId, what, extra));
-                    return true;
-                }
-            });
-            videoView.setVideoPath(path);
-
+            String path = friend.videoFromPath(videoId);
+            presenterHelper.startPresentation(path, progress);
         } else {
             onCompletion(null);
         }
@@ -289,24 +255,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     //---------------
     // Helper methods
     //---------------
-    private void setPlayerOverTargetView() {
-        View view = (targetViewRef != null) ? targetViewRef.get() : null;
-        if (view == null) {
-            return;
-        }
-        videoBody.setX(view.getX());
-        videoBody.setY(view.getY());
-        videoBody.setTag(R.id.box_id, view.getId());
-        if (view.getY() < videoRootLayout.getHeight() / 4) {
-            twDate.setY(view.getY() + view.getHeight()); // for top row place it below
-        } else {
-            twDate.setY(view.getY() - twDate.getHeight()); // for other place it above
-        }
-        twDate.setX(view.getX());
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(view.getWidth(), view.getHeight());
-        videoBody.setLayoutParams(params);
-    }
-
     private void determineIfDownloading() {
         videosAreDownloading = friend.hasDownloadingVideo();
     }
@@ -347,18 +295,19 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     private void setCurrentVideoId(String videoId) {
         this.videoId = videoId;
-        TextAnimations.animateAlpha(twDate, StringUtils.getEventTime(videoId));
+        presenterHelper.refresh();
     }
 
     public boolean isPlaying(){
-        return videoView != null && (videoView.isPlaying() || videoView.isPaused());
+        return presenterHelper != null && presenterHelper.isPlaying();
     }
 
     @Override
     public void rewind(int msec) {
         if (isPlaying()) {
-            int current = videoView.getCurrentPosition();
-            int length = videoView.getDuration();
+            VideoView view = presenterHelper.getVideoView();
+            int current = view.getCurrentPosition();
+            int length = view.getDuration();
             if (length > 0) {
                 int next = current + msec;
                 if (next < 0) {
@@ -366,21 +315,24 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 } else if (next > length) {
                     next = length - 1;
                 }
-                videoView.seekTo(next);
+                view.seekTo(next);
             }
         }
     }
 
     @Override
     public void restartAfter(int delay) {
-        videoView.pause();
-        videoView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                videoView.seekTo(0);
-                videoView.start();
-            }
-        }, delay);
+        final VideoView view = presenterHelper.getVideoView();
+        if (view != null) {
+            view.pause();
+            view.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    view.seekTo(0);
+                    view.start();
+                }
+            }, delay);
+        }
     }
 
     @Override
@@ -390,12 +342,15 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         } else if (blockScreen.isLocked()) {
             blockScreen.unlock(true);
         }
-        videoView.changeAudioStream(managerProvider.getAudioController().isSpeakerPhoneOn());
+        final VideoView view = presenterHelper.getVideoView();
+        if (view != null) {
+            view.changeAudioStream(managerProvider.getAudioController().isSpeakerPhoneOn());
+        }
     }
 
     @Override
     public void updatePlayerPosition() {
-        setPlayerOverTargetView();
+        presenterHelper.initStateForTarget();
     }
 
     private boolean videoIsPlayable(){
@@ -409,15 +364,16 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         onStartTask = new TimerTask() {
             @Override
             public void run() {
-                videoView.post(new Runnable() {
+                videoRootLayout.post(new Runnable() {
                     @Override
                     public void run() {
+                        final VideoView videoView = presenterHelper.getVideoView();
                         if (onStartTask != null && videoView.getCurrentPosition() > 0) {
-                            videoView.postDelayed(new Runnable() {
+                            videoRootLayout.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
                                     // checks if it is playing to eliminate the case of released player
-                                    if (videoView.isPlaying()) {
+                                    if (isPlaying()) {
                                         isSeekAllowed = true;
                                         videoRootLayout.animate().alpha(1).start();
                                         zoomController.setEnabled(true);
@@ -481,12 +437,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         }
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                videoView.setVolume(0f);
-                videoView.pause();
+                presenterHelper.setVolume(0f);
+                presenterHelper.pause();
                 progressBar.pause();
                 break;
             case MotionEvent.ACTION_UP:
-                videoView.setVolume(mediaVolume);
+                presenterHelper.setVolume(mediaVolume);
                 float currentVideoProgress = setVideoProgress(progress, false, true);
                 play(currentVideoProgress);
                 break;
@@ -494,7 +450,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 setVideoProgress(progress, true, isSeekAllowed);
                 break;
             case MotionEvent.ACTION_CANCEL:
-                videoView.setVolume(mediaVolume);
+                presenterHelper.setVolume(mediaVolume);
                 break;
         }
         return true;
@@ -511,6 +467,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         progressBar.setProgress(fullProgress);
         int pos = (int) Math.max(Math.floor(fullProgress * numberOfVideos - 0.0001), 0);
         final float curProgress = fullProgress * numberOfVideos - pos;
+        final VideoView videoView = presenterHelper.getVideoView();
+        if (videoView == null) {
+            return 0;
+        }
         if ((currentVideoNumber != pos + 1)) {
             jumpToVideo(pos);
             if (allowLoad) {
@@ -528,7 +488,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     @Override
                     public boolean onError(MediaPlayer mp, int what, int extra) {
                         mp.reset();
-                        isSeekAllowed = false;
+                        isSeekAllowed = true;
                         return true;
                     }
                 });
@@ -551,10 +511,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         private int initialWidth;
         private int initialHeight;
         private ValueAnimator zoomAnimator;
+        VideoView videoView;
+        ViewGroup videoParentView;
 
         ZoomController() {
             ArrayList<View> views = new ArrayList<>();
-            views.add(videoBody);
+            videoParentView = presenterHelper.getCurrentPresenter().getVideoViewParent();
+            videoView = presenterHelper.getVideoView();
+            views.add(videoParentView);
             views.addAll(nineViewGroup.getNineViews());
             views.add(videoRootLayout);
             gestureRecognizer = new PlayControlGestureRecognizer(activity, videoRootLayout, views);
@@ -598,7 +562,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
             @Override
             public boolean click(View v) {
-                if (videoBody.equals(v)) {
+                if (videoParentView.equals(v)) {
                     if (videoView.isPlaying()) {
                         videoView.pause();
                         progressBar.pause();
@@ -624,8 +588,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (videoRootLayout.equals(v)) {
                     stop();
                     return true;
-                } else if (videoBody.equals(v)) {
-                    v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) videoBody.getTag(R.id.box_id)]);
+                } else if (videoParentView.equals(v)) {
+                    Object boxId = videoParentView.getTag(R.id.box_id);
+                    if (boxId != null) {
+                        v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) boxId]);
+                    }
                 }
                 return nineViewGroup.getGestureRecognizer().startLongpress(v);
             }
@@ -635,8 +602,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (videoRootLayout.equals(v)) {
                     return true;
                 }
-                if (videoBody.equals(v)) {
-                    v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) videoBody.getTag(R.id.box_id)]);
+                if (videoParentView.equals(v)) {
+                    Object boxId = videoParentView.getTag(R.id.box_id);
+                    if (boxId != null) {
+                        v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) boxId]);
+                    }
                 }
                 return nineViewGroup.getGestureRecognizer().endLongpress(v);
             }
@@ -646,8 +616,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (videoRootLayout.equals(v)) {
                     return false;
                 }
-                if (videoBody.equals(v)) {
-                    v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) videoBody.getTag(R.id.box_id)]);
+                if (videoParentView.equals(v)) {
+                    Object boxId = videoParentView.getTag(R.id.box_id);
+                    if (boxId != null) {
+                        v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) boxId]);
+                    }
                 }
                 return nineViewGroup.getGestureRecognizer().bigMove(v);
             }
@@ -657,8 +630,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (videoRootLayout.equals(v)) {
                     return false;
                 }
-                if (videoBody.equals(v)) {
-                    v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) videoBody.getTag(R.id.box_id)]);
+                if (videoParentView.equals(v)) {
+                    Object boxId = videoParentView.getTag(R.id.box_id);
+                    if (boxId != null) {
+                        v = nineViewGroup.getFrame(NineViewGroup.Box.values()[(Integer) boxId]);
+                    }
                 }
                 return nineViewGroup.getGestureRecognizer().abort(v, reason);
             }
@@ -697,7 +673,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     isInited = true;
                     isFirstMove = true;
                     if (Math.abs(offsetX) <= Math.abs(offsetY)) {
-                        if (videoBody.equals(target) && isSlidingSupported(DIRECTION_VERTICAL)) {
+                        if (videoParentView.equals(target) && isSlidingSupported(DIRECTION_VERTICAL)) {
                             gestureSign = Math.signum(offsetY);
                             if (zoomed) {
                                 animateZoom(false);
@@ -760,7 +736,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     case DIRECTION_HORIZONTAL:
                         return managerProvider.getFeatures().isUnlocked(Features.Feature.PAUSE_PLAYBACK);
                     case DIRECTION_VERTICAL:
-                        return managerProvider.getFeatures().isUnlocked(Features.Feature.PLAY_FULLSCREEN);
+                        return presenterHelper.getCurrentPresenter().getType() == Presenter.Type.PLAYER && managerProvider.getFeatures().isUnlocked(Features.Feature.PLAY_FULLSCREEN);
                 }
                 return false;
             }
@@ -772,10 +748,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         }
 
         public void animateToFullscreen() {
-            initialWidth = videoBody.getWidth();
-            initialHeight = videoBody.getHeight();
-            initialX = videoBody.getTranslationX();
-            initialY = videoBody.getTranslationY();
+            initialWidth = videoParentView.getWidth();
+            initialHeight = videoParentView.getHeight();
+            initialX = videoParentView.getTranslationX();
+            initialY = videoParentView.getTranslationY();
             animateZoom(true);
         }
 
@@ -791,10 +767,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 float trX = initialX;
                 float trY = initialY;
                 Point maxVideoSize = videoView.getMaxVideoSize(
-                        videoRootLayout.getWidth() - videoView.getLeft() - videoBody.getWidth() + videoView.getRight(),
-                        videoRootLayout.getHeight() - videoView.getTop() - videoBody.getHeight() + videoView.getBottom());
-                int maxVideoBodyWidth = maxVideoSize.x + videoView.getLeft() + videoBody.getWidth() - videoView.getRight();
-                int maxVideoBodyHeight = maxVideoSize.y + videoView.getTop() + videoBody.getHeight() - videoView.getBottom();
+                        videoRootLayout.getWidth() - videoView.getLeft() - videoParentView.getWidth() + videoView.getRight(),
+                        videoRootLayout.getHeight() - videoView.getTop() - videoParentView.getHeight() + videoView.getBottom());
+                int maxVideoBodyWidth = maxVideoSize.x + videoView.getLeft() + videoParentView.getWidth() - videoView.getRight();
+                int maxVideoBodyHeight = maxVideoSize.y + videoView.getTop() + videoParentView.getHeight() - videoView.getBottom();
                 int zoomInHorizontalPadding = (videoRootLayout.getWidth() - maxVideoBodyWidth) / 2;
                 int zoomInVerticalPadding = (videoRootLayout.getHeight() - maxVideoBodyHeight) / 2;
 
@@ -802,12 +778,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 public void onAnimationUpdate(ValueAnimator animation) {
                     float value = (float) animation.getAnimatedValue();
                     videoView.setCropFraction(1 - value);
-                    videoBody.setTranslationX(trX * (1 - value) + zoomInHorizontalPadding * value);
-                    videoBody.setTranslationY(trY * (1 - value) + zoomInVerticalPadding * value);
-                    ViewGroup.LayoutParams p = videoBody.getLayoutParams();
+                    videoParentView.setTranslationX(trX * (1 - value) + zoomInHorizontalPadding * value);
+                    videoParentView.setTranslationY(trY * (1 - value) + zoomInVerticalPadding * value);
+                    ViewGroup.LayoutParams p = videoParentView.getLayoutParams();
                     p.width = (int) (w + (maxVideoBodyWidth - w) * value);
                     p.height = (int) (h + (maxVideoBodyHeight - h) * value);
-                    videoBody.setLayoutParams(p);
+                    videoParentView.setLayoutParams(p);
                     zoomRatio = value;
                 }
             });
@@ -820,6 +796,293 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             });
             zoomAnimator.setDuration(500);
             zoomAnimator.start();
+        }
+    }
+
+    static class TranscriptionPresenter extends BasePresenter {
+        @InjectView(R.id.text) TextView text;
+        @InjectView(R.id.date) TextView date;
+        @InjectView(R.id.video_view) VideoView videoView;
+        @InjectView(R.id.video_body) ViewGroup videoBody;
+
+        TranscriptionPresenter(ViewStub viewStub) {
+            rootLayout = viewStub.inflate();
+            ButterKnife.inject(this, rootLayout);
+            date.setText(StringUtils.getEventTime(String.valueOf(System.currentTimeMillis())));
+            date.setTypeface(Convenience.getTypeface(date.getContext(), "Roboto-Italic"));
+            text.setTypeface(Convenience.getTypeface(date.getContext(), "Roboto-Regular"));
+        }
+
+        @Override
+        public Type getType() {
+            return Type.TRANSCRIPTION;
+        }
+
+        @Override
+        public VideoView getVideoView() {
+            return videoView;
+        }
+
+        @Override
+        public ViewGroup getVideoViewParent() {
+            return videoBody;
+        }
+
+        @Override
+        public void setupPlayerOverTarget(@NonNull View targetView, @NonNull View rootView) {
+
+        }
+
+        @Override
+        public void update(VideoPlayer player) {
+            date.setText(StringUtils.getEventTime(String.valueOf(System.currentTimeMillis())));
+        }
+    }
+
+    static class PlayerPresenter extends BasePresenter {
+        @InjectView(R.id.video_view) VideoView videoView;
+        @InjectView(R.id.video_body) ViewGroup videoBody;
+        @InjectView(R.id.tw_date) TextView date;
+
+        PlayerPresenter(ViewStub viewStub) {
+            rootLayout = viewStub.inflate();
+            ButterKnife.inject(this, rootLayout);
+            date.setTypeface(Convenience.getTypeface(date.getContext()));
+        }
+
+        @Override
+        public Type getType() {
+            return Type.PLAYER;
+        }
+
+        @Override
+        public VideoView getVideoView() {
+            return videoView;
+        }
+
+        @Override
+        public ViewGroup getVideoViewParent() {
+            return videoBody;
+        }
+
+        @Override
+        public void setupPlayerOverTarget(@NonNull View targetView, @NonNull View rootView) {
+            videoBody.setX(targetView.getX());
+            videoBody.setY(targetView.getY());
+            videoBody.setTag(R.id.box_id, targetView.getId());
+            if (targetView.getY() < rootView.getHeight() / 4) {
+                date.setY(targetView.getY() + targetView.getHeight()); // for top row place it below
+            } else {
+                int dateHeight = date.getLineHeight() + Convenience.dpToPx(date.getContext(), 3);
+                date.setY(targetView.getY() - dateHeight); // for other place it above
+            }
+            date.setX(targetView.getX());
+            ViewGroup.LayoutParams p = videoBody.getLayoutParams();
+            p.width = targetView.getWidth();
+            p.height = targetView.getHeight();
+            videoBody.setLayoutParams(p);
+        }
+
+        @Override
+        public void update(VideoPlayer player) {
+            TextAnimations.animateAlpha(date, StringUtils.getEventTime(player.videoId));
+        }
+    }
+
+    static abstract class BasePresenter implements Presenter {
+        View rootLayout;
+        @Override
+        public void stopPlayback() {
+            VideoView videoView = getVideoView();
+            ViewGroup videoRoot = getVideoViewParent();
+            if (videoView != null && videoRoot != null) {
+                //need to clear videoView because of last frame of already viewed video appear before new one start playing
+                //TODO need to fix delay with black frame (or first video frame)
+                //videoView.setVisibility(View.INVISIBLE);
+                //videoView.setVisibility(View.VISIBLE);
+                videoView.stopPlayback();
+                videoView.setVideoURI(null);
+                videoView.suspend();
+            }
+        }
+
+        @Override
+        public void startPlayback(final String path, final float progress, final VideoPlayer player) {
+            final VideoView videoView = getVideoView();
+            if (videoView != null) {
+                videoView.setOnPreparedListener(new OnPreparedListener() {
+                    boolean firstOpening = true;
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        Log.i(TAG, "video duration " + videoView.getDuration() + " " + path);
+                        if (firstOpening) {
+                            videoView.seekTo((int) (videoView.getDuration() * progress));
+                            firstOpening = false;
+                        }
+                        videoView.start();
+                        player.waitAndNotifyWhenStart();
+                    }
+                });
+                videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+                        final String brokenVideoId = player.videoId;
+                        player.cancelWaitingForStart();
+                        mp.reset();
+                        player.onCompletion(mp);
+                        //friend.setAndNotifyIncomingVideoStatus(brokenVideoId, IncomingVideo.Status.FAILED_PERMANENTLY);
+                        player.notifyPlaybackError();
+                        Dispatch.dispatch(String.format("Error while playing video %s %d %d", brokenVideoId, what, extra));
+                        return true;
+                    }
+                });
+                videoView.setVideoPath(path);
+            }
+        }
+
+        @Override
+        public boolean isPlaying() {
+            VideoView view = getVideoView();
+            return view != null && (view.isPlaying() || view.isPaused());
+        }
+
+        @Override
+        public void setVisible(boolean visible) {
+            if (rootLayout != null) {
+                rootLayout.setVisibility(visible ? View.VISIBLE : View.GONE);
+            }
+        }
+
+    }
+
+    private interface Presenter {
+        enum Type {
+            PLAYER(R.id.player_layout_stub, PlayerPresenter.class),
+            TRANSCRIPTION(R.id.transcription_layout_stub, TranscriptionPresenter.class);
+
+            int stubId;
+
+            Class<? extends Presenter> presenterClass;
+
+            Type(int stubId, Class<? extends Presenter> clazz) {
+                this.stubId = stubId;
+                presenterClass = clazz;
+            }
+
+            Presenter getInstance(ViewStub stub) {
+                try {
+                    Constructor<? extends Presenter> constructor = presenterClass.getDeclaredConstructor(ViewStub.class);
+                    return constructor.newInstance(stub);
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }
+        Type getType();
+
+        VideoView getVideoView();
+        ViewGroup getVideoViewParent();
+
+        void stopPlayback();
+        void startPlayback(String path, float progress, VideoPlayer player);
+        void setupPlayerOverTarget(@NonNull View targetView, @NonNull View rootView);
+        boolean isPlaying();
+        void setVisible(boolean visible);
+        void update(VideoPlayer player);
+    }
+
+    private class PresenterHelper {
+        Map<String, Presenter> presenters = new HashMap<>();
+
+        private Presenter currentPresenter;
+
+        Presenter setCurrentPresentation(Presenter.Type type) {
+            String key = type.presenterClass.getSimpleName();
+            Presenter presenter = presenters.get(key);
+            if (presenter == null) {
+                ViewStub viewStub = ButterKnife.findById(videoRootLayout, type.stubId);
+                if (viewStub != null) {
+                    presenter = type.getInstance(viewStub);
+                    presenters.put(key, presenter);
+                    presenter.getVideoView().setOnCompletionListener(VideoPlayer.this);
+                    presenter.getVideoView().setOnPreparedListener(VideoPlayer.this);
+                } else {
+                    Dispatch.dispatch(new RuntimeException("viewStub was inflated already"), "" + type);
+                }
+            }
+            if (presenter != currentPresenter) {
+                currentPresenter = presenter;
+                zoomController = new ZoomController();
+                for (Presenter p : presenters.values()) {
+                    p.setVisible(p == presenter);
+                }
+            }
+            return presenter;
+        }
+
+        void stopPresentation() {
+            if (currentPresenter != null) {
+                videoRootLayout.animate().alpha(0f).start();
+                zoomController.setEnabled(false);
+                progressBar.doDisappearing();
+                currentPresenter.stopPlayback();
+            }
+        }
+
+        void startPresentation(final String path, final float progress) {
+            if (currentPresenter != null) {
+                currentPresenter.startPlayback(path, progress, VideoPlayer.this);
+            }
+        }
+
+        void initStateForTarget() {
+            if (currentPresenter == null) {
+                return;
+            }
+            View view = (targetViewRef != null) ? targetViewRef.get() : null;
+            if (view != null) {
+                currentPresenter.setupPlayerOverTarget(view, videoRootLayout);
+            }
+            currentPresenter.update(VideoPlayer.this);
+        }
+
+        Presenter getCurrentPresenter() {
+            return currentPresenter;
+        }
+
+        void setVolume(float volume) {
+            VideoView view = getVideoView();
+            if (view != null) {
+                view.setVolume(volume);
+            }
+        }
+
+        void pause() {
+            VideoView view = getVideoView();
+            if (view != null) {
+                view.pause();
+            }
+        }
+
+        public boolean isPlaying() {
+            return currentPresenter != null && currentPresenter.isPlaying();
+        }
+
+        VideoView getVideoView() {
+            return (currentPresenter != null) ? currentPresenter.getVideoView() : null;
+        }
+
+        public void refresh() {
+            if (currentPresenter != null) {
+                currentPresenter.update(VideoPlayer.this);
+            }
         }
     }
 }

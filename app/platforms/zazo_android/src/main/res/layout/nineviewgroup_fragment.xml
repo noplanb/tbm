@@ -21,31 +21,18 @@
             android:layout_height="match_parent"
             android:alpha="0"
             android:background="@color/video_background">
-        <TextView
-                android:id="@+id/tw_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/color_name"
-                android:textSize="@dimen/text_normal"
-                android:ellipsize="end"
-                android:lines="1"
-                android:maxLines="1"
-                android:paddingLeft="3dp"
-                android:paddingRight="3dp"/>
-        <FrameLayout
-                android:id="@+id/video_body"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/card">
-
-            <com.zazoapp.client.ui.view.VideoView
-                    android:id="@+id/video_view"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
-        </FrameLayout>
+        <ViewStub
+                android:id="@+id/player_layout_stub"
+                android:inflatedId="@+id/player_layout"
+                android:layout="@layout/player"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        <ViewStub
+                android:id="@+id/transcription_layout_stub"
+                android:inflatedId="@+id/transcription_layout"
+                android:layout="@layout/transcription"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
     </com.zazoapp.client.ui.view.GestureControlledLayout>
 
 </FrameLayout>

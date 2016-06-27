@@ -520,7 +520,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
             if (convertView != null) {
                 h = (Holder) convertView.getTag();
             } else {
-                convertView = View.inflate(parent.getContext(), R.layout.transcription_item, null);
+                convertView = View.inflate(parent.getContext(), R.layout.transcription_debug_item, null);
                 h = new Holder(convertView);
             }
             Transcription transcription = getItem(position);

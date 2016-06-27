@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:padding="5dp">
-    <TextView android:id="@+id/text1"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_marginTop="3dp"/>
-    <TextView android:id="@+id/text2"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_marginTop="3dp"/>
-</LinearLayout>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/card"
+        >
+    <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/abc_control_padding_material">
+        <TextView
+                android:id="@+id/text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/TextViewStyle"
+                android:textSize="@dimen/text_large"
+                android:text="Multiline text aaksdjfh asdkf askdfash askdfha sd\nkajshdfkh asdfahsdf shfd sfhjhas  dh  h hfha abf \n msjkadfasdfsdf asdf shfsagag kgsbsmgbm\naksdjhfsakfhd asdfh sf "/>
+        <TextView
+                android:id="@+id/date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/text"
+                android:text="oct 25 12:45"
+                android:textStyle="italic"
+                android:textSize="@dimen/text_very_small"
+                android:layout_alignParentRight="true"
+                android:textColor="@color/popup_text_color"/>
+    </RelativeLayout>
+
+</RelativeLayout>

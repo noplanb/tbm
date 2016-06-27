@@ -44,8 +44,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class Convenience {
     public static final String TAG = Convenience.class.getSimpleName();
@@ -348,8 +350,15 @@ public class Convenience {
         return tf;
     }
 
+    private static final Map<String, Typeface> typefaces = new HashMap<>();
     public static Typeface getTypeface(Context context, CharSequence name) {
-        return Typeface.createFromAsset(context.getAssets(), "fonts/" + name + ".ttf");
+        String nameKey = String.valueOf(name);
+        if (typefaces.containsKey(nameKey)) {
+            return typefaces.get(nameKey);
+        }
+        Typeface tf = Typeface.createFromAsset(context.getAssets(), "fonts/" + name + ".ttf");
+        typefaces.put(nameKey, tf);
+        return tf;
     }
 
     public static Typeface getTypeface(Context context) {
