@@ -76,6 +76,6 @@
 general:
   branches:
     only:
-	  - dev
-	  - dev_temp
+      - dev
+      - dev_temp
   build_dir: app/platforms
