@@ -3,8 +3,8 @@
               android:id="@+id/list_item"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:paddingLeft="16dip"
-              android:paddingRight="16dip"
+              android:paddingLeft="@dimen/abc_button_padding_horizontal_material"
+              android:paddingRight="@dimen/abc_button_padding_horizontal_material"
               android:minWidth="196dip"
               android:orientation="horizontal"
               android:background="@drawable/options_popup_item_bg">
@@ -12,17 +12,21 @@
     <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="?android:attr/listPreferredItemHeightSmall"
+            android:paddingTop="@dimen/abc_button_padding_vertical_material"
+            android:paddingBottom="@dimen/abc_button_padding_vertical_material"
             android:layout_gravity="center_vertical"
-            android:duplicateParentState="true"
-            android:alpha="@integer/primary_text_alpha">
+            android:duplicateParentState="true">
 
         <ImageView
                 android:id="@+id/icon"
                 android:layout_width="32dip"
                 android:layout_height="32dip"
                 android:layout_gravity="center_vertical"
-                android:layout_marginRight="8dip"
-                android:duplicateParentState="true"/>
+                android:layout_marginRight="8dp"
+                android:layout_marginLeft="8dp"
+                android:duplicateParentState="true"
+                android:alpha="@integer/menu_icon_alpha"
+                android:src="@drawable/ic_menu_transcript"/>
 
         <TextView
                 android:id="@+id/title"
@@ -34,7 +38,11 @@
                 android:singleLine="true"
                 android:ellipsize="marquee"
                 android:fadingEdge="horizontal"
-                android:textColor="@color/black"/>
+                android:textColor="@color/black"
+                android:alpha="@integer/primary_dark_text_alpha"
+                android:layout_marginRight="8dp"
+                android:layout_marginLeft="8dp"
+                android:text="text"/>
 
     </LinearLayout>
 

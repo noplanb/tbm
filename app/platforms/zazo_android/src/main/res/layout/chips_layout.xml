@@ -49,7 +49,7 @@
                 android:textColor="@color/black"
                 android:ellipsize="marquee"
                 android:singleLine="true"
-                android:alpha="0.87"
+                android:alpha="@integer/primary_dark_text_alpha"
                 android:layout_toRightOf="@id/thumb_layout"
                 android:layout_toEndOf="@id/thumb_layout"
                 android:paddingRight="12dp"

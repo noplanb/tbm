@@ -3,14 +3,14 @@
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:gravity="center_vertical">
+              android:gravity="center_vertical"
+              android:paddingLeft="8dp"
+              android:paddingRight="8dp">
     <com.balysv.materialmenu.MaterialMenuView
             android:id="@+id/menu_view"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="@dimen/abc_action_button_min_width_material"
+            android:layout_height="@dimen/abc_action_button_min_height_material"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingLeft="@dimen/actionbar_item_padding"
-            android:paddingRight="@dimen/actionbar_item_padding"
             />
     <com.zazoapp.client.ui.view.VideoProgressBar
             android:id="@+id/progress_bar"
@@ -19,11 +19,11 @@
             android:layout_weight="1"/>
     <ImageView
             android:id="@+id/mute"
-            android:layout_width="@dimen/abc_action_bar_default_height_material"
-            android:layout_height="match_parent"
+            android:layout_width="@dimen/abc_action_button_min_width_material"
+            android:layout_height="@dimen/abc_action_button_min_height_material"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="@dimen/abc_action_bar_content_inset_material"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
             android:src="@drawable/mute_btn_selector"
-            android:adjustViewBounds="true"
             />
 </LinearLayout>

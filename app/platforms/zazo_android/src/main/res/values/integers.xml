@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="anim_duration">250</integer>
-    <item name="primary_text_alpha" format="float" type="integer">0.87</item>
+    <item name="primary_dark_text_alpha" format="float" type="integer">0.87</item>
+    <item name="primary_white_text_alpha" format="float" type="integer">1.0</item>
+    <item name="secondary_dark_text_alpha" format="float" type="integer">0.54</item>
+    <item name="secondary_white_text_alpha" format="float" type="integer">0.7</item>
+    <item name="active_icon_alpha" format="float" type="integer">0.54</item>
+    <item name="inactive_icon_alpha" format="float" type="integer">0.38</item>
+    <item name="menu_icon_alpha" format="float" type="integer">0.65</item>
 </resources>
