@@ -45,4 +45,5 @@
     <dimen name="video_indicator_min_text_size">8sp</dimen>
     <dimen name="video_indicator_size">24dp</dimen>
     <dimen name="chips_height">@dimen/small_icon_size</dimen>
+    <dimen name="content_inset">16dp</dimen>
 </resources>

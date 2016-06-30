@@ -23,6 +23,7 @@
         </FrameLayout>
 
         <include
+                android:id="@+id/transcription"
                 layout="@layout/transcription_item"
                 android:layout_toRightOf="@id/video_body"
                 android:layout_marginLeft="-20dp"

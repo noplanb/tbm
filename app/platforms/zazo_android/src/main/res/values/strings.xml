@@ -221,6 +221,8 @@
     <string name="ge_menu_chat">Send text</string>
     <string name="ge_menu_details">Details</string>
 
+    <string name="converting_to_text">Converting Zazo to text…</string>
+
     <string name="dev_previous"><![CDATA[<]]></string>
     <string name="dev_next"><![CDATA[>]]></string>
 </resources>

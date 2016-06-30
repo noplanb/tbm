@@ -3,18 +3,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bubble"
-                android:padding="@dimen/abc_button_inset_vertical_material"
         >
     <RelativeLayout
+            android:id="@+id/main_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/abc_control_padding_material">
+            android:layout_margin="@dimen/content_inset"
+            android:visibility="gone">
         <TextView
                 android:id="@+id/text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/TextViewStyle"
-                android:textSize="@dimen/text_large"
+                android:textColor="@color/black"
+                android:alpha="@integer/primary_dark_text_alpha"
+                android:textSize="@dimen/text_normal"
                 android:text="Multiline text aaksdjfh asdkf askdfash askdfha sd\nkajshdfkh asdfahsdf shfd sfhjhas  dh  h hfha abf \n msjkadfasdfsdf asdf shfsagag kgsbsmgbm\naksdjhfsakfhd asdfh sf "/>
         <TextView
                 android:id="@+id/date"
@@ -25,7 +27,32 @@
                 android:textStyle="italic"
                 android:textSize="@dimen/text_very_small"
                 android:layout_alignParentRight="true"
-                android:textColor="@color/popup_text_color"/>
+                android:textColor="@color/black"
+                android:alpha="@integer/secondary_dark_text_alpha"/>
     </RelativeLayout>
+    <LinearLayout
+            android:id="@+id/progress_layout"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/content_inset"
+            android:layout_centerInParent="true"
+            android:baselineAligned="false">
+
+        <fr.castorflex.android.circularprogressbar.CircularProgressBar
+                android:id="@+id/progress"
+                android:layout_width="40dp"
+                android:layout_height="40dp"/>
+
+        <TextView android:id="@+id/progress_message"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center_vertical"
+                  android:layout_marginLeft="@dimen/abc_select_dialog_padding_start_material"
+                  android:layout_marginRight="@dimen/abc_select_dialog_padding_start_material"
+                  android:textColor="@color/black"
+                  android:alpha="@integer/secondary_dark_text_alpha"
+                  android:text="@string/converting_to_text"/>
+    </LinearLayout>
 
 </RelativeLayout>

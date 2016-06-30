@@ -40,6 +40,7 @@ import com.zazoapp.client.ui.animations.VideoProgressBarAnimation;
 import com.zazoapp.client.ui.view.GestureControlledLayout;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.TouchBlockScreen;
+import com.zazoapp.client.ui.view.TranscriptionViewHolder;
 import com.zazoapp.client.ui.view.VideoProgressBar;
 import com.zazoapp.client.ui.view.VideoView;
 import com.zazoapp.client.utilities.Convenience;
@@ -753,17 +754,15 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     static class TranscriptionPresenter extends BasePresenter {
-        @InjectView(R.id.text) TextView text;
-        @InjectView(R.id.date) TextView date;
         @InjectView(R.id.video_view) VideoView videoView;
         @InjectView(R.id.video_body) ViewGroup videoBody;
+        @InjectView(R.id.transcription) View transcription;
+        private TranscriptionViewHolder transcriptionViewHolder;
 
         TranscriptionPresenter(ViewStub viewStub) {
             rootLayout = viewStub.inflate();
             ButterKnife.inject(this, rootLayout);
-            date.setText(StringUtils.getEventTime(String.valueOf(System.currentTimeMillis())));
-            date.setTypeface(Convenience.getTypeface(date.getContext(), "Roboto-Italic"));
-            text.setTypeface(Convenience.getTypeface(date.getContext(), "Roboto-Regular"));
+            transcriptionViewHolder = new TranscriptionViewHolder(transcription);
         }
 
         @Override
@@ -787,8 +786,21 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         }
 
         @Override
-        public void update(VideoPlayer player) {
-            date.setText(StringUtils.getEventTime(String.valueOf(System.currentTimeMillis())));
+        public void update(final VideoPlayer player) {
+            player.timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    player.activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            transcriptionViewHolder.setInMode(TranscriptionViewHolder.ViewMode.MESSAGE,
+                                    "Some message text\nSecond row...",
+                                    StringUtils.getEventTime(String.valueOf(System.currentTimeMillis())));
+                        }
+                    });
+                }
+            }, 2500);
+
         }
     }
 
