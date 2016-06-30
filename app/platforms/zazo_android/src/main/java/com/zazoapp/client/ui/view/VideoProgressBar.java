@@ -1,6 +1,5 @@
 package com.zazoapp.client.ui.view;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -37,7 +36,6 @@ public class VideoProgressBar extends FrameLayout {
     private Paint primaryPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private Paint secondaryPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private ValueAnimator progressAnimator;
-    private Animator appearingAnimation;
     private Scheme scheme = new VideoProgressBar.Scheme.SchemeBuilder().build();
     private int current;
     private int barPadding;
@@ -62,7 +60,6 @@ public class VideoProgressBar extends FrameLayout {
         progressLineHeight = Convenience.dpToPx(getContext(), 3f);
         barPadding = Convenience.dpToPx(getContext(), 2);
         layoutPadding = getContext().getResources().getDimensionPixelSize(R.dimen.abc_action_bar_content_inset_material);
-        setEnabled(false);
     }
 
     public void setScheme(Scheme scheme) {
@@ -150,6 +147,9 @@ public class VideoProgressBar extends FrameLayout {
     private RectF drawRoundRect = new RectF();
     @Override
     protected void dispatchDraw(Canvas canvas) {
+        if (isInEditMode()) {
+            return;
+        }
         int cY = getHeight() / 2;
         canvas.save();
         canvas.translate(0, cY - progressLineHeight / 2f);
@@ -189,24 +189,12 @@ public class VideoProgressBar extends FrameLayout {
         super.dispatchDraw(canvas);
     }
 
-    public void doAppearing() {
-        if (appearingAnimation != null) {
-            appearingAnimation.cancel();
-        }
+    public void initState() {
         setProgress(0);
-        appearingAnimation = VideoProgressBarAnimation.getTerminalAnimation(this, true);
-        appearingAnimation.start();
-        setEnabled(true);
     }
 
-    public void doDisappearing() {
-        if (appearingAnimation != null) {
-            appearingAnimation.cancel();
-        }
-        appearingAnimation = VideoProgressBarAnimation.getTerminalAnimation(this, false);
-        appearingAnimation.start();
+    public void dropState() {
         setCurrent(0, false);
-        setEnabled(false);
     }
 
     public void pause() {

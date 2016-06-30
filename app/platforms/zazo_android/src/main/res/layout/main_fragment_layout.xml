@@ -80,8 +80,8 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/zazo_action_bar"
                         android:background="@drawable/toolbar_shadow"/>
-                <com.zazoapp.client.ui.view.VideoProgressBar
-                        android:id="@+id/video_progress_bar"
+                <LinearLayout
+                        android:id="@+id/zazo_action_context_bar"
                         android:layout_width="match_parent"
                         android:layout_height="?actionBarSize"
                         android:layout_alignLeft="@id/zazo_action_bar"
@@ -89,8 +89,10 @@
                         android:layout_alignTop="@id/zazo_action_bar"
                         android:layout_alignBottom="@id/zazo_action_bar"
                         android:background="@color/primary"
-                        android:alpha="0"/>
-
+                        android:alpha="0"
+                        android:orientation="horizontal"
+                        android:visibility="invisible"
+                        />
             </RelativeLayout>
             <FrameLayout
                     android:id="@+id/top_frame"

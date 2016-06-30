@@ -6,6 +6,7 @@ import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.TextView;
 import butterknife.ButterKnife;
@@ -63,7 +64,7 @@ public class VideoProgressBarAnimation {
         anim1.start();
     }
 
-    public static Animator getTerminalAnimation(VideoProgressBar view, boolean start) {
+    public static Animator getTerminalAnimation(View view, boolean start) {
         final Holder h = new Holder(view);
         float valueOffset = (start) ? 0f : 1f;
         ValueAnimator animator = ValueAnimator.ofFloat(view.getAlpha(), 1f - valueOffset);
@@ -72,7 +73,7 @@ public class VideoProgressBarAnimation {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value = (float) animation.getAnimatedValue();
-                h.progressBar.setAlpha(Math.min(value * 1.5f, 1f));
+                h.contextBar.setAlpha(Math.min(value * 1.5f, 1f));
                 h.textView.setScaleX(value);
                 h.textView.setScaleY(value);
                 h.progressBar.setSecondaryProgress(value);
@@ -83,11 +84,12 @@ public class VideoProgressBarAnimation {
 
     static class Holder {
         @InjectView(R.id.slider_view) TextView textView;
-        VideoProgressBar progressBar;
+        @InjectView(R.id.progress_bar) VideoProgressBar progressBar;
+        View contextBar;
 
-        Holder(VideoProgressBar progressBar) {
-            this.progressBar = progressBar;
-            ButterKnife.inject(this, progressBar);
+        Holder(View videoContextBar) {
+            contextBar = videoContextBar;
+            ButterKnife.inject(this, videoContextBar);
         }
     }
 }

@@ -20,6 +20,10 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.OnClick;
+import butterknife.OnTouch;
+import com.balysv.materialmenu.MaterialMenuDrawable;
+import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.dispatch.Dispatch;
@@ -32,6 +36,7 @@ import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.ui.BaseManagerProvider;
 import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
 import com.zazoapp.client.ui.animations.TextAnimations;
+import com.zazoapp.client.ui.animations.VideoProgressBarAnimation;
 import com.zazoapp.client.ui.view.GestureControlledLayout;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.TouchBlockScreen;
@@ -54,7 +59,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Player, View.OnTouchListener {
+public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Player {
 
     private static final String TAG = VideoPlayer.class.getSimpleName();
 
@@ -66,9 +71,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private int numberOfVideos = 0;
     @InjectView(R.id.video_root_layout) GestureControlledLayout videoRootLayout;
     private TouchBlockScreen blockScreen;
-    private VideoProgressBar progressBar;
+    private VideoContextBar contextBar;
     @InjectView(R.id.grid_view) NineViewGroup nineViewGroup;
-	private boolean videosAreDownloading;
+    private boolean videosAreDownloading;
     private BaseManagerProvider managerProvider;
     private Timer timer = new Timer();
     private TimerTask onStartTask;
@@ -86,8 +91,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         this.activity = activity;
         this.managerProvider = managerProvider;
         blockScreen = ButterKnife.findById(activity, R.id.block_screen);
-        progressBar = ButterKnife.findById(activity, R.id.video_progress_bar);
-        progressBar.setOnTouchListener(this);
+        contextBar = new VideoContextBar(ButterKnife.findById(activity, R.id.zazo_action_context_bar));
     }
 
     @Override
@@ -383,18 +387,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                             }
                                             playOptions.clearFlags(PlayOptions.FULLSCREEN);
                                         }
-                                        VideoProgressBar.Scheme.SchemeBuilder schemeBuilder = new VideoProgressBar.Scheme.SchemeBuilder();
-                                        for (int i = 0; i < numberOfVideos; i++) {
-                                            schemeBuilder.addBar();
-                                        }
-                                        progressBar.setScheme(schemeBuilder.build());
-                                        progressBar.doAppearing();
-                                        progressBar.setCurrent(currentVideoNumber, true);
-                                        int duration = videoView.getDuration() - videoView.getCurrentPosition();
-                                        float offset = (videoView.getDuration() >= 0) ?
-                                                videoView.getCurrentPosition() / (float) videoView.getDuration() : 0f;
-                                        progressBar.animateProgress((currentVideoNumber - 1 + offset) / (float) numberOfVideos,
-                                                currentVideoNumber / (float) numberOfVideos, duration);
+                                        contextBar.show(videoView.getDuration(), videoView.getCurrentPosition());
                                         notifyStartPlaying();
                                     }
                                 }
@@ -416,46 +409,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         }
     }
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        if (v.getId() == R.id.video_progress_bar) {
-            return !managerProvider.getFeatures().isUnlocked(Features.Feature.PAUSE_PLAYBACK) || handleProgressBarTouchEvent(event);
-        }
-        return false;
-    }
-
-    private boolean handleProgressBarTouchEvent(MotionEvent event) {
-        int action = event.getAction();
-        float x = event.getX();
-        float progress;
-        if (x <= progressBar.getLayoutPadding()) {
-            progress = 0f;
-        } else if (x >= progressBar.getWidth() - progressBar.getLayoutPadding()) {
-            progress = 1f;
-        } else {
-            progress = (x - progressBar.getLayoutPadding()) / (progressBar.getWidth() - progressBar.getLayoutPadding() * 2);
-        }
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-                presenterHelper.setVolume(0f);
-                presenterHelper.pause();
-                progressBar.pause();
-                break;
-            case MotionEvent.ACTION_UP:
-                presenterHelper.setVolume(mediaVolume);
-                float currentVideoProgress = setVideoProgress(progress, false, true);
-                play(currentVideoProgress);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                setVideoProgress(progress, true, isSeekAllowed);
-                break;
-            case MotionEvent.ACTION_CANCEL:
-                presenterHelper.setVolume(mediaVolume);
-                break;
-        }
-        return true;
-    }
-
     /**
      *
      * @param fullProgress
@@ -464,7 +417,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
      * @return currentVideoProgress
      */
     private float setVideoProgress(float fullProgress, boolean allowLoad, boolean seek) {
-        progressBar.setProgress(fullProgress);
+        contextBar.progressBar.setProgress(fullProgress);
         int pos = (int) Math.max(Math.floor(fullProgress * numberOfVideos - 0.0001), 0);
         final float curProgress = fullProgress * numberOfVideos - pos;
         final VideoView videoView = presenterHelper.getVideoView();
@@ -474,7 +427,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         if ((currentVideoNumber != pos + 1)) {
             jumpToVideo(pos);
             if (allowLoad) {
-                progressBar.setCurrent(currentVideoNumber, false);
+                contextBar.progressBar.setCurrent(currentVideoNumber, false);
                 isSeekAllowed = false;
                 final String path = friend.videoFromPath(videoId);
                 videoView.setOnPreparedListener(new OnPreparedListener() {
@@ -565,11 +518,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (videoParentView.equals(v)) {
                     if (videoView.isPlaying()) {
                         videoView.pause();
-                        progressBar.pause();
+                        contextBar.progressBar.pause();
                     } else {
                         videoView.start();
                         int duration = videoView.getDuration() - videoView.getCurrentPosition();
-                        progressBar.animateProgress(progressBar.getProgress(),
+                        contextBar.progressBar.animateProgress(contextBar.progressBar.getProgress(),
                                 currentVideoNumber / (float) numberOfVideos, duration);
                     }
                 } else {
@@ -655,7 +608,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     }
                     if (!isNextPreviousAdvancePossible) {
                         MotionEvent event = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_MOVE, (float) (startX + offsetX), 0f, 0);
-                        handleProgressBarTouchEvent(event);
+                        contextBar.handleProgressBarTouchEvent(event);
                     }
                 }
                 previousOffsetX = offsetX;
@@ -688,7 +641,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         startTime = System.nanoTime();
                         lastTime = previousLastTime;
                         MotionEvent event = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_DOWN, (float) (startX + offsetX), 0f, 0);
-                        handleProgressBarTouchEvent(event);
+                        contextBar.handleProgressBarTouchEvent(event);
                     }
                 }
             }
@@ -717,7 +670,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         }
                     } else {
                         MotionEvent event = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_UP, (float) (startX + offsetX), 0f, 0);
-                        handleProgressBarTouchEvent(event);
+                        contextBar.handleProgressBarTouchEvent(event);
                     }
                 }
                 gestureDirection = 0;
@@ -1031,7 +984,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             if (currentPresenter != null) {
                 videoRootLayout.animate().alpha(0f).start();
                 zoomController.setEnabled(false);
-                progressBar.doDisappearing();
+                contextBar.hide();
                 currentPresenter.stopPlayback();
             }
         }
@@ -1083,6 +1036,114 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             if (currentPresenter != null) {
                 currentPresenter.update(VideoPlayer.this);
             }
+        }
+    }
+
+    class VideoContextBar implements View.OnTouchListener {
+        @InjectView(R.id.progress_bar) VideoProgressBar progressBar;
+        @InjectView(R.id.menu_view) MaterialMenuView menuView;
+
+        private Animator appearingAnimation;
+        private View rootView;
+
+        public VideoContextBar(View contextBar) {
+            this.rootView = contextBar;
+            View.inflate(activity, R.layout.video_action_bar, (ViewGroup) contextBar);
+            ButterKnife.inject(this, contextBar);
+            menuView.setState(MaterialMenuDrawable.IconState.X);
+            rootView.setOnTouchListener(this);
+        }
+
+        @Override
+        @OnTouch({R.id.progress_bar})
+        public boolean onTouch(View v, MotionEvent event) {
+            if (v.getId() == R.id.progress_bar) {
+                return !managerProvider.getFeatures().isUnlocked(Features.Feature.PAUSE_PLAYBACK) || handleProgressBarTouchEvent(event);
+            }
+            return true;
+        }
+
+        @OnClick(R.id.mute)
+        public void onMuteClicked(View v) {
+            v.setSelected(!v.isSelected());
+        }
+
+        @OnClick(R.id.menu_view)
+        public void onMenuClicked(View v) {
+            stop();
+        }
+
+        public void show(int videoDuration, int currentPosition) {
+            VideoProgressBar.Scheme.SchemeBuilder schemeBuilder = new VideoProgressBar.Scheme.SchemeBuilder();
+            for (int i = 0; i < numberOfVideos; i++) {
+                schemeBuilder.addBar();
+            }
+            progressBar.setScheme(schemeBuilder.build());
+            progressBar.initState();
+            doAppearing();
+            progressBar.setCurrent(currentVideoNumber, true);
+            int duration = videoDuration - currentPosition;
+            float offset = (videoDuration >= 0) ? currentPosition / (float) videoDuration : 0f;
+            progressBar.animateProgress((currentVideoNumber - 1 + offset) / (float) numberOfVideos,
+                    currentVideoNumber / (float) numberOfVideos, duration);
+        }
+
+        private void doAppearing() {
+            if (appearingAnimation != null) {
+                appearingAnimation.cancel();
+            }
+            appearingAnimation = VideoProgressBarAnimation.getTerminalAnimation(rootView, true);
+            appearingAnimation.start();
+            rootView.setVisibility(View.VISIBLE);
+        }
+
+        public void hide() {
+            if (appearingAnimation != null) {
+                appearingAnimation.cancel();
+            }
+            appearingAnimation = VideoProgressBarAnimation.getTerminalAnimation(rootView, false);
+            appearingAnimation.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    rootView.setVisibility(View.INVISIBLE);
+                }
+            });
+            appearingAnimation.start();
+            progressBar.dropState();
+        }
+
+        public boolean handleProgressBarTouchEvent(MotionEvent event) {
+            // TODO Need refactor
+            int action = event.getAction();
+            float x = event.getX();
+            float progress;
+            if (x <= progressBar.getLayoutPadding()) {
+                progress = 0f;
+            } else if (x >= progressBar.getWidth() - progressBar.getLayoutPadding()) {
+                progress = 1f;
+            } else {
+                progress = (x - progressBar.getLayoutPadding()) / (progressBar.getWidth() - progressBar.getLayoutPadding() * 2);
+            }
+            switch (action) {
+                case MotionEvent.ACTION_DOWN:
+                    presenterHelper.setVolume(0f);
+                    presenterHelper.pause();
+                    progressBar.pause();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    presenterHelper.setVolume(mediaVolume);
+                    float currentVideoProgress = setVideoProgress(progress, false, true);
+                    play(currentVideoProgress);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    setVideoProgress(progress, true, isSeekAllowed);
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    presenterHelper.setVolume(mediaVolume);
+                    break;
+            }
+            return true;
         }
     }
 }

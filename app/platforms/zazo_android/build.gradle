@@ -23,6 +23,7 @@ android {
         versionCode 160
         versionName "3.3.9" //<!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
         resConfigs "en"
+        multiDexEnabled true // Enabling multidex support.
     }
 
     buildTypes {
@@ -50,6 +51,7 @@ android {
 }
 
 dependencies {
+    compile 'com.android.support:multidex:1.0.1'
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.google.android.gms:play-services-gcm:7.5.0'
     compile 'com.google.android.gms:play-services-ads:7.5.0'
