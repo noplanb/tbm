@@ -76,6 +76,7 @@
 
                 </com.zazoapp.client.ui.view.ZazoViewPager>
                 <View
+                        android:id="@+id/zazo_action_bar_divider"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/zazo_action_bar"

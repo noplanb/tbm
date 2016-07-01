@@ -40,6 +40,7 @@ import com.zazoapp.client.ui.BaseManagerProvider;
 import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
 import com.zazoapp.client.ui.animations.TextAnimations;
 import com.zazoapp.client.ui.animations.VideoProgressBarAnimation;
+import com.zazoapp.client.ui.helpers.VideoContextBarPreferences;
 import com.zazoapp.client.ui.view.GestureControlledLayout;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.TouchBlockScreen;
@@ -76,6 +77,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @InjectView(R.id.video_root_layout) GestureControlledLayout videoRootLayout;
     private TouchBlockScreen blockScreen;
     private VideoContextBar contextBar;
+    private View actionBarDivider;
     @InjectView(R.id.grid_view) NineViewGroup nineViewGroup;
     private boolean videosAreDownloading;
     private BaseManagerProvider managerProvider;
@@ -96,6 +98,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         this.managerProvider = managerProvider;
         blockScreen = ButterKnife.findById(activity, R.id.block_screen);
         contextBar = new VideoContextBar(ButterKnife.findById(activity, R.id.zazo_action_context_bar));
+        actionBarDivider = ButterKnife.findById(activity, R.id.zazo_action_bar_divider);
     }
 
     @Override
@@ -383,14 +386,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                     // checks if it is playing to eliminate the case of released player
                                     if (isPlaying()) {
                                         isSeekAllowed = true;
-                                        videoRootLayout.animate().alpha(1).start();
-                                        zoomController.setEnabled(true);
-                                        if (playOptions.hasFlags(PlayOptions.FULLSCREEN)) {
-                                            if (!zoomController.zoomed) {
-                                                zoomController.animateToFullscreen();
-                                            }
-                                            playOptions.clearFlags(PlayOptions.FULLSCREEN);
-                                        }
                                         presenterHelper.showContent();
                                         notifyStartPlaying();
                                     }
@@ -1003,15 +998,18 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     private interface Presenter {
         enum Type {
-            PLAYER(R.id.player_layout_stub, PlayerPresenter.class),
-            TRANSCRIPTION(R.id.transcription_layout_stub, TranscriptionPresenter.class);
+            PLAYER(R.id.player_layout_stub, PlayerPresenter.class, new VideoContextBarPreferences(true, false, false)),
+            TRANSCRIPTION(R.id.transcription_layout_stub, TranscriptionPresenter.class, new VideoContextBarPreferences(false, true, true));
 
             int stubId;
 
             Class<? extends Presenter> presenterClass;
 
-            Type(int stubId, Class<? extends Presenter> clazz) {
+            VideoContextBarPreferences barPreferences;
+
+            Type(int stubId, Class<? extends Presenter> clazz, VideoContextBarPreferences barPrefs) {
                 this.stubId = stubId;
+                this.barPreferences = barPrefs;
                 presenterClass = clazz;
             }
 
@@ -1076,6 +1074,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         void stopPresentation() {
             if (currentPresenter != null) {
+                VideoContextBarPreferences contextBarPrefs = currentPresenter.getType().barPreferences;
+                if (!contextBarPrefs.hasDivider) {
+                    actionBarDivider.animate().alpha(1f).start();
+                }
                 videoRootLayout.animate().alpha(0f).start();
                 zoomController.setEnabled(false);
                 contextBar.hide();
@@ -1133,10 +1135,25 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         }
 
         public void showContent() {
-            VideoView view = getVideoView();
-            if (currentPresenter != null && view != null) {
-                contextBar.show(view.getDuration(), view.getCurrentPosition());
-                currentPresenter.doContentAppearing(view.getContext());
+            videoRootLayout.animate().alpha(1).start();
+            zoomController.setEnabled(true);
+            if (playOptions.hasFlags(PlayOptions.FULLSCREEN)) {
+                if (!zoomController.zoomed) {
+                    zoomController.animateToFullscreen();
+                }
+                playOptions.clearFlags(PlayOptions.FULLSCREEN);
+            }
+            if (currentPresenter != null) {
+                VideoContextBarPreferences contextBarPrefs = currentPresenter.getType().barPreferences;
+                if (!contextBarPrefs.hasDivider) {
+                    actionBarDivider.animate().alpha(0).start();
+                }
+                VideoView view = getVideoView();
+                if (view != null) {
+                    contextBar.setPreferences(contextBarPrefs);
+                    contextBar.show(view.getDuration(), view.getCurrentPosition());
+                    currentPresenter.doContentAppearing(view.getContext());
+                }
             }
         }
     }
@@ -1144,6 +1161,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     class VideoContextBar implements View.OnTouchListener {
         @InjectView(R.id.progress_bar) VideoProgressBar progressBar;
         @InjectView(R.id.menu_view) MaterialMenuView menuView;
+        @InjectView(R.id.mute) View mute;
 
         private Animator appearingAnimation;
         private View rootView;
@@ -1246,6 +1264,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     break;
             }
             return true;
+        }
+
+        public void setPreferences(VideoContextBarPreferences prefs) {
+            menuView.setVisibility(prefs.showCloseButton ? View.VISIBLE : View.GONE);
+            mute.setVisibility(prefs.showMuteButton ? View.VISIBLE : View.GONE);
         }
     }
 }
