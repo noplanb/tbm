@@ -46,4 +46,7 @@
     <dimen name="video_indicator_size">24dp</dimen>
     <dimen name="chips_height">@dimen/small_icon_size</dimen>
     <dimen name="content_inset">16dp</dimen>
+
+    <dimen name="transcription_video_width">120dp</dimen>
+    <dimen name="transcription_video_height">160dp</dimen>
 </resources>

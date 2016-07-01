@@ -4,6 +4,8 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -11,6 +13,7 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -388,7 +391,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                             }
                                             playOptions.clearFlags(PlayOptions.FULLSCREEN);
                                         }
-                                        contextBar.show(videoView.getDuration(), videoView.getCurrentPosition());
+                                        presenterHelper.showContent();
                                         notifyStartPlaying();
                                     }
                                 }
@@ -758,6 +761,13 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @InjectView(R.id.video_body) ViewGroup videoBody;
         @InjectView(R.id.transcription) View transcription;
         private TranscriptionViewHolder transcriptionViewHolder;
+        private boolean isAnimated = false;
+        private boolean isAnimating = false;
+
+        private float targetX;
+        private float targetY;
+        private int targetWidth;
+        private int targetHeight;
 
         TranscriptionPresenter(ViewStub viewStub) {
             rootLayout = viewStub.inflate();
@@ -782,25 +792,93 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         @Override
         public void setupPlayerOverTarget(@NonNull View targetView, @NonNull View rootView) {
-
+            targetX = targetView.getX();
+            targetY = targetView.getY();
+            targetWidth = targetView.getWidth();
+            targetHeight = targetView.getHeight();
+            videoBody.setTag(R.id.box_id, targetView.getId());
+            isAnimated = false;
+            if (!isAnimating) {
+                videoBody.setX(targetX);
+                videoBody.setY(targetY);
+                ViewGroup.LayoutParams p = videoBody.getLayoutParams();
+                p.width = targetWidth;
+                p.height = targetHeight;
+                videoBody.setLayoutParams(p);
+                transcription.setAlpha(0f);
+            }
         }
 
         @Override
         public void update(final VideoPlayer player) {
-            player.timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    player.activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            transcriptionViewHolder.setInMode(TranscriptionViewHolder.ViewMode.MESSAGE,
-                                    "Some message text\nSecond row...",
-                                    StringUtils.getEventTime(String.valueOf(System.currentTimeMillis())));
-                        }
-                    });
-                }
-            }, 2500);
+            //player.timer.schedule(new TimerTask() {
+            //    @Override
+            //    public void run() {
+            //        player.activity.runOnUiThread(new Runnable() {
+            //            @Override
+            //            public void run() {
+            //                transcriptionViewHolder.setInMode(TranscriptionViewHolder.ViewMode.MESSAGE,
+            //                        "Some message text\nSecond row...",
+            //                        StringUtils.getEventTime(String.valueOf(System.currentTimeMillis())));
+            //            }
+            //        });
+            //    }
+            //}, 2500);
+        }
 
+        @Override
+        public void doContentAppearing(Context context) {
+            super.doContentAppearing(context);
+            if (isAnimated) {
+                return;
+            }
+            Resources res = context.getResources();
+            final int endW = res.getDimensionPixelSize(R.dimen.transcription_video_width);
+            final int endH = res.getDimensionPixelSize(R.dimen.transcription_video_height);
+            ValueAnimator zoomAnimator = ValueAnimator.ofFloat(0, 1);
+            zoomAnimator.setInterpolator(new FastOutSlowInInterpolator());
+            zoomAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                int w = targetWidth;
+                int h = targetHeight;
+                float startX = targetX;
+                float startY = targetY;
+                int maxVideoBodyWidth = endW;
+                int maxVideoBodyHeight = endH;
+
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    float value = (float) animation.getAnimatedValue();
+                    //videoView.setCropFraction(0);
+                    Log.i(TAG, "Test " + (startX * (1 - value)) + " " + value);
+                    videoBody.setX(startX * (1 - value));
+                    videoBody.setY(startY * (1 - value));
+                    ViewGroup.LayoutParams p = videoBody.getLayoutParams();
+                    p.width = (int) (w + (maxVideoBodyWidth - w) * value);
+                    p.height = (int) (h + (maxVideoBodyHeight - h) * value);
+                    videoBody.setLayoutParams(p);
+                    transcription.setPivotX(transcription.getX());
+                    transcription.setPivotY(transcription.getY());
+                    transcription.setScaleX(0.7f + value * 0.3f);
+                    transcription.setScaleY(0.7f + value * 0.3f);
+                    transcription.setAlpha(value);
+                }
+            });
+            zoomAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    isAnimated = true;
+                    isAnimating = false;
+                }
+
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    super.onAnimationStart(animation);
+                    isAnimating = true;
+                }
+            });
+            zoomAnimator.setDuration(600);
+            zoomAnimator.start();
         }
     }
 
@@ -918,6 +996,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             }
         }
 
+        @Override
+        public void doContentAppearing(Context context) {
+        }
     }
 
     private interface Presenter {
@@ -961,6 +1042,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         boolean isPlaying();
         void setVisible(boolean visible);
         void update(VideoPlayer player);
+        void doContentAppearing(Context context);
     }
 
     private class PresenterHelper {
@@ -1047,6 +1129,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         public void refresh() {
             if (currentPresenter != null) {
                 currentPresenter.update(VideoPlayer.this);
+            }
+        }
+
+        public void showContent() {
+            VideoView view = getVideoView();
+            if (currentPresenter != null && view != null) {
+                contextBar.show(view.getDuration(), view.getCurrentPosition());
+                currentPresenter.doContentAppearing(view.getContext());
             }
         }
     }
