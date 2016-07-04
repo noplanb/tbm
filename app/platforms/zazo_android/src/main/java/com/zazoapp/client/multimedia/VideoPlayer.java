@@ -163,14 +163,21 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         if (needToPlay) {
             playOptions = new PlayOptions(options);
             targetViewRef = new WeakReference<>(view);
+            float oldVolume = mediaVolume;
             if (playOptions.hasFlags(PlayOptions.TRANSCRIPT)) {
                 presenterHelper.setCurrentPresentation(Presenter.Type.TRANSCRIPTION);
+                mediaVolume = 0f;
             } else {
                 presenterHelper.setCurrentPresentation(Presenter.Type.PLAYER);
+                mediaVolume = 1f;
             }
             zoomController.clearState();
             presenterHelper.initStateForTarget();
-            return start();
+            boolean result = start();
+            if (!result) {
+                mediaVolume = oldVolume;
+            }
+            return result;
         }
         return false;
     }
@@ -957,6 +964,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                             videoView.seekTo((int) (videoView.getDuration() * progress));
                             firstOpening = false;
                         }
+                        videoView.setVolume(player.mediaVolume);
                         videoView.start();
                         player.waitAndNotifyWhenStart();
                     }
@@ -1186,6 +1194,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @OnClick(R.id.mute)
         public void onMuteClicked(View v) {
             v.setSelected(!v.isSelected());
+            setVolume(v.isSelected() ? 1f : 0f);
         }
 
         @OnClick(R.id.menu_view)
@@ -1231,6 +1240,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             });
             appearingAnimation.start();
             progressBar.dropState();
+            mute.setSelected(false);
         }
 
         public boolean handleProgressBarTouchEvent(MotionEvent event) {
