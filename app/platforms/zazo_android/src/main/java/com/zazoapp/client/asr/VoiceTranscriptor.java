@@ -5,9 +5,9 @@ import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.zazoapp.client.asr.dsp.Resampler;
-import com.zazoapp.client.utilities.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,9 +52,10 @@ public final class VoiceTranscriptor {
      * @param secondsLimit specifies the limit of last sample time that will be extracted in seconds, -1 to extract all
      *                     min value 0.5 s.
      * @param callbacks extraction callbacks where results will be provided to
+     * @param path destination path for audio file
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void extractVoiceFromVideo(final String videoPath, float secondsLimit, final ExtractionCallbacks callbacks) {
+    public void extractVoiceFromVideo(final String videoPath, float secondsLimit, final ExtractionCallbacks callbacks, @Nullable String path) {
         callbacks.onProgressChanged(0);
         final MediaExtractor extractor = new MediaExtractor();
         try {
@@ -104,7 +105,12 @@ public final class VoiceTranscriptor {
         callbacks.onProgressChanged(5);
         FileOutputStream os = null;
         final String name = videoPath.substring(0, videoPath.lastIndexOf('.'));
-        final String pcmFileName = name + "_16000.pcm";
+        final String pcmFileName;
+        if (path != null) {
+            pcmFileName = path;
+        } else {
+            pcmFileName = name + "_16000.pcm";
+        }
         try {
             os = new FileOutputStream(pcmFileName);
         } catch (FileNotFoundException e) {

@@ -21,7 +21,7 @@ public class FileDownloadServiceTest extends FileDownloadService {
                     startService(intent);
                 }
                 break;
-            case IncomingVideo.Status.DOWNLOADED:
+            case IncomingVideo.Status.READY_TO_VIEW:
                 if (listener.onDownloaded()) {
                     startService(intent);
                 }

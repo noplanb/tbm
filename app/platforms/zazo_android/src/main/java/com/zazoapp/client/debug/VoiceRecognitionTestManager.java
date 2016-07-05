@@ -263,7 +263,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
             public void onProgressChanged(int progress) {
                 trProgressView.setProgress(progress);
             }
-        });
+        }, null);
 
     }
 

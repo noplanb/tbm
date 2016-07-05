@@ -17,6 +17,7 @@ import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.Transcription;
 import com.zazoapp.client.utilities.StringUtils;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -58,7 +59,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 switch (transcription.state) {
                     case Transcription.State.NONE:
                         h.setInMode(TranscriptionViewHolder.ViewMode.PROGRESS, null, null);
-                        requestTranscriptionForVideo(position, video);
+                        Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
+                        if (friend != null) {
+                            File transcriptionFile = new File(friend.audioFromPath(video.getId()));
+                            if (transcriptionFile.exists()) {
+                                requestTranscriptionForVideo(position, video, transcriptionFile.getAbsolutePath());
+                            } else {
+                                requestTranscriptionForVideo(position, video);
+                            }
+                        }
                         break;
                     case Transcription.State.OK:
                         h.setInMode(TranscriptionViewHolder.ViewMode.MESSAGE, transcription.text, StringUtils.getEventTime(video.getId()));
@@ -81,27 +90,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             public void onResult(VoiceTranscriptor transcriptor, String path) {
                 float extractionDuration = (System.nanoTime() - startTime) / 1000000000f;
                 Log.i(TAG, "extractionDuration " + extractionDuration);
-                final ASRProvider provider = new NuanceASRProvider();
-                transcriptor.requestTranscription(path, provider, new ASRProvider.Callback() {
-                    @Override
-                    public void onResult(String text) {
-                        if (text == null) {
-                            Transcription t = new Transcription();
-                            t.state = Transcription.State.FAILED;
-                            video.setTranscription(t);
-                            notifyItemChanged(position);
-                        } else {
-                            Transcription t = new Transcription();
-                            t.state = Transcription.State.OK;
-                            t.text = text;
-                            t.asr = "nuance";
-                            t.lang = provider.getLanguage();
-                            t.rate = String.valueOf(provider.getSampleRate());
-                            video.setTranscription(t);
-                            notifyItemChanged(position);
-                        }
-                    }
-                });
+                requestTranscriptionForVideo(position, video, path);
             }
 
             @Override
@@ -114,6 +103,34 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
             @Override
             public void onProgressChanged(int progress) {
+            }
+        }, null);
+    }
+
+    private void requestTranscriptionForVideo(final int position, final IncomingVideo video, String path) {
+        VoiceTranscriptor transcriptor = new VoiceTranscriptor();
+        final ASRProvider provider = new NuanceASRProvider();
+        transcriptor.requestTranscription(path, provider, new ASRProvider.Callback() {
+            private long startTime = System.nanoTime();
+            @Override
+            public void onResult(String text) {
+                float requestDuration = (System.nanoTime() - startTime) / 1000000000f;
+                Log.i(TAG, "requestDuration " + requestDuration);
+                if (text == null) {
+                    Transcription t = new Transcription();
+                    t.state = Transcription.State.FAILED;
+                    video.setTranscription(t);
+                    notifyItemChanged(position);
+                } else {
+                    Transcription t = new Transcription();
+                    t.state = Transcription.State.OK;
+                    t.text = text;
+                    t.asr = "nuance";
+                    t.lang = provider.getLanguage();
+                    t.rate = String.valueOf(provider.getSampleRate());
+                    video.setTranscription(t);
+                    notifyItemChanged(position);
+                }
             }
         });
     }

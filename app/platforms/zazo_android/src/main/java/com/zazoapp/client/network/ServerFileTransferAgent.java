@@ -144,7 +144,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		}
         if (f.renameTo(FileUtils.getFile(filePath))) {
             Log.i(TAG, "download SUCCESS" + params.toString());
-            reportStatus(intent, IncomingVideo.Status.DOWNLOADED);
+            reportStatus(intent, IncomingVideo.Status.READY_TO_VIEW);
             return true;
         }
         Dispatch.dispatch("download: error renaming");

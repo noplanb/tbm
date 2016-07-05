@@ -10,17 +10,18 @@ import java.util.List;
 public class IncomingVideo extends Video {
 
     /**
-     * Normal state machine: QUEUED -> NEW <-> DOWNLOADING -> DOWNLOADED -(onViewed)-> VIEWED
+     * Normal state machine: QUEUED -> NEW <-> DOWNLOADING -> READY_TO_VIEW -(onViewed)-> VIEWED
      */
     public static class Status {
         public static final int NONE = 0;
         public static final int NEW = 1;
         public static final int QUEUED = 2;
         public static final int DOWNLOADING = 3;
-        public static final int DOWNLOADED = 4;
+        public static final int READY_TO_VIEW = 4;
         public static final int VIEWED = 5;
         public static final int FAILED_PERMANENTLY = 6;
         public static final int MARKED_FOR_DELETION = 7;
+        public static final int DOWNLOADED = 8;
 
         public static String toShortString(int status) {
             switch (status) {
@@ -28,10 +29,11 @@ public class IncomingVideo extends Video {
                 case NEW: return "in";
                 case QUEUED: return "iq";
                 case DOWNLOADING: return "idg";
-                case DOWNLOADED: return "id";
+                case READY_TO_VIEW: return "id";
                 case VIEWED: return "iv";
                 case FAILED_PERMANENTLY: return "if";
                 case MARKED_FOR_DELETION: return "im";
+                case DOWNLOADED: return "idp";
                 default: return "";
             }
         }
@@ -66,7 +68,7 @@ public class IncomingVideo extends Video {
     }
 
     public boolean isDownloaded() {
-        return getVideoStatus() == Status.DOWNLOADED || getVideoStatus() == Status.VIEWED;
+        return getVideoStatus() == Status.READY_TO_VIEW || getVideoStatus() == Status.VIEWED;
     }
 
     public boolean isFailed() {

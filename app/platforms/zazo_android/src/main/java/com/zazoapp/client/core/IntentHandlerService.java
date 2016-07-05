@@ -15,6 +15,8 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import com.zazoapp.client.asr.NuanceASRProvider;
+import com.zazoapp.client.asr.VoiceTranscriptor;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelFactory;
 import com.zazoapp.client.model.ActiveModelsHandler;
@@ -154,17 +156,25 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         FriendFactory friendFactory = FriendFactory.getFactoryInstance();
         for (IncomingVideo video : incomingVideos) {
             switch (video.getVideoStatus()) {
-                case IncomingVideo.Status.NEW:
+                case IncomingVideo.Status.NEW: {
                     Friend friend = friendFactory.find(video.get(Video.Attributes.FRIEND_ID));
                     if (friend != null) {
                         Logger.i(TAG, "Inew: restoreTransferring " + friend.getMkey() + " " + video.getId());
                         friend.requestDownload(video.getId());
                     }
+                }
                     break;
                 case IncomingVideo.Status.VIEWED:
                 case IncomingVideo.Status.FAILED_PERMANENTLY:
                 case IncomingVideo.Status.MARKED_FOR_DELETION:
                     video.handleRemoteDeletion();
+                    break;
+                case IncomingVideo.Status.DOWNLOADED: {
+                    Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
+                    if (friend != null) {
+                        extractVoice(friend, video.getId());
+                    }
+                }
                     break;
             }
         }
@@ -211,6 +221,39 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     break;
             }
         }
+    }
+
+    private void extractVoice(final Friend friend, final String videoId) {
+        VoiceTranscriptor transcriptor = new VoiceTranscriptor();
+        VoiceTranscriptor.ExtractionCallbacks callbacks = new VoiceTranscriptor.ExtractionCallbacks() {
+            private long startTime = System.nanoTime();
+            @Override
+            public void onResult(VoiceTranscriptor transcriptor, String path) {
+                float extractionDuration = (System.nanoTime() - startTime) / 1000000000f;
+                Logger.i(TAG, "extractionDuration " + extractionDuration + " vid: " + videoId);
+                reportStatus();
+            }
+
+            private void reportStatus() {
+                Intent intent = new Intent(getApplicationContext(), IntentHandlerService.class);
+                intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+                intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingVideo.Status.READY_TO_VIEW);
+                intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+                intent.putExtra(IntentParamKeys.FRIEND_ID, friend.getId());
+                startService(intent);
+            }
+
+            @Override
+            public void onError(String error) {
+                Logger.i(TAG, "extraction failed vid: " + videoId);
+                reportStatus();
+            }
+
+            @Override
+            public void onProgressChanged(int progress) {
+            }
+        };
+        transcriptor.extractVoiceFromVideo(friend.videoFromPath(videoId), NuanceASRProvider.DURATION_LIMIT, callbacks, friend.audioFromPath(videoId));
     }
 
     private class IntentHandler {
@@ -377,6 +420,10 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             }
 
             if (status == IncomingVideo.Status.DOWNLOADED) {
+                transferTasks.removeDownloadId(videoId);
+                extractVoice(friend, videoId);
+            }
+            if (status == IncomingVideo.Status.READY_TO_VIEW) {
 
                 // Always delete the remote video even if the one we got is corrupted. Otherwise it may never be deleted
                 deleteRemoteVideoAndKV();
@@ -393,7 +440,6 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 if (!TbmApplication.getInstance().isForeground() || Convenience.screenIsLockedOrOff(getApplicationContext())) {
                     NotificationAlertManager.alert(getApplicationContext(), friend, videoId);
                 }
-                transferTasks.removeDownloadId(videoId);
             }
 
             if (status == IncomingVideo.Status.FAILED_PERMANENTLY) {
@@ -413,7 +459,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
             // Update the status and notify based on the intent if we have not exited for another reason above.
             updateStatus();
-            if (status == IncomingVideo.Status.DOWNLOADED) {
+            if (status == IncomingVideo.Status.READY_TO_VIEW) {
                 // Save Incoming video as soon as it is downloaded
                 ActiveModelsHandler.getInstance(IntentHandlerService.this).save(IncomingVideoFactory.getFactoryInstance());
             }

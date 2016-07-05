@@ -305,7 +305,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             @Override
             public void run() {
                 switch (status) {
-                    case IncomingVideo.Status.DOWNLOADED:
+                    case IncomingVideo.Status.READY_TO_VIEW:
                         if (gridElementView.isReadyToAnimate() && statusChanged) {
                             // sound only if activity is really visible to user
                             if (!(NotificationAlertManager.screenIsLocked(activity) ||

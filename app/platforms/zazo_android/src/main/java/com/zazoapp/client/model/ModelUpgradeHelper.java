@@ -72,7 +72,9 @@ public final class ModelUpgradeHelper {
     }
 
     /**
-     * Added attribute TRANSCRIPTION to Incoming video model
+     * Changes in IncomingVideo model
+     * 1. Added attribute TRANSCRIPTION to Incoming video model
+     * 2. Added 8th state DOWNLOADED (old DOWNLOADED renamed to READY_TO_VIEW)
      */
     public static void upgradeTo6(ActiveModelsHandler handler, Context context) {
         ensureAll(handler);

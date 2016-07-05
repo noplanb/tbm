@@ -36,6 +36,7 @@ import java.util.List;
 public class Friend extends ActiveModel{
 
     private static final String MP4 = ".mp4";
+    private static final String PCM = ".pcm";
     private static final String PNG = ".png";
 
     public static final Friend EMPTY = new Friend();
@@ -203,6 +204,7 @@ public class Friend extends ActiveModel{
     public void deleteVideo(String videoId){
         // Delete videoFile
         videoFromFile(videoId).delete();
+        new File(audioFromPath(videoId)).delete();
         // Delete video object
         IncomingVideoFactory vf = IncomingVideoFactory.getFactoryInstance();
         vf.delete(videoId);
@@ -214,6 +216,7 @@ public class Friend extends ActiveModel{
                 case IncomingVideo.Status.VIEWED:
                 case IncomingVideo.Status.FAILED_PERMANENTLY:
                     videoFromFile(v.getId()).delete();
+                    new File(audioFromPath(v.getId())).delete();
                     v.markForDeletion();
                 case IncomingVideo.Status.MARKED_FOR_DELETION:
                     v.deleteFromRemote();
@@ -272,14 +275,14 @@ public class Friend extends ActiveModel{
     
     
     //----------------------
-    // Unviewed (DOWNLOADED)
+    // Unviewed (READY_TO_VIEW)
     //----------------------    
     public ArrayList<IncomingVideo> getIncomingNotViewedVideos(){
         ArrayList<IncomingVideo> incomingVideos = getIncomingVideos();
         Iterator<IncomingVideo> i = incomingVideos.iterator();
         while (i.hasNext()){
             IncomingVideo v = i.next();
-            if(v.getVideoStatus() != IncomingVideo.Status.DOWNLOADED)
+            if(v.getVideoStatus() != IncomingVideo.Status.READY_TO_VIEW)
                 i.remove();
         }
         return incomingVideos;
@@ -300,14 +303,14 @@ public class Friend extends ActiveModel{
     
     
     //--------------------------------
-    // Playable (DOWNLOADED || VIEWED)
+    // Playable (READY_TO_VIEW || VIEWED)
     //--------------------------------
     public ArrayList<IncomingVideo> getIncomingPlayableVideos(){
         ArrayList<IncomingVideo> incomingVideos = getIncomingVideos();
         Iterator<IncomingVideo> i = incomingVideos.iterator();
         while (i.hasNext()){
             IncomingVideo v = i.next();
-            if(v.getVideoStatus() != IncomingVideo.Status.DOWNLOADED && v.getVideoStatus() != IncomingVideo.Status.VIEWED)
+            if(v.getVideoStatus() != IncomingVideo.Status.READY_TO_VIEW && v.getVideoStatus() != IncomingVideo.Status.VIEWED)
                 i.remove();
         }
         return incomingVideos;
@@ -318,7 +321,7 @@ public class Friend extends ActiveModel{
         Iterator<IncomingVideo> i = incomingVideos.iterator();
         while (i.hasNext()) {
             IncomingVideo v = i.next();
-            if (v.getVideoStatus() == IncomingVideo.Status.DOWNLOADED ||
+            if (v.getVideoStatus() == IncomingVideo.Status.READY_TO_VIEW ||
                     v.getVideoStatus() == IncomingVideo.Status.VIEWED) {
                 return true;
             }
@@ -406,6 +409,10 @@ public class Friend extends ActiveModel{
         return buildPath(videoId, "vid_from", MP4);
     }
 
+    public String audioFromPath(String videoId) {
+        return buildPath(videoId, "aud_from", PCM);
+    }
+
     public File videoFromFile(String videoId) {
         return new File(videoFromPath(videoId));
     }
@@ -467,10 +474,10 @@ public class Friend extends ActiveModel{
     }
 
     public boolean incomingVideoNotViewed(){
-        // Return true if any of the incoming videos are status DOWNLOADED
+        // Return true if any of the incoming videos are status READY_TO_VIEW
         Iterator<IncomingVideo> iterator = getIncomingVideos().iterator();
         while (iterator.hasNext()) {
-            if (iterator.next().getVideoStatus() == IncomingVideo.Status.DOWNLOADED){
+            if (iterator.next().getVideoStatus() == IncomingVideo.Status.READY_TO_VIEW){
                 return true;
             }
         }
@@ -478,11 +485,11 @@ public class Friend extends ActiveModel{
     }
 
     public int incomingVideoNotViewedCount(){
-        // Return true if any of the incoming videos are status DOWNLOADED
+        // Return true if any of the incoming videos are status READY_TO_VIEW
         int i = 0;
         Iterator<IncomingVideo> iterator = getIncomingVideos().iterator();
         while (iterator.hasNext()) {
-            if (iterator.next().getVideoStatus() == IncomingVideo.Status.DOWNLOADED) {
+            if (iterator.next().getVideoStatus() == IncomingVideo.Status.READY_TO_VIEW) {
                 i++;
             }
         }
@@ -816,6 +823,8 @@ public class Friend extends ActiveModel{
                     return "Dwnld...";
                 }
             case IncomingVideo.Status.DOWNLOADED:
+                return "Extr...";
+            case IncomingVideo.Status.READY_TO_VIEW:
                 return getUniqueName();
             case IncomingVideo.Status.VIEWED:
                 return getUniqueName();
