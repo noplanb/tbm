@@ -7,12 +7,13 @@ import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.utilities.Convenience;
 
 /**
  * Created by skamenkovych@codeminders.com on 6/30/2016.
  */
-public class TranscriptionViewHolder {
+public class TranscriptionViewHolder extends MessageAdapter.MessageViewHolder {
     @InjectView(R.id.text) TextView text;
     @InjectView(R.id.date) TextView date;
     @InjectView(R.id.progress_layout) ViewGroup progressLayout;
@@ -22,6 +23,8 @@ public class TranscriptionViewHolder {
     private View itemView;
 
     public TranscriptionViewHolder(View transcriptionItemView) {
+        super(transcriptionItemView);
+        type = MessageType.VIDEO;
         ButterKnife.inject(this, transcriptionItemView);
         itemView = transcriptionItemView;
         date.setTypeface(Convenience.getTypeface(itemView.getContext(), "Roboto-Italic"));

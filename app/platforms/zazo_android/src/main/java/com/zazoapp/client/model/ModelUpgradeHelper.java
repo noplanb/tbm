@@ -71,6 +71,13 @@ public final class ModelUpgradeHelper {
          ensureAll(handler);
     }
 
+    /**
+     * Added attribute TRANSCRIPTION to Incoming video model
+     */
+    public static void upgradeTo6(ActiveModelsHandler handler, Context context) {
+        ensureAll(handler);
+    }
+
     private static void ensureAll(ActiveModelsHandler handler) {
         handler.ensureUser();
         handler.ensure(FriendFactory.getFactoryInstance());

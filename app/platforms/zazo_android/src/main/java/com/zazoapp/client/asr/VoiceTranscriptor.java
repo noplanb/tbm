@@ -7,6 +7,7 @@ import android.media.MediaFormat;
 import android.os.Build;
 import android.util.Log;
 import com.zazoapp.client.asr.dsp.Resampler;
+import com.zazoapp.client.utilities.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -134,7 +135,7 @@ public final class VoiceTranscriptor {
 
             @Override
             public void onOutputBufferAvailable(MediaCodec codec, int index, MediaCodec.BufferInfo info) {
-                callbacks.onProgressChanged((int) (10 + 90*info.presentationTimeUs / Math.min(limit, finalDuration)));
+                callbacks.onProgressChanged((int) (10 + 90 * info.presentationTimeUs / Math.min(limit, finalDuration)));
                 ByteBuffer outputBuffer = codec.getOutputBuffer(index);
                 int sampleRate = mOutputFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
                 byte[] array = new byte[info.size];

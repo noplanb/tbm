@@ -27,7 +27,7 @@
                 android:layout_height="@dimen/transcription_video_height"/>
         <include
                 android:id="@+id/transcription"
-                layout="@layout/transcription_item"
+                layout="@layout/transcription_list"
                 android:layout_toRightOf="@id/video_body_stub"
                 android:layout_marginLeft="-20dp"
                 android:layout_marginTop="20dp"

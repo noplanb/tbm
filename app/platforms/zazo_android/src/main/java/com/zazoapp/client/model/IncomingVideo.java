@@ -1,6 +1,7 @@
 package com.zazoapp.client.model;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.network.HttpRequest;
 
@@ -38,6 +39,7 @@ public class IncomingVideo extends Video {
 
     public static class Attributes extends Video.Attributes {
         public static final String REMOTE_STATUS  = "remote_status";
+        private static final String TRANSCRIPTION = "transcription";
     }
 
     private static class RemoteStatus {
@@ -51,6 +53,7 @@ public class IncomingVideo extends Video {
     public List<String> attributeList() {
         List<String> attributeList = super.attributeList();
         attributeList.add(Attributes.REMOTE_STATUS);
+        attributeList.add(Attributes.TRANSCRIPTION);
         return attributeList;
     }
 
@@ -117,5 +120,13 @@ public class IncomingVideo extends Video {
 
     public boolean isRemoteDeleted() {
         return RemoteStatus.DELETED.equals(get(Attributes.REMOTE_STATUS));
+    }
+
+    public @NonNull Transcription getTranscription() {
+        return Transcription.fromJson(get(Attributes.TRANSCRIPTION));
+    }
+
+    public void setTranscription(@NonNull Transcription transcription) {
+        set(Attributes.TRANSCRIPTION, transcription.toJson());
     }
 }

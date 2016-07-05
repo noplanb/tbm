@@ -14,6 +14,8 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,9 +44,9 @@ import com.zazoapp.client.ui.animations.TextAnimations;
 import com.zazoapp.client.ui.animations.VideoProgressBarAnimation;
 import com.zazoapp.client.ui.helpers.VideoContextBarPreferences;
 import com.zazoapp.client.ui.view.GestureControlledLayout;
+import com.zazoapp.client.ui.view.MessageAdapter;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.TouchBlockScreen;
-import com.zazoapp.client.ui.view.TranscriptionViewHolder;
 import com.zazoapp.client.ui.view.VideoProgressBar;
 import com.zazoapp.client.ui.view.VideoView;
 import com.zazoapp.client.utilities.Convenience;
@@ -761,8 +763,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     static class TranscriptionPresenter extends BasePresenter {
         @InjectView(R.id.video_view) VideoView videoView;
         @InjectView(R.id.video_body) ViewGroup videoBody;
-        @InjectView(R.id.transcription) View transcription;
-        private TranscriptionViewHolder transcriptionViewHolder;
+        @InjectView(R.id.transcription) RecyclerView transcription;
         private boolean isAnimated = false;
         private boolean isAnimating = false;
 
@@ -774,7 +775,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         TranscriptionPresenter(ViewStub viewStub) {
             rootLayout = viewStub.inflate();
             ButterKnife.inject(this, rootLayout);
-            transcriptionViewHolder = new TranscriptionViewHolder(transcription);
+            transcription.setLayoutManager(new LinearLayoutManager(rootLayout.getContext(), LinearLayoutManager.VERTICAL, false));
         }
 
         @Override
@@ -851,7 +852,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 public void onAnimationUpdate(ValueAnimator animation) {
                     float value = (float) animation.getAnimatedValue();
                     //videoView.setCropFraction(0);
-                    Log.i(TAG, "Test " + (startX * (1 - value)) + " " + value);
                     videoBody.setX(startX * (1 - value));
                     videoBody.setY(startY * (1 - value));
                     ViewGroup.LayoutParams p = videoBody.getLayoutParams();
@@ -1160,6 +1160,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (view != null) {
                     contextBar.setPreferences(contextBarPrefs);
                     contextBar.show(view.getDuration(), view.getCurrentPosition());
+                    if (currentPresenter.getType() == Presenter.Type.TRANSCRIPTION) {
+                        RecyclerView rv = ((TranscriptionPresenter) currentPresenter).transcription;
+                        MessageAdapter adapter = new MessageAdapter(playingVideos, view.getContext());
+                        rv.setAdapter(adapter);
+                    }
                     currentPresenter.doContentAppearing(view.getContext());
                 }
             }
