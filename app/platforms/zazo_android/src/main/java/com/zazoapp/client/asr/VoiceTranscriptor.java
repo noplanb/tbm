@@ -49,13 +49,13 @@ public final class VoiceTranscriptor {
     /**
      * All work will be executed asynchronously with results in callback thread
      * @param videoPath path to video file
-     * @param secondsLimit specifies the limit of last sample time that will be extracted in seconds, -1 to extract all
+     * @param provider specifies the limit of last sample time that will be extracted in seconds, -1 to extract all
      *                     min value 0.5 s.
      * @param callbacks extraction callbacks where results will be provided to
      * @param path destination path for audio file
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void extractVoiceFromVideo(final String videoPath, float secondsLimit, final ExtractionCallbacks callbacks, @Nullable String path) {
+    public void extractVoiceFromVideo(final String videoPath, final ASRProvider provider, final ExtractionCallbacks callbacks, @Nullable String path) {
         callbacks.onProgressChanged(0);
         final MediaExtractor extractor = new MediaExtractor();
         try {
@@ -109,7 +109,7 @@ public final class VoiceTranscriptor {
         if (path != null) {
             pcmFileName = path;
         } else {
-            pcmFileName = name + "_16000.pcm";
+            pcmFileName = name + "_" + provider.getSampleRate() + ".pcm";
         }
         try {
             os = new FileOutputStream(pcmFileName);
@@ -120,7 +120,7 @@ public final class VoiceTranscriptor {
         }
         final FileOutputStream finalOs = os;
         final long finalDuration = duration;
-        final long limit = (secondsLimit < 0 || duration < 0.5) ? Long.MAX_VALUE : (long)(1000000L*secondsLimit);
+        final long limit = (provider.getDurationLimit() < 0 || duration < 0.5) ? Long.MAX_VALUE : (long)(1000000L* provider.getDurationLimit());
         codec.setCallback(new MediaCodec.Callback() {
             MediaFormat mOutputFormat;
             long sampleDuration = 0;
@@ -148,7 +148,7 @@ public final class VoiceTranscriptor {
                 outputBuffer.get(array);
                 Resampler resampler = new Resampler();
                 try {
-                    byte[] resampled = resampler.reSample(array, 16, sampleRate, 16000, mOutputFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT), 1);
+                    byte[] resampled = resampler.reSample(array, 16, sampleRate, provider.getSampleRate(), mOutputFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT), 1);
                     finalOs.write(resampled, 0, resampled.length);
                 } catch (IOException e) {
                 }

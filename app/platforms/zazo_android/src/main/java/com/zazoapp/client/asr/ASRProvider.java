@@ -17,8 +17,9 @@ import java.util.Scanner;
  * Created by skamenkovych@codeminders.com on 10/22/2015.
  */
 public abstract class ASRProvider {
-    private int sampleRate = 16000;
+    private int sampleRate = 8000;
     private String language = "en_us";
+    private static final float _DURATION_LIMIT = 30f;
 
     public interface Callback {
         void onResult(String transcription);
@@ -42,6 +43,10 @@ public abstract class ASRProvider {
 
     public String getLanguage() {
         return language;
+    }
+
+    public float getDurationLimit() {
+        return _DURATION_LIMIT;
     }
 
     protected abstract String extractTranscription(String response);

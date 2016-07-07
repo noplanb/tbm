@@ -66,4 +66,11 @@ public class TranscriptionViewHolder extends MessageAdapter.MessageViewHolder {
         }
         return false;
     }
+
+    public void setOnClickListener(View.OnClickListener listener) {
+        itemView.setOnClickListener(listener);
+        if (listener == null && itemView.isClickable()) {
+            itemView.setClickable(false);
+        }
+    }
 }

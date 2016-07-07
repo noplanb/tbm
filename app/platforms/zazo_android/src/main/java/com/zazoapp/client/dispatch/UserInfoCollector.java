@@ -109,7 +109,7 @@ public class UserInfoCollector {
             File[] list = file.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String filename) {
-                    return filename.startsWith("vid_from") || filename.startsWith("vid_to");
+                    return filename.startsWith("vid_from") || filename.startsWith("vid_to") || filename.startsWith("aud_from");
                 }
             });
             for (File f : list) {

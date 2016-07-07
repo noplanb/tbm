@@ -253,7 +253,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             public void onProgressChanged(int progress) {
             }
         };
-        transcriptor.extractVoiceFromVideo(friend.videoFromPath(videoId), NuanceASRProvider.DURATION_LIMIT, callbacks, friend.audioFromPath(videoId));
+        NuanceASRProvider provider = new NuanceASRProvider();
+        transcriptor.extractVoiceFromVideo(friend.videoFromPath(videoId), provider, callbacks, friend.audioFromPath(videoId));
     }
 
     private class IntentHandler {

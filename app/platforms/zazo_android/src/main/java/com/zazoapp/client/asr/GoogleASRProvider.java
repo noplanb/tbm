@@ -50,6 +50,11 @@ public class GoogleASRProvider extends ASRProvider {
         return Response.getTranscription(alternatives);
     }
 
+    @Override
+    public float getDurationLimit() {
+        return DURATION_LIMIT;
+    }
+
     static class Response {
         public ArrayList<LinkedTreeMap<String, Object>> result;
 

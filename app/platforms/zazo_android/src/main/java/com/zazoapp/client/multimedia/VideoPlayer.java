@@ -474,13 +474,20 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         private ValueAnimator zoomAnimator;
         VideoView videoView;
         ViewGroup videoParentView;
+        private Presenter presenter;
 
-        ZoomController() {
+        ZoomController(Presenter presenter) {
+            this.presenter = presenter;
             ArrayList<View> views = new ArrayList<>();
-            videoParentView = presenterHelper.getCurrentPresenter().getVideoViewParent();
-            videoView = presenterHelper.getVideoView();
+            videoParentView = presenter.getVideoViewParent();
+            videoView = presenter.getVideoView();
+            if (presenter.getType() == Presenter.Type.TRANSCRIPTION) {
+                views.add(((TranscriptionPresenter) presenter).transcription);
+            }
             views.add(videoParentView);
-            views.addAll(nineViewGroup.getNineViews());
+            if (presenter.getType() == Presenter.Type.PLAYER) {
+                views.addAll(nineViewGroup.getNineViews());
+            }
             views.add(videoRootLayout);
             gestureRecognizer = new PlayControlGestureRecognizer(activity, videoRootLayout, views);
             videoRootLayout.setGestureRecognizer(gestureRecognizer);
@@ -542,6 +549,17 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     }
                 }
                 return false;
+            }
+
+            @Override
+            public boolean shouldHandle(View view) {
+                boolean result;
+                if (presenter.getType() == Presenter.Type.TRANSCRIPTION) {
+                    result = ((TranscriptionPresenter) presenter).transcription != view;
+                } else {
+                    result = super.shouldHandle(view);
+                }
+                return result;
             }
 
             @Override
@@ -1072,7 +1090,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             }
             if (presenter != currentPresenter) {
                 currentPresenter = presenter;
-                zoomController = new ZoomController();
+                zoomController = new ZoomController(presenter);
                 for (Presenter p : presenters.values()) {
                     p.setVisible(p == presenter);
                 }

@@ -204,7 +204,6 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
         final ProgressBar trProgressView;
         switch (v.getId()) {
             case R.id.google:
-                limit = GoogleASRProvider.DURATION_LIMIT;
                 provider = PROVIDER_GOOGLE;
                 asrProvider = new GoogleASRProvider();
                 trView = tvGoogle;
@@ -212,7 +211,6 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
                 break;
             case R.id.nuance:
             default:
-                limit = NuanceASRProvider.DURATION_LIMIT;
                 provider = PROVIDER_NUANCE;
                 asrProvider = new NuanceASRProvider();
                 trView = tvNuance;
@@ -229,7 +227,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
         VoiceTranscriptor transcriptor = new VoiceTranscriptor();
         Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
         trProgressView.setIndeterminate(false);
-        transcriptor.extractVoiceFromVideo(friend.videoFromPath(video.getId()), limit, new VoiceTranscriptor.ExtractionCallbacks() {
+        transcriptor.extractVoiceFromVideo(friend.videoFromPath(video.getId()), asrProvider, new VoiceTranscriptor.ExtractionCallbacks() {
             @Override
             public void onResult(VoiceTranscriptor transcriptor, String path) {
                 trProgressView.setIndeterminate(true);

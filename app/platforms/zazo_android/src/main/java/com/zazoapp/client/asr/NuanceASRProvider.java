@@ -13,8 +13,6 @@ public class NuanceASRProvider extends ASRProvider {
     private static final String UP_P2 = "&appKey=";
     private static final String UP_P3 = "&id=";
 
-    public static final float DURATION_LIMIT = 300f;
-
     @Override
     protected String buildUrl() {
         return ROOT + UP_P1 + Constants.NUANCE_ASR_API_ID + UP_P2 + Constants.NUANCE_ASR_API_KEY + UP_P3 + Constants.NUANCE_ASR_ID;

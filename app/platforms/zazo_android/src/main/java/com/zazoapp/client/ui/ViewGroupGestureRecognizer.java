@@ -2,11 +2,15 @@ package com.zazoapp.client.ui;
 
 import android.app.Activity;
 import android.graphics.Rect;
+import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import com.zazoapp.client.R;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
 public abstract class ViewGroupGestureRecognizer {
@@ -37,6 +41,8 @@ public abstract class ViewGroupGestureRecognizer {
     public abstract boolean isSlidingSupported(int direction);
 
     public abstract boolean isAbortGestureAllowed();
+
+    public abstract boolean shouldHandle(@Nullable View view);
 
     public static final int DIRECTION_HORIZONTAL    = 0x03;
     public static final int DIRECTION_VERTICAL      = 0x30;
@@ -106,6 +112,11 @@ public abstract class ViewGroupGestureRecognizer {
         public boolean isAbortGestureAllowed() {
             return false;
         }
+
+        @Override
+        public boolean shouldHandle(View view) {
+            return true;
+        }
     }
     // ---------
     // Constants
@@ -124,6 +135,13 @@ public abstract class ViewGroupGestureRecognizer {
         public static final Integer SLIDING = 3;
     }
 
+    public static final int HANDLE_DONE = 0;
+    public static final int HANDLE_INNER = 1;
+    public static final int HANDLE_OUTER = 2;
+
+    @IntDef(value = {HANDLE_DONE, HANDLE_INNER, HANDLE_OUTER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface HandleResult {}
     // ------
     // Fields
     // ------
@@ -169,25 +187,29 @@ public abstract class ViewGroupGestureRecognizer {
     // The viewGroup that instantiates this gesture recognizer must call these methods from its
     // equivalent overriden methods.
 
-    public boolean dispatchTouchEvent(MotionEvent ev) {
+    public @HandleResult int dispatchTouchEvent(MotionEvent ev) {
         if (enabled) {
+            int handleResult;
             if (state == State.LONGPRESS)
                 intercept = true;
 
             if (ev.getAction() == MotionEvent.ACTION_DOWN)
                 intercept = false;
-            handleTouchEvent(ev);
-            if (state == State.IDLE) {
-                move(null, 0, 0);
+            handleResult = handleTouchEvent(ev);
+            if (handleResult == HANDLE_DONE) {
+                if (state == State.IDLE) {
+                    move(null, 0, 0);
+                }
+                if (state == State.IDLE && longPressTask != null) {
+                    longPressTask.cancel();
+                }
+                if (state == State.SLIDING) {
+                    intercept = true;
+                }
             }
-            if (state == State.IDLE && longPressTask != null) {
-                longPressTask.cancel();
-            }
-            if (state == State.SLIDING) {
-                intercept = true;
-            }
+            return handleResult;
         }
-        return enabled;
+        return HANDLE_OUTER;
     }
 
     public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -227,19 +249,24 @@ public abstract class ViewGroupGestureRecognizer {
         state = State.IDLE;
     }
 
-    private void handleTouchEvent(MotionEvent event) {
+    /**
+     *
+     * @param event
+     * @return true if handled
+     */
+    private @HandleResult int handleTouchEvent(MotionEvent event) {
         if (!enabled && !(postponeDisabled || event.getAction() == MotionEvent.ACTION_UP))
-            return;
-
+            return HANDLE_OUTER;
+        int result = HANDLE_DONE;
         int action = event.getAction();
         int maskedAction = event.getActionMasked();
-
         if (state == State.IDLE) {
+            targetView = pointToTargetView((int) event.getRawX(), (int) event.getRawY());
+            if (!shouldHandle(targetView)) {
+                return HANDLE_INNER;
+            }
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
-                    int x = (int) event.getX();
-                    int y = (int) event.getY();
-                    targetView = pointToTargetView((int) event.getRawX(), (int) event.getRawY());
                     setDownPosition(event);
                     if (isSliding()) {
                         state = State.SLIDING;
@@ -250,30 +277,29 @@ public abstract class ViewGroupGestureRecognizer {
                     if (targetView != null) {
                         startLongpressTimer();
                     }
-                    return;
+                    break;
                 case MotionEvent.ACTION_CANCEL:
                     // Safe to ignore since we would just stay in IDLE and do nothing.
-                    return;
+                    break;
                 case MotionEvent.ACTION_MOVE:
                     // Should never happen we should always get a ACTION_DOWN first which would move us out of IDLE.
-                    return;
+                    break;
                 case MotionEvent.ACTION_UP:
                     // Should never happen we should always get a ACTION_DOWN first which would move us out of IDLE.
-                    return;
+                    break;
             }
 
             if (maskedAction == MotionEvent.ACTION_POINTER_DOWN) {
                 // Should never happen we should always get a ACTION_DOWN first which would move us out of IDLE.
-                return;
             }
-            return;
+            return result;
         }
 
         if (state == State.DOWN) {
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
                     // Happens when the backing window view gets the down event. Just ignore.
-                    return;
+                    break;
                 case MotionEvent.ACTION_MOVE:
                     if (isSlidingSupported(DIRECTION_VERTICAL) && isMoving(event, DIRECTION_VERTICAL) ||
                             isSlidingSupported(DIRECTION_HORIZONTAL) && isMoving(event, DIRECTION_HORIZONTAL)) {
@@ -284,86 +310,81 @@ public abstract class ViewGroupGestureRecognizer {
                         }
                         state = State.SLIDING;
                     }
-                    return;
+                    break;
                 case MotionEvent.ACTION_CANCEL:
                     state = State.IDLE;
-                    return;
+                    break;
                 case MotionEvent.ACTION_UP:
                     state = State.IDLE;
                     if (targetView != null) {
                         runClick(targetView);
                     }
-                    return;
+                    break;
             }
 
             if (maskedAction == MotionEvent.ACTION_POINTER_DOWN) {
-                if (!cancelOnMultiTouch)
-                    return;
-
-                state = State.IDLE;
-                return;
+                if (cancelOnMultiTouch) {
+                    state = State.IDLE;
+                }
             }
-            return;
+            return result;
         }
 
         if (state == State.LONGPRESS) {
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
                     // This should never happen but ignore rather than abort..
-                    return;
+                    break;
                 case MotionEvent.ACTION_MOVE:
                     if (isAbortLongpressMove(event) && isAbortGestureAllowed()) {
                         state = State.IDLE;
                         runAbortLongpress(targetView);
                     }
-                    return;
+                    break;
                 case MotionEvent.ACTION_CANCEL:
                     state = State.IDLE;
                     // This should never happen but endLongPress and send the video rather than abort and lose it.
                     runEndLongpress(targetView);
-                    return;
+                    break;
                 case MotionEvent.ACTION_UP:
                     state = State.IDLE;
                     runEndLongpress(targetView);
-                    return;
+                    break;
             }
 
             // Second finger down aborts.
             if (maskedAction == MotionEvent.ACTION_POINTER_DOWN) {
-                if (!cancelOnMultiTouch)
-                    return;
-
-                state = State.IDLE;
-                runAbort(targetView, R.string.toast_two_finger_touch);
-                return;
+                if (cancelOnMultiTouch) {
+                    state = State.IDLE;
+                    runAbort(targetView, R.string.toast_two_finger_touch);
+                }
             }
-            return;
+            return result;
         }
 
         if (state == State.SLIDING) {
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
                     // Happens when the backing window view gets the down event. Just ignore.
-                    return;
+                    break;
                 case MotionEvent.ACTION_MOVE:
                     move(targetView, event.getX() - downPosition[0], event.getY() - downPosition[1]);
-                    return;
+                    break;
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
                     state = State.IDLE;
                     endMove(downPosition[0], downPosition[1], event.getX() - downPosition[0], event.getY() - downPosition[1]);
-                    return;
+                    break;
             }
 
             if (maskedAction == MotionEvent.ACTION_POINTER_DOWN) {
-                if (!cancelOnMultiTouch)
-                    return;
-
-                state = State.IDLE;
-                return;
+                if (cancelOnMultiTouch) {
+                    state = State.IDLE;
+                }
             }
-            return;
+            return result;
         }
+        return HANDLE_OUTER;
     }
 
     private void longPressTimerFired() {

@@ -28,6 +28,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private LayoutInflater layoutInflater;
     private Context context;
     private List<IncomingVideo> messages;
+    private ASRProvider asrProvider = new NuanceASRProvider();
 
     private static final String TAG = MessageAdapter.class.getSimpleName();
 
@@ -59,32 +60,47 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 switch (transcription.state) {
                     case Transcription.State.NONE:
                         h.setInMode(TranscriptionViewHolder.ViewMode.PROGRESS, null, null);
-                        Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
-                        if (friend != null) {
-                            File transcriptionFile = new File(friend.audioFromPath(video.getId()));
-                            if (transcriptionFile.exists()) {
-                                requestTranscriptionForVideo(position, video, transcriptionFile.getAbsolutePath());
-                            } else {
-                                requestTranscriptionForVideo(position, video);
-                            }
-                        }
+                        checkAndRequestTranscription(position, video);
+                        h.setOnClickListener(null);
                         break;
                     case Transcription.State.OK:
                         h.setInMode(TranscriptionViewHolder.ViewMode.MESSAGE, transcription.text, StringUtils.getEventTime(video.getId()));
+                        h.setOnClickListener(null);
                         break;
                     case Transcription.State.FAILED:
                         // TODO change text
                         h.setInMode(TranscriptionViewHolder.ViewMode.STATUS, context.getString(R.string.dialog_action_try_again), null);
+                        h.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                transcription.state = Transcription.State.NONE;
+                                video.setTranscription(transcription);
+                                checkAndRequestTranscription(position, video);
+                                notifyItemChanged(position);
+                            }
+                        });
                         break;
                 }
                 break;
         }
     }
 
+    private void checkAndRequestTranscription(int position, IncomingVideo video) {
+        Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
+        if (friend != null) {
+            File transcriptionFile = new File(friend.audioFromPath(video.getId()));
+            if (transcriptionFile.exists()) {
+                requestTranscriptionForVideo(position, video, transcriptionFile.getAbsolutePath());
+            } else {
+                requestTranscriptionForVideo(position, video);
+            }
+        }
+    }
+
     private void requestTranscriptionForVideo(final int position, final IncomingVideo video) {
         VoiceTranscriptor transcriptor = new VoiceTranscriptor();
         Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
-        transcriptor.extractVoiceFromVideo(friend.videoFromPath(video.getId()), NuanceASRProvider.DURATION_LIMIT, new VoiceTranscriptor.ExtractionCallbacks() {
+        transcriptor.extractVoiceFromVideo(friend.videoFromPath(video.getId()), asrProvider, new VoiceTranscriptor.ExtractionCallbacks() {
             private long startTime = System.nanoTime();
             @Override
             public void onResult(VoiceTranscriptor transcriptor, String path) {
@@ -109,8 +125,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private void requestTranscriptionForVideo(final int position, final IncomingVideo video, String path) {
         VoiceTranscriptor transcriptor = new VoiceTranscriptor();
-        final ASRProvider provider = new NuanceASRProvider();
-        transcriptor.requestTranscription(path, provider, new ASRProvider.Callback() {
+        transcriptor.requestTranscription(path, asrProvider, new ASRProvider.Callback() {
             private long startTime = System.nanoTime();
             @Override
             public void onResult(String text) {
@@ -126,8 +141,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     t.state = Transcription.State.OK;
                     t.text = text;
                     t.asr = "nuance";
-                    t.lang = provider.getLanguage();
-                    t.rate = String.valueOf(provider.getSampleRate());
+                    t.lang = asrProvider.getLanguage();
+                    t.rate = String.valueOf(asrProvider.getSampleRate());
                     video.setTranscription(t);
                     notifyItemChanged(position);
                 }

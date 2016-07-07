@@ -13,7 +13,7 @@ import java.util.ArrayList;
 /**
  * Created by skamenkovych@codeminders.com on 7/24/2015.
  */
-class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer {
+class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer.Stub {
     private NineViewGroup nineViewGroup;
     private ZazoManagerProvider managerProvider;
 
