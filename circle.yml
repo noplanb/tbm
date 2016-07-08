@@ -2,8 +2,8 @@ machine:
    environment:
      ANDROID_HOME: /usr/local/android-sdk-linux
 test:
-  override:
+  pre:
     - ./app/platforms/gradlew assembleDebug
-   
+        timeout: 360
   post:
     - cp -r app/platforms/build/outputs $CIRCLE_ARTIFACTS
