@@ -15,9 +15,11 @@ import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingVideo;
 import com.zazoapp.client.model.Transcription;
+import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.utilities.StringUtils;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -34,10 +36,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private static final int VIDEO_TRANSCRIPTION = 0;
 
+    private HashSet<String> submittedRequests = new HashSet<>();
+
     public MessageAdapter(List<IncomingVideo> list, Context context) {
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.messages = list;
         this.context = context.getApplicationContext();
+        for (int i = 0; i < list.size(); i++) {
+            IncomingVideo video = list.get(i);
+            Transcription transcription = video.getTranscription();
+            if (Transcription.State.NONE.equals(transcription.state)) {
+                checkAndRequestTranscription(i, video);
+            }
+            submittedRequests.add(video.getId());
+        }
+        setHasStableIds(true);
     }
 
     @Override
@@ -60,7 +73,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 switch (transcription.state) {
                     case Transcription.State.NONE:
                         h.setInMode(TranscriptionViewHolder.ViewMode.PROGRESS, null, null);
-                        checkAndRequestTranscription(position, video);
                         h.setOnClickListener(null);
                         break;
                     case Transcription.State.OK:
@@ -126,26 +138,31 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private void requestTranscriptionForVideo(final int position, final IncomingVideo video, String path) {
         VoiceTranscriptor transcriptor = new VoiceTranscriptor();
         transcriptor.requestTranscription(path, asrProvider, new ASRProvider.Callback() {
-            private long startTime = System.nanoTime();
+            private long startTime;
             @Override
             public void onResult(String text) {
                 float requestDuration = (System.nanoTime() - startTime) / 1000000000f;
-                Log.i(TAG, "requestDuration " + requestDuration);
+                Log.i(TAG, "requestDuration " + requestDuration + " " + video.getId());
+                Transcription t = new Transcription();
                 if (text == null) {
-                    Transcription t = new Transcription();
                     t.state = Transcription.State.FAILED;
-                    video.setTranscription(t);
-                    notifyItemChanged(position);
                 } else {
-                    Transcription t = new Transcription();
                     t.state = Transcription.State.OK;
                     t.text = text;
                     t.asr = "nuance";
                     t.lang = asrProvider.getLanguage();
                     t.rate = String.valueOf(asrProvider.getSampleRate());
-                    video.setTranscription(t);
-                    notifyItemChanged(position);
                 }
+                video.setTranscription(t);
+                int pos = findPosition(video);
+                if (pos >= 0) {
+                    notifyItemChanged(pos);
+                }
+            }
+
+            @Override
+            public void onStart() {
+                startTime = System.nanoTime();
             }
         });
     }
@@ -153,6 +170,38 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public int getItemCount() {
         return messages.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return VideoIdUtils.timeStampFromVideoId(messages.get(position).getId()); // for smooth animation of still unviewed messages
+    }
+
+    public void setList(List<IncomingVideo> list) {
+        this.messages = list;
+        for (int i = 0; i < list.size(); i++) {
+            IncomingVideo video = list.get(i);
+            if (!submittedRequests.contains(video.getId())) {
+                Transcription transcription = video.getTranscription();
+                if (Transcription.State.NONE.equals(transcription.state)) {
+                    checkAndRequestTranscription(i, video);
+                }
+            }
+        }
+        submittedRequests.clear();
+        for (IncomingVideo video : list) {
+            submittedRequests.add(video.getId());
+        }
+    }
+
+    private int findPosition(IncomingVideo video) {
+        List<IncomingVideo> messagesList = messages;
+        for (int i = 0; i < messagesList.size(); i++) {
+            if (video.equals(messagesList.get(i))) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {

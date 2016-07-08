@@ -19,4 +19,8 @@ public class PlayOptions {
     public void clearFlags(@Player.PlayFlags int flags) {
         options = options & ~flags;
     }
+
+    public void addFlags(@Player.PlayFlags int flags) {
+        options |= flags;
+    }
 }

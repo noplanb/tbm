@@ -1180,8 +1180,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     contextBar.show(view.getDuration(), view.getCurrentPosition());
                     if (currentPresenter.getType() == Presenter.Type.TRANSCRIPTION) {
                         RecyclerView rv = ((TranscriptionPresenter) currentPresenter).transcription;
-                        MessageAdapter adapter = new MessageAdapter(playingVideos, view.getContext());
-                        rv.setAdapter(adapter);
+                        MessageAdapter adapter = (MessageAdapter) rv.getAdapter();
+                        if (adapter == null) {
+                            adapter = new MessageAdapter(playingVideos, view.getContext());
+                            rv.setAdapter(adapter);
+                        } else {
+                            adapter.setList(playingVideos);
+                            adapter.notifyDataSetChanged();
+                        }
                     }
                     currentPresenter.doContentAppearing(view.getContext());
                 }

@@ -2,6 +2,7 @@ package com.zazoapp.client.asr;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import com.zazoapp.client.utilities.AsyncTaskManager;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
@@ -23,6 +24,7 @@ public abstract class ASRProvider {
 
     public interface Callback {
         void onResult(String transcription);
+        void onStart();
     }
 
     protected abstract String buildUrl();
@@ -156,10 +158,11 @@ public abstract class ASRProvider {
 
     public void requestTrascription(final byte[] data, final Callback callback) {
         Log.d("ParseStarter", "upChan " + data.length);
-        AsyncTask<Void, Integer, String> request = new AsyncTask<Void, Integer, String>() {
+        AsyncTaskManager.executeAsyncTask(true, new AsyncTask<Void, Integer, String>() {
             @Override
             protected String doInBackground(Void... params) {
                 String response = "";
+                publishProgress(0);
                 Scanner inStream = openHttpsPostConnection(buildUrl(), data);
                 if (inStream == null) {
                     Log.d("MainActivity", "wrong scanner");
@@ -176,10 +179,16 @@ public abstract class ASRProvider {
             }
 
             @Override
+            protected void onProgressUpdate(Integer... values) {
+                if (values.length == 1 && values[0] == 0) {
+                    callback.onStart();
+                }
+            }
+
+            @Override
             protected void onPostExecute(String s) {
                 callback.onResult(extractTranscription(s));
             }
-        };
-        request.execute();
+        });
     }
 }

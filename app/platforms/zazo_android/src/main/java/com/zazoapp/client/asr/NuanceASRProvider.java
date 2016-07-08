@@ -38,7 +38,7 @@ public class NuanceASRProvider extends ASRProvider {
         if (split.length > 0) {
             return split[0];
         } else {
-            return null;
+            return "";
         }
     }
 }
