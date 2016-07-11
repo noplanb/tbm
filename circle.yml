@@ -5,6 +5,7 @@ dependencies:
   cache_directories:
     - ~/.android
     - ~/android
+    - ~/.gradle
   override:
     - (echo "Downloading Android SDK v23 now!")
     - (source scripts/environmentSetup.sh && getAndroidSDK)
