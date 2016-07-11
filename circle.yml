@@ -15,4 +15,4 @@ test:
     - cd app/platforms && ./gradlew assembleDebug:
         timeout: 360
   post:
-    - cp -r app/build/outputs $CIRCLE_ARTIFACTS
+    - cp -r zazo_android/build/outputs $CIRCLE_ARTIFACTS
