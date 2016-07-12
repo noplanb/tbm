@@ -1,5 +1,6 @@
 package com.zazoapp.client.ui.helpers;
 
+import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 import com.zazoapp.client.R;
@@ -22,7 +23,7 @@ public enum GridElementMenuOption {
     TRANSCRIPT(false, R.string.ge_menu_transcript, R.drawable.ic_menu_transcript) {
         @Override
         public boolean isEnabled() {
-            return super.isEnabled() /*&& TRANSCRIPT_FEATURE_ENABLED*/;
+            return super.isEnabled() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP/*&& TRANSCRIPT_FEATURE_ENABLED*/;
         }
     },
     CHAT(true, R.string.ge_menu_chat, R.drawable.ic_menu_chat),
