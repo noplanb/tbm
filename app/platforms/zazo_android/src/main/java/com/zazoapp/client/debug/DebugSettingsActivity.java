@@ -282,6 +282,31 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                 }
             }
         });
+        backup.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (restore) {
+                    DebugUtils.requestCode(DebugSettingsActivity.this, new DebugUtils.InputDialogCallback() {
+                        @Override
+                        public void onReceive(String input) {
+                            if ("Sani".equalsIgnoreCase(input)) {
+                                DebugUtils.requestConfirm(DebugSettingsActivity.this, "You are going to replace current backup. Continue?", new DebugUtils.InputDialogCallback() {
+                                    @Override
+                                    public void onReceive(String input) {
+                                        if (input != null) {
+                                            DebugUtils.makeBackup(DebugSettingsActivity.this);
+                                            Dispatch.dispatchUserInfo(DebugSettingsActivity.this);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    return true;
+                }
+                return false;
+            }
+        });
         clearData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
