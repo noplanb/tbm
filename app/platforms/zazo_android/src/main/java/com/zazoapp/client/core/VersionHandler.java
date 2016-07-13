@@ -123,7 +123,7 @@ public class VersionHandler {
     //---
     public void handleCompatibilityResult(String result) {
         Log.i(TAG, "compatibilityCheckCallback: " + result);
-        if (VersionHandler.updateSchemaRequired(result)) {
+        if (VersionHandler.updateSchemaRequired(result)) { // UPDATE: on 7/13/2016 not used on server
             ActiveModelsHandler.getInstance(context).destroyAll();
             showVersionHandlerDialog(context.getString(R.string.dialog_update_obsolete_message, Config.appName), false);
         } else if (VersionHandler.updateRequired(result)) {

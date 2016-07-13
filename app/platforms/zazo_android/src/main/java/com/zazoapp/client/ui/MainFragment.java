@@ -9,6 +9,8 @@ import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.AnimRes;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -320,12 +322,17 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     @Override
     public void onTerminate() {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                releaseManagers();
-            }
-        });
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            releaseManagers();
+        } else {
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    releaseManagers();
+                }
+            });
+        }
     }
 
     @Override
