@@ -6,8 +6,10 @@ import android.util.Log;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.TbmApplication;
+import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,14 +60,19 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
         gridElementFactory = GridElementFactory.getFactoryInstance();
         outgoingVideoFactory = OutgoingVideoFactory.getFactoryInstance();
         removeCallbacks();
-        boolean upgraded = onUpgrade(new PreferencesHelper(context).getInt(MODEL_VERSION_PREF, 1), MODEL_VERSION);
+        PreferencesHelper prefs = new PreferencesHelper(context);
+        boolean upgraded = onUpgrade(prefs.getInt(MODEL_VERSION_PREF, 1), MODEL_VERSION);
         if (!upgraded) {
             ensureUser();
             ensure(friendFactory);
             ensure(incomingVideoFactory);
             ensure(gridElementFactory);
             ensure(outgoingVideoFactory);
-            new PreferencesHelper(context).putBoolean(USER_REGISTERED, User.isRegistered(context));
+            if (prefs.getBoolean(USER_REGISTERED, false) && !User.isRegistered(context)) {
+                Dispatch.dispatch(new IllegalStateException("User was registered but lost its active models"), null);
+                Dispatch.dispatchUserInfo(context);
+            }
+            prefs.putBoolean(USER_REGISTERED, User.isRegistered(context));
             Log.d(TAG, "ensureAll end");
         }
         setCallbacks();
@@ -85,6 +92,10 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
             save(factory);
         }
         PreferencesHelper prefs = new PreferencesHelper(context);
+        if (prefs.getBoolean(USER_REGISTERED, false) && !User.isRegistered(context)) {
+            Dispatch.dispatch(new IllegalStateException("User was registered but lost its active models"), null);
+            Dispatch.dispatchUserInfo(context);
+        }
         prefs.putBoolean(USER_REGISTERED, User.isRegistered(context));
         prefs.putInt(MODEL_VERSION_PREF, MODEL_VERSION);
         Log.i(TAG, "saveAll end");
@@ -140,6 +151,12 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
             factory.save(context);
         } else {
             Log.i(TAG, String.format("Not Saving %s. No instances found", model));
+            if (User.class.equals(factory.getModelClass())) {
+                File userFactoryFile = new File(factory.getSaveFilePath(context));
+                if (userFactoryFile.exists()) {
+                    Dispatch.dispatchFileContent(userFactoryFile, "Deleting existing user factory file", new RuntimeException());
+                }
+            }
             factory.deleteSaveFile(context);
         }
     }

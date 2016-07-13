@@ -109,11 +109,11 @@ public class UserInfoCollector {
             File[] list = file.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String filename) {
-                    return filename.startsWith("vid_from") || filename.startsWith("vid_to") || filename.startsWith("aud_from");
+                    return filename.startsWith("vid_from") || filename.startsWith("vid_to") || filename.startsWith("aud_from") || filename.endsWith(".json");
                 }
             });
             for (File f : list) {
-                addRow(info, f.getName());
+                addRow(info, f.getName(), String.valueOf(f.length()));
             }
         }
         info.append("\n");

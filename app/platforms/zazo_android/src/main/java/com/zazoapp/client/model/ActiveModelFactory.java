@@ -108,7 +108,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
     }
 
     public String getSaveFilePath(Context context) {
-        return Config.homeDirPath(context) + "/" + this.getClass().getSimpleName() + "_saved_instances.json";
+        return Config.homeDirPath(context) + File.separator + this.getClass().getSimpleName() + "_saved_instances.json";
     }
 
     public void deleteSaveFile(Context context) {

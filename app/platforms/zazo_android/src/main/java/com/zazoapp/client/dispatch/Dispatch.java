@@ -5,8 +5,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import com.zazoapp.client.utilities.Convenience;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.File;
 
 /**
  * Created by User on 1/12/2015.
@@ -121,5 +124,30 @@ public class Dispatch {
             return;
         }
         runnable.run();
+    }
+
+    public static void dispatchFileContent(File userFactoryFile, String s, Throwable tr) {
+        if (tr != null) {
+            Log.e(TAG, s, tr);
+        } else if (s != null) {
+            Log.d(TAG, s);
+        }
+        final JSONObject object = new JSONObject();
+        try {
+            object.put("body", s);
+            object.put("filename", userFactoryFile.getName());
+            object.put("length", userFactoryFile.length());
+            object.put("lastModified", userFactoryFile.lastModified());
+            object.put("fileContent", Convenience.getJsonFromFile(userFactoryFile.getAbsolutePath()));
+            ensureTracker(new Runnable() {
+                @Override
+                public void run() {
+                    tracker.setIncludeLogcat(includeLogcat);
+                    tracker.trackData(object);
+                }
+            });
+        } catch (JSONException e) {
+            Dispatch.dispatch(e, "Couldn't load logs. Dispatching...");
+        }
     }
 }
