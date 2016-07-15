@@ -86,6 +86,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     private static final String KEY_MKEY = "rf_mkey";
     private Bundle registerData;
     private Context context;
+    private boolean isIllegalStateForDialogs;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -108,6 +109,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     @Override
     public void onResume() {
         super.onResume();
+        isIllegalStateForDialogs = false;
     }
 
     @Override
@@ -230,6 +232,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
                 outState.putString(key, registerData.getString(key));
             }
         }
+        isIllegalStateForDialogs = true;
         super.onSaveInstanceState(outState);
     }
 
@@ -527,8 +530,10 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
 
     private void showProgressDialog(@StringRes int message) {
         dismissProgressDialog();
-        pd = ProgressDialogFragment.getInstance(null, getString(message));
-        pd.show(getChildFragmentManager(), null);
+        if (!isIllegalStateForDialogs) {
+            pd = ProgressDialogFragment.getInstance(null, getString(message));
+            pd.show(getChildFragmentManager(), null);
+        }
     }
 
     private void dismissProgressDialog() {
