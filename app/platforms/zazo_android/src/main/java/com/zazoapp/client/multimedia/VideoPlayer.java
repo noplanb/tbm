@@ -94,6 +94,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
     private List<IncomingVideo> playingVideos;
     private volatile boolean isSeekAllowed = true;
+    private boolean needToNotifyCompletion;
 
     public VideoPlayer(FragmentActivity activity, BaseManagerProvider managerProvider) {
         this.activity = activity;
@@ -210,7 +211,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 	//----------------------
 	private boolean start(){
 		Log.i(TAG, "start");
-
+        needToNotifyCompletion = false;
 		determineIfDownloading();
 		setCurrentVideoToFirst();
 
@@ -266,9 +267,13 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         if (videoId != null)
             play();
         else {
-            stop();
-            zoomController.clearState();
-            notifyCompletion();
+            if (presenterHelper.getCurrentPresenter().getType() != Presenter.Type.TRANSCRIPTION) {
+                stop();
+                zoomController.clearState();
+                notifyCompletion();
+            } else {
+                needToNotifyCompletion = true;
+            }
         }
     }
 
@@ -1229,6 +1234,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @OnClick(R.id.menu_view)
         public void onMenuClicked(View v) {
             stop();
+            zoomController.clearState();
+            if (needToNotifyCompletion) {
+                notifyCompletion();
+            }
         }
 
         public void show(int videoDuration, int currentPosition) {
