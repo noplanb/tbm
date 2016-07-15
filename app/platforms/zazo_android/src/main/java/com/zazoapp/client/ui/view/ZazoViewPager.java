@@ -3,7 +3,6 @@ package com.zazoapp.client.ui.view;
 import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import com.zazoapp.client.core.TbmApplication;
@@ -26,7 +25,6 @@ public class ZazoViewPager extends ViewPager {
     @Override
     protected boolean canScroll(View v, boolean checkV, int dx, int x, int y) {
         ZazoManagerProvider managers = TbmApplication.getInstance().getManagerProvider();
-        Log.i(TAG, "" + v + " " + dx + " " + managers.getPlayer().isPlaying());
         if (managers.getPlayer().isPlaying() || managers.getRecorder().isRecording()) {
             return true;
         }

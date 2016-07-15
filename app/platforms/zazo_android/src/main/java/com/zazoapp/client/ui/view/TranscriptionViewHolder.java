@@ -37,34 +37,27 @@ public class TranscriptionViewHolder extends MessageAdapter.MessageViewHolder {
         STATUS
     }
 
-    private ViewMode mode;
-
-    public boolean setInMode(ViewMode newMode, String mainText, String secondaryText) {
-        if (newMode != mode) {
-            mode = newMode;
-            switch (mode) {
-                case PROGRESS:
-                    mainLayout.setVisibility(View.GONE);
-                    progressLayout.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.VISIBLE);
-                    progressMessage.setText(R.string.converting_to_text);
-                    break;
-                case MESSAGE:
-                    mainLayout.setVisibility(View.VISIBLE);
-                    progressLayout.setVisibility(View.GONE);
-                    text.setText(mainText);
-                    date.setText(secondaryText);
-                    break;
-                case STATUS:
-                    mainLayout.setVisibility(View.GONE);
-                    progressLayout.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-                    progressMessage.setText(mainText);
-                    break;
-            }
-            return true;
+    public void setInMode(ViewMode newMode, String mainText, String secondaryText) {
+        switch (newMode) {
+            case PROGRESS:
+                mainLayout.setVisibility(View.GONE);
+                progressLayout.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
+                progressMessage.setText(R.string.converting_to_text);
+                break;
+            case MESSAGE:
+                mainLayout.setVisibility(View.VISIBLE);
+                progressLayout.setVisibility(View.GONE);
+                text.setText(mainText);
+                date.setText(secondaryText);
+                break;
+            case STATUS:
+                mainLayout.setVisibility(View.GONE);
+                progressLayout.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.GONE);
+                progressMessage.setText(mainText);
+                break;
         }
-        return false;
     }
 
     public void setOnClickListener(View.OnClickListener listener) {
