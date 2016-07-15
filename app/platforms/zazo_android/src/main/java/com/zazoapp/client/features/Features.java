@@ -80,6 +80,10 @@ public class Features {
         prefs = new PreferencesHelper(this.activity);
     }
 
+    public Features(Context context) {
+        prefs = new PreferencesHelper(context);
+    }
+
     public void unlock(Feature feature) {
         prefs.putBoolean(feature.getPrefName(), true);
         notifyCallbacks(feature, true);

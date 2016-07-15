@@ -32,11 +32,21 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField "String", "DISPATCH_ENVIRONMENT", "\"production\""
+            buildConfigField "boolean", "TRANSCRIPTION_TEST", "false"
+        }
+
+        beta {
+            debuggable false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "DISPATCH_ENVIRONMENT", "\"production\""
+            buildConfigField "boolean", "TRANSCRIPTION_TEST", "true"
         }
 
         debug {
             debuggable true
             buildConfigField "String", "DISPATCH_ENVIRONMENT", "\"development\""
+            buildConfigField "boolean", "TRANSCRIPTION_TEST", "true"
         }
     }
     applicationVariants.all {
@@ -78,7 +88,7 @@ dependencies {
 
 def appendVersionNameVersionCode(variant, defaultConfig) {
     //check if staging variant
-    if (variant.name == android.buildTypes.release.name) {
+    if (variant.name == android.buildTypes.release.name || variant.name == android.buildTypes.beta.name) {
         variant.outputs.each { output ->
             def alignedOutputFile = output.outputFile
             def unalignedOutputFile = output.packageApplication.outputFile
@@ -86,10 +96,10 @@ def appendVersionNameVersionCode(variant, defaultConfig) {
             // Customise APK filenames (to include build version)
             if (variant.buildType.zipAlignEnabled) {
                 // normal APK
-                output.outputFile = new File(alignedOutputFile.parent, "zazo-" + defaultConfig.versionName + "-" + defaultConfig.versionCode + ".apk")
+                output.outputFile = new File(alignedOutputFile.parent, "zazo-" + defaultConfig.versionName + "-" + defaultConfig.versionCode + "-" + variant.name + ".apk")
             }
             // 'unaligned' APK
-            output.packageApplication.outputFile = new File(unalignedOutputFile.parent, "zazo" + defaultConfig.versionName + "-u" + ".apk")
+            output.packageApplication.outputFile = new File(unalignedOutputFile.parent, "zazo" + defaultConfig.versionName + "-" + variant.name + "-u" + ".apk")
         }
     }
 }

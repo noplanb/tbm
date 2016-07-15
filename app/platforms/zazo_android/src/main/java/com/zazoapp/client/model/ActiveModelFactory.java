@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.utilities.Convenience;
 
 import java.io.File;
@@ -24,6 +25,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
     private Set<ModelChangeCallback> callbacks = new HashSet<>();
     private volatile boolean notifyCallbacks = true;
     private Runnable saveTask;
+    private boolean isLoaded;
 
     //--------------------
     // Factory
@@ -56,6 +58,9 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
     //--------------------
     // See app_lifecycle.text for why these are synchronized.
     public synchronized String save(Context context) {
+        if (!isLoaded) {
+            Dispatch.dispatch(new IllegalStateException("Trying to save not loaded model"), null);
+        }
         if (instances == null || instances.isEmpty())
             return "";
         long start = System.currentTimeMillis();
@@ -74,6 +79,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
     public synchronized boolean retrieve(Context context) {
         instances.clear();
         String json = Convenience.getJsonFromFile(getSaveFilePath(context));
+        isLoaded = true;
         if (json == null) {
             return false;
         }
@@ -231,6 +237,10 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
 
     public interface ModelChangeCallback {
         void onModelChanged(ActiveModelFactory<?> factory, ModelChangeType changeType);
+    }
+
+    public boolean isLoaded() {
+        return isLoaded;
     }
 
     public enum ModelChangeType {

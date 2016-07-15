@@ -208,7 +208,7 @@ public class RemoteStorageHandler {
         protected abstract void gotUserSettings(@Nullable UserSettings settings);
 
         protected static class UserSettings {
-            public List<String> openedFeatures;
+            public List<String> openedFeatures; // TODO!!!!!!!!!!! userSettings
         }
     }
 

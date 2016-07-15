@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
@@ -29,14 +28,12 @@ import butterknife.InjectView;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
-import com.zazoapp.client.core.FriendGetter;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.features.friendfinder.ContactsInfoCollector;
 import com.zazoapp.client.model.ActiveModelsHandler;
-import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.model.GridManager;
@@ -46,8 +43,10 @@ import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.FriendFinderRequests;
 import com.zazoapp.client.network.HttpRequest;
+import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.tutorial.HintType;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
+import com.zazoapp.client.ui.helpers.RegistrationHelper;
 import com.zazoapp.client.utilities.DialogShower;
 import org.json.JSONArray;
 
@@ -55,7 +54,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 
 /**
@@ -257,7 +255,8 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
             @Override
             public void onClick(View v) {
                 if (restore) {
-                    Context context = DebugSettingsActivity.this;
+                    showProgressDialog();
+                    final Context context = DebugSettingsActivity.this;
                     ActiveModelsHandler models = ActiveModelsHandler.getInstance(context);
                     models.destroyAll();
                     DebugUtils.restoreBackup(context);
@@ -265,8 +264,20 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                     GridManager.getInstance().initGrid(context);
                     ActiveModelsHandler.getInstance(context).saveAll();
                     if (User.isRegistered(context)) {
-                        DialogShower.showToast(context, "Loaded");
-                        finish();
+                        new S3CredentialsGetter(context) {
+                            @Override
+                            protected void success() {
+                                DialogShower.showToast(context, "Loaded");
+                                dismissProgressDialog();
+                                finish();
+                            }
+
+                            @Override
+                            protected void failure() {
+                                dismissProgressDialog();
+                                serverError();
+                            }
+                        };
                     } else {
                         DialogShower.showToast(context, "Nothing to restore");
                     }
@@ -322,7 +333,23 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                             ActiveModelsHandler.getInstance(context).ensureAll();
                             GridManager.getInstance().initGrid(context);
                             new Features(DebugSettingsActivity.this).lockAll();
-                            new ClearFriendGetter(context, true).getFriends();
+                            new RegistrationHelper(DebugSettingsActivity.this).sync(new RegistrationHelper.SyncCallbacks() {
+                                @Override
+                                public void onStartSyncing() {
+                                    showProgressDialog();
+                                }
+
+                                @Override
+                                public void onSyncError() {
+                                    dismissProgressDialog();
+                                    serverError();
+                                }
+
+                                @Override
+                                public void onSyncComplete() {
+                                    finish();
+                                }
+                            }, true);
                         }
                     }
                 });
@@ -620,84 +647,6 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
 
     @Override
     public void onChange() {
-    }
-
-    private class ClearFriendGetter extends FriendGetter {
-        public ClearFriendGetter(Context c, boolean destroyAll) {
-            super(c, destroyAll);
-            showProgressDialog();
-        }
-
-        @Override
-        protected void success() {
-            new ClearSyncUserSettings(DebugSettingsActivity.this);
-        }
-
-        @Override
-        protected void failure() {
-            dismissProgressDialog();
-            serverError();
-        }
-    }
-
-    private class ClearSyncWelcomedFriends extends RemoteStorageHandler.GetWelcomedFriends {
-
-        @Override
-        protected void gotWelcomedFriends(List<String> mkeys) {
-            if (mkeys != null && !mkeys.isEmpty()) {
-                List<Friend> friends = FriendFactory.getFactoryInstance().all();
-                for (Friend friend : friends) {
-                    String mkey = friend.getMkey();
-                    if (mkeys.contains(mkey)) {
-                        friend.setEverSent(true);
-                        mkeys.remove(mkey);
-                    } else {
-                        friend.setEverSent(false);
-                    }
-                }
-            }
-            RemoteStorageHandler.setWelcomedFriends();
-            Features features = new Features(DebugSettingsActivity.this);
-            features.checkAndUnlock();
-            RemoteStorageHandler.setUserSettings();
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    dismissProgressDialog();
-                    finish();
-                }
-            });
-        }
-
-        @Override
-        protected void failure() {
-            dismissProgressDialog();
-            serverError();
-        }
-    }
-
-    private class ClearSyncUserSettings extends RemoteStorageHandler.GetUserSettings {
-        private Features features;
-
-        ClearSyncUserSettings(FragmentActivity a) {
-            features = new Features(a);
-        }
-
-        @Override
-        protected void failure() {
-            dismissProgressDialog();
-            serverError();
-        }
-
-        @Override
-        protected void gotUserSettings(@Nullable UserSettings settings) {
-            if (settings != null && settings.openedFeatures != null) {
-                for (String openedFeature : settings.openedFeatures) {
-                    features.unlockByName(openedFeature);
-                }
-            }
-            new ClearSyncWelcomedFriends();
-        }
     }
 
     private void showProgressDialog() {

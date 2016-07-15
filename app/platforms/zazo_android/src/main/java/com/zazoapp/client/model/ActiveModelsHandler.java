@@ -2,11 +2,13 @@ package com.zazoapp.client.model;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.util.Log;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.dispatch.Dispatch;
+import com.zazoapp.client.ui.helpers.RegistrationHelper;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 
 import java.io.File;
@@ -79,6 +81,10 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     }
 
     public void checkAndNormalize() {
+        if (UserFactory.getFactoryInstance().hasInstances() && !User.isRegistered(context) && !TextUtils.isEmpty(UserFactory.getCurrentUserMkey())) {
+            new RegistrationHelper(context).sync(null, false);
+            Dispatch.dispatch("Restore not completely registered user");
+        }
         if (friendFactory.checkAndNormalize()) {
             save(friendFactory);
         }
@@ -146,18 +152,22 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
 
     public <K extends ActiveModel, T extends ActiveModelFactory<K>> void save(T factory) {
         final String model = factory.getModelClass().getSimpleName();
-        if (factory.hasInstances()) {
-            Log.i(TAG, String.format("Saving %s to local storage: %d", model, factory.count()));
-            factory.save(context);
+        if (!factory.isLoaded()) {
+            Dispatch.dispatch(new IllegalStateException("Trying to save not loaded model"), null);
         } else {
-            Log.i(TAG, String.format("Not Saving %s. No instances found", model));
-            if (User.class.equals(factory.getModelClass())) {
-                File userFactoryFile = new File(factory.getSaveFilePath(context));
-                if (userFactoryFile.exists()) {
-                    Dispatch.dispatchFileContent(userFactoryFile, "Deleting existing user factory file", new RuntimeException());
+            if (factory.hasInstances()) {
+                Log.i(TAG, String.format("Saving %s to local storage: %d", model, factory.count()));
+                factory.save(context);
+            } else {
+                Log.i(TAG, String.format("Not Saving %s. No instances found", model));
+                if (User.class.equals(factory.getModelClass())) {
+                    File userFactoryFile = new File(factory.getSaveFilePath(context));
+                    if (userFactoryFile.exists()) {
+                        Dispatch.dispatchFileContent(userFactoryFile, "Deleting existing user factory file", new RuntimeException());
+                    }
                 }
+                factory.deleteSaveFile(context);
             }
-            factory.deleteSaveFile(context);
         }
     }
 

@@ -14,6 +14,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import com.zazoapp.client.asr.NuanceASRProvider;
 import com.zazoapp.client.asr.VoiceTranscriptor;
@@ -27,6 +28,7 @@ import com.zazoapp.client.model.IncomingVideoFactory;
 import com.zazoapp.client.model.OutgoingVideo;
 import com.zazoapp.client.model.OutgoingVideoFactory;
 import com.zazoapp.client.model.User;
+import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.model.Video;
 import com.zazoapp.client.network.DeleteFriendRequest;
 import com.zazoapp.client.network.FileDownloadService;
@@ -35,6 +37,8 @@ import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
+import com.zazoapp.client.ui.helpers.GridElementMenuOption;
+import com.zazoapp.client.ui.helpers.RegistrationHelper;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.Logger;
@@ -80,6 +84,10 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         networkReceiver = new NetworkReceiver();
         IntentFilter networkIntentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(networkReceiver, networkIntentFilter);
+        if (UserFactory.getFactoryInstance().hasInstances() && !User.isRegistered(getApplicationContext()) && !TextUtils.isEmpty(UserFactory.getCurrentUserMkey())) {
+            new RegistrationHelper(getApplicationContext()).sync(null, false);
+            Dispatch.dispatch("Restore not completely registered user");
+        }
         restoreTransferring();
     }
 
@@ -422,7 +430,11 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
             if (status == IncomingVideo.Status.DOWNLOADED) {
                 transferTasks.removeDownloadId(videoId);
-                extractVoice(friend, videoId);
+                if (GridElementMenuOption.TRANSCRIPT.isEnabled()) {
+                    extractVoice(friend, videoId);
+                } else {
+                    status = IncomingVideo.Status.READY_TO_VIEW;
+                }
             }
             if (status == IncomingVideo.Status.READY_TO_VIEW) {
 

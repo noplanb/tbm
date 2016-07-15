@@ -483,6 +483,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (friend == null || !friend.hasIncomingPlayableVideos()) {
             return false;
         }
-        return true/*Features.Feature.PLAY_FULLSCREEN.isUnlocked(activity)*/;
+        return GridElementMenuOption.getAllEnabled().size() > 0/*Features.Feature.PLAY_FULLSCREEN.isUnlocked(activity)*/;
     }
 }

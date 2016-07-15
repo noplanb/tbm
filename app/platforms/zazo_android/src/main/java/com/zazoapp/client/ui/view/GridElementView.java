@@ -286,5 +286,6 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     public void showOverflow(boolean visible) {
         btnOverflow.setVisibility(visible ? VISIBLE : GONE);
         overflowLeftBoundary.setVisibility(visible ? VISIBLE : GONE);
+        nameLayout.setClickable(visible);
     }
 }

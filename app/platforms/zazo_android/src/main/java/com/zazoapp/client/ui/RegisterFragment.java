@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -31,35 +30,27 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
-import com.zazoapp.client.core.FriendGetter;
-import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.debug.DebugSettingsActivity;
 import com.zazoapp.client.dispatch.ZazoAnalytics;
-import com.zazoapp.client.features.Features;
-import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.Contact;
-import com.zazoapp.client.model.Friend;
-import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
-import com.zazoapp.client.network.aws.S3CredentialsGetter;
 import com.zazoapp.client.ui.dialogs.EnterCodeDialogFragment;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.helpers.ContactsManager;
+import com.zazoapp.client.ui.helpers.RegistrationHelper;
 import com.zazoapp.client.ui.view.CountryCodeAdapter;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.StringUtils;
 
-import java.util.List;
-
 /**
  * Created by skamenkovych@codeminders.com on 11/10/2015.
  */
-public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFragment.Callbacks {
+public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFragment.Callbacks, RegistrationHelper.SyncCallbacks {
 
     public static final String TAG = RegisterFragment.class.getSimpleName();
 
@@ -294,6 +285,22 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         r.put(UserFactory.ServerParamKeys.MOBILE_NUMBER, e164);
         r.put(UserFactory.ServerParamKeys.VERIFICATION_CODE, verificationCode);
         return r;
+    }
+
+    @Override
+    public void onStartSyncing() {
+        showProgressDialog(R.string.dialog_syncing_title);
+    }
+
+    @Override
+    public void onSyncError() {
+        dismissProgressDialog();
+        serverError();
+    }
+
+    @Override
+    public void onSyncComplete() {
+        regComplete();
     }
 
     class Register extends HttpRequest {
@@ -531,63 +538,6 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         }
     }
 
-    private class RegSyncWelcomedFriends extends RemoteStorageHandler.GetWelcomedFriends {
-
-        @Override
-        protected void gotWelcomedFriends(List<String> mkeys) {
-            if (mkeys != null && !mkeys.isEmpty()) {
-                List<Friend> friends = FriendFactory.getFactoryInstance().all();
-                for (Friend friend : friends) {
-                    String mkey = friend.getMkey();
-                    if (mkeys.contains(mkey)) {
-                        friend.setEverSent(true);
-                        mkeys.remove(mkey);
-                    } else {
-                        friend.setEverSent(false);
-                    }
-                }
-            }
-            RemoteStorageHandler.setWelcomedFriends();
-            Features features = new Features(getActivity());
-            features.checkAndUnlock();
-            RemoteStorageHandler.setUserSettings();
-            getAWSCredentials();
-        }
-
-        @Override
-        protected void failure() {
-            dismissProgressDialog();
-            serverError();
-        }
-    }
-
-    private class RegSyncUserSettings extends RemoteStorageHandler.GetUserSettings {
-        private Features features;
-
-        RegSyncUserSettings() {
-            FragmentActivity activity = getActivity();
-            if (activity == null) {
-                features = new Features(activity);
-            }
-        }
-
-        @Override
-        protected void failure() {
-            dismissProgressDialog();
-            serverError();
-        }
-
-        @Override
-        protected void gotUserSettings(@Nullable UserSettings settings) {
-            if (settings != null && settings.openedFeatures != null && features != null) {
-                for (String openedFeature : settings.openedFeatures) {
-                    features.unlockByName(openedFeature);
-                }
-            }
-            new RegSyncWelcomedFriends();
-        }
-    }
-
     //---------------------
     // Add user and friends
     //---------------------
@@ -599,52 +549,10 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         user.set(User.Attributes.ID, params.get(UserFactory.ServerParamKeys.ID));
         user.set(User.Attributes.MKEY, params.get(UserFactory.ServerParamKeys.MKEY));
         user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
-        new RegFriendGetter(context, true).getFriends();
-    }
-
-    private class RegFriendGetter extends FriendGetter {
-        public RegFriendGetter(Context c, boolean destroyAll) {
-            super(c, destroyAll);
-            showProgressDialog(R.string.dialog_syncing_title);
-        }
-
-        @Override
-        protected void success() {
-            new RegSyncUserSettings();
-        }
-
-        @Override
-        protected void failure() {
-            dismissProgressDialog();
-            serverError();
-        }
-    }
-
-    //-------------------
-    // Get S3 credentials
-    //-------------------
-    private void getAWSCredentials(){
-        new RegS3CredentialsGetter(context);
-    }
-
-    private class RegS3CredentialsGetter extends S3CredentialsGetter {
-        public RegS3CredentialsGetter(Context c) {
-            super(c);
-        }
-        @Override
-        public void success() {
-            regComplete();
-        }
-        @Override
-        public void failure() {
-            dismissProgressDialog();
-            serverError();
-        }
+        new RegistrationHelper(context).sync(this, true);
     }
 
     private void regComplete() {
-        user.set(User.Attributes.REGISTERED, "true");
-        ActiveModelsHandler.getInstance(context).saveAll();
         dismissProgressDialog();
         ZazoAnalytics.trackEvent(AFInAppEventType.COMPLETE_REGISTRATION);
         ZazoAnalytics.setUser();
@@ -662,9 +570,6 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         if (requestCode == DEBUG_SCREEN_CODE) {
             countryCodeTxt.setText("");
             user = UserFactory.current_user();
-            if (User.isRegistered(context)) {
-                getAWSCredentials();
-            }
         }
     }
 
