@@ -151,6 +151,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         for (StatusCallbacks callbacks : statusCallbacks) {
             callbacks.onCompletion(friendId);
         }
+        needToNotifyCompletion = false;
     }
 
     @Override
@@ -959,6 +960,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     static abstract class BasePresenter implements Presenter {
         View rootLayout;
+        private boolean isPresenting;
         @Override
         public void stopPlayback() {
             VideoView videoView = getVideoView();
@@ -972,6 +974,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 videoView.setVideoURI(null);
                 videoView.suspend();
             }
+            isPresenting = false;
         }
 
         @Override
@@ -1012,7 +1015,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @Override
         public boolean isPlaying() {
             VideoView view = getVideoView();
-            return view != null && (view.isPlaying() || view.isPaused());
+            return view != null && (view.isPlaying() || view.isPaused()) || isPresenting;
         }
 
         @Override
@@ -1024,6 +1027,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         @Override
         public void doContentAppearing(Context context) {
+            isPresenting = true;
         }
     }
 
