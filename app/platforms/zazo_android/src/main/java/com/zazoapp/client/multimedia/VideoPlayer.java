@@ -213,7 +213,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 	private boolean start(){
 		Log.i(TAG, "start");
         needToNotifyCompletion = false;
-		determineIfDownloading();
 		setCurrentVideoToFirst();
 
 		if (videoId == null){
@@ -286,6 +285,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     private void setCurrentVideoToFirst() {
+        determineIfDownloading();
         playingVideos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
         setCurrentVideoId(Friend.getFirstVideoIdInList(playingVideos));
         currentVideoNumber = (videoId != null) ? 1 : 0;
@@ -293,6 +293,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     private void setCurrentVideoToNext() {
+        determineIfDownloading();
         playingVideos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
         int posId = Friend.getNextVideoPositionInList(videoId, playingVideos);
         currentVideoNumber = posId + 1;
@@ -301,6 +302,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     private void setCurrentVideoToPrevious() {
+        determineIfDownloading();
         playingVideos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
         int posId = Friend.getCurrentVideoPositionInList(videoId, playingVideos) - 1;
         if (posId < 0) {
