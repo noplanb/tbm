@@ -575,6 +575,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (videoRootLayout.equals(v)) {
                     stop();
                     return true;
+                } else if (zoomed) {
+                    return false; // Ignore longpress if it is in fullscreen
                 } else if (videoParentView.equals(v)) {
                     Object boxId = videoParentView.getTag(R.id.box_id);
                     if (boxId != null) {
@@ -588,6 +590,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             public boolean endLongpress(View v) {
                 if (videoRootLayout.equals(v)) {
                     return true;
+                }
+                if (zoomed) {
+                    return false; // Ignore longpress if it is in fullscreen
                 }
                 if (videoParentView.equals(v)) {
                     Object boxId = videoParentView.getTag(R.id.box_id);
