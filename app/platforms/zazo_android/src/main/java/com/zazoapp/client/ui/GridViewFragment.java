@@ -243,7 +243,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             return;
         }
 
-        if (IntentHandlerService.IntentActions.SHOW_AWARD.equals(action)) {
+        if (IntentHandlerService.IntentActions.SHOW_AWARD.equals(action) || IntentHandlerService.IntentActions.NONE.equals(action) && getManagerProvider().getFeatures().shouldShowAwardDialog()) {
             Logger.i(TAG, "handleIntentAction: show award");
             getManagerProvider().getTutorial().showAward();
             currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
