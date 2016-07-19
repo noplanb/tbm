@@ -782,23 +782,23 @@ public class Friend extends ActiveModel{
 
         switch (status){
             case OutgoingVideo.Status.NEW:
-                return sfn + " n...";
+                return "n... " + sfn;
             case OutgoingVideo.Status.QUEUED:
-                return sfn + " q...";
+                return "q... " + sfn;
             case OutgoingVideo.Status.UPLOADING:
-                if (count > 0){
-                    return sfn + " r" + count + "...";
+                if (count > 0) {
+                    return "r" + count + ".. " + sfn;
                 } else {
-                    return sfn + " u...";
+                    return "u... " + sfn;
                 }
             case OutgoingVideo.Status.UPLOADED:
-                return sfn + " .s..";
+                return ".s.. " + sfn;
             case OutgoingVideo.Status.DOWNLOADED:
-                return sfn + " ..p.";
+                return "..p. " + sfn;
             case OutgoingVideo.Status.VIEWED:
-                return sfn + " v!";
+                return "v! " + sfn;
             case OutgoingVideo.Status.FAILED_PERMANENTLY:
-                return sfn + " e!";
+                return "e! " + sfn;
         }
         return getUniqueName();
     }
