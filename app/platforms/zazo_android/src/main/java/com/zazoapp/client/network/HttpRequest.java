@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.utilities.AsyncTaskManager;
@@ -322,7 +323,8 @@ public class HttpRequest {
             }
         }
         rb.setUri(sUrl);
-
+        rb.addHeader("Device-Platform", "android");
+        rb.addHeader("App-Version", TbmApplication.getVersionNumber());
         HttpResponse response = http.execute(rb.build());
         HttpEntity entity = response.getEntity();
         if (entity != null) {
