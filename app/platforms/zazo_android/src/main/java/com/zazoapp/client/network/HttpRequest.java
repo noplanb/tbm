@@ -2,6 +2,7 @@ package com.zazoapp.client.network;
 
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
@@ -88,7 +89,24 @@ public class HttpRequest {
     public static boolean isFailure(String status){
         return !isSuccess(status);
     }
-    
+
+    private static String DEVICE_INFO = "";
+    static {
+        try {
+            DEVICE_INFO += Build.MANUFACTURER;
+        } catch (RuntimeException e) {
+        }
+        DEVICE_INFO += "\n";
+        try {
+            DEVICE_INFO += Build.MODEL;
+        } catch (RuntimeException e) {
+        }
+        DEVICE_INFO += "\n";
+        try {
+            DEVICE_INFO += Build.VERSION.RELEASE;
+        } catch (RuntimeException e) {
+        }
+    }
     //--------------
     // Instantiation
     //--------------
@@ -325,6 +343,7 @@ public class HttpRequest {
         rb.setUri(sUrl);
         rb.addHeader("Device-Platform", "android");
         rb.addHeader("App-Version", TbmApplication.getVersionNumber());
+        rb.addHeader("Device-Info", DEVICE_INFO);
         HttpResponse response = http.execute(rb.build());
         HttpEntity entity = response.getEntity();
         if (entity != null) {
