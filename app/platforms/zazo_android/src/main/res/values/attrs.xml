@@ -78,4 +78,9 @@
     <declare-styleable name="StatusIndicator">
         <attr name="ratio" format="float"/>
     </declare-styleable>
+
+    <declare-styleable name="AutoResizeEditText">
+        <attr name="min_text_size" format="dimension"/>
+        <attr name="add_ellipsis" format="boolean"/>
+    </declare-styleable>
 </resources>

@@ -41,6 +41,7 @@ public class LockScreenAlertActivity extends Activity {
     @InjectView(R.id.action_main_btn) Button mainButton;
     @InjectView(R.id.action_second_btn) Button secondButton;
     @InjectView(R.id.action_third_btn) Button thirdButton;
+    @InjectView(R.id.message_info_layout) View messageInfoLayout;
 
     private ThumbsHelper tHelper;
 	//-------------------

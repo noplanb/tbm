@@ -96,6 +96,7 @@
             android:name=".ui.LockScreenAlertActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
             android:theme="@style/AppTheme.LockScreen" />
         <activity
                 android:name=".debug.DebugSettingsActivity"
