@@ -8,8 +8,8 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.model.IncomingVideo;
-import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.model.IncomingMessage;
+import com.zazoapp.client.model.OutgoingMessage;
 import com.zazoapp.client.network.FileTransferService.IntentFields;
 import org.apache.commons.io.FileUtils;
 
@@ -110,7 +110,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		} catch (IOException e) {
 			Dispatch.dispatch("IOException..." + e.toString());
 			if (e.getClass().equals(FileNotFoundException.class)){
-				reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
+				reportStatus(intent, OutgoingMessage.Status.FAILED_PERMANENTLY);
 				return false;
 			} else {
 				return false;
@@ -118,7 +118,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		} finally {
 			con.disconnect();
 		}
-		reportStatus(intent, OutgoingVideo.Status.UPLOADED);
+		reportStatus(intent, OutgoingMessage.Status.UPLOADED);
 		return true;
 	}
 
@@ -136,7 +136,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		} catch (IOException e) {
 			Dispatch.dispatch("download: IOException: e.tostring " + e.toString());
 			if (e.getClass().equals(FileNotFoundException.class)){
-				reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
+				reportStatus(intent, IncomingMessage.Status.FAILED_PERMANENTLY);
 				return false;
 			} else {
 				return false;
@@ -144,7 +144,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 		}
         if (f.renameTo(FileUtils.getFile(filePath))) {
             Log.i(TAG, "download SUCCESS" + params.toString());
-            reportStatus(intent, IncomingVideo.Status.READY_TO_VIEW);
+            reportStatus(intent, IncomingMessage.Status.READY_TO_VIEW);
             return true;
         }
         Dispatch.dispatch("download: error renaming");

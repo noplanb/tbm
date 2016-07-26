@@ -13,7 +13,7 @@ import com.zazoapp.client.asr.VoiceTranscriptor;
 import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.model.IncomingMessage;
 import com.zazoapp.client.model.Transcription;
 import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.utilities.StringUtils;
@@ -29,7 +29,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private LayoutInflater layoutInflater;
     private Context context;
-    private List<IncomingVideo> messages;
+    private List<IncomingMessage> messages;
     private ASRProvider asrProvider = new NuanceASRProvider();
 
     private static final String TAG = MessageAdapter.class.getSimpleName();
@@ -38,12 +38,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private HashSet<String> submittedRequests = new HashSet<>();
 
-    public MessageAdapter(List<IncomingVideo> list, Context context) {
+    public MessageAdapter(List<IncomingMessage> list, Context context) {
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.messages = list;
         this.context = context.getApplicationContext();
         for (int i = 0; i < list.size(); i++) {
-            IncomingVideo video = list.get(i);
+            IncomingMessage video = list.get(i);
             Transcription transcription = video.getTranscription();
             if (Transcription.State.NONE.equals(transcription.state)) {
                 checkAndRequestTranscription(i, video);
@@ -68,7 +68,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         switch (holder.getType()) {
             case VIDEO:
                 final TranscriptionViewHolder h = (TranscriptionViewHolder) holder;
-                final IncomingVideo video = messages.get(position);
+                final IncomingMessage video = messages.get(position);
                 final Transcription transcription = video.getTranscription();
                 switch (transcription.state) {
                     case Transcription.State.NONE:
@@ -97,7 +97,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
     }
 
-    private void checkAndRequestTranscription(int position, IncomingVideo video) {
+    private void checkAndRequestTranscription(int position, IncomingMessage video) {
         Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
         if (friend != null) {
             File transcriptionFile = new File(friend.audioFromPath(video.getId()));
@@ -109,7 +109,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
     }
 
-    private void requestTranscriptionForVideo(final int position, final IncomingVideo video) {
+    private void requestTranscriptionForVideo(final int position, final IncomingMessage video) {
         VoiceTranscriptor transcriptor = new VoiceTranscriptor();
         Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
         transcriptor.extractVoiceFromVideo(friend.videoFromPath(video.getId()), asrProvider, new VoiceTranscriptor.ExtractionCallbacks() {
@@ -135,7 +135,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }, null);
     }
 
-    private void requestTranscriptionForVideo(final int position, final IncomingVideo video, String path) {
+    private void requestTranscriptionForVideo(final int position, final IncomingMessage video, String path) {
         VoiceTranscriptor transcriptor = new VoiceTranscriptor();
         transcriptor.requestTranscription(path, asrProvider, new ASRProvider.Callback() {
             private long startTime;
@@ -177,10 +177,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         return VideoIdUtils.timeStampFromVideoId(messages.get(position).getId()); // for smooth animation of still unviewed messages
     }
 
-    public void setList(List<IncomingVideo> list) {
+    public void setList(List<IncomingMessage> list) {
         this.messages = list;
         for (int i = 0; i < list.size(); i++) {
-            IncomingVideo video = list.get(i);
+            IncomingMessage video = list.get(i);
             if (!submittedRequests.contains(video.getId())) {
                 Transcription transcription = video.getTranscription();
                 if (Transcription.State.NONE.equals(transcription.state)) {
@@ -189,13 +189,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             }
         }
         submittedRequests.clear();
-        for (IncomingVideo video : list) {
+        for (IncomingMessage video : list) {
             submittedRequests.add(video.getId());
         }
     }
 
-    private int findPosition(IncomingVideo video) {
-        List<IncomingVideo> messagesList = messages;
+    private int findPosition(IncomingMessage video) {
+        List<IncomingMessage> messagesList = messages;
         for (int i = 0; i < messagesList.size(); i++) {
             if (video.equals(messagesList.get(i))) {
                 return i;

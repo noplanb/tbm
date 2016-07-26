@@ -1,7 +1,7 @@
 package com.zazoapp.client.network;
 
 import android.content.Intent;
-import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.model.IncomingMessage;
 
 public class FileDeleteService extends FileTransferService {
     private static final String TAG = FileDeleteService.class.getSimpleName();
@@ -20,6 +20,6 @@ public class FileDeleteService extends FileTransferService {
 
     @Override
     protected void maxRetriesReached(Intent intent) throws InterruptedException {
-        reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
+        reportStatus(intent, IncomingMessage.Status.FAILED_PERMANENTLY);
     }
 }

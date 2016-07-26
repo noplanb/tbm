@@ -23,7 +23,7 @@ public abstract class ActiveModel {
 
     private volatile boolean notifyOnChanged = true;
 
-	public void init(Context context){
+	protected void init(Context context){
 		this.context = context;
 		for(String atr : attributeList()){
 			attributes.put(atr, "");

@@ -3,6 +3,7 @@ package com.zazoapp.client.model;
 import android.content.Context;
 import android.text.TextUtils;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.core.MessageType;
 
 import java.io.File;
 
@@ -20,7 +21,7 @@ public final class ModelUpgradeHelper {
      */
     public static void upgradeTo2(ActiveModelsHandler handler, Context context) {
         String videoPath = Config.homeDirPath(context) + "/VideoFactory_saved_instances.json";
-        String incomingVideoPath = Config.homeDirPath(context) + "/"+ IncomingVideoFactory.class.getSimpleName() + "_saved_instances.json";
+        String incomingVideoPath = Config.homeDirPath(context) + "/"+ IncomingMessageFactory.class.getSimpleName() + "_saved_instances.json";
         File videoFile = new File(videoPath);
         if (videoFile.exists()) {
             videoFile.renameTo(new File(incomingVideoPath));
@@ -32,10 +33,10 @@ public final class ModelUpgradeHelper {
             String id = friend.getOutgoingVideoId();
             if (!TextUtils.isEmpty(id)) {
                 int status = friend.getOutgoingVideoStatus();
-                OutgoingVideo video = OutgoingVideoFactory.getFactoryInstance().makeInstance(context);
-                video.setVideoStatus(status);
-                video.set(Video.Attributes.ID, id);
-                video.set(Video.Attributes.FRIEND_ID, friend.getId());
+                OutgoingMessage video = OutgoingMessageFactory.getFactoryInstance().makeInstance(context);
+                video.setStatus(status);
+                video.set(Message.Attributes.ID, id);
+                video.set(Message.Attributes.FRIEND_ID, friend.getId());
             }
         }
     }
@@ -51,7 +52,7 @@ public final class ModelUpgradeHelper {
         ensureAll(handler);
         for (Friend friend : FriendFactory.getFactoryInstance().all()) {
             friend.setDeleted(false);
-            friend.setEverSent(OutgoingVideo.Status.isSent(friend.getOutgoingVideoStatus()));
+            friend.setEverSent(OutgoingMessage.Status.isSent(friend.getOutgoingVideoStatus()));
         }
     }
 
@@ -83,9 +84,29 @@ public final class ModelUpgradeHelper {
     private static void ensureAll(ActiveModelsHandler handler) {
         handler.ensureUser();
         handler.ensure(FriendFactory.getFactoryInstance());
-        handler.ensure(IncomingVideoFactory.getFactoryInstance());
+        handler.ensure(IncomingMessageFactory.getFactoryInstance());
         handler.ensure(GridElementFactory.getFactoryInstance());
-        handler.ensure(OutgoingVideoFactory.getFactoryInstance());
+        handler.ensure(OutgoingMessageFactory.getFactoryInstance());
     }
 
+    public static void upgradeTo7(ActiveModelsHandler handler, Context context) {
+        String oldPath = Config.homeDirPath(context) + "/IncomingVideoFactory_saved_instances.json";
+        String newPath = Config.homeDirPath(context) + "/"+ IncomingMessageFactory.class.getSimpleName() + "_saved_instances.json";
+        File videoFile = new File(oldPath);
+        if (videoFile.exists()) {
+            videoFile.renameTo(new File(newPath));
+        }
+        oldPath = Config.homeDirPath(context) + "/OutgoingVideoFactory_saved_instances.json";
+        newPath = Config.homeDirPath(context) + "/"+ OutgoingMessageFactory.class.getSimpleName() + "_saved_instances.json";
+        videoFile = new File(oldPath);
+        if (videoFile.exists()) {
+            videoFile.renameTo(new File(newPath));
+        }
+        ensureAll(handler);
+        for (IncomingMessage message : IncomingMessageFactory.getFactoryInstance().all()) {
+            if (TextUtils.isEmpty(message.getType())) {
+                message.setType(MessageType.VIDEO);
+            }
+        }
+    }
 }

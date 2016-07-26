@@ -10,7 +10,7 @@ import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.model.IncomingMessageFactory;
 import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.utilities.Convenience;
 
@@ -116,7 +116,7 @@ public enum HintType {
             switch (event) {
                 case LAUNCH:
                 case NEW_MESSAGE:
-                    int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
+                    int unviewedCount = IncomingMessageFactory.getFactoryInstance().allNotViewedCount();
                     if (event == TutorialEvent.LAUNCH) {
                         return hasOneFriend() && unviewedCount > 0 &&
                                 ((prefs.getBoolean(getPrefName(), true) && current == null) || current == PLAY);
@@ -155,7 +155,7 @@ public enum HintType {
                 case FRIEND_ADDED:
                 case VIDEO_VIEWED:
                     boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
-                    int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
+                    int unviewedCount = IncomingMessageFactory.getFactoryInstance().allNotViewedCount();
                     if (event == TutorialEvent.LAUNCH) {
                         return hasOneFriend() && unviewedCount == 0 &&
                                 ((firstInSession && current == null) || current == RECORD) && prefs.getBoolean(getPrefName(), true);
@@ -237,7 +237,7 @@ public enum HintType {
                         }
                     }
                 case MESSAGE_SENT:
-                    boolean allViewed = IncomingVideoFactory.getFactoryInstance().allNotViewedCount() == 0;
+                    boolean allViewed = IncomingMessageFactory.getFactoryInstance().allNotViewedCount() == 0;
                     boolean firstInSession = prefs.getBoolean(getPrefSessionName(), true);
                     return hasOneFriend() && firstInSession && allViewed && current == null;
             }

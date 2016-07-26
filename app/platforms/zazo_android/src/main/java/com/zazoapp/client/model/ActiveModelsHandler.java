@@ -20,14 +20,14 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     public static final String USER_REGISTERED = "user_registered";
     private static final String TAG = ActiveModelsHandler.class.getSimpleName();
     public static final String MODEL_VERSION_PREF = "model_version_pref";
-    public static final int MODEL_VERSION = 6;
+    public static final int MODEL_VERSION = 7;
 
     private static ActiveModelsHandler instance;
 
     private UserFactory userFactory;
     private FriendFactory friendFactory;
-    private IncomingVideoFactory incomingVideoFactory;
-    private OutgoingVideoFactory outgoingVideoFactory;
+    private IncomingMessageFactory incomingMessageFactory;
+    private OutgoingMessageFactory outgoingMessageFactory;
     private GridElementFactory gridElementFactory;
 
     private Context context;
@@ -58,18 +58,18 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     public void ensureAll() {
         userFactory = UserFactory.getFactoryInstance();
         friendFactory = FriendFactory.getFactoryInstance();
-        incomingVideoFactory = IncomingVideoFactory.getFactoryInstance();
+        incomingMessageFactory = IncomingMessageFactory.getFactoryInstance();
         gridElementFactory = GridElementFactory.getFactoryInstance();
-        outgoingVideoFactory = OutgoingVideoFactory.getFactoryInstance();
+        outgoingMessageFactory = OutgoingMessageFactory.getFactoryInstance();
         removeCallbacks();
         PreferencesHelper prefs = new PreferencesHelper(context);
         boolean upgraded = onUpgrade(prefs.getInt(MODEL_VERSION_PREF, 1), MODEL_VERSION);
         if (!upgraded) {
             ensureUser();
             ensure(friendFactory);
-            ensure(incomingVideoFactory);
+            ensure(incomingMessageFactory);
             ensure(gridElementFactory);
-            ensure(outgoingVideoFactory);
+            ensure(outgoingMessageFactory);
             if (prefs.getBoolean(USER_REGISTERED, false) && !User.isRegistered(context)) {
                 Dispatch.dispatch(new IllegalStateException("User was registered but lost its active models"), null);
                 Dispatch.dispatchUserInfo(context);
@@ -110,10 +110,10 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     public void retrieveAll() {
         retrieve(UserFactory.getFactoryInstance());
         retrieve(FriendFactory.getFactoryInstance());
-        retrieve(IncomingVideoFactory.getFactoryInstance());
-        Log.i(TAG, "retrieveAll: retrieved " + IncomingVideoFactory.getFactoryInstance().count() + "videos");
+        retrieve(IncomingMessageFactory.getFactoryInstance());
+        Log.i(TAG, "retrieveAll: retrieved " + IncomingMessageFactory.getFactoryInstance().count() + " messages");
         retrieve(GridElementFactory.getFactoryInstance());
-        retrieve(OutgoingVideoFactory.getFactoryInstance());
+        retrieve(OutgoingMessageFactory.getFactoryInstance());
     }
 
     public void destroyAll() {
@@ -191,6 +191,8 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
                 ModelUpgradeHelper.upgradeTo5(this, context);
             case 5:
                 ModelUpgradeHelper.upgradeTo6(this, context);
+            case 6:
+                ModelUpgradeHelper.upgradeTo7(this, context);
         }
         saveAll();
         return true;
@@ -205,8 +207,8 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
             case USER: return userFactory;
             case FRIEND: return friendFactory;
             case GRID_ELEMENT: return gridElementFactory;
-            case INCOMING_VIDEO: return incomingVideoFactory;
-            case OUTGOING_VIDEO: return outgoingVideoFactory;
+            case INCOMING_VIDEO: return incomingMessageFactory;
+            case OUTGOING_VIDEO: return outgoingMessageFactory;
             default: return null;
         }
     }
@@ -235,15 +237,15 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
 
     private List<ActiveModelFactory<?>> getFactories() {
         ArrayList<ActiveModelFactory<?>> factories = new ArrayList<>();
-        Collections.addAll(factories, userFactory, friendFactory, incomingVideoFactory, gridElementFactory, outgoingVideoFactory);
+        Collections.addAll(factories, userFactory, friendFactory, incomingMessageFactory, gridElementFactory, outgoingMessageFactory);
         return factories;
     }
 
     public enum Model {
         USER(User.class),
         FRIEND(Friend.class),
-        INCOMING_VIDEO(IncomingVideo.class),
-        OUTGOING_VIDEO(OutgoingVideo.class),
+        INCOMING_VIDEO(IncomingMessage.class),
+        OUTGOING_VIDEO(OutgoingMessage.class),
         GRID_ELEMENT(GridElement.class);
 
         private final Class<? extends ActiveModel> clazz;

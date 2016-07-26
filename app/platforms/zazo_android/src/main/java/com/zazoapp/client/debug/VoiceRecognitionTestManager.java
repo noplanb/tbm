@@ -31,9 +31,9 @@ import com.zazoapp.client.asr.VoiceTranscriptor;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.IncomingVideo;
-import com.zazoapp.client.model.IncomingVideoFactory;
-import com.zazoapp.client.model.Video;
+import com.zazoapp.client.model.IncomingMessage;
+import com.zazoapp.client.model.IncomingMessageFactory;
+import com.zazoapp.client.model.Message;
 import com.zazoapp.client.multimedia.ThumbnailRetriever;
 import com.zazoapp.client.utilities.Convenience;
 
@@ -68,7 +68,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
     @InjectView(R.id.nuance_transcription) TextView tvNuance;
     @InjectView(R.id.friends_selector) Spinner friendsSpinner;
 
-    private ArrayList<IncomingVideo> videos;
+    private ArrayList<IncomingMessage> videos;
     private LinkedTreeMap<String, String> transcriptions = new LinkedTreeMap<>();
     private int videoIndex = -1;
     private String transcriptionsPath;
@@ -81,11 +81,11 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
     }
 
     private void init() {
-        videos = IncomingVideoFactory.getFactoryInstance().all();
+        videos = IncomingMessageFactory.getFactoryInstance().all();
         if (!videos.isEmpty()) {
             videoIndex = 0;
         }
-        Collections.sort(videos, new Video.VideoTimestampReverseComparator<IncomingVideo>());
+        Collections.sort(videos, new Message.TimestampReverseComparator<IncomingMessage>());
         loadTranscriptions();
         loadFriends();
         setVideo();
@@ -98,12 +98,12 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
                 int friendId = (int) parent.getAdapter().getItemId(position);
                 if (friendId <= 0) {
                     selectedFriend = null;
-                    videos = IncomingVideoFactory.getFactoryInstance().all();
+                    videos = IncomingMessageFactory.getFactoryInstance().all();
                 } else {
                     selectedFriend = FriendFactory.getFactoryInstance().find(String.valueOf(friendId));
-                    videos = selectedFriend.getIncomingPlayableVideos();
+                    videos = selectedFriend.getIncomingPlayableMessages();
                 }
-                Collections.sort(videos, new Video.VideoTimestampReverseComparator<IncomingVideo>());
+                Collections.sort(videos, new Message.TimestampReverseComparator<IncomingMessage>());
                 videoIndex = 0;
                 setVideo();
             }
@@ -111,7 +111,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 selectedFriend = null;
-                videos = IncomingVideoFactory.getFactoryInstance().all();
+                videos = IncomingMessageFactory.getFactoryInstance().all();
                 videoIndex = 0;
                 setVideo();
             }
@@ -143,7 +143,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
             setNoVideos();
             return;
         }
-        IncomingVideo video = videos.get(videoIndex);
+        IncomingMessage video = videos.get(videoIndex);
         Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
         File videoFile = friend.videoFromFile(video.getId());
         int counter = 0;
@@ -217,7 +217,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
                 trProgressView = pbNuance;
                 break;
         }
-        final IncomingVideo video = videos.get(videoIndex);
+        final IncomingMessage video = videos.get(videoIndex);
         if (transcriptions.containsKey(video.getId())) {
             Transcription transcription = Transcription.fromJson(transcriptions.get(video.getId()));
             if (transcription.get(provider) != null) {
@@ -303,7 +303,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Transcription tr = list.get(which);
-                IncomingVideo video = IncomingVideoFactory.getFactoryInstance().find(videoIds.get(which));
+                IncomingMessage video = IncomingMessageFactory.getFactoryInstance().find(videoIds.get(which));
                 String strName;
                 if (video != null) {
                     strName = FriendFactory.getFactoryInstance().find(video.getFriendId()).getDisplayName() + " " + video.getId();
@@ -473,10 +473,10 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
             Friend friend = getItem(position);
             if (friend != null) {
                 h.name.setText(friend.getFullName());
-                h.num.setText("(" + friend.getIncomingPlayableVideos().size() + ")");
+                h.num.setText("(" + friend.getIncomingPlayableMessages().size() + ")");
             } else {
                 h.name.setText("All");
-                h.num.setText("(~" + IncomingVideoFactory.getFactoryInstance().count() + ")");
+                h.num.setText("(~" + IncomingMessageFactory.getFactoryInstance().count() + ")");
             }
 
             return convertView;

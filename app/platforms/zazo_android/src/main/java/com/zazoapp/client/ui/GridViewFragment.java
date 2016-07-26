@@ -22,7 +22,7 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
 import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.model.GridManager;
-import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.model.IncomingMessageFactory;
 import com.zazoapp.client.multimedia.CameraException;
 import com.zazoapp.client.multimedia.CameraManager;
 import com.zazoapp.client.multimedia.CameraManager.CameraExceptionHandler;
@@ -187,7 +187,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
     // -------------------------------
     private void checkAndShowHint() {
         if (FriendFactory.getFactoryInstance().count() > 0) {                   // has at least one friend
-            if (IncomingVideoFactory.getFactoryInstance().allNotViewedCount() > 0) {    // has at least one unviewed video
+            if (IncomingMessageFactory.getFactoryInstance().allNotViewedCount() > 0) {    // has at least one unviewed video
                 DialogShower.showHintDialog(getActivity(), getString(R.string.dialog_hint_title),
                         getString(R.string.dialog_play_hint_message));
             } else {

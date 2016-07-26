@@ -8,10 +8,10 @@ import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.IncomingVideo;
-import com.zazoapp.client.model.IncomingVideoFactory;
-import com.zazoapp.client.model.OutgoingVideo;
-import com.zazoapp.client.model.OutgoingVideoFactory;
+import com.zazoapp.client.model.IncomingMessage;
+import com.zazoapp.client.model.IncomingMessageFactory;
+import com.zazoapp.client.model.OutgoingMessage;
+import com.zazoapp.client.model.OutgoingMessageFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.NetworkConfig;
@@ -40,7 +40,7 @@ public class UserInfoCollector {
         PreferencesHelper userSettings = new PreferencesHelper(context, Settings.FILE_NAME);
         info.append(PreferencesHelper.toShortString("UserS", userSettings)).append("\n\n");
         ArrayList<Friend> friends = FriendFactory.getFactoryInstance().all();
-        ArrayList<IncomingVideo> incomingVideos = IncomingVideoFactory.getFactoryInstance().all();
+        ArrayList<IncomingMessage> incomingVideos = IncomingMessageFactory.getFactoryInstance().all();
         if (friends.size() > 0) {
             addRow(info, "Friends", "", "", "", "", "", "", "", "", "", "", "");
             addRow(info, "Name", "ID", "Has app", "IV !v #", "OV ID", "OV status", "Last event", "Thumb", "Dwnlding", "Deleted", "Connect.", "EverSent");
@@ -52,9 +52,9 @@ public class UserInfoCollector {
             list.add(friend.getFullName());
             list.add(friend.getId());
             list.add(friend.hasApp() ? "+" : "No app");
-            list.add(String.valueOf(friend.incomingVideoNotViewedCount()));
+            list.add(String.valueOf(friend.incomingMessagesNotViewedCount()));
             list.add(friend.getOutgoingVideoId());
-            list.add(OutgoingVideo.Status.toShortString(friend.getOutgoingVideoStatus()));
+            list.add(OutgoingMessage.Status.toShortString(friend.getOutgoingVideoStatus()));
             list.add((friend.getLastEventType() == Friend.VideoStatusEventType.OUTGOING) ? "OUT" : "IN");
             list.add(friend.thumbExists() ? "+" : "No thumb");
             list.add(friend.hasDownloadingVideo() ? "+" : "");
@@ -69,33 +69,33 @@ public class UserInfoCollector {
             addRow(info, "ID", "IV status", "Remote", "Exists", "Size");
         }
         for (Friend friend : friends) {
-            incomingVideos = friend.getIncomingVideos();
+            incomingVideos = friend.getIncomingMessages();
             if (!incomingVideos.isEmpty()) {
                 addRow(info, friend.getFullName(), "", "", "", "");
             }
-            for (IncomingVideo video : incomingVideos) {
+            for (IncomingMessage video : incomingVideos) {
                 List<String> list = new ArrayList<>();
                 list.add(video.getId());
-                list.add(IncomingVideo.Status.toShortString(video.getVideoStatus()));
-                list.add(String.valueOf(video.get(IncomingVideo.Attributes.REMOTE_STATUS)));
+                list.add(IncomingMessage.Status.toShortString(video.getStatus()));
+                list.add(String.valueOf(video.get(IncomingMessage.Attributes.REMOTE_STATUS)));
                 File file = friend.videoFromFile(video.getId());
                 list.add(String.valueOf(file.exists()));
                 list.add(file.exists() ? String.valueOf(file.length()) : "");
                 addRow(info, list.toArray(new String[list.size()]));
             }
         }
-        if (OutgoingVideoFactory.getFactoryInstance().count() > 0) {
+        if (OutgoingMessageFactory.getFactoryInstance().count() > 0) {
             info.append("\n");
             addRow(info, "Outgoing Videos", "", "", "");
             addRow(info, "ID", "Status", "Exists", "Size");
-            ArrayList<OutgoingVideo> videos;
+            ArrayList<OutgoingMessage> videos;
             for (Friend friend : friends) {
-                videos = OutgoingVideoFactory.getFactoryInstance().allWhere(OutgoingVideo.Attributes.FRIEND_ID, friend.getId());
+                videos = OutgoingMessageFactory.getFactoryInstance().allWhere(OutgoingMessage.Attributes.FRIEND_ID, friend.getId());
                 addRow(info, friend.getFullName(), "", "", "");
-                for (OutgoingVideo video : videos) {
+                for (OutgoingMessage video : videos) {
                     List<String> list = new ArrayList<>();
                     list.add(video.getId());
-                    list.add(OutgoingVideo.Status.toShortString(video.getVideoStatus()));
+                    list.add(OutgoingMessage.Status.toShortString(video.getStatus()));
                     File file = friend.videoToFile(video.getId());
                     list.add(String.valueOf(file.exists()));
                     list.add(file.exists() ? String.valueOf(file.length()) : "");

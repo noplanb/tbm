@@ -17,7 +17,7 @@ import com.zazoapp.client.dispatch.ZazoAnalytics;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.model.IncomingMessageFactory;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.ui.view.NineViewGroup;
@@ -69,7 +69,7 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
 
     public void onLaunch(final View view) {
         int friendsCount = FriendFactory.getFactoryInstance().count();
-        int unviewedMessages = IncomingVideoFactory.getFactoryInstance().allNotViewedCount();
+        int unviewedMessages = IncomingMessageFactory.getFactoryInstance().allNotViewedCount();
         Log.i(TAG, "onLaunch: friends " + friendsCount + " unviewed " + unviewedMessages);
         isLaunched = true;
         if (managers.getFeatures().shouldShowAwardDialog()) {

@@ -1,7 +1,7 @@
 package com.zazoapp.client.tests;
 
 import android.content.Intent;
-import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.model.OutgoingMessage;
 import com.zazoapp.client.network.FileUploadService;
 
 /**
@@ -16,10 +16,10 @@ public class FileUploadServiceTest extends FileUploadService {
         if (listener == null)
             return;
         switch (status) {
-            case OutgoingVideo.Status.FAILED_PERMANENTLY:
+            case OutgoingMessage.Status.FAILED_PERMANENTLY:
                 listener.onFailed();
                 break;
-            case OutgoingVideo.Status.UPLOADED:
+            case OutgoingMessage.Status.UPLOADED:
                 listener.onUploaded();
                 break;
         }

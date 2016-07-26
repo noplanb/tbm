@@ -19,8 +19,8 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
-import com.zazoapp.client.model.IncomingVideo;
-import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.model.IncomingMessage;
+import com.zazoapp.client.model.OutgoingMessage;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileTransferService.IntentFields;
 import com.zazoapp.client.network.IFileTransferAgent;
@@ -119,7 +119,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
         if (!DebugConfig.Bool.ALLOW_RESEND.get()) {
             file.delete(); // remove uploaded file
         }
-		fileTransferService.reportStatus(intent, OutgoingVideo.Status.UPLOADED);
+		fileTransferService.reportStatus(intent, OutgoingMessage.Status.UPLOADED);
 		return true;
 	}
 
@@ -139,7 +139,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 			handleClientException(e);
 			return notRetryableClientException(e);
 		} 
-		fileTransferService.reportStatus(intent, IncomingVideo.Status.DOWNLOADED);
+		fileTransferService.reportStatus(intent, IncomingMessage.Status.DOWNLOADED);
 		return true;
 	}
 	
@@ -192,9 +192,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
     private void reportClientException(AmazonClientException e) {
         if (notRetryableClientException(e)) {
             if (isDownload()) {
-                fileTransferService.reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
+                fileTransferService.reportStatus(intent, IncomingMessage.Status.FAILED_PERMANENTLY);
             } else if (isUpload()) {
-                fileTransferService.reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
+                fileTransferService.reportStatus(intent, OutgoingMessage.Status.FAILED_PERMANENTLY);
             }
             if (!isDelete()) {
                 Dispatch.dispatch(
@@ -222,9 +222,9 @@ public class S3FileTransferAgent implements IFileTransferAgent {
     private void reportServiceException(AmazonServiceException e) {
         if (notRetryableServiceException(e)) {
             if (isDownload()) {
-                fileTransferService.reportStatus(intent, IncomingVideo.Status.FAILED_PERMANENTLY);
+                fileTransferService.reportStatus(intent, IncomingMessage.Status.FAILED_PERMANENTLY);
             } else if (isUpload()) {
-                fileTransferService.reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
+                fileTransferService.reportStatus(intent, OutgoingMessage.Status.FAILED_PERMANENTLY);
             }
             if (!isDelete()) {
                 Log.e(TAG, e.toString());

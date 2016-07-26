@@ -13,8 +13,8 @@ import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.debug.DebugUtils;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.dispatch.UserInfoCollector;
-import com.zazoapp.client.model.IncomingVideo;
-import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.model.IncomingMessage;
+import com.zazoapp.client.model.OutgoingMessage;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.FileTransferService;
@@ -115,9 +115,9 @@ public class GcmIntentService extends IntentService {
         // Normalize from notification naming convention to internal.
         intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
         if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.DOWNLOADED)) {
-            intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingVideo.Status.DOWNLOADED);
+            intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingMessage.Status.DOWNLOADED);
         } else if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.VIEWED)) {
-            intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingVideo.Status.VIEWED);
+            intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingMessage.Status.VIEWED);
         } else {
             Dispatch.dispatch("handleVideoStatusUpdate: ERROR got unknow sent video status");
         }
@@ -131,7 +131,7 @@ public class GcmIntentService extends IntentService {
         Log.i(TAG, "handleVideoReceived:");
         // Normalize from notification naming convention to internal.
         intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
-        intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingVideo.Status.NEW);
+        intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingMessage.Status.NEW);
         intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID));
         startDataHolderService(intent);
     }

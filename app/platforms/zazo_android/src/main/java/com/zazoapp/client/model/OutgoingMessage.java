@@ -5,7 +5,7 @@ import android.content.Context;
 /**
  * Created by skamenkovych@codeminders.com on 5/29/2015.
  */
-public class OutgoingVideo extends Video {
+public class OutgoingMessage extends Message {
     /**
      * Normal state machine (one message): NEW -> QUEUED -> UPLOADING -> UPLOADED -> DOWNLOADED -(onViewed)-> VIEWED
      */
@@ -39,14 +39,14 @@ public class OutgoingVideo extends Video {
     }
 
     @Override
-    public void init(Context context) {
+    protected void init(Context context) {
         super.init(context);
-        setVideoStatus(Status.NONE);
+        setStatus(Status.NONE);
         setRetryCount(0);
     }
 
     public boolean isSent() {
-        int status = getVideoStatus();
+        int status = getStatus();
         return Status.isSent(status);
     }
 }

@@ -35,7 +35,7 @@ import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.IncomingVideo;
+import com.zazoapp.client.model.IncomingMessage;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.ui.BaseManagerProvider;
@@ -92,7 +92,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private PresenterHelper presenterHelper;
 
     private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
-    private List<IncomingVideo> playingVideos;
+    private List<IncomingMessage> playingMessages;
     private volatile boolean isSeekAllowed = true;
     private boolean needToNotifyCompletion;
 
@@ -243,7 +243,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             return;
         }
         // Always set it to viewed whether it is playable or not so it eventually gets deleted.
-        friend.setAndNotifyIncomingVideoStatus(videoId, IncomingVideo.Status.VIEWED);
+        friend.setAndNotifyIncomingVideoStatus(videoId, IncomingMessage.Status.VIEWED);
 
         if (videoIsPlayable()) {
             managerProvider.getAudioController().setSpeakerPhoneOn(true);
@@ -286,39 +286,39 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     private void setCurrentVideoToFirst() {
         determineIfDownloading();
-        playingVideos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
-        setCurrentVideoId(Friend.getFirstVideoIdInList(playingVideos));
+        playingMessages = (videosAreDownloading) ? friend.getSortedIncomingNotViewedMessages() : friend.getSortedIncomingPlayableMessages();
+        setCurrentVideoId(Friend.getFirstMessageIdInList(playingMessages));
         currentVideoNumber = (videoId != null) ? 1 : 0;
-        numberOfVideos = playingVideos.size();
+        numberOfVideos = playingMessages.size();
     }
 
     private void setCurrentVideoToNext() {
         determineIfDownloading();
-        playingVideos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
-        int posId = Friend.getNextVideoPositionInList(videoId, playingVideos);
+        playingMessages = (videosAreDownloading) ? friend.getSortedIncomingNotViewedMessages() : friend.getSortedIncomingPlayableMessages();
+        int posId = Friend.getNextMessagePositionInList(videoId, playingMessages);
         currentVideoNumber = posId + 1;
-        numberOfVideos = playingVideos.size();
-        setCurrentVideoId((posId >= 0) ? playingVideos.get(posId).getId() : null);
+        numberOfVideos = playingMessages.size();
+        setCurrentVideoId((posId >= 0) ? playingMessages.get(posId).getId() : null);
     }
 
     private void setCurrentVideoToPrevious() {
         determineIfDownloading();
-        playingVideos = (videosAreDownloading) ? friend.getSortedIncomingNotViewedVideos() : friend.getSortedIncomingPlayableVideos();
-        int posId = Friend.getCurrentVideoPositionInList(videoId, playingVideos) - 1;
+        playingMessages = (videosAreDownloading) ? friend.getSortedIncomingNotViewedMessages() : friend.getSortedIncomingPlayableMessages();
+        int posId = Friend.getCurrentMessagePositionInList(videoId, playingMessages) - 1;
         if (posId < 0) {
             return;
         }
         currentVideoNumber = posId + 1;
-        numberOfVideos = playingVideos.size();
-        setCurrentVideoId((posId >= 0) ? playingVideos.get(posId).getId() : null);
+        numberOfVideos = playingMessages.size();
+        setCurrentVideoId((posId >= 0) ? playingMessages.get(posId).getId() : null);
     }
 
     private void jumpToVideo(int pos) {
-        if (playingVideos == null || playingVideos.isEmpty() || pos < 0 || playingVideos.size() < pos || pos + 1 == currentVideoNumber) {
+        if (playingMessages == null || playingMessages.isEmpty() || pos < 0 || playingMessages.size() < pos || pos + 1 == currentVideoNumber) {
             return;
         }
         currentVideoNumber = pos + 1;
-        setCurrentVideoId(playingVideos.get(pos).getId());
+        setCurrentVideoId(playingMessages.get(pos).getId());
     }
 
     private void setCurrentVideoId(String videoId) {
@@ -1009,7 +1009,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         player.cancelWaitingForStart();
                         mp.reset();
                         player.onCompletion(mp);
-                        //friend.setAndNotifyIncomingVideoStatus(brokenVideoId, IncomingVideo.Status.FAILED_PERMANENTLY);
+                        //friend.setAndNotifyIncomingVideoStatus(brokenVideoId, IncomingMessage.Status.FAILED_PERMANENTLY);
                         player.notifyPlaybackError();
                         Dispatch.dispatch(String.format("Error while playing video %s %d %d", brokenVideoId, what, extra));
                         return true;
@@ -1198,10 +1198,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         RecyclerView rv = ((TranscriptionPresenter) currentPresenter).transcription;
                         MessageAdapter adapter = (MessageAdapter) rv.getAdapter();
                         if (adapter == null) {
-                            adapter = new MessageAdapter(playingVideos, view.getContext());
+                            adapter = new MessageAdapter(playingMessages, view.getContext());
                             rv.setAdapter(adapter);
                         } else {
-                            adapter.setList(playingVideos);
+                            adapter.setList(playingMessages);
                             adapter.notifyDataSetChanged();
                         }
                     }

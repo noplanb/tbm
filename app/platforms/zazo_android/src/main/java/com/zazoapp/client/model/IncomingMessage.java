@@ -7,7 +7,7 @@ import com.zazoapp.client.network.HttpRequest;
 
 import java.util.List;
 
-public class IncomingVideo extends Video {
+public class IncomingMessage extends Message {
 
     /**
      * Normal state machine: QUEUED -> NEW <-> DOWNLOADING -> READY_TO_VIEW -(onViewed)-> VIEWED
@@ -39,7 +39,7 @@ public class IncomingVideo extends Video {
         }
     }
 
-    public static class Attributes extends Video.Attributes {
+    public static class Attributes extends Message.Attributes {
         public static final String REMOTE_STATUS  = "remote_status";
         private static final String TRANSCRIPTION = "transcription";
     }
@@ -60,23 +60,23 @@ public class IncomingVideo extends Video {
     }
 
     @Override
-    public void init(Context context) {
+    protected void init(Context context) {
         super.init(context);
-        setVideoStatus(Status.NONE);
+        setStatus(Status.NONE);
         setRemoteStatus(RemoteStatus.EXISTS);
         setRetryCount(0);
     }
 
     public boolean isDownloaded() {
-        return getVideoStatus() == Status.READY_TO_VIEW || getVideoStatus() == Status.VIEWED;
+        return getStatus() == Status.READY_TO_VIEW || getStatus() == Status.VIEWED;
     }
 
     public boolean isFailed() {
-        return getVideoStatus() == Status.FAILED_PERMANENTLY;
+        return getStatus() == Status.FAILED_PERMANENTLY;
     }
 
     public void markForDeletion() {
-        setVideoStatus(Status.MARKED_FOR_DELETION);
+        setStatus(Status.MARKED_FOR_DELETION);
         if (RemoteStatus.EXISTS.equals(get(Attributes.REMOTE_STATUS))) {
             setRemoteStatus(RemoteStatus.DELETE_KV);
         }

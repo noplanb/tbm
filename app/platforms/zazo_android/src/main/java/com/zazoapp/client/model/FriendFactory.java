@@ -239,7 +239,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
     public void destroyAll(Context context) {
         for (ActiveModel a : instances) {
             Friend f = (Friend) a;
-            f.deleteAllVideos();
+            f.deleteAllIncoming();
             f.deleteThumb();
         }
 

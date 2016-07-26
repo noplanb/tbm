@@ -17,8 +17,8 @@ import com.zazoapp.client.model.ActiveModel;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
-import com.zazoapp.client.model.IncomingVideo;
-import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.model.IncomingMessage;
+import com.zazoapp.client.model.OutgoingMessage;
 import com.zazoapp.client.multimedia.PlayOptions;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.notification.NotificationAlertManager;
@@ -105,12 +105,12 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         // As it has thumb it must have friend, so play/stop video if there are any.
         // Otherwise show toast "Video is not playable"
         Friend friend = gridElement.getFriend();
-        if (friend.hasIncomingPlayableVideos()) {
+        if (friend.hasIncomingPlayableMessages()) {
             if (managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId(), 0)) {
                 managerProvider.getTutorial().onVideoStartPlaying();
             }
             managerProvider.getTutorial().onVideoStartPlayingByUser();
-        } else if (friend.getIncomingNotViewedVideos().isEmpty()){
+        } else if (friend.getIncomingNotViewedMessages().isEmpty()){
             GridElementAnimation.holdToRec(gridElementView).start();
         } else {
             DialogShower.showToast(activity, R.string.video_is_not_playable);
@@ -229,11 +229,11 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             return;
         }
         gridElementView.showEmpty(false, false);
-        int unreadMsgCount = friend.incomingVideoNotViewedCount();
+        int unreadMsgCount = friend.incomingMessagesNotViewedCount();
         boolean lastEventOutgoing = friend.getLastEventType() == Friend.VideoStatusEventType.OUTGOING;
 
         boolean showNewMessages = unreadMsgCount > 0 && !isVideoPlaying;
-        boolean showVideoViewed = friend.getOutgoingVideoStatus() == OutgoingVideo.Status.VIEWED
+        boolean showVideoViewed = friend.getOutgoingVideoStatus() == OutgoingMessage.Status.VIEWED
                 && !showNewMessages && lastEventOutgoing;
         gridElementView.setVideoViewed(showVideoViewed);
         if (showVideoViewed) {
@@ -272,7 +272,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (friend == null) {
             return;
         }
-        int unreadMsgCount = friend.incomingVideoNotViewedCount();
+        int unreadMsgCount = friend.incomingMessagesNotViewedCount();
         boolean showNewMessages = unreadMsgCount > 0 && !isVideoPlaying;
         gridElementView.setUnreadCountWithAnimation(showNewMessages, unreadMsgCount, endAction);
     }
@@ -305,7 +305,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             @Override
             public void run() {
                 switch (status) {
-                    case IncomingVideo.Status.READY_TO_VIEW:
+                    case IncomingMessage.Status.READY_TO_VIEW:
                         if (gridElementView.isReadyToAnimate() && statusChanged) {
                             // sound only if activity is really visible to user
                             if (!(NotificationAlertManager.screenIsLocked(activity) ||
@@ -345,13 +345,13 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             @Override
             public void run() {
                 switch (status) {
-                    case OutgoingVideo.Status.QUEUED:
+                    case OutgoingMessage.Status.QUEUED:
                         updateContent(true, force);
                         gridElementView.animateUploading(new Runnable() {
                             @Override
                             public void run() {
                                 updateContent(false, force);
-                                if (gridElement.getFriend().incomingVideoNotViewedCount() == 0) {
+                                if (gridElement.getFriend().incomingMessagesNotViewedCount() == 0) {
                                     managerProvider.getTutorial().onVideoSentIndicatorShowed(gridElementView);
                                 } else {
                                     managerProvider.getTutorial().onNewMessage(gridElementView);
@@ -360,7 +360,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                             }
                         });
                         break;
-                    case OutgoingVideo.Status.VIEWED:
+                    case OutgoingMessage.Status.VIEWED:
                         gridElementView.showUploadingMark(false);
                         updateContent(false, force);
                         if (statusChanged && !force) {
@@ -386,9 +386,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (result) {
             int lastEventType = friend.getLastEventType();
             int outgoingStatus = friend.getOutgoingVideoStatus();
-            result = (outgoingStatus != OutgoingVideo.Status.NONE &&
-                    outgoingStatus != OutgoingVideo.Status.VIEWED &&
-                    outgoingStatus != OutgoingVideo.Status.FAILED_PERMANENTLY &&
+            result = (outgoingStatus != OutgoingMessage.Status.NONE &&
+                    outgoingStatus != OutgoingMessage.Status.VIEWED &&
+                    outgoingStatus != OutgoingMessage.Status.FAILED_PERMANENTLY &&
                     lastEventType == Friend.VideoStatusEventType.OUTGOING);
         }
         return result;
@@ -401,9 +401,9 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             int lastEventType = friend.getLastEventType();
             int incomingStatus = friend.getIncomingVideoStatus();
             result = lastEventType == Friend.VideoStatusEventType.INCOMING &&
-                    (incomingStatus == IncomingVideo.Status.DOWNLOADING ||
-                            incomingStatus == IncomingVideo.Status.NEW ||
-                            incomingStatus == IncomingVideo.Status.QUEUED);
+                    (incomingStatus == IncomingMessage.Status.DOWNLOADING ||
+                            incomingStatus == IncomingMessage.Status.NEW ||
+                            incomingStatus == IncomingMessage.Status.QUEUED);
         }
         return result;
     }
@@ -473,14 +473,14 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (friend == null || friend.getLastEventType() != Friend.VideoStatusEventType.INCOMING) {
             return "";
         }
-        IncomingVideo newestIncomingVideo = friend.newestIncomingVideo();
+        IncomingMessage newestIncomingVideo = friend.newestIncomingMessage();
         String videoTimestamp = (newestIncomingVideo != null) ? newestIncomingVideo.getId() : null;
         return StringUtils.getEventTime(videoTimestamp);
     }
 
     private boolean shouldShowOverflow() {
         Friend friend = gridElement.getFriend();
-        if (friend == null || !friend.hasIncomingPlayableVideos()) {
+        if (friend == null || !friend.hasIncomingPlayableMessages()) {
             return false;
         }
         return GridElementMenuOption.getAllEnabled().size() > 0/*Features.Feature.PLAY_FULLSCREEN.isUnlocked(activity)*/;

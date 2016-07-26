@@ -11,8 +11,8 @@ import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.Settings;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.debug.DebugConfig;
-import com.zazoapp.client.model.IncomingVideoFactory;
-import com.zazoapp.client.model.OutgoingVideoFactory;
+import com.zazoapp.client.model.IncomingMessageFactory;
+import com.zazoapp.client.model.OutgoingMessageFactory;
 import com.zazoapp.client.network.aws.S3FileTransferAgent;
 import com.zazoapp.client.utilities.Logger;
 
@@ -156,9 +156,9 @@ public abstract class FileTransferService extends IntentService {
         if (intent.hasExtra(IntentFields.VIDEO_ID_KEY)) {
             String videoId = intent.getStringExtra(IntentFields.VIDEO_ID_KEY);
             if (isDownload(intent)) {
-                Logger.i(TAG, "reportStatus D " + IncomingVideoFactory.getFactoryInstance().find(videoId));
+                Logger.i(TAG, "reportStatus D " + IncomingMessageFactory.getFactoryInstance().find(videoId));
             } else if (isUpload(intent)) {
-                Logger.i(TAG, "reportStatus U " + OutgoingVideoFactory.getFactoryInstance().find(videoId));
+                Logger.i(TAG, "reportStatus U " + OutgoingMessageFactory.getFactoryInstance().find(videoId));
             }
         }
         Intent newIntent = new Intent(intent);

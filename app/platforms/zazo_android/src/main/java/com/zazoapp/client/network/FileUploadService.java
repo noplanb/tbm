@@ -1,7 +1,7 @@
 package com.zazoapp.client.network;
 
 import android.content.Intent;
-import com.zazoapp.client.model.OutgoingVideo;
+import com.zazoapp.client.model.OutgoingMessage;
 
 public class FileUploadService extends FileTransferService {
     private static final String TAG = FileUploadService.class.getSimpleName();
@@ -13,13 +13,13 @@ public class FileUploadService extends FileTransferService {
     @Override
     protected boolean doTransfer(Intent intent) throws InterruptedException {
         intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_UPLOAD);
-        reportStatus(intent, OutgoingVideo.Status.UPLOADING);
+        reportStatus(intent, OutgoingMessage.Status.UPLOADING);
         return fileTransferAgent.upload();
     }
 
     @Override
     protected void maxRetriesReached(Intent intent) throws InterruptedException {
-        reportStatus(intent, OutgoingVideo.Status.FAILED_PERMANENTLY);
+        reportStatus(intent, OutgoingMessage.Status.FAILED_PERMANENTLY);
     }
 
 }

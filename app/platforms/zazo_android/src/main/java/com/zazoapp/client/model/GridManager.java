@@ -150,7 +150,7 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
         ArrayList<Friend> fog = friendsOnGrid();
         int emptySpaces = 0;
         for (Friend friend : fog) {
-            if (friend.incomingVideoNotViewed()) {
+            if (friend.incomingMessagesNotViewed()) {
                 emptySpaces++;
             }
         }
@@ -159,7 +159,7 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
         }
         ArrayList<Friend> friendsWithUnviewedOnBench = new ArrayList<>();
         for (Friend friend : FriendFactory.getFactoryInstance().allEnabled()) {
-            if (friend.incomingVideoNotViewed() && !fog.contains(friend)) {
+            if (friend.incomingMessagesNotViewed() && !fog.contains(friend)) {
                 friendsWithUnviewedOnBench.add(friend);
             }
         }
@@ -172,8 +172,8 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
     public class FriendRankComparator implements Comparator<Friend>{
 		@Override
 		public int compare(Friend lhs, Friend rhs) {
-            boolean lhsHasNotViewed = lhs.incomingVideoNotViewed();
-            boolean rhsHasNotViewed = rhs.incomingVideoNotViewed();
+            boolean lhsHasNotViewed = lhs.incomingMessagesNotViewed();
+            boolean rhsHasNotViewed = rhs.incomingMessagesNotViewed();
             if (lhsHasNotViewed && !rhsHasNotViewed) {
                 return 1;
             } else if (!lhsHasNotViewed && rhsHasNotViewed) {

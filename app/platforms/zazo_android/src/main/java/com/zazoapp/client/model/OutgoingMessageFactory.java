@@ -6,19 +6,19 @@ import java.util.ArrayList;
 /**
  * Created by skamenkovych@codeminders.com on 5/29/2015.
  */
-public class OutgoingVideoFactory extends ActiveModelFactory<OutgoingVideo>  {
+public class OutgoingMessageFactory extends ActiveModelFactory<OutgoingMessage>  {
 
-    private static OutgoingVideoFactory instance = null;
+    private static OutgoingMessageFactory instance = null;
 
-    public static OutgoingVideoFactory getFactoryInstance() {
+    public static OutgoingMessageFactory getFactoryInstance() {
         if (instance == null)
-            instance = new OutgoingVideoFactory();
+            instance = new OutgoingMessageFactory();
         return instance;
     }
 
     @Override
-    public Class<OutgoingVideo> getModelClass() {
-        return OutgoingVideo.class;
+    public Class<OutgoingMessage> getModelClass() {
+        return OutgoingMessage.class;
     }
 
     @Override
@@ -26,14 +26,14 @@ public class OutgoingVideoFactory extends ActiveModelFactory<OutgoingVideo>  {
         return false;
     }
 
-    public ArrayList<OutgoingVideo> allWithFriendId(String friendId) {
-        return allWhere(Video.Attributes.FRIEND_ID, friendId);
+    public ArrayList<OutgoingMessage> allWithFriendId(String friendId) {
+        return allWhere(Message.Attributes.FRIEND_ID, friendId);
     }
 
     public void deleteAllSent(String friendId) {
-        ArrayList<OutgoingVideo> videos = allWithFriendId(friendId);
-        for (OutgoingVideo video : videos) {
-            if (video.isSent() || video.getVideoStatus() == OutgoingVideo.Status.FAILED_PERMANENTLY) {
+        ArrayList<OutgoingMessage> videos = allWithFriendId(friendId);
+        for (OutgoingMessage video : videos) {
+            if (video.isSent() || video.getStatus() == OutgoingMessage.Status.FAILED_PERMANENTLY) {
                 Friend friend = FriendFactory.getFactoryInstance().find(friendId);
                 if (friend != null) {
                     File videoFile = friend.videoToFile(video.getId());

@@ -119,7 +119,7 @@ public class WelcomeMultipleFragment extends ZazoTopFragment implements View.OnT
         Iterator<Friend> it = friendsNotSent.iterator();
         while (it.hasNext()) {
             Friend friend = it.next();
-            if (friend.everSent() /*|| friend.isConnectionCreator() || friend.hasIncomingPlayableVideos()*/) {
+            if (friend.everSent() /*|| friend.isConnectionCreator() || friend.hasIncomingPlayableMessages()*/) {
                 it.remove();
             }
         }

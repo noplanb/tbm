@@ -22,8 +22,8 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
-import com.zazoapp.client.model.IncomingVideo;
-import com.zazoapp.client.model.IncomingVideoFactory;
+import com.zazoapp.client.model.IncomingMessage;
+import com.zazoapp.client.model.IncomingMessageFactory;
 import com.zazoapp.client.ui.LockScreenAlertActivity;
 import com.zazoapp.client.ui.MainActivity;
 
@@ -194,7 +194,7 @@ public class NotificationAlertManager {
 		PendingIntent playVideoIntent = PendingIntent.getActivity(context, 0,
                 makePlayVideoIntent(intent, context, friend), 0);
 
-        int unviewedCount = IncomingVideoFactory.getFactoryInstance().allNotViewedCount() + 1;
+        int unviewedCount = IncomingMessageFactory.getFactoryInstance().allNotViewedCount() + 1;
         String title = title(context, unviewedCount);
         NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
         notiStyle.bigText(formatFriendsList(context, friend, true));
@@ -214,14 +214,14 @@ public class NotificationAlertManager {
             PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, intent, 0);
             mBuilder.setContentIntent(openAppIntent);
             mBuilder.setContentText(formatFriendsList(context, friend, false));
-            if (unviewedCount == friend.incomingVideoNotViewedCount() + 1) {
+            if (unviewedCount == friend.incomingMessagesNotViewedCount() + 1) {
                 mBuilder.addAction(R.drawable.ic_action_view, context.getString(R.string.action_view), playVideoIntent);
             }
         } else {
             mBuilder.setContentIntent(playVideoIntent);
             mBuilder.setContentText(friend.getFullName());
         }
-        if (unviewedCount == friend.incomingVideoNotViewedCount() + 1) {
+        if (unviewedCount == friend.incomingMessagesNotViewedCount() + 1) {
             if (friend.thumbExists()) {
                 mBuilder.setLargeIcon(largeImage(friend));
             } else {
@@ -279,10 +279,10 @@ public class NotificationAlertManager {
     }
 
     private static String formatFriendsList(Context context, Friend friend, boolean longList) {
-        ArrayList<IncomingVideo> notViewedVideos = IncomingVideoFactory.getFactoryInstance().allNotViewed();
+        ArrayList<IncomingMessage> notViewedVideos = IncomingMessageFactory.getFactoryInstance().allNotViewed();
         Set<String> friendIds = new LinkedHashSet<>();
         friendIds.add(friend.getId());
-        for (IncomingVideo video : notViewedVideos) {
+        for (IncomingMessage video : notViewedVideos) {
             friendIds.add(video.getFriendId());
         }
         FriendFactory friends = FriendFactory.getFactoryInstance();

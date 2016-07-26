@@ -37,8 +37,8 @@ import com.zazoapp.client.model.ActiveModelsHandler;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElementFactory;
 import com.zazoapp.client.model.GridManager;
-import com.zazoapp.client.model.IncomingVideoFactory;
-import com.zazoapp.client.model.OutgoingVideoFactory;
+import com.zazoapp.client.model.IncomingMessageFactory;
+import com.zazoapp.client.model.OutgoingMessageFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.FriendFinderRequests;
@@ -327,8 +327,8 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                         if (input != null) {
                             Context context = DebugSettingsActivity.this;
                             FriendFactory.getFactoryInstance().destroyAll(context);
-                            IncomingVideoFactory.getFactoryInstance().destroyAll(context);
-                            OutgoingVideoFactory.getFactoryInstance().destroyAll(context);
+                            IncomingMessageFactory.getFactoryInstance().destroyAll(context);
+                            OutgoingMessageFactory.getFactoryInstance().destroyAll(context);
                             GridElementFactory.getFactoryInstance().destroyAll(context);
                             ActiveModelsHandler.getInstance(context).ensureAll();
                             GridManager.getInstance().initGrid(context);

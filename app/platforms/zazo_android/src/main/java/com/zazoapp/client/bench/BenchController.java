@@ -489,11 +489,11 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
                     holder.thumb.setFillColor(tHelper.getColor(item.displayName));
                     holder.thumbTitle.setText(friend.getInitials());
                 }
-                if (friend.incomingVideoNotViewedCount() > 0) {
+                if (friend.incomingMessagesNotViewedCount() > 0) {
                     holder.thumb.setBorderColorResource(R.color.primary);
                     holder.thumb.setBorderWidth((int) Convenience.dpToPx(context, 2.5f));
                     holder.thumb.setBorderOverlay(true);
-                    holder.twUnreadCount.setText(String.valueOf(friend.incomingVideoNotViewedCount()));
+                    holder.twUnreadCount.setText(String.valueOf(friend.incomingMessagesNotViewedCount()));
                     holder.unreadCountLayout.setVisibility(View.VISIBLE);
                 } else {
                     holder.thumb.setBorderWidth(0);
