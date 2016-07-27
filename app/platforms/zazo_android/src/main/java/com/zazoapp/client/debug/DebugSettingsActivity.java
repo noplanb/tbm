@@ -130,6 +130,14 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                 findViewById(R.id.crash_button_layout).setVisibility(isChecked ? View.VISIBLE : View.GONE);
             }
         });
+        Button sendMessage = ButterKnife.findById(this, R.id.send_test_message_button);
+        sendMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DebugUtils.showMessageWritingDialog(DebugSettingsActivity.this);
+            }
+        });
+        sendMessage.setEnabled(User.isRegistered(getApplicationContext()));
     }
 
     private void setUpServer() {

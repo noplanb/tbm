@@ -489,8 +489,8 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
             Holder(View v) {
                 ButterKnife.inject(this, v);
                 v.setTag(this);
-                name.setTextColor(Color.LTGRAY);
-                num.setTextColor(Color.LTGRAY);
+                name.setTextColor(Color.GRAY);
+                num.setTextColor(Color.GRAY);
             }
         }
     }

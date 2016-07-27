@@ -3,21 +3,32 @@ package com.zazoapp.client.debug;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Environment;
 import android.text.InputType;
 import android.util.Pair;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.Spinner;
+import butterknife.ButterKnife;
 import com.google.gson.Gson;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.Settings;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.IncomingMessage;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.multimedia.VideoIdUtils;
+import com.zazoapp.client.network.FileTransferService;
+import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.Logger;
@@ -224,6 +235,49 @@ public final class DebugUtils {
             }
         });
         builder.show();
+    }
+
+    public static void showMessageWritingDialog(final Context context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, AlertDialog.THEME_DEVICE_DEFAULT_DARK);
+        builder.setTitle("Enter code");
+        // Set up the input
+        View dialogBody = View.inflate(context, R.layout.send_test_message_dialog_body, null);
+        final EditText input = ButterKnife.findById(dialogBody, R.id.edit_box);
+        final Spinner friendSelector = ButterKnife.findById(dialogBody, R.id.friends_selector);
+        final VoiceRecognitionTestManager.FriendsSpinnerAdapter friendsAdapter = new VoiceRecognitionTestManager.FriendsSpinnerAdapter();
+        friendSelector.setAdapter(friendsAdapter);
+        builder.setView(dialogBody);
+        builder.setCancelable(false);
+        final AlertDialog dialog = builder.show();
+        // Set up the buttons
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int id = v.getId();
+                if (id == R.id.send || id == R.id.send_again) {
+                    Friend friend = (Friend) friendSelector.getSelectedItem();
+                    if (friend != null) {
+                        Intent intent = new Intent(context, IntentHandlerService.class);
+                        intent.putExtra(NotificationHandler.DataKeys.CONTENT_TYPE, MessageType.TEXT.getName());
+                        intent.putExtra(NotificationHandler.DataKeys.BODY, input.getText().toString());
+                        intent.putExtra("from_mkey", friend.getMkey());
+                        intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, VideoIdUtils.generateId());
+                        intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+                        intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingMessage.Status.NEW);
+                        intent.putExtra(IntentHandlerService.EXTRA_TEXT, true);
+                        context.startService(intent);
+                        DialogShower.showToast(context, "Sent");
+                        friendsAdapter.notifyDataSetChanged();
+                    }
+                }
+                if (id == R.id.cancel || id == R.id.send) {
+                    dialog.dismiss();
+                }
+            }
+        };
+        dialogBody.findViewById(R.id.cancel).setOnClickListener(listener);
+        dialogBody.findViewById(R.id.send_again).setOnClickListener(listener);
+        dialogBody.findViewById(R.id.send).setOnClickListener(listener);
     }
 
     public static int dispatchExtendedLogs(CharSequence start, CharSequence end) {

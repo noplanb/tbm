@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <Spinner
+            android:id="@+id/friends_selector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            style="@style/Widget.AppCompat.Spinner.DropDown"
+            android:clickable="true"/>
+    <com.zazoapp.client.ui.view.AutoResizeEditText
+            android:id="@+id/edit_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:min_text_size="@dimen/text_normal"
+            android:textSize="@dimen/text_large"
+            android:textColor="@color/white"
+            android:text="Test message"/>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right">
+        <Button
+                android:id="@+id/cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                style="?android:attr/buttonBarButtonStyle"/>
+        <Button
+                android:id="@+id/send_again"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Send again"
+                style="?android:attr/buttonBarButtonStyle"/>
+        <Button
+                android:id="@+id/send"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Send"
+                style="?android:attr/buttonBarButtonStyle"/>
+    </LinearLayout>
+</LinearLayout>

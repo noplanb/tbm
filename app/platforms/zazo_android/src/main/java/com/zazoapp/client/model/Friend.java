@@ -245,27 +245,32 @@ public class Friend extends ActiveModel{
         Convenience.saveTextToFile(text, File.IN_TEXT.getPath(this, messageId));
     }
 
-    public void deleteVideo(String videoId){
+    public void deleteMessage(String messageId){
         // Delete videoFile
-        File.IN_VIDEO.delete(this, videoId);
-        File.IN_AUDIO.delete(this, videoId);
+        File.IN_VIDEO.delete(this, messageId);
+        File.IN_AUDIO.delete(this, messageId);
+        File.IN_TEXT.delete(this, messageId);
         // Delete video object
         IncomingMessageFactory vf = IncomingMessageFactory.getFactoryInstance();
-        vf.delete(videoId);
+        vf.delete(messageId);
     }
 
-    public void deleteAllViewedVideos(){
+    public void deleteAllViewedMessages(){
         for (IncomingMessage v : getIncomingMessages()) {
             switch (v.getStatus()) {
                 case IncomingMessage.Status.VIEWED:
                 case IncomingMessage.Status.FAILED_PERMANENTLY:
-                    File.IN_VIDEO.delete(this, v.getId());
-                    File.IN_AUDIO.delete(this, v.getId());
+                    if (MessageType.TEXT.is(v.getType())) {
+                        File.IN_TEXT.delete(this, v.getId());
+                    } else {
+                        File.IN_VIDEO.delete(this, v.getId());
+                        File.IN_AUDIO.delete(this, v.getId());
+                    }
                     v.markForDeletion();
                 case IncomingMessage.Status.MARKED_FOR_DELETION:
                     v.deleteFromRemote();
                     if (v.isRemoteDeleted()) {
-                        deleteVideo(v.getId());
+                        deleteMessage(v.getId());
                     }
                     break;
             }
@@ -274,7 +279,7 @@ public class Friend extends ActiveModel{
 
     public void deleteAllIncoming(){
         for (IncomingMessage v : getIncomingMessages()){
-            deleteVideo(v.getId());
+            deleteMessage(v.getId());
         }
     }
 

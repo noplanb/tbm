@@ -272,6 +272,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         private String messageId;
         private int status;
         private int retryCount;
+        private boolean testIntent;
 
         public IntentHandler(Intent i) {
             // Convenience.printBundle(i.getExtras());
@@ -281,6 +282,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             messageId = intent.getStringExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY);
             status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
             retryCount = intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
+            testIntent = intent.getBooleanExtra(EXTRA_TEXT, false);
             if (i.getExtras() != null) {
                 Log.i(TAG, i.getExtras().toString());
             }
@@ -448,17 +450,19 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 }
             }
             if (status == IncomingMessage.Status.READY_TO_VIEW) {
+                if (!testIntent) {
+                    // Always delete the remote video even if the one we got is corrupted. Otherwise it may never be deleted
+                    deleteRemoteVideoAndKV();
 
-                // Always delete the remote video even if the one we got is corrupted. Otherwise it may never be deleted
-                deleteRemoteVideoAndKV();
+                    // Always set status for sender to downloaded and send status notification even if the video we got is not corrupted.
+                    RemoteStorageHandler.setRemoteIncomingVideoStatus(friend, messageId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
+                    NotificationHandler.sendForVideoStatusUpdate(friend, messageId, NotificationHandler.StatusEnum.DOWNLOADED);
+                }
+                if (messageType == MessageType.VIDEO) {
+                    friend.createThumb(messageId);
+                }
 
-                // Always set status for sender to downloaded and send status notification even if the video we got is not corrupted.
-                RemoteStorageHandler.setRemoteIncomingVideoStatus(friend, messageId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
-                NotificationHandler.sendForVideoStatusUpdate(friend, messageId, NotificationHandler.StatusEnum.DOWNLOADED);
-
-                friend.createThumb(messageId);
-
-                friend.deleteAllViewedVideos();
+                friend.deleteAllViewedMessages();
 
                 // if application is in foreground, alert is decided by GridElementController and connected to animation start
                 if (!TbmApplication.getInstance().isForeground() || Convenience.screenIsLockedOrOff(getApplicationContext())) {
@@ -566,6 +570,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         public static final String UNSUBSCRIBE = "unsubscribe";
         public static final String SUBSCRIBE = "subscribe";
     }
+
+    public static final String EXTRA_TEXT = "extra_test";
 
     public class NetworkReceiver extends BroadcastReceiver {
 

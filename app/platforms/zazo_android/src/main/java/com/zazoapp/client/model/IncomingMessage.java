@@ -2,6 +2,7 @@ package com.zazoapp.client.model;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.network.HttpRequest;
 
@@ -108,8 +109,10 @@ public class IncomingMessage extends Message {
             break;
             case RemoteStatus.KV_DELETED: {
                 // Note it is ok if deleting the file fails as s3 will clean itself up after a few days.
-                Friend friend = FriendFactory.getFactoryInstance().find(getFriendId());
-                friend.deleteRemoteVideo(getId());
+                if (MessageType.VIDEO.is(getType())) {
+                    Friend friend = FriendFactory.getFactoryInstance().find(getFriendId());
+                    friend.deleteRemoteVideo(getId());
+                }
                 setRemoteStatus(RemoteStatus.DELETED);
             }
             break;

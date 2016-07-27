@@ -240,6 +240,20 @@
                         android:text="Throw"/>
             </LinearLayout>
         </LinearLayout>
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+            <TextView
+                    style="@style/DevText"
+                    android:text="Send test message"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"/>
+            <Button
+                    android:id="@+id/send_test_message_button"
+                    style="@style/DevButton"
+                    android:text="Send..."/>
+        </LinearLayout>
 
         <LinearLayout style="@style/DevDivider.Layout">
             <View style="@style/DevDivider.Line"/><TextView style="@style/DevDivider.View" android:text="Customization"/><View style="@style/DevDivider.Line"/>

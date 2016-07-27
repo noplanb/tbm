@@ -20,6 +20,10 @@ public enum MessageType {
         return name;
     }
 
+    public boolean is(String type) {
+        return name.equalsIgnoreCase(type);
+    }
+
     public static MessageType getFromIntent(Intent intent) {
         if (intent.hasExtra(NotificationHandler.DataKeys.CONTENT_TYPE)) {
             String contentType = intent.getStringExtra(NotificationHandler.DataKeys.CONTENT_TYPE);

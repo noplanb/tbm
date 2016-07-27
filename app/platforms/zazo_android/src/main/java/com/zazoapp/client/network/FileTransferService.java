@@ -103,7 +103,7 @@ public abstract class FileTransferService extends IntentService {
 
     @Override
     public void onStart(Intent intent, int startId) {
-        if (RESET_ACTION.equals(intent.getAction())) {
+        if (intent != null && RESET_ACTION.equals(intent.getAction())) {
             Logger.i(TAG, OTAG + "Reset retries");
             retryCount.set(0);
             if (lock.tryLock()) {
