@@ -53,7 +53,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	@Override
 	public void setInstanceVariables(Intent intent) throws InterruptedException {
 		filename = intent.getStringExtra(IntentFields.FILE_NAME_KEY);
-        String videoId = intent.getStringExtra(IntentFields.VIDEO_ID_KEY);
+        String videoId = intent.getStringExtra(IntentFields.MESSAGE_ID_KEY);
         Logger.i(TAG, "setInstanceVariables: " + filename + " id " + videoId);
 		this.intent = intent;
 		String filePath = intent.getStringExtra(IntentFields.FILE_PATH_KEY);

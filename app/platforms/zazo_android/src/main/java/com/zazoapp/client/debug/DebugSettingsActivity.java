@@ -2,8 +2,6 @@ package com.zazoapp.client.debug;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,6 +28,7 @@ import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.RemoteStorageHandler;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.features.friendfinder.ContactsInfoCollector;
@@ -110,19 +109,16 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
     }
 
     private void setUpVersion() {
-        String versionName = "";
-        String versionCode = "";
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
-            versionName = info.versionName;
-            versionCode = String.valueOf(info.versionCode);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
         TextView versionView = (TextView) findViewById(R.id.version_name);
         TextView buildView = (TextView) findViewById(R.id.version_code);
-        versionView.setText(versionName);
-        buildView.setText(versionCode);
+        versionView.setText(TbmApplication.getVersion());
+        buildView.setText(TbmApplication.getVersionNumber());
+        TextView dbVersionView = (TextView) findViewById(R.id.db_version_number);
+        TextView dbRealView = (TextView) findViewById(R.id.db_version_real);
+        dbVersionView.setText(String.valueOf(ActiveModelsHandler.MODEL_VERSION));
+        PreferencesHelper p = new PreferencesHelper(this);
+        int version = p.getInt(ActiveModelsHandler.MODEL_VERSION_PREF, 1);
+        dbRealView.setText("(on card " + version + ")");
     }
 
     private void setUpDebugMode() {

@@ -292,7 +292,7 @@ public class Convenience {
         return false;
     }
 
-    public static void saveJsonToFile(String json, String path) {
+    public static void saveTextToFile(String json, String path) {
         try {
             File f = new File(path);
             if (f.exists())
@@ -308,7 +308,7 @@ public class Convenience {
         }
     }
 
-    public static String getJsonFromFile(String path) {
+    public static String getTextFromFile(String path) {
         String json;
         try {
             File f = new File(path);

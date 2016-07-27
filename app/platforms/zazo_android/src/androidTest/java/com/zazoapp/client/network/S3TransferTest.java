@@ -76,7 +76,7 @@ public class S3TransferTest extends ActivityInstrumentationTestCase2<MainActivit
 
         Intent i = new Intent(context, FileUploadServiceTest.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, FILE_ID);
-        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, FILE_ID);
+        i.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, FILE_ID);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, makeFileForUpload(context));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, FILE_NAME_KEY);
         // This is here so the old saving files on server vs s3 work
@@ -198,7 +198,7 @@ public class S3TransferTest extends ActivityInstrumentationTestCase2<MainActivit
         preparePathForDownloading(path);
         Intent i = new Intent(context, FileDownloadServiceTest.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, FILE_ID);
-        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, FILE_ID);
+        i.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, FILE_ID);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, path);
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, FILE_NAME_KEY);
         // This is here so the old saving files on server vs s3 work

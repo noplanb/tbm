@@ -70,7 +70,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
         }
         Gson g = new Gson();
         String j = g.toJson(all);
-        Convenience.saveJsonToFile(j, getSaveFilePath(context));
+        Convenience.saveTextToFile(j, getSaveFilePath(context));
         long time = System.currentTimeMillis() - start;
         Log.i(TAG, String.format("Saved %ss (%d) for %d ms", getModelClass().getSimpleName(), instances.size(), time));
         return j;
@@ -78,7 +78,7 @@ public abstract class ActiveModelFactory<T extends ActiveModel> implements Activ
 
     public synchronized boolean retrieve(Context context) {
         instances.clear();
-        String json = Convenience.getJsonFromFile(getSaveFilePath(context));
+        String json = Convenience.getTextFromFile(getSaveFilePath(context));
         isLoaded = true;
         if (json == null) {
             return false;

@@ -62,10 +62,10 @@ public class GcmIntentService extends IntentService {
                     // filter messages addressed to another server
                     if (Config.getServerHost().equalsIgnoreCase(extras.getString(NotificationHandler.DataKeys.SERVER_HOST))) {
                         String type = extras.getString(NotificationHandler.DataKeys.TYPE);
-                        if (NotificationHandler.TypeEnum.VIDEO_RECEIVED.equalsIgnoreCase(type)) {
-                            handleVideoReceived(intent);
-                        } else if (NotificationHandler.TypeEnum.VIDEO_STATUS_UPDATE.equalsIgnoreCase(type)) {
-                            handleVideoStatusUpdate(intent);
+                        if (NotificationHandler.TypeEnum.MESSAGE_RECEIVED.equalsIgnoreCase(type) || NotificationHandler.TypeEnum.VIDEO_RECEIVED.equalsIgnoreCase(type)) {
+                            handleMessageReceived(intent);
+                        } else if (NotificationHandler.TypeEnum.MESSAGE_STATUS_UPDATE.equalsIgnoreCase(type) || NotificationHandler.TypeEnum.VIDEO_STATUS_UPDATE.equalsIgnoreCase(type)) {
+                            handleMessageStatusUpdate(intent);
                         } else if (NotificationHandler.TypeEnum.FRIEND_JOINED.equalsIgnoreCase(type)) {
                             handleFriendJoined(intent);
                         } else if (NotificationHandler.TypeEnum.LOG_REQUEST.equalsIgnoreCase(type)) {
@@ -107,19 +107,26 @@ public class GcmIntentService extends IntentService {
     // ---------
     // Handle video status update
     // ---------
-    private void handleVideoStatusUpdate(Intent intent) {
+    private void handleMessageStatusUpdate(Intent intent) {
+        boolean messagesSupported = NotificationHandler.TypeEnum.MESSAGE_STATUS_UPDATE.equalsIgnoreCase(intent.getStringExtra(NotificationHandler.DataKeys.TYPE));
+
         String status = intent.getStringExtra(NotificationHandler.DataKeys.STATUS);
-        String videoId = intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID);
+        String videoId;
+        if (messagesSupported) {
+            videoId = intent.getStringExtra(NotificationHandler.DataKeys.MESSAGE_ID);
+        } else {
+            videoId = intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID);
+        }
         intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
 
         // Normalize from notification naming convention to internal.
-        intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, videoId);
         if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.DOWNLOADED)) {
             intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingMessage.Status.DOWNLOADED);
         } else if (status.equalsIgnoreCase(NotificationHandler.StatusEnum.VIEWED)) {
             intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingMessage.Status.VIEWED);
         } else {
-            Dispatch.dispatch("handleVideoStatusUpdate: ERROR got unknow sent video status");
+            Dispatch.dispatch("handleMessageStatusUpdate: ERROR got unknow sent video status");
         }
         startDataHolderService(intent);
     }
@@ -127,12 +134,16 @@ public class GcmIntentService extends IntentService {
     // --------
     // Handling video received
     // ---------
-    private void handleVideoReceived(Intent intent) {
-        Log.i(TAG, "handleVideoReceived:");
+    private void handleMessageReceived(Intent intent) {
+        Log.i(TAG, "handleMessageReceived:");
         // Normalize from notification naming convention to internal.
         intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
         intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingMessage.Status.NEW);
-        intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID));
+        if (intent.hasExtra(NotificationHandler.DataKeys.MESSAGE_ID)) {
+            intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.MESSAGE_ID));
+        } else {
+            intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, intent.getStringExtra(NotificationHandler.DataKeys.VIDEO_ID));
+        }
         startDataHolderService(intent);
     }
 

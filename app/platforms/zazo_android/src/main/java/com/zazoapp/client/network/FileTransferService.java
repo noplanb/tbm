@@ -45,7 +45,7 @@ public abstract class FileTransferService extends IntentService {
         public static final String FILE_NAME_KEY = "filename";
         public static final String PARAMS_KEY = "params";
         public static final String STATUS_KEY = "status";
-        public static final String VIDEO_ID_KEY = "videoIdKey";
+        public static final String MESSAGE_ID_KEY = "messageIdKey";
         public static final String METADATA = "metadata";
 
         public static final String TRANSFER_TYPE_UPLOAD = "upload";
@@ -153,8 +153,8 @@ public abstract class FileTransferService extends IntentService {
 
     public void reportStatus(Intent intent, int status) {
         Logger.i(TAG, OTAG + "reportStatus: " + status + " " + intent.getStringExtra(IntentFields.TRANSFER_TYPE_KEY));
-        if (intent.hasExtra(IntentFields.VIDEO_ID_KEY)) {
-            String videoId = intent.getStringExtra(IntentFields.VIDEO_ID_KEY);
+        if (intent.hasExtra(IntentFields.MESSAGE_ID_KEY)) {
+            String videoId = intent.getStringExtra(IntentFields.MESSAGE_ID_KEY);
             if (isDownload(intent)) {
                 Logger.i(TAG, "reportStatus D " + IncomingMessageFactory.getFactoryInstance().find(videoId));
             } else if (isUpload(intent)) {

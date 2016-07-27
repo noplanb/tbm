@@ -124,7 +124,7 @@ public class ServerFileTransferAgent implements IFileTransferAgent {
 
 	@Override
 	public boolean download() {
-		Log.i(TAG, "download videoId=" + intent.getStringExtra(IntentFields.VIDEO_ID_KEY) + " params=" + params.toString());
+		Log.i(TAG, "download videoId=" + intent.getStringExtra(IntentFields.MESSAGE_ID_KEY) + " params=" + params.toString());
 		File f = FileUtils.getFile(Config.downloadingFilePath(context));
 		try {
 			String urlWithParams = Config.fileDownloadUrl() + stringifyParams(params);

@@ -245,7 +245,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 Intent intent = new Intent(getApplicationContext(), IntentHandlerService.class);
                 intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
                 intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingMessage.Status.READY_TO_VIEW);
-                intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+                intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, videoId);
                 intent.putExtra(IntentParamKeys.FRIEND_ID, friend.getId());
                 startService(intent);
             }
@@ -269,7 +269,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         private Intent intent;
         private Friend friend;
         private String transferType;
-        private String videoId;
+        private String messageId;
         private int status;
         private int retryCount;
 
@@ -278,7 +278,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
             intent = i;
             friend = FriendFactory.getFactoryInstance().getFriendFromIntent(intent);
             transferType = intent.getStringExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY);
-            videoId = intent.getStringExtra(FileTransferService.IntentFields.VIDEO_ID_KEY);
+            messageId = intent.getStringExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY);
             status = intent.getIntExtra(FileTransferService.IntentFields.STATUS_KEY, -1);
             retryCount = intent.getIntExtra(FileTransferService.IntentFields.RETRY_COUNT_KEY, 0);
             if (i.getExtras() != null) {
@@ -354,22 +354,22 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 return;
             }
             if (status == OutgoingMessage.Status.NEW) {
-                if (!transferTasks.addUploadId(videoId)) {
+                if (!transferTasks.addUploadId(messageId)) {
                     Logger.w(TAG, "handleUploadIntent: Ignoring upload intent for video id that is currently in process.");
                     return;
                 }
-                friend.uploadVideo(videoId);
+                friend.uploadVideo(messageId);
             }
             updateStatus();
             if (status == OutgoingMessage.Status.UPLOADED) {
                 //// Set remote videoIdKV
-                //RemoteStorageHandler.addRemoteOutgoingVideoId(friend, videoId);
+                //RemoteStorageHandler.addRemoteOutgoingVideoId(friend, messageId);
                 //
                 //// Send outgoing notification
-                //NotificationHandler.sendForVideoReceived(friend, videoId);
+                //NotificationHandler.sendForVideoReceived(friend, messageId);
             }
             if (status == OutgoingMessage.Status.UPLOADED || status == OutgoingMessage.Status.FAILED_PERMANENTLY) {
-                transferTasks.removeUploadId(videoId);
+                transferTasks.removeUploadId(messageId);
             }
         }
 
@@ -379,10 +379,10 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         private void handleDownloadIntent() {
             Logger.i(TAG, "handleDownloadIntent " + status);
 
-            // if (VideoIdUtils.isOlderThanOldestIncomingVideo(friend, videoId)){
+            // if (VideoIdUtils.isOlderThanOldestIncomingVideo(friend, messageId)){
             // Log.w(TAG,
             // "handleDownloadIntent: Ignoring download intent for video id that is older than the current incoming video.");
-            // rSHandler.deleteRemoteVideoIdAndFile(friend, videoId);
+            // rSHandler.deleteRemoteVideoIdAndFile(friend, messageId);
             // return;
             // }
 
@@ -407,30 +407,42 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 });
                 return;
             }
-
+            MessageType messageType = MessageType.getFromIntent(intent);
             friend.setLastActionTime();
             friend.setHasApp();
 
             // Create and download the video if this was a videoReceived intent.
             if (status == IncomingMessage.Status.NEW) {
                 IncomingMessageFactory incomingVideos = IncomingMessageFactory.getFactoryInstance();
-                IncomingMessage video = incomingVideos.find(videoId);
-                if (video != null && video.getStatus() != IncomingMessage.Status.NEW || !transferTasks.addDownloadId(videoId)) {
+                IncomingMessage video = incomingVideos.find(messageId);
+                if (video != null && video.getStatus() != IncomingMessage.Status.NEW || !transferTasks.addDownloadId(messageId)) {
                     Log.w(TAG, "handleDownloadIntent: Ignoring download intent for video id that is currently in process.");
                     return;
                 }
-                if (Convenience.checkAndNotifyNoSpace(IntentHandlerService.this)) {
-                    friend.createIncomingVideo(getApplicationContext(), videoId);
-                    friend.downloadVideo(videoId);
-                } else {
-                    transferTasks.removeDownloadId(videoId);
+                switch (messageType) {
+                    case VIDEO:
+                        if (Convenience.checkAndNotifyNoSpace(IntentHandlerService.this)) {
+                            friend.createIncomingVideo(getApplicationContext(), messageId);
+                            friend.downloadVideo(messageId);
+                        } else {
+                            transferTasks.removeDownloadId(messageId);
+                        }
+                        break;
+                    case TEXT:
+                        if (intent.hasExtra(NotificationHandler.DataKeys.BODY)) {
+                            String body = intent.getStringExtra(NotificationHandler.DataKeys.BODY);
+                            friend.createIncomingText(getApplicationContext(), messageId, body);
+                            status = IncomingMessage.Status.READY_TO_VIEW;
+                            transferTasks.removeDownloadId(messageId);
+                        }
+                        break;
                 }
             }
 
             if (status == IncomingMessage.Status.DOWNLOADED) {
-                transferTasks.removeDownloadId(videoId);
+                transferTasks.removeDownloadId(messageId);
                 if (GridElementMenuOption.TRANSCRIPT.isEnabled()) {
-                    extractVoice(friend, videoId);
+                    extractVoice(friend, messageId);
                 } else {
                     status = IncomingMessage.Status.READY_TO_VIEW;
                 }
@@ -441,24 +453,24 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 deleteRemoteVideoAndKV();
 
                 // Always set status for sender to downloaded and send status notification even if the video we got is not corrupted.
-                RemoteStorageHandler.setRemoteIncomingVideoStatus(friend, videoId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
-                NotificationHandler.sendForVideoStatusUpdate(friend, videoId, NotificationHandler.StatusEnum.DOWNLOADED);
+                RemoteStorageHandler.setRemoteIncomingVideoStatus(friend, messageId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
+                NotificationHandler.sendForVideoStatusUpdate(friend, messageId, NotificationHandler.StatusEnum.DOWNLOADED);
 
-                friend.createThumb(videoId);
+                friend.createThumb(messageId);
 
                 friend.deleteAllViewedVideos();
 
                 // if application is in foreground, alert is decided by GridElementController and connected to animation start
                 if (!TbmApplication.getInstance().isForeground() || Convenience.screenIsLockedOrOff(getApplicationContext())) {
-                    NotificationAlertManager.alert(getApplicationContext(), friend, videoId);
+                    NotificationAlertManager.alert(getApplicationContext(), friend, messageId);
                 }
             }
 
             if (status == IncomingMessage.Status.FAILED_PERMANENTLY) {
                 Logger.i(TAG, "deleteRemoteVideoAndKV for a video that failed permanently");
                 deleteRemoteVideoAndKV();
-                transferTasks.removeDownloadId(videoId);
-                IncomingMessage video = IncomingMessageFactory.getFactoryInstance().find(videoId);
+                transferTasks.removeDownloadId(messageId);
+                IncomingMessage video = IncomingMessageFactory.getFactoryInstance().find(messageId);
                 if (video != null && video.isDownloaded()) {
                     // Do not update status as this video has been already downloaded
                     return;
@@ -503,7 +515,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         // Helpers
         //--------
         private void deleteRemoteVideoAndKV() {
-            IncomingMessage video = IncomingMessageFactory.getFactoryInstance().find(videoId);
+            IncomingMessage video = IncomingMessageFactory.getFactoryInstance().find(messageId);
             if (video != null) {
                 video.deleteFromRemote();
             }
@@ -511,11 +523,11 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
         public void updateStatus() {
             if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD)) {
-                friend.setAndNotifyIncomingVideoStatus(videoId, status);
-                friend.setAndNotifyDownloadRetryCount(videoId, retryCount);
+                friend.setAndNotifyIncomingVideoStatus(messageId, status);
+                friend.setAndNotifyDownloadRetryCount(messageId, retryCount);
             } else if (transferType.equals(FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD)) {
-                friend.setAndNotifyOutgoingVideoStatus(videoId, status);
-                friend.setAndNotifyUploadRetryCount(videoId, retryCount);
+                friend.setAndNotifyOutgoingVideoStatus(messageId, status);
+                friend.setAndNotifyUploadRetryCount(messageId, retryCount);
             } else {
                 Dispatch.dispatch("ERROR: updateStatus: unknown TransferType passed in intent. This should never happen.");
                 throw new RuntimeException();

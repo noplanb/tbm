@@ -234,6 +234,17 @@ public class Friend extends ActiveModel{
         v.setType(MessageType.VIDEO);
     }
 
+    public void createIncomingText(Context context, String messageId, String text){
+        if (hasIncomingMessageId(messageId))
+            return;
+        IncomingMessageFactory vf = IncomingMessageFactory.getFactoryInstance();
+        IncomingMessage v = vf.makeInstance(context);
+        v.set(Message.Attributes.FRIEND_ID, getId());
+        v.set(Message.Attributes.ID, messageId);
+        v.setType(MessageType.TEXT);
+        Convenience.saveTextToFile(text, File.IN_TEXT.getPath(this, messageId));
+    }
+
     public void deleteVideo(String videoId){
         // Delete videoFile
         File.IN_VIDEO.delete(this, videoId);
@@ -556,7 +567,7 @@ public class Friend extends ActiveModel{
         Intent i = new Intent(getContext(), FileUploadService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(videoId));
-        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        i.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this, videoId));
         i.putExtra(FileTransferService.IntentFields.METADATA, FileTransferService.MetaData.getMetadata(videoId, UserFactory.getCurrentUserMkey(), getMkey(), videoToFile(videoId)));
         // This is here so the old saving files on server vs s3 work
@@ -573,7 +584,7 @@ public class Friend extends ActiveModel{
 
         Intent i = new Intent(getContext(), FileDownloadService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
-        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        i.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         // This is here so the old saving files on server vs s3 work
@@ -586,7 +597,7 @@ public class Friend extends ActiveModel{
     public void deleteRemoteVideo(String videoId){
         Intent i = new Intent(getContext(), FileDeleteService.class);
         i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
-        i.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        i.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, videoId);
         i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoFromPath(videoId));
         i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.incomingVideoRemoteFilename(this, videoId));
         // This is here so the old saving files on server vs s3 work
@@ -600,7 +611,7 @@ public class Friend extends ActiveModel{
         Intent intent = new Intent(getContext(), IntentHandlerService.class);
         intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
         intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingMessage.Status.NEW);
-        intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, videoId);
         intent.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, getId());
         getContext().startService(intent);
     }
@@ -609,7 +620,7 @@ public class Friend extends ActiveModel{
         Intent intent = new Intent(getContext(), IntentHandlerService.class);
         intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_UPLOAD);
         intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, OutgoingMessage.Status.NEW);
-        intent.putExtra(FileTransferService.IntentFields.VIDEO_ID_KEY, videoId);
+        intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, videoId);
         intent.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, getId());
         getContext().startService(intent);
     }

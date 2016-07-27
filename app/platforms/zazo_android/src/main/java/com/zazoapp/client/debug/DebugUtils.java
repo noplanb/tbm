@@ -62,26 +62,26 @@ public final class DebugUtils {
         preferences.prefs = p.getAll();
         Gson gson = new Gson();
         String json = gson.toJson(preferences);
-        Convenience.saveJsonToFile(json, backupFolder() + File.separator + DebugConfig.DEBUG_SETTINGS + ".json");
+        Convenience.saveTextToFile(json, backupFolder() + File.separator + DebugConfig.DEBUG_SETTINGS + ".json");
 
         p = new PreferencesHelper(context, Settings.FILE_NAME);
         preferences = new Preferences();
         preferences.prefs = p.getAll();
         json = gson.toJson(preferences);
-        Convenience.saveJsonToFile(json, backupFolder() + File.separator + Settings.FILE_NAME + ".json");
+        Convenience.saveTextToFile(json, backupFolder() + File.separator + Settings.FILE_NAME + ".json");
 
         p = new PreferencesHelper(context);
         int version = p.getInt(ActiveModelsHandler.MODEL_VERSION_PREF, 1);
         preferences.prefs.clear();
         preferences.prefs.put(ActiveModelsHandler.MODEL_VERSION_PREF, Pair.create(Integer.class.getSimpleName(), String.valueOf(version)));
         json = gson.toJson(preferences);
-        Convenience.saveJsonToFile(json, backupFolder() + File.separator + "zazo_preferences.json");
+        Convenience.saveTextToFile(json, backupFolder() + File.separator + "zazo_preferences.json");
         DialogShower.showToast(context, "Saved");
     }
 
     public static void restoreBackup(Context context) {
         copy(backupFolder(), Config.homeDirPath(context));
-        String json = Convenience.getJsonFromFile(backupFolder() + File.separator + DebugConfig.DEBUG_SETTINGS + ".json");
+        String json = Convenience.getTextFromFile(backupFolder() + File.separator + DebugConfig.DEBUG_SETTINGS + ".json");
         if (json != null) {
             Gson gson = new Gson();
             Preferences preferences = gson.fromJson(json, Preferences.class);
@@ -89,7 +89,7 @@ public final class DebugUtils {
             p.putAll(preferences.prefs);
             DebugConfig.reloadPrefs();
         }
-        json = Convenience.getJsonFromFile(backupFolder() + File.separator + Settings.FILE_NAME + ".json");
+        json = Convenience.getTextFromFile(backupFolder() + File.separator + Settings.FILE_NAME + ".json");
         if (json != null) {
             Gson gson = new Gson();
             Preferences preferences = gson.fromJson(json, Preferences.class);
@@ -97,7 +97,7 @@ public final class DebugUtils {
             p.putAll(preferences.prefs);
             Settings.reloadPrefs();
         }
-        json = Convenience.getJsonFromFile(backupFolder() + File.separator + "zazo_preferences.json");
+        json = Convenience.getTextFromFile(backupFolder() + File.separator + "zazo_preferences.json");
         if (json != null) {
             Gson gson = new Gson();
             Preferences preferences = gson.fromJson(json, Preferences.class);

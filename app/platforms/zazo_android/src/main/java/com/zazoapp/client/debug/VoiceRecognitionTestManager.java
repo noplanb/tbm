@@ -121,7 +121,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
     }
 
     private void loadTranscriptions() {
-        String json = Convenience.getJsonFromFile(getPath());
+        String json = Convenience.getTextFromFile(getPath());
         if (json != null) {
             Gson g = new Gson();
             LinkedTreeMap<String, String> all = null;
@@ -331,7 +331,7 @@ public class VoiceRecognitionTestManager implements MediaPlayer.OnPreparedListen
     public void saveTranscriptions() {
         Gson gson = new Gson();
         String j = gson.toJson(transcriptions);
-        Convenience.saveJsonToFile(j, getPath());
+        Convenience.saveTextToFile(j, getPath());
     }
 
     @Override

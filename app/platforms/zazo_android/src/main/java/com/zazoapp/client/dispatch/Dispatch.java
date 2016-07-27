@@ -138,7 +138,7 @@ public class Dispatch {
             object.put("filename", userFactoryFile.getName());
             object.put("length", userFactoryFile.length());
             object.put("lastModified", userFactoryFile.lastModified());
-            object.put("fileContent", Convenience.getJsonFromFile(userFactoryFile.getAbsolutePath()));
+            object.put("fileContent", Convenience.getTextFromFile(userFactoryFile.getAbsolutePath()));
             ensureTracker(new Runnable() {
                 @Override
                 public void run() {
