@@ -244,6 +244,7 @@ public final class DebugUtils {
         View dialogBody = View.inflate(context, R.layout.send_test_message_dialog_body, null);
         final EditText input = ButterKnife.findById(dialogBody, R.id.edit_box);
         final Spinner friendSelector = ButterKnife.findById(dialogBody, R.id.friends_selector);
+        final EditText delayField = ButterKnife.findById(dialogBody, R.id.delay_text_field);
         final VoiceRecognitionTestManager.FriendsSpinnerAdapter friendsAdapter = new VoiceRecognitionTestManager.FriendsSpinnerAdapter();
         friendSelector.setAdapter(friendsAdapter);
         builder.setView(dialogBody);
@@ -255,19 +256,34 @@ public final class DebugUtils {
             public void onClick(View v) {
                 int id = v.getId();
                 if (id == R.id.send || id == R.id.send_again) {
-                    Friend friend = (Friend) friendSelector.getSelectedItem();
+                    final Friend friend = (Friend) friendSelector.getSelectedItem();
                     if (friend != null) {
-                        Intent intent = new Intent(context, IntentHandlerService.class);
-                        intent.putExtra(NotificationHandler.DataKeys.CONTENT_TYPE, MessageType.TEXT.getName());
-                        intent.putExtra(NotificationHandler.DataKeys.BODY, input.getText().toString());
-                        intent.putExtra("from_mkey", friend.getMkey());
-                        intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, VideoIdUtils.generateId());
-                        intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
-                        intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingMessage.Status.NEW);
-                        intent.putExtra(IntentHandlerService.EXTRA_TEXT, true);
-                        context.startService(intent);
-                        DialogShower.showToast(context, "Sent");
-                        friendsAdapter.notifyDataSetChanged();
+                        Runnable sendTask = new Runnable() {
+                            @Override
+                            public void run() {
+                                Intent intent = new Intent(context, IntentHandlerService.class);
+                                intent.putExtra(NotificationHandler.DataKeys.CONTENT_TYPE, MessageType.TEXT.getName());
+                                intent.putExtra(NotificationHandler.DataKeys.BODY, input.getText().toString());
+                                intent.putExtra("from_mkey", friend.getMkey());
+                                intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, VideoIdUtils.generateId());
+                                intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+                                intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingMessage.Status.NEW);
+                                intent.putExtra(IntentHandlerService.EXTRA_TEXT, true);
+                                context.startService(intent);
+                                DialogShower.showToast(context, "Sent");
+                                friendsAdapter.notifyDataSetChanged();
+                            }
+                        };
+                        int delay = 0;
+                        try {
+                            delay = Integer.valueOf(delayField.getText().toString());
+                        } catch (NumberFormatException e) {
+                        }
+                        if (delay <= 0) {
+                            sendTask.run();
+                        } else {
+                            v.postDelayed(sendTask, delay * 1000);
+                        }
                     }
                 }
                 if (id == R.id.cancel || id == R.id.send) {

@@ -19,6 +19,21 @@
             android:textSize="@dimen/text_large"
             android:textColor="@color/white"
             android:text="Test message"/>
+    <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="?attr/colorControlHighlight">
+
+        <android.support.design.widget.TextInputEditText
+                android:id="@+id/delay_text_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Delay (s)"
+                android:textColor="@color/white"
+                android:textColorHint="?attr/colorControlNormal"
+                android:inputType="numberDecimal"/>
+
+    </android.support.design.widget.TextInputLayout>
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
