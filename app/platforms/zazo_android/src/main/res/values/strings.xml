@@ -125,6 +125,8 @@
     <string name="action_add_joined_friend">Invite</string>
     <string name="action_ignore_joined_friend">Skip</string>
     <string name="action_unsubscribe">Unsubscribe</string>
+    <string name="action_text_reply">Text</string>
+    <string name="action_zazo_reply">Zazo</string>
 
     <plurals name="notification_title">
         <item quantity="one">%d new Zazo</item>

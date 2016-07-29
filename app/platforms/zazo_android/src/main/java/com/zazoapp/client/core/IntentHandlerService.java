@@ -554,6 +554,9 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
         public static final String SUGGESTIONS = "suggestions";
         public static final String SEND_VIDEO = "send_video";
         public static final String SHOW_AWARD = "show_award";
+        public static final String TEXT_REPLY = "text_reply";
+        public static final String ZAZO_REPLY = "zazo_reply";
+        public static final String NEW_MESSAGE = "new_message";
     }
 
     public static class FriendJoinedIntentFields {

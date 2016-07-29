@@ -20,12 +20,14 @@ import android.util.Log;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingMessage;
 import com.zazoapp.client.model.IncomingMessageFactory;
 import com.zazoapp.client.ui.LockScreenAlertActivity;
 import com.zazoapp.client.ui.MainActivity;
+import com.zazoapp.client.utilities.Convenience;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -65,7 +67,8 @@ public class NotificationAlertManager {
 	public static final String SUB_TITLE_KEY = "subTitleKey";
 	public static final String LARGE_IMAGE_PATH_KEY = "largeImagePathKey";
 	public static final String SMALL_ICON_KEY = "smallIconKey";
-	
+	public static final String MESSAGE_ID_KEY = "messageIdKey";
+
 	private static final String subTitle = Config.appName;
 
     private static SoundPool soundPool;
@@ -191,14 +194,23 @@ public class NotificationAlertManager {
 		Log.i(TAG, "postNativeAlert");
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		Intent intent = new Intent(context.getApplicationContext(), MainActivity.class);
-		PendingIntent playVideoIntent = PendingIntent.getActivity(context, 0,
-                makePlayVideoIntent(intent, context, friend), 0);
+        PendingIntent playVideoIntent = makePendingIntentWithAction(intent, context, friend, IntentHandlerService.IntentActions.PLAY_VIDEO);
+        IncomingMessage message = IncomingMessageFactory.getFactoryInstance().find(videoId);
 
         int unviewedCount = IncomingMessageFactory.getFactoryInstance().allNotViewedCount() + 1;
-        String title = title(context, unviewedCount);
+        String title;
+        String bigText;
         NotificationCompat.BigTextStyle notiStyle = new NotificationCompat.BigTextStyle();
-        notiStyle.bigText(formatFriendsList(context, friend, true));
-        notiStyle.setBigContentTitle(title);
+        boolean textNotification = MessageType.TEXT.is(message.getType()) && unviewedCount == 1;
+        if (textNotification) {
+            title = friend.getFirstName();
+            notiStyle.bigText(Convenience.getTextFromFile(Friend.File.IN_TEXT.getPath(friend, videoId)));
+            notiStyle.setBigContentTitle(title);
+        } else {
+            title = title(context, unviewedCount);
+            notiStyle.bigText(formatFriendsList(context, friend, true));
+            notiStyle.setBigContentTitle(title);
+        }
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -213,13 +225,20 @@ public class NotificationAlertManager {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, intent, 0);
             mBuilder.setContentIntent(openAppIntent);
-            mBuilder.setContentText(formatFriendsList(context, friend, false));
+            mBuilder.setContentText(formatFriendsList(context, friend, false)); // TODO short message
             if (unviewedCount == friend.incomingMessagesNotViewedCount() + 1) {
-                mBuilder.addAction(R.drawable.ic_action_view, context.getString(R.string.action_view), playVideoIntent);
+                if (textNotification) {
+                    mBuilder.addAction(R.drawable.ic_reply, context.getString(R.string.action_text_reply),
+                            makePendingIntentWithAction(intent, context, friend, IntentHandlerService.IntentActions.TEXT_REPLY));
+                    mBuilder.addAction(R.drawable.ic_reply, context.getString(R.string.action_zazo_reply),
+                            makePendingIntentWithAction(intent, context, friend, IntentHandlerService.IntentActions.ZAZO_REPLY));
+                } else {
+                    mBuilder.addAction(R.drawable.ic_action_view, context.getString(R.string.action_view), playVideoIntent);
+                }
             }
         } else {
             mBuilder.setContentIntent(playVideoIntent);
-            mBuilder.setContentText(friend.getFullName());
+            mBuilder.setContentText(friend.getFullName()); // TODO short message
         }
         if (unviewedCount == friend.incomingMessagesNotViewedCount() + 1) {
             if (friend.thumbExists()) {
@@ -316,13 +335,14 @@ public class NotificationAlertManager {
 
     private static void postLockScreenAlert(Context context, Friend friend, String videoId) {
 		Log.i(TAG, "postLockScreenAlert");
-		Intent ri = new Intent(context, LockScreenAlertActivity.class);
-		Intent i = makePlayVideoIntent(ri, context, friend);
-		i.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId());
-		i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend));
-		i.putExtra(SMALL_ICON_KEY, R.drawable.ic_zazo_blue);
-		i.putExtra(TITLE_KEY, title(context, friend));
+        Intent i = new Intent(context, LockScreenAlertActivity.class);
+        i.setAction(IntentHandlerService.IntentActions.NEW_MESSAGE);
+        i.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId());
+        i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend));
+        i.putExtra(SMALL_ICON_KEY, R.drawable.ic_zazo_blue);
+        i.putExtra(TITLE_KEY, title(context, friend));
 		i.putExtra(SUB_TITLE_KEY, subTitle);
+        i.putExtra(MESSAGE_ID_KEY, videoId);
 		i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 		i.addFlags(Intent.FLAG_FROM_BACKGROUND);
 		//i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK); // This is probably not necessary since the activity has launch mode singleInstance.
@@ -352,6 +372,15 @@ public class NotificationAlertManager {
                 IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
         i.setData(uri);
         return i;
+    }
+
+    public static PendingIntent makePendingIntentWithAction(Intent intent, Context context, Friend friend, String action) {
+        Intent i = new Intent(intent);
+        i.setAction(action);
+        Uri uri = new Uri.Builder().appendPath(action).appendQueryParameter(
+                IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
+        i.setData(uri);
+        return PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     public static Intent makeSuggestionIntent(Intent intent, String subaction) {

@@ -19,12 +19,16 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.core.Settings;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.model.IncomingMessage;
+import com.zazoapp.client.model.IncomingMessageFactory;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationSuggestion;
 import com.zazoapp.client.ui.helpers.ThumbsHelper;
+import com.zazoapp.client.ui.helpers.UiUtils;
 import com.zazoapp.client.ui.view.ThumbView;
 import com.zazoapp.client.utilities.StringUtils;
 
@@ -41,7 +45,12 @@ public class LockScreenAlertActivity extends Activity {
     @InjectView(R.id.action_main_btn) Button mainButton;
     @InjectView(R.id.action_second_btn) Button secondButton;
     @InjectView(R.id.action_third_btn) Button thirdButton;
+    @InjectView(R.id.action_first_reply_btn) Button firstReplyButton;
+    @InjectView(R.id.action_second_reply_btn) Button secondReplyButton;
+    @InjectView(R.id.action_third_reply_btn) Button thirdReplyButton;
     @InjectView(R.id.message_info_layout) View messageInfoLayout;
+    @InjectView(R.id.multiple_action_btn_layout) View multipleButtonsLayout;
+    @InjectView(R.id.multiple_action_btn_layout_reply) View multipleButtonsLayoutReply;
 
     private ThumbsHelper tHelper;
 	//-------------------
@@ -56,6 +65,8 @@ public class LockScreenAlertActivity extends Activity {
         setContentView(R.layout.lock_screen_alert);
         ButterKnife.inject(this);
         setupViews(getIntent());
+        UiUtils.applyTint(secondReplyButton, R.color.suggestions_btn_tint);
+        UiUtils.applyTint(firstReplyButton, R.color.suggestions_btn_tint);
 	}
 
 	@Override
@@ -132,12 +143,15 @@ public class LockScreenAlertActivity extends Activity {
         if (smallIconId != 0) {
             smallIconView.setBackgroundResource(R.drawable.ic_zazo_blue);
         }
-        if (IntentHandlerService.IntentActions.PLAY_VIDEO.equals(i.getAction())) {
+        if (IntentHandlerService.IntentActions.NEW_MESSAGE.equals(i.getAction())) {
             Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
-            if (friend == null) {
+            IncomingMessage message = IncomingMessageFactory.getFactoryInstance().find(i.getStringExtra(NotificationAlertManager.MESSAGE_ID_KEY));
+            if (friend == null || message == null) {
                 dismiss();
                 return;
             }
+            boolean textType = MessageType.TEXT.is(message.getType());
+            smallIconView.setVisibility(textType ? View.GONE : View.VISIBLE);
             if (friend.thumbExists()) {
                 thumbImage.setImageBitmap(friend.thumbBitmap());
                 thumbImage.setMapArea(ThumbView.MapArea.FULL);
@@ -148,11 +162,20 @@ public class LockScreenAlertActivity extends Activity {
                 thumbImage.setMapArea(tHelper.getMapArea(friend.getDisplayName()));
                 thumbTitle.setText(friend.getInitials());
             }
-            secondButton.setText(R.string.action_dismiss);
-            mainButton.setText(R.string.action_view);
-            thirdButton.setText("");
-            thirdButton.setVisibility(View.INVISIBLE);
+            multipleButtonsLayout.setVisibility(textType ? View.GONE : View.VISIBLE);
+            multipleButtonsLayoutReply.setVisibility(textType ? View.VISIBLE : View.GONE);
+            if (textType) {
+
+            } else {
+                secondButton.setText(R.string.action_dismiss);
+                mainButton.setText(R.string.action_view);
+                thirdButton.setText("");
+                thirdButton.setVisibility(View.INVISIBLE);
+            }
+
         } else if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(i.getAction())) {
+            multipleButtonsLayout.setVisibility(View.VISIBLE);
+            multipleButtonsLayoutReply.setVisibility(View.GONE);
             NotificationSuggestion suggestion = i.getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
             String name = suggestion.getName();
             if (name == null) {
