@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
@@ -219,7 +220,8 @@ public class LockScreenAlertActivity extends Activity {
 		dismiss();
 	}
 
-    @OnClick({R.id.action_main_btn, R.id.action_second_btn, R.id.action_third_btn})
+    @OnClick({R.id.action_main_btn, R.id.action_second_btn, R.id.action_third_btn,
+    R.id.action_first_reply_btn, R.id.action_second_reply_btn, R.id.action_third_reply_btn})
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.action_main_btn:
@@ -255,6 +257,28 @@ public class LockScreenAlertActivity extends Activity {
                 } else {
                     dismiss();
                 }
+                break;
+            case R.id.action_first_reply_btn:
+            case R.id.action_second_reply_btn: {
+                Intent i = getIntent();
+                Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
+                IncomingMessage message = IncomingMessageFactory.getFactoryInstance().find(i.getStringExtra(NotificationAlertManager.MESSAGE_ID_KEY));
+                if (friend == null || message == null) {
+                    dismiss();
+                    break;
+                }
+                Intent replyIntent = new Intent(getIntent());
+                replyIntent.setClass(this, MainActivity.class);
+                String action = (MessageType.TEXT.is(message.getType())) ? IntentHandlerService.IntentActions.TEXT_REPLY : IntentHandlerService.IntentActions.ZAZO_REPLY;
+                replyIntent.setAction(action);
+                Uri uri = new Uri.Builder().appendPath(action).appendQueryParameter(
+                        IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
+                replyIntent.setData(uri);
+                startActivity(replyIntent);
+            }
+                break;
+            case R.id.action_third_reply_btn:
+                dismiss();
                 break;
         }
     }

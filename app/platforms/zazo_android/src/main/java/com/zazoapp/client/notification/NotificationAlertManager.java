@@ -204,11 +204,13 @@ public class NotificationAlertManager {
         boolean textNotification = MessageType.TEXT.is(message.getType()) && unviewedCount == 1;
         if (textNotification) {
             title = friend.getFirstName();
-            notiStyle.bigText(Convenience.getTextFromFile(Friend.File.IN_TEXT.getPath(friend, videoId)));
+            bigText = Convenience.getTextFromFile(Friend.File.IN_TEXT.getPath(friend, videoId));
+            notiStyle.bigText(bigText);
             notiStyle.setBigContentTitle(title);
         } else {
             title = title(context, unviewedCount);
-            notiStyle.bigText(formatFriendsList(context, friend, true));
+            bigText = formatFriendsList(context, friend, true);
+            notiStyle.bigText(bigText);
             notiStyle.setBigContentTitle(title);
         }
 
@@ -225,7 +227,8 @@ public class NotificationAlertManager {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             PendingIntent openAppIntent = PendingIntent.getActivity(context, 0, intent, 0);
             mBuilder.setContentIntent(openAppIntent);
-            mBuilder.setContentText(formatFriendsList(context, friend, false)); // TODO short message
+            String shortText = (textNotification) ? bigText : formatFriendsList(context, friend, false);
+            mBuilder.setContentText(shortText);
             if (unviewedCount == friend.incomingMessagesNotViewedCount() + 1) {
                 if (textNotification) {
                     mBuilder.addAction(R.drawable.ic_reply, context.getString(R.string.action_text_reply),
@@ -238,7 +241,7 @@ public class NotificationAlertManager {
             }
         } else {
             mBuilder.setContentIntent(playVideoIntent);
-            mBuilder.setContentText(friend.getFullName()); // TODO short message
+            mBuilder.setContentText((textNotification) ? bigText : friend.getFullName());
         }
         if (unviewedCount == friend.incomingMessagesNotViewedCount() + 1) {
             if (friend.thumbExists()) {

@@ -260,14 +260,24 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
             Logger.i(TAG, "handleIntentAction: no friendId or action. Exiting." + currentIntent.toString());
             return;
         }
-
+        Logger.i(TAG, "handleIntentAction: " + action);
         if (action.equals(IntentHandlerService.IntentActions.PLAY_VIDEO)) {
-            Logger.i(TAG, "handleIntentAction: play video");
             currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             play(friendId);
             return;
         }
 
+        if (action.equals(IntentHandlerService.IntentActions.ZAZO_REPLY)) {
+            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
+            play(friendId);
+            return;
+        }
+
+        if (action.equals(IntentHandlerService.IntentActions.TEXT_REPLY)) {
+            currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
+            play(friendId);
+            return;
+        }
         // Not used as I decided pending intent coming back from sending sms is
         // to disruptive. Just assume
         // sms's sent go through.
