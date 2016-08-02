@@ -239,7 +239,7 @@ public final class DebugUtils {
 
     public static void showMessageWritingDialog(final Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context, AlertDialog.THEME_DEVICE_DEFAULT_DARK);
-        builder.setTitle("Enter code");
+        builder.setTitle("Send message");
         // Set up the input
         View dialogBody = View.inflate(context, R.layout.send_test_message_dialog_body, null);
         final EditText input = ButterKnife.findById(dialogBody, R.id.edit_box);
@@ -257,13 +257,14 @@ public final class DebugUtils {
                 int id = v.getId();
                 if (id == R.id.send || id == R.id.send_again) {
                     final Friend friend = (Friend) friendSelector.getSelectedItem();
+                    final String text = input.getText().toString();
                     if (friend != null) {
                         Runnable sendTask = new Runnable() {
                             @Override
                             public void run() {
                                 Intent intent = new Intent(context, IntentHandlerService.class);
                                 intent.putExtra(NotificationHandler.DataKeys.CONTENT_TYPE, MessageType.TEXT.getName());
-                                intent.putExtra(NotificationHandler.DataKeys.BODY, input.getText().toString());
+                                intent.putExtra(NotificationHandler.DataKeys.BODY, text);
                                 intent.putExtra("from_mkey", friend.getMkey());
                                 intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, VideoIdUtils.generateId());
                                 intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
