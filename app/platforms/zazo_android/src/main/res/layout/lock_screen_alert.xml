@@ -12,176 +12,18 @@
              android:paddingRight="10dp"
              android:paddingTop="10dp">
 
-    <RelativeLayout
+    <ViewAnimator
+            android:id="@+id/view_animator"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp">
-
-        <RelativeLayout
-                android:id="@+id/top_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            <com.zazoapp.client.ui.view.ThumbView
-                    android:id="@+id/thumbImage"
-                    android:layout_width="72dp"
-                    android:layout_height="96dp"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
-                    />
-
-            <TextView
-                    android:id="@+id/thumb_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignLeft="@id/thumbImage"
-                    android:layout_alignStart="@id/thumbImage"
-                    android:layout_alignRight="@id/thumbImage"
-                    android:layout_alignEnd="@id/thumbImage"
-                    android:layout_alignTop="@id/thumbImage"
-                    android:layout_alignBottom="@id/thumbImage"
-                    android:text="AB"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/text_xlarge"
-                    android:gravity="center"
-                    />
-
-            <RelativeLayout
-                    android:id="@+id/titleLayout"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:layout_toRightOf="@id/thumbImage">
-
-                <TextView
-                        android:id="@+id/title_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentTop="true"
-                        android:text="From Konstantin"
-                        android:textSize="@dimen/text_xlarge"
-                        android:textColor="@color/contacts_name_text"/>
-
-                <LinearLayout
-                        android:id="@+id/message_info_layout"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/title_text"
-                        android:layout_marginTop="@dimen/abc_button_padding_vertical_material"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-                    <ImageView
-                            android:id="@+id/logoImage"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginRight="@dimen/abc_button_padding_horizontal_material"
-                            android:src="@drawable/ic_zazo_blue"
-                            android:visibility="visible"
-                            />
-                    <TextView
-                            android:id="@+id/subtitle_text"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/app_name"
-                            android:textSize="@dimen/text_large"
-                            android:textColor="@color/contacts_phone_text"/>
-                </LinearLayout>
-                <com.zazoapp.client.ui.view.AutoResizeEditText
-                        android:id="@+id/texter"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/title_text"
-                        android:textSize="@dimen/text_xlarge"
-                        android:maxLines="5"
-                        app:min_text_size="@dimen/text_large"
-                        android:visibility="gone"/>
-            </RelativeLayout>
-        </RelativeLayout>
-
-        <LinearLayout
-                android:id="@+id/multiple_action_btn_layout"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:orientation="horizontal"
-                android:gravity="end|center_vertical"
-                android:layout_below="@id/top_layout"
-                android:layout_marginTop="16dp"
-                android:weightSum="4">
-
-            <Button
-                    android:id="@+id/action_third_btn"
-                    style="@style/BorderlessFlatActionButton"
-                    android:background="@drawable/dialog_action_btn_bg"
-                    android:padding="@dimen/abc_control_inset_material"
-                    android:layout_margin="@dimen/abc_control_inset_material"
-                    android:layout_weight="1"
-                    android:visibility="invisible"
-                    android:textColor="@color/suggestions_secondary_action_btn"/>
-            <Button
-                    android:id="@+id/action_second_btn"
-                    style="@style/BorderlessFlatActionButton"
-                    android:layout_weight="1"
-                    android:layout_margin="@dimen/abc_control_inset_material"
-                    android:padding="@dimen/abc_control_inset_material"
-                    android:background="@drawable/dialog_action_btn_bg"
-                    android:text="@string/action_dismiss"
-                    android:textColor="@color/suggestions_secondary_action_btn"/>
-
-            <android.support.v7.widget.AppCompatButton
-                    android:id="@+id/action_main_btn"
-                    style="@style/SuggestionMainButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:minWidth="64dp"
-                    android:paddingLeft="16dp"
-                    android:paddingRight="16dp"
-                    android:text="@string/action_view"/>
-
-        </LinearLayout>
-        <LinearLayout
-                android:id="@+id/multiple_action_btn_layout_reply"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:orientation="horizontal"
-                android:gravity="end|center_vertical"
-                android:layout_below="@id/top_layout"
-                android:layout_marginTop="16dp"
-                android:weightSum="4">
-
-            <Button
-                    android:id="@+id/action_third_reply_btn"
-                    style="@style/BorderlessFlatActionButton"
-                    android:background="@drawable/dialog_action_btn_bg"
-                    android:padding="@dimen/abc_control_inset_material"
-                    android:layout_margin="@dimen/abc_control_inset_material"
-                    android:layout_weight="1"
-                    android:textColor="@color/suggestions_secondary_action_btn"
-                    android:text="@string/action_dismiss"/>
-            <android.support.v7.widget.AppCompatButton
-                    android:id="@+id/action_second_reply_btn"
-                    style="@style/BorderlessFlatActionButton"
-                    android:layout_weight="1"
-                    android:layout_margin="@dimen/abc_control_inset_material"
-                    android:padding="@dimen/abc_control_inset_material"
-                    android:background="@drawable/dialog_action_btn_bg"
-                    android:text="@string/action_text_reply"
-                    android:textColor="@color/suggestions_btn_tint"
-                    android:drawableLeft="@drawable/ic_reply"
-                    android:drawableStart="@drawable/ic_reply"/>
-
-            <Button
-                    android:id="@+id/action_first_reply_btn"
-                    style="@style/BorderlessFlatActionButton"
-                    android:layout_weight="1"
-                    android:layout_margin="@dimen/abc_control_inset_material"
-                    android:padding="@dimen/abc_control_inset_material"
-                    android:background="@drawable/dialog_action_btn_bg"
-                    android:text="@string/action_zazo_reply"
-                    android:drawableLeft="@drawable/ic_reply"
-                    android:drawableStart="@drawable/ic_reply"
-                    android:textColor="@color/suggestions_btn_tint"/>
-
-        </LinearLayout>
-    </RelativeLayout>
-
+            android:inAnimation="@anim/abc_fade_in"
+            android:outAnimation="@anim/abc_fade_out"
+            android:padding="8dp"
+            >
+        <include
+                android:id="@+id/body"
+                layout="@layout/lock_screen_alert_body"/>
+        <include android:id="@+id/text_body"
+                 layout="@layout/lock_screen_alert_text_body"/>
+    </ViewAnimator>
 </FrameLayout>

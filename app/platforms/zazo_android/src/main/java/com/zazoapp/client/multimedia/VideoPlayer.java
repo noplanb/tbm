@@ -102,12 +102,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         blockScreen = ButterKnife.findById(activity, R.id.block_screen);
         contextBar = new VideoContextBar(ButterKnife.findById(activity, R.id.zazo_action_context_bar));
         actionBarDivider = ButterKnife.findById(activity, R.id.zazo_action_bar_divider);
+        presenterHelper = new PresenterHelper();
     }
 
     @Override
     public void init(View rootView) {
         ButterKnife.inject(this, rootView);
-        presenterHelper = new PresenterHelper();
         blockScreen.setUnlockListener(new TouchBlockScreen.UnlockListener() {
             @Override
             public void onUnlockGesture() {

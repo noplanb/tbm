@@ -340,6 +340,9 @@ public class NotificationAlertManager {
 		Log.i(TAG, "postLockScreenAlert");
         Intent i = new Intent(context, LockScreenAlertActivity.class);
         i.setAction(IntentHandlerService.IntentActions.NEW_MESSAGE);
+        IncomingMessage message = IncomingMessageFactory.getFactoryInstance().find(videoId);
+        boolean textType = message != null && MessageType.TEXT.is(message.getType());
+        i.putExtra(LockScreenAlertActivity.VIEW_TYPE, textType ? LockScreenAlertActivity.TEXT_VIEW : LockScreenAlertActivity.MAIN_VIEW);
         i.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId());
         i.putExtra(LARGE_IMAGE_PATH_KEY, largeImagePath(friend));
         i.putExtra(SMALL_ICON_KEY, R.drawable.ic_zazo_blue);
@@ -357,6 +360,7 @@ public class NotificationAlertManager {
         Log.i(TAG, "postLockScreenAlert");
         Intent i = new Intent(friendJoinedIntent);
         i.setClass(context, LockScreenAlertActivity.class);
+        i.putExtra(LockScreenAlertActivity.VIEW_TYPE, LockScreenAlertActivity.MAIN_VIEW);
         NotificationSuggestion suggestion = i.getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
         String name = suggestion.getName();
         i.putExtra(TITLE_KEY, name);

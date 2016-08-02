@@ -8,19 +8,24 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.view.ContextThemeWrapper;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ViewAnimator;
+import android.widget.ViewSwitcher;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+import butterknife.Optional;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
-import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.core.Settings;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
@@ -30,7 +35,9 @@ import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationSuggestion;
 import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.ui.helpers.UiUtils;
+import com.zazoapp.client.ui.view.CircleThumbView;
 import com.zazoapp.client.ui.view.ThumbView;
+import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.StringUtils;
 
 public class LockScreenAlertActivity extends Activity {
@@ -41,19 +48,19 @@ public class LockScreenAlertActivity extends Activity {
     @InjectView(R.id.title_text) TextView titleText;
     @InjectView(R.id.subtitle_text) TextView subtitleText;
     @InjectView(R.id.logoImage) ImageView smallIconView;
-    @InjectView(R.id.thumbImage) ThumbView thumbImage;
+    @InjectView(R.id.thumbImage) ImageView thumbImage;
     @InjectView(R.id.thumb_title) TextView thumbTitle;
     @InjectView(R.id.action_main_btn) Button mainButton;
     @InjectView(R.id.action_second_btn) Button secondButton;
     @InjectView(R.id.action_third_btn) Button thirdButton;
-    @InjectView(R.id.action_first_reply_btn) Button firstReplyButton;
-    @InjectView(R.id.action_second_reply_btn) Button secondReplyButton;
-    @InjectView(R.id.action_third_reply_btn) Button thirdReplyButton;
-    @InjectView(R.id.message_info_layout) View messageInfoLayout;
-    @InjectView(R.id.multiple_action_btn_layout) View multipleButtonsLayout;
-    @InjectView(R.id.multiple_action_btn_layout_reply) View multipleButtonsLayoutReply;
+    @Optional @InjectView(R.id.texter) EditText texter;
+    @Optional @InjectView(R.id.text_layout) ViewSwitcher textViewSwitcher;
 
     private ThumbsHelper tHelper;
+
+    public static final int MAIN_VIEW = 0;
+    public static final int TEXT_VIEW = 1;
+    public static final String VIEW_TYPE = "viewType";
 	//-------------------
 	// Activity lifecycle
 	//-------------------
@@ -64,10 +71,7 @@ public class LockScreenAlertActivity extends Activity {
         tHelper = new ThumbsHelper(this);
         setupWindow();
         setContentView(R.layout.lock_screen_alert);
-        ButterKnife.inject(this);
-        setupViews(getIntent());
-        UiUtils.applyTint(secondReplyButton, R.color.suggestions_btn_tint);
-        UiUtils.applyTint(firstReplyButton, R.color.suggestions_btn_tint);
+        setupViews(getIntent(), true);
 	}
 
 	@Override
@@ -84,7 +88,7 @@ public class LockScreenAlertActivity extends Activity {
         if (isStopped) {
             recreate();
         } else {
-            setupViews(intent);
+            setupViews(intent, false);
         }
     }
 
@@ -137,9 +141,36 @@ public class LockScreenAlertActivity extends Activity {
         getWindow().setAttributes(lp);
     }
 
-    private void setupViews(Intent i) {
-        titleText.setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));
-        subtitleText.setText(i.getStringExtra(NotificationAlertManager.SUB_TITLE_KEY));
+    private void setupViews(Intent i, boolean force) {
+        int type = i.getIntExtra(VIEW_TYPE, MAIN_VIEW);
+        boolean textType = type == TEXT_VIEW;
+        ViewAnimator viewAnimator = ButterKnife.findById(this, R.id.view_animator);
+        if (type != viewAnimator.getDisplayedChild()) {
+            if (textType) {
+                viewAnimator.showNext();
+                View currentView = viewAnimator.getCurrentView();
+                ButterKnife.inject(this, currentView);
+                UiUtils.applyTint(secondButton, R.color.suggestions_btn_tint);
+                UiUtils.applyTint(mainButton, R.color.suggestions_btn_tint);
+                textViewSwitcher.setDisplayedChild(0);
+            } else {
+                viewAnimator.showNext();
+                View currentView = viewAnimator.getCurrentView();
+                ButterKnife.inject(this, currentView);
+            }
+        } else if (force) {
+            View currentView = viewAnimator.getCurrentView();
+            ButterKnife.inject(this, currentView);
+            if (textType) {
+                UiUtils.applyTint(secondButton, R.color.suggestions_btn_tint);
+                UiUtils.applyTint(mainButton, R.color.suggestions_btn_tint);
+            }
+        }
+        if (!textType) {
+            titleText.setText(i.getStringExtra(NotificationAlertManager.TITLE_KEY));
+            subtitleText.setText(i.getStringExtra(NotificationAlertManager.SUB_TITLE_KEY));
+        }
+
         int smallIconId = i.getIntExtra(NotificationAlertManager.SMALL_ICON_KEY, 0);
         if (smallIconId != 0) {
             smallIconView.setBackgroundResource(R.drawable.ic_zazo_blue);
@@ -151,23 +182,30 @@ public class LockScreenAlertActivity extends Activity {
                 dismiss();
                 return;
             }
-            boolean textType = MessageType.TEXT.is(message.getType());
-            smallIconView.setVisibility(textType ? View.GONE : View.VISIBLE);
+            if (textType) {
+                titleText.setText(friend.getFullName());
+                subtitleText.setText(Convenience.getTextFromFile(Friend.File.IN_TEXT.getPath(friend, message.getId())));
+                subtitleText.setVerticalScrollBarEnabled(true);
+                subtitleText.setMovementMethod(new ScrollingMovementMethod());
+            }
             if (friend.thumbExists()) {
                 thumbImage.setImageBitmap(friend.thumbBitmap());
-                thumbImage.setMapArea(ThumbView.MapArea.FULL);
+                if (!textType) {
+                    ((ThumbView) thumbImage).setMapArea(ThumbView.MapArea.FULL);
+                }
                 thumbTitle.setText("");
             } else {
                 thumbImage.setImageResource(R.drawable.navigation_background_pattern);
-                thumbImage.setFillColor(tHelper.getColor(friend.getDisplayName()));
-                thumbImage.setMapArea(tHelper.getMapArea(friend.getDisplayName()));
+                if (textType) {
+                    ((CircleThumbView) thumbImage).setFillColor(tHelper.getColor(friend.getDisplayName()));
+                } else {
+                    ((ThumbView) thumbImage).setFillColor(tHelper.getColor(friend.getDisplayName()));
+                    ((ThumbView) thumbImage).setMapArea(tHelper.getMapArea(friend.getDisplayName()));
+                }
+
                 thumbTitle.setText(friend.getInitials());
             }
-            multipleButtonsLayout.setVisibility(textType ? View.GONE : View.VISIBLE);
-            multipleButtonsLayoutReply.setVisibility(textType ? View.VISIBLE : View.GONE);
-            if (textType) {
-
-            } else {
+            if (!textType) {
                 secondButton.setText(R.string.action_dismiss);
                 mainButton.setText(R.string.action_view);
                 thirdButton.setText("");
@@ -175,16 +213,14 @@ public class LockScreenAlertActivity extends Activity {
             }
 
         } else if (IntentHandlerService.IntentActions.FRIEND_JOINED.equals(i.getAction())) {
-            multipleButtonsLayout.setVisibility(View.VISIBLE);
-            multipleButtonsLayoutReply.setVisibility(View.GONE);
             NotificationSuggestion suggestion = i.getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
             String name = suggestion.getName();
             if (name == null) {
                 name = "";
             }
             thumbImage.setImageResource(R.drawable.navigation_background_pattern);
-            thumbImage.setMapArea(tHelper.getMapArea(name));
-            thumbImage.setFillColor(tHelper.getColor(name));
+            ((ThumbView) thumbImage).setMapArea(tHelper.getMapArea(name));
+            ((ThumbView) thumbImage).setFillColor(tHelper.getColor(name));
             thumbTitle.setText(StringUtils.getInitials(name));
             mainButton.setText(R.string.action_add_joined_friend);
             secondButton.setText(R.string.action_ignore_joined_friend);
@@ -220,66 +256,83 @@ public class LockScreenAlertActivity extends Activity {
 		dismiss();
 	}
 
-    @OnClick({R.id.action_main_btn, R.id.action_second_btn, R.id.action_third_btn,
-    R.id.action_first_reply_btn, R.id.action_second_reply_btn, R.id.action_third_reply_btn})
+    @OnClick({R.id.action_main_btn, R.id.action_second_btn, R.id.action_third_btn})
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.action_main_btn:
-                if (isFriendJoinedIntent()) {
-                    final NotificationSuggestion suggestion = getIntent().getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
-                    if (suggestion != null && suggestion.hasMultiplePhones()) {
-                        ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(v.getContext(), R.style.AppTheme);
-                        SuggestionsFragment.displayPhoneChooserPopup(new SuggestionsAdapter.OnPhoneItemSelected() {
-                            @Override
-                            public void onPhoneItemSelected(int index) {
-                                Intent intent = getIntent();
-                                intent.putExtra(IntentHandlerService.FriendJoinedIntentFields.CHOSEN_PHONE, suggestion.getPhone(index));
-                                openSuggestions(IntentHandlerService.FriendJoinedActions.ADD);
-                            }
-                        }, suggestion, v, contextThemeWrapper);
+        final boolean textType = getIntent().getIntExtra(VIEW_TYPE, MAIN_VIEW) == TEXT_VIEW;
+        if (!textType) {
+            switch (v.getId()) {
+                case R.id.action_main_btn:
+                    if (isFriendJoinedIntent()) {
+                        final NotificationSuggestion suggestion = getIntent().getParcelableExtra(IntentHandlerService.FriendJoinedIntentFields.DATA);
+                        if (suggestion != null && suggestion.hasMultiplePhones()) {
+                            ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(v.getContext(), R.style.AppTheme);
+                            SuggestionsFragment.displayPhoneChooserPopup(new SuggestionsAdapter.OnPhoneItemSelected() {
+                                @Override
+                                public void onPhoneItemSelected(int index) {
+                                    Intent intent = getIntent();
+                                    intent.putExtra(IntentHandlerService.FriendJoinedIntentFields.CHOSEN_PHONE, suggestion.getPhone(index));
+                                    openSuggestions(IntentHandlerService.FriendJoinedActions.ADD);
+                                }
+                            }, suggestion, v, contextThemeWrapper);
+                        } else {
+                            openSuggestions(IntentHandlerService.FriendJoinedActions.ADD);
+                        }
                     } else {
-                        openSuggestions(IntentHandlerService.FriendJoinedActions.ADD);
+                        startHomeActivity();
                     }
-                } else {
-                    startHomeActivity();
-                }
-                break;
-            case R.id.action_second_btn:
-                if (isFriendJoinedIntent()) {
-                    openSuggestions(IntentHandlerService.FriendJoinedActions.IGNORE);
-                } else {
+                    break;
+                case R.id.action_second_btn:
+                    if (isFriendJoinedIntent()) {
+                        openSuggestions(IntentHandlerService.FriendJoinedActions.IGNORE);
+                    } else {
+                        dismiss();
+                    }
+                    break;
+                case R.id.action_third_btn:
+                    if (isFriendJoinedIntent()) {
+                        openSuggestions(IntentHandlerService.FriendJoinedActions.UNSUBSCRIBE);
+                    } else {
+                        dismiss();
+                    }
+                    break;
+            }
+        } else {
+            switch (v.getId()) {
+                case R.id.action_main_btn: {
+                    Intent i = getIntent();
+                    Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
+                    IncomingMessage message = IncomingMessageFactory.getFactoryInstance().find(i.getStringExtra(NotificationAlertManager.MESSAGE_ID_KEY));
+                    if (friend == null || message == null) {
+                        dismiss();
+                        break;
+                    }
+                    Intent replyIntent = new Intent(getIntent());
+                    replyIntent.setClass(this, MainActivity.class);
+                    String action = IntentHandlerService.IntentActions.ZAZO_REPLY;
+                    replyIntent.setAction(action);
+                    Uri uri = new Uri.Builder().appendPath(action).appendQueryParameter(
+                            IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
+                    replyIntent.setData(uri);
+                    startActivity(replyIntent);
                     dismiss();
                 }
-                break;
-            case R.id.action_third_btn:
-                if (isFriendJoinedIntent()) {
-                    openSuggestions(IntentHandlerService.FriendJoinedActions.UNSUBSCRIBE);
-                } else {
-                    dismiss();
-                }
-                break;
-            case R.id.action_first_reply_btn:
-            case R.id.action_second_reply_btn: {
-                Intent i = getIntent();
-                Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
-                IncomingMessage message = IncomingMessageFactory.getFactoryInstance().find(i.getStringExtra(NotificationAlertManager.MESSAGE_ID_KEY));
-                if (friend == null || message == null) {
+                case R.id.action_second_btn:
+                    if (textViewSwitcher.getDisplayedChild() < 1) {
+                        textViewSwitcher.showNext();
+                        InputMethodManager imm = (InputMethodManager) texter.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.showSoftInput(texter, 0);
+                        }
+                    } else {
+                        textViewSwitcher.showNext();
+                        InputMethodManager imm = (InputMethodManager) texter.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(texter.getWindowToken(), 0);
+                    }
+                    break;
+                case R.id.action_third_btn:
                     dismiss();
                     break;
-                }
-                Intent replyIntent = new Intent(getIntent());
-                replyIntent.setClass(this, MainActivity.class);
-                String action = (MessageType.TEXT.is(message.getType())) ? IntentHandlerService.IntentActions.TEXT_REPLY : IntentHandlerService.IntentActions.ZAZO_REPLY;
-                replyIntent.setAction(action);
-                Uri uri = new Uri.Builder().appendPath(action).appendQueryParameter(
-                        IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
-                replyIntent.setData(uri);
-                startActivity(replyIntent);
             }
-                break;
-            case R.id.action_third_reply_btn:
-                dismiss();
-                break;
         }
     }
 

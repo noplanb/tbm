@@ -7,6 +7,7 @@ import android.os.Build;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
+import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.widget.EditText;
@@ -82,7 +83,8 @@ public class AutoResizeEditText extends EditText {
         mMinTextSize = typedArray.getDimensionPixelSize(R.styleable.AutoResizeEditText_min_text_size, (int) MIN_TEXT_SIZE);
         mAddEllipsis = typedArray.getBoolean(R.styleable.AutoResizeEditText_add_ellipsis, false);
         if (!mAddEllipsis) {
-            setScrollContainer(true);
+            setVerticalScrollBarEnabled(true);
+            setMovementMethod(new ScrollingMovementMethod());
         }
         typedArray.recycle();
     }
