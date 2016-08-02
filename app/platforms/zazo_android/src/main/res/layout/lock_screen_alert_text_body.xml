@@ -85,7 +85,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/abc_action_bar_content_inset_material"
-            android:layout_below="@id/top_layout">
+            android:layout_below="@id/top_layout"
+            android:inAnimation="@anim/abc_fade_in"
+            android:outAnimation="@anim/abc_fade_out">
 
         <TextView
                 android:id="@+id/subtitle_text"
