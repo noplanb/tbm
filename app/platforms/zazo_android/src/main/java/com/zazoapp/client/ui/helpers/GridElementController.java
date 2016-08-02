@@ -156,6 +156,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId(), PlayOptions.FULLSCREEN);
                         break;
                     case CHAT:
+                        showChatInner();
                         break;
                     case TRANSCRIPT:
                         managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId(), PlayOptions.TRANSCRIPT);
@@ -167,6 +168,16 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             }
         });
         listPopupWindow.show();
+    }
+
+    public void showChat(String friendId) {
+        if (isForMe(friendId)) {
+            showChatInner();
+        }
+    }
+
+    private void showChatInner() {
+
     }
 
     @Override

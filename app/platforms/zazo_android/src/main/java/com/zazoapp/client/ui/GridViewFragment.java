@@ -269,13 +269,18 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
         if (action.equals(IntentHandlerService.IntentActions.ZAZO_REPLY)) {
             currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
-            play(friendId);
+            Friend friend = FriendFactory.getFactoryInstance().find(friendId);
+            GridManager.getInstance().moveFriendToGrid(friend);
             return;
         }
 
         if (action.equals(IntentHandlerService.IntentActions.TEXT_REPLY)) {
             currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
-            play(friendId);
+            Friend friend = FriendFactory.getFactoryInstance().find(friendId);
+            GridManager.getInstance().moveFriendToGrid(friend);
+            for (GridElementController controller : viewControllers) {
+                controller.showChat(friendId);
+            }
             return;
         }
         // Not used as I decided pending intent coming back from sending sms is

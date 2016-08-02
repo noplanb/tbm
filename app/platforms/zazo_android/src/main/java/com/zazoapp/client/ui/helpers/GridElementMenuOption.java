@@ -27,7 +27,7 @@ public enum GridElementMenuOption {
             return super.isEnabled() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && BuildConfig.TRANSCRIPTION_TEST/*&& TRANSCRIPT_FEATURE_ENABLED*/;
         }
     },
-    CHAT(true, R.string.ge_menu_chat, R.drawable.ic_menu_chat),
+    CHAT(false, R.string.ge_menu_chat, R.drawable.ic_menu_chat),
     DETAILS(true, R.string.ge_menu_details, R.drawable.ic_menu_friend_info);
 
     final boolean notForceDisabled;
