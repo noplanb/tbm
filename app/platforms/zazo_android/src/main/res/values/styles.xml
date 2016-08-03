@@ -227,4 +227,11 @@
     <style name="ZCircularProgressBar" parent="CircularProgressBar">
         <item name="cpb_colors">@array/progress_colors</item>
     </style>
+
+    <style name="AppBaseTheme.Blue">
+        <item name="colorButtonNormal">@color/material_grey_300</item>
+        <item name="colorControlNormal">#c2185b</item>
+        <item name="colorControlActivated">#c2185b</item>
+        <item name="colorControlHighlight">#ec407a</item>
+    </style>
 </resources>

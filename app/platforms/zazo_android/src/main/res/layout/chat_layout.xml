@@ -36,8 +36,8 @@
                     android:layout_toEndOf="@id/up"
                     android:layout_centerVertical="true"
                     android:src="@drawable/bgn_thumb_2"
-                    app:civ_fill_color="@color/thumb_color_blue"
                     app:civ_border_width="1dp"
+                    app:civ_border_overlay="true"
                     app:civ_border_color="@color/black_overlay"
                     android:layout_marginRight="@dimen/actionbar_item_padding"
                     android:layout_marginEnd="@dimen/actionbar_item_padding"/>

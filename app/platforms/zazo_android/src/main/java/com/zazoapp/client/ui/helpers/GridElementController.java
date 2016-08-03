@@ -22,6 +22,8 @@ import com.zazoapp.client.model.OutgoingMessage;
 import com.zazoapp.client.multimedia.PlayOptions;
 import com.zazoapp.client.multimedia.VideoPlayer;
 import com.zazoapp.client.notification.NotificationAlertManager;
+import com.zazoapp.client.ui.ChatFragment;
+import com.zazoapp.client.ui.MainFragment;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.animations.GridElementAnimation;
 import com.zazoapp.client.ui.view.GridElementMenuAdapter;
@@ -177,7 +179,10 @@ public class GridElementController implements GridElementView.ClickListener, Vid
     }
 
     private void showChatInner() {
-
+        MainFragment fragment = (MainFragment) activity.getSupportFragmentManager().findFragmentByTag("main0");
+        if (fragment != null) {
+            fragment.showTopFragment(ChatFragment.getInstance(gridElement.getFriend()), R.anim.fade_in, R.anim.fade_out);
+        }
     }
 
     @Override

@@ -14,19 +14,24 @@
                 android:id="@+id/send"
                 android:layout_width="@dimen/icon_size"
                 android:layout_height="@dimen/icon_size"
-                android:src="@drawable/ic_chat_send"
+                android:src="@drawable/ic_chat_send_selector"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"/>
     </RelativeLayout>
     <com.zazoapp.client.ui.view.AutoResizeEditText
             android:id="@+id/texter"
+            android:theme="@style/AppBaseTheme.Blue"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/zazo_action_bar"
             android:layout_above="@id/footer"
             android:textSize="@dimen/text_chat"
             android:text="Hello"
+            android:textCursorDrawable="@drawable/abc_text_cursor_material"
             android:textColor="@color/white"
+            android:inputType="textCapSentences|textAutoComplete|textMultiLine"
+            android:background="@null"
+            android:padding="@dimen/abc_button_padding_horizontal_material"
             app:min_text_size="@dimen/text_xlarge"
             android:gravity="top"
             >

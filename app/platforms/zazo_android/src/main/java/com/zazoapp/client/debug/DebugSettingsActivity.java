@@ -617,7 +617,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
             @Override
             public void onClick(View v) {
                 ManageFeaturesDialog manageFriendsDialog = new ManageFeaturesDialog();
-                DialogShower.showDialog(getSupportFragmentManager(), manageFriendsDialog, "manageFriends");
+                DialogShower.showDialog(getSupportFragmentManager(), manageFriendsDialog, "manageFeatures");
             }
         });
 

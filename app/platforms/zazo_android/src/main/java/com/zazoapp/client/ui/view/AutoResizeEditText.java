@@ -1,23 +1,20 @@
 package com.zazoapp.client.ui.view;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.os.Build;
+import android.support.v7.widget.AppCompatEditText;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
-import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.widget.EditText;
 import android.widget.TextView;
 import com.zazoapp.client.R;
 
 /**
  * Created by skamenkovych@codeminders.com on 7/20/2016.
  */
-public class AutoResizeEditText extends EditText {
+public class AutoResizeEditText extends AppCompatEditText {
     // Minimum text size for this text view
     public static final float MIN_TEXT_SIZE = 20;
 
@@ -69,23 +66,16 @@ public class AutoResizeEditText extends EditText {
         init(attrs, defStyle, 0);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public AutoResizeEditText(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init(attrs, defStyleAttr, defStyleRes);
-    }
-
-
     private void init(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         mTextSize = getTextSize();
         final TypedArray typedArray = getContext().obtainStyledAttributes(
                 attrs, R.styleable.AutoResizeEditText, defStyleAttr, defStyleRes);
         mMinTextSize = typedArray.getDimensionPixelSize(R.styleable.AutoResizeEditText_min_text_size, (int) MIN_TEXT_SIZE);
         mAddEllipsis = typedArray.getBoolean(R.styleable.AutoResizeEditText_add_ellipsis, false);
-        if (!mAddEllipsis) {
-            setVerticalScrollBarEnabled(true);
-            setMovementMethod(new ScrollingMovementMethod());
-        }
+        //if (!mAddEllipsis) {
+        //    setVerticalScrollBarEnabled(true);
+        //    setMovementMethod(new ScrollingMovementMethod());
+        //}
         typedArray.recycle();
     }
     /**
@@ -96,6 +86,10 @@ public class AutoResizeEditText extends EditText {
         mNeedsResize = true;
         // Since this view may be reused, it is good to reset the text size
         resetTextSize();
+        Layout layout = getLayout();
+        if (mTextSize > mMinTextSize && layout != null && layout.getHeight() > getHeight() - getPaddingBottom() - getPaddingTop()) {
+            resizeText();
+        }
     }
 
     /**
@@ -321,9 +315,5 @@ public class AutoResizeEditText extends EditText {
         return layout.getHeight();
     }
 
-    @Override
-    public CharSequence getAccessibilityClassName() {
-        return this.getClass().getName();
-    }
 }
 
