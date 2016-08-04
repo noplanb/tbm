@@ -34,7 +34,5 @@
             android:padding="@dimen/abc_button_padding_horizontal_material"
             app:min_text_size="@dimen/text_xlarge"
             android:gravity="top"
-            >
-        <requestFocus/>
-    </com.zazoapp.client.ui.view.AutoResizeEditText>
+            />
 </RelativeLayout>

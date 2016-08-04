@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -319,14 +318,10 @@ public class LockScreenAlertActivity extends Activity {
                 case R.id.action_second_btn:
                     if (textViewSwitcher.getDisplayedChild() < 1) {
                         textViewSwitcher.showNext();
-                        InputMethodManager imm = (InputMethodManager) texter.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        if (imm != null) {
-                            imm.showSoftInput(texter, 0);
-                        }
+                        UiUtils.showSoftKeyboard(texter);
                     } else {
                         textViewSwitcher.showNext();
-                        InputMethodManager imm = (InputMethodManager) texter.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.hideSoftInputFromWindow(texter.getWindowToken(), 0);
+                        UiUtils.hideSoftKeyboard(texter);
                     }
                     break;
                 case R.id.action_third_btn:

@@ -7,6 +7,7 @@ import android.support.annotation.ColorRes;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 /**
@@ -40,4 +41,23 @@ public final class UiUtils {
         }
         view.setCompoundDrawables(drawables[0], drawables[1], drawables[2], drawables[3]);
     }
+
+    public static void showSoftKeyboard(View view) {
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(view, 0);
+            }
+        }
+    }
+
+    public static void hideSoftKeyboard(View view) {
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
+    }
+
 }
