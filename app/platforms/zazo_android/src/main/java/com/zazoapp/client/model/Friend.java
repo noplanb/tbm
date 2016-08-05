@@ -377,56 +377,6 @@ public class Friend extends ActiveModel{
     //--------------------------------
     // Private helpers for above lists
     //--------------------------------
-    public static String getNextMessageIdInList(String id, List<IncomingMessage> messages){
-        boolean found = false;
-        for (IncomingMessage v : messages){
-            if (found) {
-                return v.getId();
-            }
-            if (v.getId().equals(id))
-                found = true;
-        }
-        // As videoList may not contain videoId at all, for example it gets deleted during playing,
-        // or between stop and start methods of player we decided to play first item from the list if it is
-        if (!found) {
-            return getFirstMessageIdInList(messages);
-        }
-        return null;
-    }
-
-    public static String getFirstMessageIdInList(List<IncomingMessage> messages){
-        if(messages.size()==0)
-            return null;
-        else 
-            return messages.get(0).getId();
-    }
-
-    public static int getNextMessagePositionInList(String id, List<IncomingMessage> messages) {
-        if (messages.size() == 0 || messages.get(messages.size() - 1).getId().equals(id)) {
-            return -1;
-        }
-        for (int i = 0; i < messages.size() - 1; i++) {
-            IncomingMessage v = messages.get(i);
-            if (v.getId().equals(id)) {
-                return i + 1;
-            }
-        }
-        return 0;
-    }
-
-    public static int getCurrentMessagePositionInList(String id, List<IncomingMessage> messages) {
-        if (messages.size() == 0) {
-            return -1;
-        }
-        for (int i = 0; i < messages.size(); i++) {
-            IncomingMessage v = messages.get(i);
-            if (v.getId().equals(id)) {
-                return i;
-            }
-        }
-        return 0;
-    }
-
     private ArrayList<IncomingMessage> sortByTimeStamp(ArrayList<IncomingMessage> messages){
         Collections.sort(messages, new Message.TimestampComparator<IncomingMessage>());
         return messages;

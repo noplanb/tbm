@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/content_inset">
+    <TextView
+            android:id="@+id/text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:alpha="@integer/primary_dark_text_alpha"
+            android:textSize="@dimen/text_normal"
+            android:text="Multiline text aaksdjfh asdkf askdfash askdfha sd\nkajshdfkh asdfahsdf shfd sfhjhas  dh  h hfha abf \n msjkadfasdfsdf asdf shfsagag kgsbsmgbm\naksdjhfsakfhd asdfh sf "/>
+    <TextView
+            android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/text"
+            android:text="oct 25 12:45"
+            android:textStyle="italic"
+            android:textSize="@dimen/text_very_small"
+            android:layout_alignParentRight="true"
+            android:textColor="@color/black"
+            android:alpha="@integer/secondary_dark_text_alpha"/>
+</RelativeLayout>

@@ -40,6 +40,7 @@ public class VideoProgressBar extends FrameLayout {
     private int current;
     private int barPadding;
     private int layoutPadding;
+    private int dotSize;
 
     public VideoProgressBar(Context context) {
         this(context, null);
@@ -59,6 +60,7 @@ public class VideoProgressBar extends FrameLayout {
         ButterKnife.inject(this);
         progressLineHeight = Convenience.dpToPx(getContext(), 3f);
         barPadding = Convenience.dpToPx(getContext(), 2);
+        dotSize = Convenience.dpToPx(getContext(), 16);
         layoutPadding = getContext().getResources().getDimensionPixelSize(R.dimen.abc_action_bar_content_inset_material);
     }
 
@@ -150,10 +152,14 @@ public class VideoProgressBar extends FrameLayout {
         if (isInEditMode()) {
             return;
         }
+        int barsCount = scheme.getBarCount();
+        if (barsCount < 1) {
+            return;
+        }
         int cY = getHeight() / 2;
         canvas.save();
         canvas.translate(0, cY - progressLineHeight / 2f);
-        int barsCount = Math.max(scheme.getBarCount(), 1);
+        int dotsCount = scheme.getCount() - barsCount;
         int left = barPadding + layoutPadding;
         int maxRight = getWidth() - left;
         int maxBarSize = (maxRight - left - barPadding * (barsCount - 1) * 2) / barsCount;

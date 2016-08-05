@@ -10,15 +10,18 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.asr.ASRProvider;
 import com.zazoapp.client.asr.NuanceASRProvider;
 import com.zazoapp.client.asr.VoiceTranscriptor;
+import com.zazoapp.client.core.MessageContainer;
 import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingMessage;
 import com.zazoapp.client.model.Transcription;
 import com.zazoapp.client.multimedia.VideoIdUtils;
+import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.StringUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -31,34 +34,43 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private Context context;
     private List<IncomingMessage> messages;
     private ASRProvider asrProvider = new NuanceASRProvider();
-
     private static final String TAG = MessageAdapter.class.getSimpleName();
-
-    private static final int VIDEO_TRANSCRIPTION = 0;
 
     private HashSet<String> submittedRequests = new HashSet<>();
 
-    public MessageAdapter(List<IncomingMessage> list, Context context) {
+    public MessageAdapter(List<MessageContainer<IncomingMessage>> list, Context context) {
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        this.messages = list;
         this.context = context.getApplicationContext();
+        messages = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
-            IncomingMessage video = list.get(i);
-            Transcription transcription = video.getTranscription();
-            if (Transcription.State.NONE.equals(transcription.state)) {
-                checkAndRequestTranscription(i, video);
+            MessageContainer<IncomingMessage> container = list.get(i);
+            for (int j = 0; j < container.getSize(); j++) {
+                messages.add(container.getAt(j));
             }
-            submittedRequests.add(video.getId());
+            if (container.getType().equals(MessageType.VIDEO)) {
+                IncomingMessage video = container.getAt(0);
+                Transcription transcription = video.getTranscription();
+                if (Transcription.State.NONE.equals(transcription.state)) {
+                    checkAndRequestTranscription(i, video);
+                }
+                submittedRequests.add(video.getId());
+            }
         }
         setHasStableIds(true);
     }
 
     @Override
     public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        switch (viewType) {
-            case VIDEO_TRANSCRIPTION:
+        MessageType type = MessageType.values()[viewType];
+        switch (type) {
+            case VIDEO: {
                 View v = layoutInflater.inflate(R.layout.transcription_item, parent, false);
                 return new TranscriptionViewHolder(v);
+            }
+            case TEXT: {
+                View v = layoutInflater.inflate(R.layout.text_message_item, parent, false);
+                return new TextMessageViewHolder(v);
+            }
         }
         return null;
     }
@@ -66,7 +78,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public void onBindViewHolder(MessageViewHolder holder, final int position) {
         switch (holder.getType()) {
-            case VIDEO:
+            case VIDEO: {
                 final TranscriptionViewHolder h = (TranscriptionViewHolder) holder;
                 final IncomingMessage video = messages.get(position);
                 final Transcription transcription = video.getTranscription();
@@ -93,8 +105,25 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         });
                         break;
                 }
+            }
+                break;
+            case TEXT: {
+                IncomingMessage message = messages.get(position);
+                Friend friend = FriendFactory.getFactoryInstance().find(message.getFriendId());
+                TextMessageViewHolder h = (TextMessageViewHolder) holder;
+                if (friend != null) {
+                    String path = Friend.File.IN_TEXT.getPath(friend, message.getId());
+                    h.setData(Convenience.getTextFromFile(path), StringUtils.getEventTime(message.getId()));
+                    h.setOnClickListener(null);
+                }
+            }
                 break;
         }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return MessageType.get(messages.get(position)).ordinal();
     }
 
     private void checkAndRequestTranscription(int position, IncomingMessage video) {
@@ -177,21 +206,29 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         return VideoIdUtils.timeStampFromVideoId(messages.get(position).getId()); // for smooth animation of still unviewed messages
     }
 
-    public void setList(List<IncomingMessage> list) {
-        this.messages = list;
+    public void setList(List<MessageContainer<IncomingMessage>> list) {
+        List<IncomingMessage> newMessages = new ArrayList<>();
+
+        HashSet<String> newSubmittedRequests = new HashSet<>();
         for (int i = 0; i < list.size(); i++) {
-            IncomingMessage video = list.get(i);
-            if (!submittedRequests.contains(video.getId())) {
-                Transcription transcription = video.getTranscription();
-                if (Transcription.State.NONE.equals(transcription.state)) {
-                    checkAndRequestTranscription(i, video);
+            MessageContainer<IncomingMessage> container = list.get(i);
+            for (int j = 0; j < container.getSize(); j++) {
+                newMessages.add(container.getAt(j));
+            }
+            if (container.getType().equals(MessageType.VIDEO)) {
+                IncomingMessage video = list.get(i).getAt(0);
+                if (!submittedRequests.contains(video.getId())) {
+                    Transcription transcription = video.getTranscription();
+                    if (Transcription.State.NONE.equals(transcription.state)) {
+                        checkAndRequestTranscription(i, video);
+                    }
                 }
+                newSubmittedRequests.add(video.getId());
             }
         }
         submittedRequests.clear();
-        for (IncomingMessage video : list) {
-            submittedRequests.add(video.getId());
-        }
+        submittedRequests.addAll(newSubmittedRequests);
+        messages = newMessages;
     }
 
     private int findPosition(IncomingMessage video) {

@@ -31,6 +31,8 @@ import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.MessageContainer;
+import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.Friend;
@@ -75,7 +77,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private String friendId;
     private Friend friend;
     private int currentVideoNumber = 0;
-    private int numberOfVideos = 0;
+    private int numberOfMessages = 0;
     @InjectView(R.id.video_root_layout) GestureControlledLayout videoRootLayout;
     private TouchBlockScreen blockScreen;
     private VideoContextBar contextBar;
@@ -92,7 +94,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private PresenterHelper presenterHelper;
 
     private Set<StatusCallbacks> statusCallbacks = new HashSet<StatusCallbacks>();
-    private List<IncomingMessage> playingMessages;
+    private List<MessageContainer<IncomingMessage>> playingMessages;
     private volatile boolean isSeekAllowed = true;
     private boolean needToNotifyCompletion;
 
@@ -286,31 +288,45 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     private void setCurrentVideoToFirst() {
         determineIfDownloading();
-        playingMessages = (videosAreDownloading) ? friend.getSortedIncomingNotViewedMessages() : friend.getSortedIncomingPlayableMessages();
-        setCurrentVideoId(Friend.getFirstMessageIdInList(playingMessages));
+        ArrayList<IncomingMessage> messages = (videosAreDownloading) ? friend.getSortedIncomingNotViewedMessages() : friend.getSortedIncomingPlayableMessages();
+        playingMessages = MessageContainer.splitToMessageContainer(messages);
+        setCurrentVideoId(MessageContainer.getFirstMessageIdInList(playingMessages));
         currentVideoNumber = (videoId != null) ? 1 : 0;
-        numberOfVideos = playingMessages.size();
+        numberOfMessages = playingMessages.size();
+    }
+
+    private int calculateNumberOfVideos() {
+        int calculateNumberOfVideos = 0;
+        List<MessageContainer<IncomingMessage>> list = playingMessages;
+        for (MessageContainer<IncomingMessage> container : list) {
+            if (MessageType.VIDEO.equals(container.getType())) {
+                calculateNumberOfVideos++;
+            }
+        }
+        return calculateNumberOfVideos;
     }
 
     private void setCurrentVideoToNext() {
         determineIfDownloading();
-        playingMessages = (videosAreDownloading) ? friend.getSortedIncomingNotViewedMessages() : friend.getSortedIncomingPlayableMessages();
-        int posId = Friend.getNextMessagePositionInList(videoId, playingMessages);
+        ArrayList<IncomingMessage> messages = (videosAreDownloading) ? friend.getSortedIncomingNotViewedMessages() : friend.getSortedIncomingPlayableMessages();
+        playingMessages = MessageContainer.splitToMessageContainer(messages);
+        int posId = MessageContainer.getNextMessagePositionInList(videoId, playingMessages);
         currentVideoNumber = posId + 1;
-        numberOfVideos = playingMessages.size();
-        setCurrentVideoId((posId >= 0) ? playingMessages.get(posId).getId() : null);
+        numberOfMessages = playingMessages.size();
+        setCurrentVideoId((posId >= 0) ? playingMessages.get(posId).getAt(0).getId() : null);
     }
 
     private void setCurrentVideoToPrevious() {
         determineIfDownloading();
-        playingMessages = (videosAreDownloading) ? friend.getSortedIncomingNotViewedMessages() : friend.getSortedIncomingPlayableMessages();
-        int posId = Friend.getCurrentMessagePositionInList(videoId, playingMessages) - 1;
+        ArrayList<IncomingMessage> messages = (videosAreDownloading) ? friend.getSortedIncomingNotViewedMessages() : friend.getSortedIncomingPlayableMessages();
+        playingMessages = MessageContainer.splitToMessageContainer(messages);
+        int posId = MessageContainer.getCurrentMessagePositionInList(videoId, playingMessages) - 1;
         if (posId < 0) {
             return;
         }
         currentVideoNumber = posId + 1;
-        numberOfVideos = playingMessages.size();
-        setCurrentVideoId((posId >= 0) ? playingMessages.get(posId).getId() : null);
+        numberOfMessages = playingMessages.size();
+        setCurrentVideoId((posId >= 0) ? playingMessages.get(posId).getAt(0).getId() : null);
     }
 
     private void jumpToVideo(int pos) {
@@ -318,7 +334,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             return;
         }
         currentVideoNumber = pos + 1;
-        setCurrentVideoId(playingMessages.get(pos).getId());
+        setCurrentVideoId(playingMessages.get(pos).getAt(0).getId());
     }
 
     private void setCurrentVideoId(String videoId) {
@@ -434,8 +450,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
      */
     private float setVideoProgress(float fullProgress, boolean allowLoad, boolean seek) {
         contextBar.progressBar.setProgress(fullProgress);
-        int pos = (int) Math.max(Math.floor(fullProgress * numberOfVideos - 0.0001), 0);
-        final float curProgress = fullProgress * numberOfVideos - pos;
+        int pos = (int) Math.max(Math.floor(fullProgress * numberOfMessages - 0.0001), 0);
+        final float curProgress = fullProgress * numberOfMessages - pos;
         final VideoView videoView = presenterHelper.getVideoView();
         if (videoView == null) {
             return 0;
@@ -546,7 +562,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         videoView.start();
                         int duration = videoView.getDuration() - videoView.getCurrentPosition();
                         contextBar.progressBar.animateProgress(contextBar.progressBar.getProgress(),
-                                currentVideoNumber / (float) numberOfVideos, duration);
+                                currentVideoNumber / (float) numberOfMessages, duration);
                     }
                 } else {
                     if (isPlaying()) {
@@ -697,7 +713,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (gestureDirection == DIRECTION_HORIZONTAL) {
                     if (isNextPreviousAdvancePossible) {
                         if (offsetX > 0) {      // Swipe right
-                            if (currentVideoNumber != numberOfVideos) {
+                            if (currentVideoNumber != numberOfMessages) {
                                 setCurrentVideoToNext();
                                 play();
                             }
@@ -1253,7 +1269,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         public void show(int videoDuration, int currentPosition) {
             VideoProgressBar.Scheme.SchemeBuilder schemeBuilder = new VideoProgressBar.Scheme.SchemeBuilder();
-            for (int i = 0; i < numberOfVideos; i++) {
+            for (int i = 0; i < numberOfMessages; i++) {
                 schemeBuilder.addBar();
             }
             progressBar.setScheme(schemeBuilder.build());
@@ -1262,8 +1278,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             progressBar.setCurrent(currentVideoNumber, true);
             int duration = videoDuration - currentPosition;
             float offset = (videoDuration >= 0) ? currentPosition / (float) videoDuration : 0f;
-            progressBar.animateProgress((currentVideoNumber - 1 + offset) / (float) numberOfVideos,
-                    currentVideoNumber / (float) numberOfVideos, duration);
+            progressBar.animateProgress((currentVideoNumber - 1 + offset) / (float) numberOfMessages,
+                    currentVideoNumber / (float) numberOfMessages, duration);
         }
 
         private void doAppearing() {

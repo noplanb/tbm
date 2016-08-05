@@ -1,6 +1,7 @@
 package com.zazoapp.client.core;
 
 import android.content.Intent;
+import com.zazoapp.client.model.Message;
 import com.zazoapp.client.notification.NotificationHandler;
 
 /**
@@ -31,6 +32,16 @@ public enum MessageType {
                 if (type.getName().equals(contentType)) {
                     return type;
                 }
+            }
+        }
+        return VIDEO;
+    }
+
+    public static MessageType get(Message message) {
+        String type = message.getType();
+        for (MessageType messageType : values()) {
+            if (messageType.is(type)) {
+                return messageType;
             }
         }
         return VIDEO;
