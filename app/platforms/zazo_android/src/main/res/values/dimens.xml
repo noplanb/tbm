@@ -51,4 +51,8 @@
 
     <dimen name="transcription_video_width">120dp</dimen>
     <dimen name="transcription_video_height">160dp</dimen>
+
+    <dimen name="messages_list_top_padding">32dp</dimen>
+    <dimen name="messages_list_bottom_padding">96dp</dimen>
+    <dimen name="messages_list_horizontal_padding">48dp</dimen>
 </resources>

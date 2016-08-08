@@ -147,6 +147,22 @@ public class NineViewGroup extends ViewGroup {
         public double getInitialAngle() {
             return initialAngle;
         }
+
+        public boolean isTop() {
+            return ordinal() < 3;
+        }
+
+        public boolean isBottom() {
+            return ordinal() >= 6;
+        }
+
+        public boolean isLeft() {
+            return ordinal() % 3 == 0;
+        }
+
+        public boolean isRight() {
+            return ordinal() % 3 == 2;
+        }
     }
     //-------------
     // Constructors

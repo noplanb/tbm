@@ -12,6 +12,7 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -244,16 +245,45 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             DialogShower.showToast(activity, R.string.toast_could_not_get_audio_focus);
             return;
         }
-        // Always set it to viewed whether it is playable or not so it eventually gets deleted.
-        friend.setAndNotifyIncomingVideoStatus(videoId, IncomingMessage.Status.VIEWED);
+        MessageContainer<IncomingMessage> messageContainer = playingMessages.get(currentVideoNumber - 1);
+        MessageType playingType = messageContainer.getType();
+        switch (playingType) {
+            case VIDEO:
+                // Always set it to viewed whether it is playable or not so it eventually gets deleted.
+                friend.setAndNotifyIncomingVideoStatus(videoId, IncomingMessage.Status.VIEWED);
 
-        if (videoIsPlayable()) {
-            managerProvider.getAudioController().setSpeakerPhoneOn(true);
-            String path = friend.videoFromPath(videoId);
-            presenterHelper.startPresentation(path, progress);
-        } else {
-            onCompletion(null);
+                if (videoIsPlayable()) {
+                    managerProvider.getAudioController().setSpeakerPhoneOn(true);
+                    String path = friend.videoFromPath(videoId);
+                    presenterHelper.startPresentation(path, progress);
+                } else {
+                    onCompletion(null);
+                }
+                break;
+            case TEXT:
+                for (int i = 0; i < messageContainer.getSize(); i++) {
+                    // Mark all messages as viewed as soon as they will be shown to user
+                    friend.setAndNotifyIncomingVideoStatus(messageContainer.getAt(i).getId(), IncomingMessage.Status.VIEWED);
+                }
+                switch (presenterHelper.getCurrentPresenter().getType()) {
+                    case TRANSCRIPTION:
+                        if (videoIsPlayable()) {
+                            managerProvider.getAudioController().setSpeakerPhoneOn(true);
+                            String path = friend.videoFromPath(videoId);
+                            presenterHelper.startPresentation(path, progress);
+                        } else {
+                            onCompletion(null);
+                        }
+                        break;
+                    case PLAYER: {
+                        PlayerPresenter presenter = (PlayerPresenter) presenterHelper.getCurrentPresenter();
+                        presenter.startMessagesPresentation(activity, messageContainer, this);
+                    }
+                        break;
+                }
+                break;
         }
+
     }
 
     @Override
@@ -505,8 +535,14 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             ArrayList<View> views = new ArrayList<>();
             videoParentView = presenter.getVideoViewParent();
             videoView = presenter.getVideoView();
-            if (presenter.getType() == Presenter.Type.TRANSCRIPTION) {
-                views.add(((TranscriptionPresenter) presenter).transcription);
+            switch (presenter.getType()) {
+                case TRANSCRIPTION:
+                    views.add(((TranscriptionPresenter) presenter).transcription);
+                    break;
+                case PLAYER:
+                    views.add(((PlayerPresenter) presenter).fab);
+                    views.add(((PlayerPresenter) presenter).messages);
+                    break;
             }
             views.add(videoParentView);
             if (presenter.getType() == Presenter.Type.PLAYER) {
@@ -581,6 +617,16 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (presenter.getType() == Presenter.Type.TRANSCRIPTION) {
                     result = ((TranscriptionPresenter) presenter).transcription != view;
                 } else {
+                    if (presenter.getType() == Presenter.Type.PLAYER) {
+                        PlayerPresenter playerPresenter = (PlayerPresenter) presenter;
+                        switch (view.getId()) {
+                            case R.id.fab:
+                            case R.id.messages:
+                                return false;
+                            default:
+                                return super.shouldHandle(view);
+                        }
+                    }
                     result = super.shouldHandle(view);
                 }
                 return result;
@@ -935,11 +981,15 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @InjectView(R.id.video_view) VideoView videoView;
         @InjectView(R.id.video_body) ViewGroup videoBody;
         @InjectView(R.id.tw_date) TextView date;
+        @InjectView(R.id.fab) FloatingActionButton fab;
+        @InjectView(R.id.messages) RecyclerView messages;
 
         PlayerPresenter(ViewStub viewStub) {
             rootLayout = viewStub.inflate();
             ButterKnife.inject(this, rootLayout);
             date.setTypeface(Convenience.getTypeface(date.getContext()));
+            messages.setLayoutManager(new LinearLayoutManager(rootLayout.getContext(), LinearLayoutManager.VERTICAL, false));
+            messages.setVisibility(View.INVISIBLE);
         }
 
         @Override
@@ -968,16 +1018,80 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 int dateHeight = date.getLineHeight() + Convenience.dpToPx(date.getContext(), 3);
                 date.setY(targetView.getY() - dateHeight); // for other place it above
             }
+
             date.setX(targetView.getX());
             ViewGroup.LayoutParams p = videoBody.getLayoutParams();
             p.width = targetView.getWidth();
             p.height = targetView.getHeight();
             videoBody.setLayoutParams(p);
+
+            NineViewGroup.Box box = NineViewGroup.Box.values()[(int) videoBody.getTag(R.id.box_id)];
+            Resources res = targetView.getResources();
+            int width = rootView.getWidth() - res.getDimensionPixelSize(R.dimen.messages_list_horizontal_padding) * 2;
+            int height = rootView.getHeight() - res.getDimensionPixelSize(R.dimen.messages_list_top_padding)
+                    - res.getDimensionPixelSize(R.dimen.messages_list_bottom_padding);
+
+            messages.setPivotX(width * ((box.isLeft() ? 0 : (box.isRight() ? 1 : 0.5f))));
+            messages.setPivotY(height * ((box.isTop() ? 0 : (box.isBottom() ? 1 : 0.5f))));
         }
 
         @Override
         public void update(VideoPlayer player) {
             TextAnimations.animateAlpha(date, StringUtils.getEventTime(player.videoId));
+        }
+
+        @Override
+        public void doContentAppearing(Context context) {
+            super.doContentAppearing(context);
+            //messages.setPivotX(messages.getX());
+            //messages.setPivotY(messages.getY());
+            //messages.setScaleX(0.7f + value * 0.3f);
+            //messages.setScaleY(0.7f + value * 0.3f);
+            //messages.setAlpha(value);
+        }
+
+        @Override
+        public void startPlayback(String path, float progress, VideoPlayer player) {
+            fab.hide();
+            if (messages.getVisibility() != View.INVISIBLE) {
+                messages.animate().alpha(0f).scaleX(0.5f).scaleY(0f).setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        messages.setVisibility(View.INVISIBLE);
+                    }
+                }).start();
+            }
+            super.startPlayback(path, progress, player);
+        }
+
+        public void startMessagesPresentation(Context context, MessageContainer<IncomingMessage> messageContainer, final VideoPlayer player) {
+            List<MessageContainer<IncomingMessage>> list = new ArrayList<>(1);
+            list.add(messageContainer);
+            messages.setAdapter(new MessageAdapter(list, context));
+            if (messages.getVisibility() != View.VISIBLE) {
+                messages.setVisibility(View.VISIBLE);
+                messages.setAlpha(0);
+                messages.setScaleX(0.5f);
+                messages.setScaleY(0);
+                messages.animate().alpha(1f).scaleX(1f).scaleY(1f).setListener(null).start();
+            }
+            fab.show();
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    player.onCompletion(null);
+                }
+            });
+            player.isSeekAllowed = true;
+            player.presenterHelper.showContent();
+            player.notifyStartPlaying();
+        }
+
+        @Override
+        public void stopPlayback() {
+            super.stopPlayback();
+            messages.setVisibility(View.INVISIBLE);
         }
     }
 
