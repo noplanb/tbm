@@ -480,8 +480,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
      */
     private float setVideoProgress(float fullProgress, boolean allowLoad, boolean seek) {
         contextBar.progressBar.setProgress(fullProgress);
-        int pos = (int) Math.max(Math.floor(fullProgress * numberOfMessages - 0.0001), 0);
-        final float curProgress = fullProgress * numberOfMessages - pos;
+        VideoProgressBar.ItemInfo info = contextBar.progressBar.getCurrentItemInfo();
+        int pos = info.position;
+        final float curProgress = info.currentProgress;
         final VideoView videoView = presenterHelper.getVideoView();
         if (videoView == null) {
             return 0;
@@ -597,8 +598,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     } else {
                         videoView.start();
                         int duration = videoView.getDuration() - videoView.getCurrentPosition();
-                        contextBar.progressBar.animateProgress(contextBar.progressBar.getProgress(),
-                                currentVideoNumber / (float) numberOfMessages, duration);
+                        contextBar.progressBar.animateProgress(-1, 0, duration);
                     }
                 } else {
                     if (isPlaying()) {
@@ -618,7 +618,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     result = ((TranscriptionPresenter) presenter).transcription != view;
                 } else {
                     if (presenter.getType() == Presenter.Type.PLAYER) {
-                        PlayerPresenter playerPresenter = (PlayerPresenter) presenter;
                         switch (view.getId()) {
                             case R.id.fab:
                             case R.id.messages:
@@ -1383,8 +1382,16 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         public void show(int videoDuration, int currentPosition) {
             VideoProgressBar.Scheme.SchemeBuilder schemeBuilder = new VideoProgressBar.Scheme.SchemeBuilder();
-            for (int i = 0; i < numberOfMessages; i++) {
-                schemeBuilder.addBar();
+            List<MessageContainer<IncomingMessage>> containers = playingMessages;
+            for (MessageContainer<IncomingMessage> container : containers) {
+                switch (container.getType()) {
+                    case TEXT:
+                        schemeBuilder.addPoint(R.drawable.ic_menu_chat);
+                        break;
+                    case VIDEO:
+                        schemeBuilder.addBar();
+                        break;
+                }
             }
             progressBar.setScheme(schemeBuilder.build());
             progressBar.initState();
@@ -1392,8 +1399,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             progressBar.setCurrent(currentVideoNumber, true);
             int duration = videoDuration - currentPosition;
             float offset = (videoDuration >= 0) ? currentPosition / (float) videoDuration : 0f;
-            progressBar.animateProgress((currentVideoNumber - 1 + offset) / (float) numberOfMessages,
-                    currentVideoNumber / (float) numberOfMessages, duration);
+            progressBar.animateProgress(currentVideoNumber - 1, offset, duration);
         }
 
         private void doAppearing() {
