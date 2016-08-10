@@ -319,6 +319,10 @@ public class Convenience {
             StringBuilder sb = new StringBuilder();
             while ((s = br.readLine()) != null) {
                 sb.append(s);
+                sb.append('\n');
+            }
+            if (sb.length() > 0) {
+                sb.deleteCharAt(sb.length() - 1);
             }
             json = sb.toString();
             br.close();

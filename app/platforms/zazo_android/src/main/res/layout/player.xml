@@ -16,26 +16,31 @@
             android:maxLines="1"
             android:paddingLeft="3dp"
             android:paddingRight="3dp"/>
-    <FrameLayout
+    <ViewSwitcher
             android:id="@+id/video_body"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/card">
+            android:background="@drawable/card"
+            >
 
         <com.zazoapp.client.ui.view.VideoView
                 android:id="@+id/video_view"
-                android:layout_gravity="center_vertical"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-    </FrameLayout>
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"/>
+
+        <com.zazoapp.client.ui.view.ThumbView
+                android:id="@+id/thumb"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"/>
+    </ViewSwitcher>
     <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         <include
                 android:id="@+id/messages"
                 layout="@layout/transcription_list"
-                android:layout_marginTop="@dimen/messages_list_top_padding"
-                android:layout_marginBottom="@dimen/messages_list_bottom_padding"
                 android:layout_marginLeft="@dimen/messages_list_horizontal_padding"
                 android:layout_marginRight="@dimen/messages_list_horizontal_padding"
                 android:layout_width="wrap_content"

@@ -61,22 +61,27 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        MessageType type = MessageType.values()[viewType];
-        switch (type) {
-            case VIDEO: {
+        switch (viewType) {
+            case R.id.message_type_video: {
                 View v = layoutInflater.inflate(R.layout.transcription_item, parent, false);
                 return new TranscriptionViewHolder(v);
             }
-            case TEXT: {
+            case R.id.message_type_text: {
                 View v = layoutInflater.inflate(R.layout.text_message_item, parent, false);
                 return new TextMessageViewHolder(v);
             }
+            case R.id.message_type_last:
+                View v = layoutInflater.inflate(R.layout.list_empty_item, parent, false);
+                return new ListEmptyViewHolder(v);
         }
         return null;
     }
 
     @Override
     public void onBindViewHolder(MessageViewHolder holder, final int position) {
+        if (holder.getType() == null) {
+            return;
+        }
         switch (holder.getType()) {
             case VIDEO: {
                 final TranscriptionViewHolder h = (TranscriptionViewHolder) holder;
@@ -123,7 +128,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public int getItemViewType(int position) {
-        return MessageType.get(messages.get(position)).ordinal();
+        if (position < messages.size()) {
+            switch (MessageType.get(messages.get(position))) {
+                case VIDEO:
+                    return R.id.message_type_video;
+                case TEXT:
+                    return R.id.message_type_text;
+            }
+        }
+        return R.id.message_type_last;
     }
 
     private void checkAndRequestTranscription(int position, IncomingMessage video) {
@@ -198,11 +211,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public int getItemCount() {
-        return messages.size();
+        return messages.size() + 1;
     }
 
     @Override
     public long getItemId(int position) {
+        if (position >= getItemCount() - 1) {
+            return -1;
+        }
         return VideoIdUtils.timeStampFromVideoId(messages.get(position).getId()); // for smooth animation of still unviewed messages
     }
 

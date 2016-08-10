@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
@@ -45,10 +46,12 @@ import com.zazoapp.client.ui.BaseManagerProvider;
 import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
 import com.zazoapp.client.ui.animations.TextAnimations;
 import com.zazoapp.client.ui.animations.VideoProgressBarAnimation;
+import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.ui.helpers.VideoContextBarPreferences;
 import com.zazoapp.client.ui.view.GestureControlledLayout;
 import com.zazoapp.client.ui.view.MessageAdapter;
 import com.zazoapp.client.ui.view.NineViewGroup;
+import com.zazoapp.client.ui.view.ThumbView;
 import com.zazoapp.client.ui.view.TouchBlockScreen;
 import com.zazoapp.client.ui.view.VideoProgressBar;
 import com.zazoapp.client.ui.view.VideoView;
@@ -430,6 +433,13 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private boolean videoIsPlayable(){
         File f = friend.videoFromFile(videoId);
         return f.exists() && f.length() > Config.getMinVideoSize();
+    }
+
+    private MessageType getCurrentType() {
+        if (currentVideoNumber - 1 > 0 && currentVideoNumber <= playingMessages.size()) {
+            return playingMessages.get(currentVideoNumber - 1).getType();
+        }
+        return null;
     }
 
     private void waitAndNotifyWhenStart() {
@@ -854,7 +864,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     static class TranscriptionPresenter extends BasePresenter {
         @InjectView(R.id.video_view) VideoView videoView;
-        @InjectView(R.id.video_body) ViewGroup videoBody;
+        @InjectView(R.id.video_body) ViewSwitcher videoBody;
         @InjectView(R.id.transcription) RecyclerView transcription;
         private boolean isAnimated = false;
         private boolean isAnimating = false;
@@ -868,6 +878,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             rootLayout = viewStub.inflate();
             ButterKnife.inject(this, rootLayout);
             transcription.setLayoutManager(new LinearLayoutManager(rootLayout.getContext(), LinearLayoutManager.VERTICAL, false));
+            thumbsHelper = new ThumbsHelper(rootLayout.getContext());
         }
 
         @Override
@@ -974,11 +985,17 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             zoomAnimator.setDuration(600);
             zoomAnimator.start();
         }
+
+        @Override
+        protected void switchBodyTo(int id) {
+            videoBody.setDisplayedChild(id);
+        }
     }
 
     static class PlayerPresenter extends BasePresenter {
         @InjectView(R.id.video_view) VideoView videoView;
-        @InjectView(R.id.video_body) ViewGroup videoBody;
+        @InjectView(R.id.video_body) ViewSwitcher videoBody;
+        @InjectView(R.id.thumb) ThumbView thumb;
         @InjectView(R.id.tw_date) TextView date;
         @InjectView(R.id.fab) FloatingActionButton fab;
         @InjectView(R.id.messages) RecyclerView messages;
@@ -989,6 +1006,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             date.setTypeface(Convenience.getTypeface(date.getContext()));
             messages.setLayoutManager(new LinearLayoutManager(rootLayout.getContext(), LinearLayoutManager.VERTICAL, false));
             messages.setVisibility(View.INVISIBLE);
+            thumbsHelper = new ThumbsHelper(rootLayout.getContext());
         }
 
         @Override
@@ -1036,7 +1054,16 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         @Override
         public void update(VideoPlayer player) {
-            TextAnimations.animateAlpha(date, StringUtils.getEventTime(player.videoId));
+            boolean isVideo = player.getCurrentType() == MessageType.VIDEO;
+            TextAnimations.animateAlpha(date, isVideo ? StringUtils.getEventTime(player.videoId) : "");
+            if (player.friend.thumbExists()) {
+                thumb.setImageBitmap(player.friend.thumbBitmap());
+                thumb.setMapArea(ThumbView.MapArea.FULL);
+            } else {
+                thumb.setImageResource(R.drawable.navigation_background_pattern);
+                thumb.setFillColor(thumbsHelper.getColor(player.friend.getDisplayName()));
+                thumb.setMapArea(thumbsHelper.getMapArea(player.friend.getDisplayName()));
+            }
         }
 
         @Override
@@ -1060,6 +1087,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         messages.setVisibility(View.INVISIBLE);
                     }
                 }).start();
+                videoBody.animate().alpha(1).start();
             }
             super.startPlayback(path, progress, player);
         }
@@ -1074,6 +1102,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 messages.setScaleX(0.5f);
                 messages.setScaleY(0);
                 messages.animate().alpha(1f).scaleX(1f).scaleY(1f).setListener(null).start();
+                videoBody.animate().alpha(0).start();
             }
             fab.show();
             fab.setOnClickListener(new View.OnClickListener() {
@@ -1092,11 +1121,21 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             super.stopPlayback();
             messages.setVisibility(View.INVISIBLE);
         }
+
+        @Override
+        protected void switchBodyTo(int id) {
+            videoBody.setDisplayedChild(id);
+        }
     }
 
     static abstract class BasePresenter implements Presenter {
         View rootLayout;
         private boolean isPresenting;
+        protected ThumbsHelper thumbsHelper;
+
+        protected static final int VIDEO_BODY = 0;
+        protected static final int THUMB_BODY = 1;
+
         @Override
         public void stopPlayback() {
             VideoView videoView = getVideoView();
@@ -1115,6 +1154,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         @Override
         public void startPlayback(final String path, final float progress, final VideoPlayer player) {
+            if (path == null) {
+                return;
+            }
             final VideoView videoView = getVideoView();
             if (videoView != null) {
                 videoView.setOnPreparedListener(new OnPreparedListener() {
@@ -1165,6 +1207,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         public void doContentAppearing(Context context) {
             isPresenting = true;
         }
+
+        protected void switchBodyTo(int id) {}
     }
 
     private interface Presenter {

@@ -22,8 +22,8 @@ public class GridElementMenuAdapter extends BaseAdapter {
     private final List<GridElementMenuOption> menuItems;
     private Context context;
 
-    public GridElementMenuAdapter(Context context) {
-        menuItems = GridElementMenuOption.getAllEnabled();
+    public GridElementMenuAdapter(Context context, List<GridElementMenuOption> list) {
+        menuItems = list;
         this.context = context;
     }
 

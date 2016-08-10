@@ -4,4 +4,7 @@
     <item type="id" name="id"/>
     <item type="id" name="menu_manage_friends"/>
     <item type="id" name="menu_send_feedback"/>
+    <item type="id" name="message_type_video"/>
+    <item type="id" name="message_type_text"/>
+    <item type="id" name="message_type_last"/>
 </resources>

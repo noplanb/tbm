@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.model.ActiveModel;
 import com.zazoapp.client.model.Friend;
@@ -30,6 +31,8 @@ import com.zazoapp.client.ui.view.GridElementMenuAdapter;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.utilities.DialogShower;
 import com.zazoapp.client.utilities.StringUtils;
+
+import java.util.List;
 
 /**
  * Created by skamenkovych@codeminders.com on 1/30/2015.
@@ -134,7 +137,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     private void showMenu() {
         final ListPopupWindow listPopupWindow = new ListPopupWindow(activity, null, android.support.v7.appcompat.R.attr.popupMenuStyle, 0);
-        final GridElementMenuAdapter adapter = new GridElementMenuAdapter(activity);
+        final GridElementMenuAdapter adapter = new GridElementMenuAdapter(activity, getGridElementMenuOptions(gridElement.getFriend()));
         listPopupWindow.setAdapter(adapter);
         listPopupWindow.setContentWidth(adapter.measureContentWidth());
         listPopupWindow.setDropDownGravity(Gravity.END);
@@ -499,6 +502,23 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         if (friend == null || !friend.hasIncomingPlayableMessages()) {
             return false;
         }
-        return GridElementMenuOption.getAllEnabled().size() > 0/*Features.Feature.PLAY_FULLSCREEN.isUnlocked(activity)*/;
+        List<GridElementMenuOption> enabledItems = getGridElementMenuOptions(friend);
+
+        return enabledItems.size() > 0/*Features.Feature.PLAY_FULLSCREEN.isUnlocked(activity)*/;
+    }
+
+    private List<GridElementMenuOption> getGridElementMenuOptions(Friend friend) {
+        List<GridElementMenuOption> enabledItems = GridElementMenuOption.getAllEnabled();
+        boolean hasVideos = false;
+        for (IncomingMessage message : friend.getIncomingPlayableMessages()) {
+            if (MessageType.VIDEO.is(message.getType())) {
+                hasVideos = true;
+                break;
+            }
+        }
+        if (!hasVideos) {
+            enabledItems.remove(GridElementMenuOption.TRANSCRIPT);
+        }
+        return enabledItems;
     }
 }
