@@ -17,6 +17,19 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"/>
+    <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingLeft="@dimen/actionbar_item_padding"
+            android:paddingRight="@dimen/actionbar_item_padding"
+            android:gravity="center_vertical"
+            android:text="@string/dialog_register_first_name_title"
+            android:textSize="@dimen/text_very_large"
+            android:textColor="@color/actionbar_textcolor"
+            android:visibility="gone"
+            />
     <ImageView
             android:id="@+id/mute"
             android:layout_width="@dimen/abc_action_button_min_width_material"

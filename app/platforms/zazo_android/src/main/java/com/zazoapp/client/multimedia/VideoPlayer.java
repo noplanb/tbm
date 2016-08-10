@@ -1344,6 +1344,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @InjectView(R.id.progress_bar) VideoProgressBar progressBar;
         @InjectView(R.id.menu_view) MaterialMenuView menuView;
         @InjectView(R.id.mute) View mute;
+        @InjectView(R.id.title) TextView title;
 
         private Animator appearingAnimation;
         private View rootView;
@@ -1393,13 +1394,25 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         break;
                 }
             }
-            progressBar.setScheme(schemeBuilder.build());
-            progressBar.initState();
-            doAppearing();
-            progressBar.setCurrent(currentVideoNumber, true);
-            int duration = videoDuration - currentPosition;
-            float offset = (videoDuration >= 0) ? currentPosition / (float) videoDuration : 0f;
-            progressBar.animateProgress(currentVideoNumber - 1, offset, duration);
+            VideoProgressBar.Scheme scheme = schemeBuilder.build();
+            if (scheme.getBarCount() == 0) {
+                progressBar.setVisibility(View.GONE);
+                title.setVisibility(View.VISIBLE);
+                title.setText(friend.getFirstName());
+                menuView.setVisibility(View.VISIBLE); // Override preference
+                doAppearing();
+            } else {
+                progressBar.setVisibility(View.VISIBLE);
+                title.setVisibility(View.GONE);
+                progressBar.setScheme(scheme);
+                progressBar.initState();
+                doAppearing();
+                progressBar.setCurrent(currentVideoNumber, true);
+                int duration = videoDuration - currentPosition;
+                float offset = (videoDuration >= 0) ? currentPosition / (float) videoDuration : 0f;
+                progressBar.animateProgress(currentVideoNumber - 1, offset, duration);
+            }
+
         }
 
         private void doAppearing() {
