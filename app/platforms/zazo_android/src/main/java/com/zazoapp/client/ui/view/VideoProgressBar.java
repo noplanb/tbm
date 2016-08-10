@@ -24,6 +24,7 @@ import com.zazoapp.client.BuildConfig;
 import com.zazoapp.client.R;
 import com.zazoapp.client.ui.animations.VideoProgressBarAnimation;
 import com.zazoapp.client.utilities.Convenience;
+import com.zazoapp.client.utilities.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -102,16 +103,22 @@ public class VideoProgressBar extends FrameLayout {
     public void setCurrent(int current, boolean animate) {
         final String currentText = (current > 0) ? String.valueOf(current) : "";
         if (!currentText.equals(sliderView.getText())) {
-            if (animate) {
-                VideoProgressBarAnimation.animateValueChange(sliderView, new Runnable() {
-                    @Override
-                    public void run() {
-                        sliderView.setText(currentText);
-                    }
-                }, null);
-            } else {
+            if (scheme.getElementAt(current - 1) == Scheme.Element.POINT) {
+                VideoProgressBarAnimation.animateIconRect(this, scheme.getRectAtPosition(current - 1), dotSize, null);
                 sliderView.setText(currentText);
+            } else {
+                if (animate) {
+                    VideoProgressBarAnimation.animateValueChange(sliderView, new Runnable() {
+                        @Override
+                        public void run() {
+                            sliderView.setText(currentText);
+                        }
+                    }, null);
+                } else {
+                    sliderView.setText(currentText);
+                }
             }
+
         }
         this.current = current;
     }
@@ -145,9 +152,10 @@ public class VideoProgressBar extends FrameLayout {
         }
         if (scheme.getElementAt(item) == Scheme.Element.BAR) {
             RectF rect = scheme.getRectAtPosition(item);
-            float width = scheme.getRectAtPosition(scheme.getCount() - 1).right - scheme.getRectAtPosition(0).left;
-            float endProgress = rect.right / width;
-            float startProgress = (rect.left + startRelativeProgress * rect.width()) / width;
+            float x0 = scheme.getRectAtPosition(0).left;
+            float width = scheme.getRectAtPosition(scheme.getCount() - 1).right - x0;
+            float endProgress = (rect.right - x0) / width;
+            float startProgress = (rect.left - x0 + startRelativeProgress * rect.width()) / width;
             progressAnimator = ValueAnimator.ofFloat(startProgress, endProgress);
             progressAnimator.setInterpolator(new LinearInterpolator());
             progressAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -158,6 +166,11 @@ public class VideoProgressBar extends FrameLayout {
             });
             progressAnimator.setDuration(Math.max(duration, 0));
             progressAnimator.start();
+        } else {
+            RectF rect = scheme.getRectAtPosition(item);
+            float x0 = scheme.getRectAtPosition(0).left;
+            float width = scheme.getRectAtPosition(scheme.getCount() - 1).right - x0;
+            setProgress((rect.left - x0) / width);
         }
     }
 
@@ -174,11 +187,7 @@ public class VideoProgressBar extends FrameLayout {
         int i = 0;
         for (; i < scheme.getCount() - 1; i++) {
             if (scheme.getRectAtPosition(i).left <= pointer && scheme.getRectAtPosition(i + 1).left > pointer) {
-                ItemInfo info = new ItemInfo();
-                info.position = i;
-                info.currentProgress = (pointer - scheme.getRectAtPosition(i).left) / scheme.getRectAtPosition(i).width();
-                info.progress = pointer / scheme.getRectAtPosition(i).width();
-                return info;
+                break;
             }
         }
         ItemInfo info = new ItemInfo();
@@ -202,7 +211,23 @@ public class VideoProgressBar extends FrameLayout {
         if (scheme.getElementAt(info.position) == Scheme.Element.BAR) {
             sliderView.setAlpha(1f);
             RectF rect = scheme.getRectAtPosition(info.position);
-            sliderView.setX(rect.left + rect.width() * info.currentProgress - sliderView.getWidth() / 2);
+            float halfSliderWidth = sliderView.getWidth() / 2;
+            float offset = rect.width() * info.currentProgress - halfSliderWidth;
+            sliderView.setX(rect.left + offset);
+            float scale = 1f;
+            if (offset < 0 && halfSliderWidth >= Math.abs(offset) && scheme.getElementAt(info.position - 1) != Scheme.Element.BAR) {
+                scale = (halfSliderWidth + offset) / halfSliderWidth;
+            } else if (offset > 0 && rect.width() - offset < sliderView.getWidth() && scheme.getElementAt(info.position + 1) != Scheme.Element.BAR) {
+                if (rect.width() - offset >= halfSliderWidth) {
+                    scale = (rect.width() - offset - halfSliderWidth) / halfSliderWidth;
+                } else {
+                    scale = 0;
+                }
+            }
+            Logger.i(TAG, "Rect " + rect.toShortString());
+            Logger.i(TAG, "Offset hW scale", offset, halfSliderWidth, scale);
+            sliderView.setScaleX(scale);
+            sliderView.setScaleY(scale);
         } else {
             sliderView.setAlpha(0f);
         }
@@ -277,7 +302,7 @@ public class VideoProgressBar extends FrameLayout {
                 if (i < info.position) {
                     canvas.drawRoundRect(rect, radius, radius, primaryPaint);
                 } else if (i == info.position) {
-                    drawRoundRect.right = rect.left + rect.width() * curProgress;
+                    drawRoundRect.right = rect.left + rect.width() * Math.min(curProgress, 1f);
                     canvas.drawRoundRect(drawRoundRect, radius, radius, primaryPaint);
                 }
             } else if (item == Scheme.Element.POINT) {
