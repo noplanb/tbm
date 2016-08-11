@@ -3,34 +3,38 @@
                 android:id="@+id/list_item"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bubble"
         >
-    <include
-            android:id="@+id/main_layout"
-            layout="@layout/text_message_main_item_body"/>
-    <LinearLayout
-            android:id="@+id/progress_layout"
-            android:orientation="horizontal"
+    <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/content_inset"
-            android:layout_centerInParent="true"
-            android:baselineAligned="false">
+            android:background="@drawable/bubble">
+        <include
+                android:id="@+id/main_layout"
+                layout="@layout/text_message_main_item_body"/>
+        <LinearLayout
+                android:id="@+id/progress_layout"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/content_inset"
+                android:layout_centerInParent="true"
+                android:baselineAligned="false">
 
-        <fr.castorflex.android.circularprogressbar.CircularProgressBar
-                android:id="@+id/progress"
-                android:layout_width="40dp"
-                android:layout_height="40dp"/>
+            <fr.castorflex.android.circularprogressbar.CircularProgressBar
+                    android:id="@+id/progress"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"/>
 
-        <TextView android:id="@+id/progress_message"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:layout_gravity="center_vertical"
-                  android:layout_marginLeft="@dimen/abc_select_dialog_padding_start_material"
-                  android:layout_marginRight="@dimen/abc_select_dialog_padding_start_material"
-                  android:textColor="@color/black"
-                  android:alpha="@integer/secondary_dark_text_alpha"
-                  android:text="@string/converting_to_text"/>
-    </LinearLayout>
+            <TextView android:id="@+id/progress_message"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_gravity="center_vertical"
+                      android:layout_marginLeft="@dimen/abc_select_dialog_padding_start_material"
+                      android:layout_marginRight="@dimen/abc_select_dialog_padding_start_material"
+                      android:textColor="@color/black"
+                      android:alpha="@integer/secondary_dark_text_alpha"
+                      android:text="@string/converting_to_text"/>
+        </LinearLayout>
+    </RelativeLayout>
 
 </RelativeLayout>

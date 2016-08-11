@@ -3,10 +3,14 @@
                 android:id="@+id/list_item"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bubble"
         >
-    <include
-            android:id="@+id/main_layout"
-            layout="@layout/text_message_main_item_body"/>
+    <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bubble">
+        <include
+                android:id="@+id/main_layout"
+                layout="@layout/text_message_main_item_body"/>
+    </RelativeLayout>
 
 </RelativeLayout>

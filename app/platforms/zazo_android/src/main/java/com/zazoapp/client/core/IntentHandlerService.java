@@ -575,6 +575,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
     }
 
     public static final String EXTRA_TEXT = "extra_test";
+    public static final String EXTRA_FROM_UI = "extra_from_ui";
 
     public class NetworkReceiver extends BroadcastReceiver {
 

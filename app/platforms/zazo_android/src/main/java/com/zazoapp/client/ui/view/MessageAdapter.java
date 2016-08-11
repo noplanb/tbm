@@ -1,6 +1,7 @@
 package com.zazoapp.client.ui.view;
 
 import android.content.Context;
+import android.support.annotation.DimenRes;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -38,6 +39,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private HashSet<String> submittedRequests = new HashSet<>();
 
+    private int topPadding;
+    private int bottomPadding;
+
     public MessageAdapter(List<MessageContainer<IncomingMessage>> list, Context context) {
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.context = context.getApplicationContext();
@@ -59,6 +63,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         setHasStableIds(true);
     }
 
+    public void setTopPadding(@DimenRes int padding) {
+        topPadding = context.getResources().getDimensionPixelSize(padding);
+    }
+
+    public void setBottomPadding(@DimenRes int padding) {
+        bottomPadding = context.getResources().getDimensionPixelSize(padding);
+    }
+
     @Override
     public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
@@ -70,9 +82,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 View v = layoutInflater.inflate(R.layout.text_message_item, parent, false);
                 return new TextMessageViewHolder(v);
             }
-            case R.id.message_type_last:
-                View v = layoutInflater.inflate(R.layout.list_empty_item, parent, false);
-                return new ListEmptyViewHolder(v);
         }
         return null;
     }
@@ -124,19 +133,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             }
                 break;
         }
+        holder.setPadding((position == 0) ? topPadding : 0, (position == getItemCount() - 1) ? bottomPadding : 0);
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (position < messages.size()) {
-            switch (MessageType.get(messages.get(position))) {
-                case VIDEO:
-                    return R.id.message_type_video;
-                case TEXT:
-                    return R.id.message_type_text;
-            }
+        switch (MessageType.get(messages.get(position))) {
+            case VIDEO:
+                return R.id.message_type_video;
+            case TEXT:
+                return R.id.message_type_text;
         }
-        return R.id.message_type_last;
+        return 0;
     }
 
     private void checkAndRequestTranscription(int position, IncomingMessage video) {
@@ -211,14 +219,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public int getItemCount() {
-        return messages.size() + 1;
+        return messages.size();
     }
 
     @Override
     public long getItemId(int position) {
-        if (position >= getItemCount() - 1) {
-            return -1;
-        }
+
         return VideoIdUtils.timeStampFromVideoId(messages.get(position).getId()); // for smooth animation of still unviewed messages
     }
 
@@ -267,6 +273,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         public MessageType getType() {
             return type;
+        }
+
+        protected void setPadding(int top, int bottom) {
+            itemView.setPadding(itemView.getPaddingLeft(), top, itemView.getPaddingRight(), bottom);
         }
     }
 

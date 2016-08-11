@@ -5,11 +5,13 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.net.Uri;
 import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -33,6 +35,7 @@ import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.MessageContainer;
 import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.dispatch.Dispatch;
@@ -43,6 +46,7 @@ import com.zazoapp.client.model.IncomingMessage;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.ui.BaseManagerProvider;
+import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
 import com.zazoapp.client.ui.animations.TextAnimations;
 import com.zazoapp.client.ui.animations.VideoProgressBarAnimation;
@@ -195,7 +199,11 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @Override
     public void stop(){
         Log.i(TAG, "stop");
-        presenterHelper.stopPresentation();
+        stop(true);
+    }
+
+    private void stop(boolean animate) {
+        presenterHelper.stopPresentation(animate);
         blockScreen.unlock(true);
         managerProvider.getAudioController().setSpeakerPhoneOn(false);
         cancelWaitingForStart();
@@ -548,6 +556,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             videoView = presenter.getVideoView();
             switch (presenter.getType()) {
                 case TRANSCRIPTION:
+                    views.add(((TranscriptionPresenter) presenter).fab);
                     views.add(((TranscriptionPresenter) presenter).transcription);
                     break;
                 case PLAYER:
@@ -623,9 +632,17 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
             @Override
             public boolean shouldHandle(View view) {
-                boolean result;
+                if (view == null) {
+                    return super.shouldHandle(view);
+                }
                 if (presenter.getType() == Presenter.Type.TRANSCRIPTION) {
-                    result = ((TranscriptionPresenter) presenter).transcription != view;
+                    switch (view.getId()) {
+                        case R.id.fab:
+                        case R.id.transcription:
+                            return false;
+                        default:
+                            return super.shouldHandle(view);
+                    }
                 } else {
                     if (presenter.getType() == Presenter.Type.PLAYER) {
                         switch (view.getId()) {
@@ -636,9 +653,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                                 return super.shouldHandle(view);
                         }
                     }
-                    result = super.shouldHandle(view);
                 }
-                return result;
+                return super.shouldHandle(view);
             }
 
             @Override
@@ -866,8 +882,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @InjectView(R.id.video_view) VideoView videoView;
         @InjectView(R.id.video_body) ViewSwitcher videoBody;
         @InjectView(R.id.transcription) RecyclerView transcription;
+        @InjectView(R.id.fab) FloatingActionButton fab;
         private boolean isAnimated = false;
         private boolean isAnimating = false;
+        private View.OnClickListener onClickListener;
 
         private float targetX;
         private float targetY;
@@ -941,6 +959,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             Resources res = context.getResources();
             final int endW = res.getDimensionPixelSize(R.dimen.transcription_video_width);
             final int endH = res.getDimensionPixelSize(R.dimen.transcription_video_height);
+            final int endTopMargin = res.getDimensionPixelSize(R.dimen.abc_dialog_list_padding_vertical_material);
             ValueAnimator zoomAnimator = ValueAnimator.ofFloat(0, 1);
             zoomAnimator.setInterpolator(new FastOutSlowInInterpolator());
             zoomAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -956,7 +975,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     float value = (float) animation.getAnimatedValue();
                     //videoView.setCropFraction(0);
                     videoBody.setX(startX * (1 - value));
-                    videoBody.setY(startY * (1 - value));
+                    videoBody.setY(startY * (1 - value) + endTopMargin * value);
                     ViewGroup.LayoutParams p = videoBody.getLayoutParams();
                     p.width = (int) (w + (maxVideoBodyWidth - w) * value);
                     p.height = (int) (h + (maxVideoBodyHeight - h) * value);
@@ -989,6 +1008,17 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @Override
         protected void switchBodyTo(int id) {
             videoBody.setDisplayedChild(id);
+        }
+
+        @OnClick(R.id.fab)
+        public void onReply(View v) {
+            if (onClickListener != null) {
+                onClickListener.onClick(v);
+            }
+        }
+
+        public void setOnClickListener(View.OnClickListener listener) {
+            onClickListener = listener;
         }
     }
 
@@ -1095,7 +1125,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         public void startMessagesPresentation(Context context, MessageContainer<IncomingMessage> messageContainer, final VideoPlayer player) {
             List<MessageContainer<IncomingMessage>> list = new ArrayList<>(1);
             list.add(messageContainer);
-            messages.setAdapter(new MessageAdapter(list, context));
+            MessageAdapter adapter = new MessageAdapter(list, context);
+            adapter.setBottomPadding(R.dimen.messages_list_bottom_padding);
+            adapter.setTopPadding(R.dimen.abc_dialog_list_padding_vertical_material);
+            messages.setAdapter(adapter);
             if (messages.getVisibility() != View.VISIBLE) {
                 messages.setVisibility(View.VISIBLE);
                 messages.setAlpha(0);
@@ -1214,7 +1247,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     private interface Presenter {
         enum Type {
             PLAYER(R.id.player_layout_stub, PlayerPresenter.class, new VideoContextBarPreferences(true, false, false)),
-            TRANSCRIPTION(R.id.transcription_layout_stub, TranscriptionPresenter.class, new VideoContextBarPreferences(false, true, true));
+            TRANSCRIPTION(R.id.transcription_layout_stub, TranscriptionPresenter.class, new VideoContextBarPreferences(true, true, true));
 
             int stubId;
 
@@ -1287,14 +1320,22 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             return presenter;
         }
 
-        void stopPresentation() {
+        void stopPresentation(boolean animate) {
             if (currentPresenter != null) {
                 VideoContextBarPreferences contextBarPrefs = currentPresenter.getType().barPreferences;
                 if (!contextBarPrefs.hasDivider) {
-                    actionBarDivider.animate().alpha(1f).start();
+                    if (animate) {
+                        actionBarDivider.animate().alpha(1f).start();
+                    } else {
+                        actionBarDivider.setAlpha(1f);
+                    }
                 }
-                videoRootLayout.animate().alpha(0f).start();
                 zoomController.setEnabled(false);
+                if (animate) {
+                    videoRootLayout.animate().alpha(0f).start();
+                } else {
+                    videoRootLayout.setAlpha(0);
+                }
                 contextBar.hide();
                 currentPresenter.stopPlayback();
             }
@@ -1368,20 +1409,40 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     contextBar.setPreferences(contextBarPrefs);
                     contextBar.show(view.getDuration(), view.getCurrentPosition());
                     if (currentPresenter.getType() == Presenter.Type.TRANSCRIPTION) {
-                        RecyclerView rv = ((TranscriptionPresenter) currentPresenter).transcription;
+                        TranscriptionPresenter presenter = (TranscriptionPresenter) currentPresenter;
+                        RecyclerView rv = presenter.transcription;
                         MessageAdapter adapter = (MessageAdapter) rv.getAdapter();
                         if (adapter == null) {
                             adapter = new MessageAdapter(playingMessages, view.getContext());
+                            adapter.setBottomPadding(R.dimen.messages_list_bottom_padding);
+                            adapter.setTopPadding(R.dimen.messages_list_top_padding);
                             rv.setAdapter(adapter);
                         } else {
                             adapter.setList(playingMessages);
                             adapter.notifyDataSetChanged();
                         }
+                        presenter.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                showChat();
+                            }
+                        });
                     }
                     currentPresenter.doContentAppearing(view.getContext());
                 }
             }
         }
+    }
+
+    private void showChat() {
+        stop();
+        Intent i = new Intent(activity, MainActivity.class);
+        i.setAction(IntentHandlerService.IntentActions.TEXT_REPLY);
+        Uri uri = new Uri.Builder().appendPath(IntentHandlerService.IntentActions.TEXT_REPLY).appendQueryParameter(
+                IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
+        i.setData(uri);
+        i.putExtra(IntentHandlerService.EXTRA_FROM_UI, true);
+        activity.startActivity(i);
     }
 
     class VideoContextBar implements View.OnTouchListener {

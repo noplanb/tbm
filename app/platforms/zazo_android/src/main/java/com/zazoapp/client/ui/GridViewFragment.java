@@ -82,6 +82,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         setupSpinFeature(getActivity());
         CameraManager.setUsePreferredPreviewSize(false);
         getManagerProvider().getRecorder().resume();
+        handleIntentAction(getActivity().getIntent());
     }
 
     @Override
@@ -277,7 +278,9 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         if (action.equals(IntentHandlerService.IntentActions.TEXT_REPLY)) {
             currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             Friend friend = FriendFactory.getFactoryInstance().find(friendId);
-            GridManager.getInstance().moveFriendToGrid(friend);
+            if (!currentIntent.getBooleanExtra(IntentHandlerService.EXTRA_FROM_UI, false)) {
+                GridManager.getInstance().moveFriendToGrid(friend);
+            }
             for (GridElementController controller : viewControllers) {
                 controller.showChat(friendId);
             }

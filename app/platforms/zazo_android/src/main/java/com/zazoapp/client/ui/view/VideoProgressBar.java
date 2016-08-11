@@ -24,7 +24,6 @@ import com.zazoapp.client.BuildConfig;
 import com.zazoapp.client.R;
 import com.zazoapp.client.ui.animations.VideoProgressBarAnimation;
 import com.zazoapp.client.utilities.Convenience;
-import com.zazoapp.client.utilities.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -224,8 +223,6 @@ public class VideoProgressBar extends FrameLayout {
                     scale = 0;
                 }
             }
-            Logger.i(TAG, "Rect " + rect.toShortString());
-            Logger.i(TAG, "Offset hW scale", offset, halfSliderWidth, scale);
             sliderView.setScaleX(scale);
             sliderView.setScaleY(scale);
         } else {
