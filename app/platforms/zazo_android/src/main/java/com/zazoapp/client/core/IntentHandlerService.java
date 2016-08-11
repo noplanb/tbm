@@ -36,7 +36,6 @@ import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
-import com.zazoapp.client.ui.helpers.GridElementMenuOption;
 import com.zazoapp.client.ui.helpers.RegistrationHelper;
 import com.zazoapp.client.ui.helpers.UnexpectedTerminationHelper;
 import com.zazoapp.client.utilities.Convenience;
@@ -177,9 +176,14 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     video.handleRemoteDeletion();
                     break;
                 case IncomingMessage.Status.DOWNLOADED: {
-                    Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
+                    Friend friend = friendFactory.find(video.get(Message.Attributes.FRIEND_ID));
                     if (friend != null) {
-                        extractVoice(friend, video.getId());
+                        Intent intent = new Intent(getApplicationContext(), IntentHandlerService.class);
+                        intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
+                        intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingMessage.Status.READY_TO_VIEW);
+                        intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, video.getId());
+                        intent.putExtra(IntentParamKeys.FRIEND_ID, friend.getId());
+                        startService(intent);
                     }
                 }
                     break;
@@ -443,11 +447,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
 
             if (status == IncomingMessage.Status.DOWNLOADED) {
                 transferTasks.removeDownloadId(messageId);
-                if (GridElementMenuOption.TRANSCRIPT.isEnabled()) {
-                    extractVoice(friend, messageId);
-                } else {
-                    status = IncomingMessage.Status.READY_TO_VIEW;
-                }
+                status = IncomingMessage.Status.READY_TO_VIEW;
             }
             if (status == IncomingMessage.Status.READY_TO_VIEW) {
                 if (!testIntent) {

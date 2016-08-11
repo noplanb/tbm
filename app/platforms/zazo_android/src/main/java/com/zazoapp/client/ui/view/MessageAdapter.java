@@ -3,14 +3,13 @@ package com.zazoapp.client.ui.view;
 import android.content.Context;
 import android.support.annotation.DimenRes;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.R;
-import com.zazoapp.client.asr.ASRProvider;
-import com.zazoapp.client.asr.NuanceASRProvider;
-import com.zazoapp.client.asr.VoiceTranscriptor;
 import com.zazoapp.client.core.MessageContainer;
 import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.model.Friend;
@@ -18,10 +17,10 @@ import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingMessage;
 import com.zazoapp.client.model.Transcription;
 import com.zazoapp.client.multimedia.VideoIdUtils;
+import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.StringUtils;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -34,7 +33,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private LayoutInflater layoutInflater;
     private Context context;
     private List<IncomingMessage> messages;
-    private ASRProvider asrProvider = new NuanceASRProvider();
     private static final String TAG = MessageAdapter.class.getSimpleName();
 
     private HashSet<String> submittedRequests = new HashSet<>();
@@ -148,73 +146,54 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     private void checkAndRequestTranscription(int position, IncomingMessage video) {
-        Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
-        if (friend != null) {
-            File transcriptionFile = new File(friend.audioFromPath(video.getId()));
-            if (transcriptionFile.exists()) {
-                requestTranscriptionForVideo(position, video, transcriptionFile.getAbsolutePath());
-            } else {
-                requestTranscriptionForVideo(position, video);
-            }
-        }
+        requestTranscriptionForVideo(position, video);
     }
 
     private void requestTranscriptionForVideo(final int position, final IncomingMessage video) {
-        VoiceTranscriptor transcriptor = new VoiceTranscriptor();
-        Friend friend = FriendFactory.getFactoryInstance().find(video.getFriendId());
-        transcriptor.extractVoiceFromVideo(friend.videoFromPath(video.getId()), asrProvider, new VoiceTranscriptor.ExtractionCallbacks() {
-            private long startTime = System.nanoTime();
-            @Override
-            public void onResult(VoiceTranscriptor transcriptor, String path) {
-                float extractionDuration = (System.nanoTime() - startTime) / 1000000000f;
-                Log.i(TAG, "extractionDuration " + extractionDuration);
-                requestTranscriptionForVideo(position, video, path);
-            }
+        new HttpRequest.Builder()
+                .setUri("/api/v1/messages/" + video.getId())
+                .setCallbacks(new HttpRequest.Callbacks() {
+                    @Override
+                    public void success(String jsonResponse) {
+                        LinkedTreeMap<String, Object> response = null;
+                        Gson gson = new Gson();
+                        try {
+                            response = gson.fromJson(jsonResponse, LinkedTreeMap.class);
+                            if (response == null || !response.containsKey("data")) {
+                                error("Not parsed");
+                                return;
+                            }
+                            LinkedTreeMap<String, String> data = (LinkedTreeMap<String, String>) response.get("data");
+                            String text = data.get("transcription");
+                            if (text != null) {
+                                Transcription t = new Transcription();
+                                t.state = Transcription.State.OK;
+                                t.text = text;
+                                setTranscription(t);
+                            } else {
+                                error(null);
+                            }
+                        } catch (JsonSyntaxException e) {
+                            error(e.getMessage());
+                        }
+                    }
 
-            @Override
-            public void onError(String error) {
-                Transcription t = new Transcription();
-                t.state = Transcription.State.FAILED;
-                video.setTranscription(t);
-                notifyItemChanged(position);
-            }
+                    @Override
+                    public void error(String errorString) {
+                        Transcription t = new Transcription();
+                        t.state = Transcription.State.FAILED;
+                        setTranscription(t);
+                    }
 
-            @Override
-            public void onProgressChanged(int progress) {
-            }
-        }, null);
-    }
-
-    private void requestTranscriptionForVideo(final int position, final IncomingMessage video, String path) {
-        VoiceTranscriptor transcriptor = new VoiceTranscriptor();
-        transcriptor.requestTranscription(path, asrProvider, new ASRProvider.Callback() {
-            private long startTime;
-            @Override
-            public void onResult(String text) {
-                float requestDuration = (System.nanoTime() - startTime) / 1000000000f;
-                Log.i(TAG, "requestDuration " + requestDuration + " " + video.getId());
-                Transcription t = new Transcription();
-                if (text == null) {
-                    t.state = Transcription.State.FAILED;
-                } else {
-                    t.state = Transcription.State.OK;
-                    t.text = text;
-                    t.asr = "nuance";
-                    t.lang = asrProvider.getLanguage();
-                    t.rate = String.valueOf(asrProvider.getSampleRate());
-                }
-                video.setTranscription(t);
-                int pos = findPosition(video);
-                if (pos >= 0) {
-                    notifyItemChanged(pos);
-                }
-            }
-
-            @Override
-            public void onStart() {
-                startTime = System.nanoTime();
-            }
-        });
+                    private void setTranscription(Transcription t) {
+                        video.setTranscription(t);
+                        int pos = findPosition(video);
+                        if (pos >= 0) {
+                            notifyItemChanged(pos);
+                        }
+                    }
+                })
+                .build();
     }
 
     @Override
