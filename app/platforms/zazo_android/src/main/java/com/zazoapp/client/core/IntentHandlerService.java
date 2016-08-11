@@ -167,7 +167,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     Friend friend = friendFactory.find(video.get(Message.Attributes.FRIEND_ID));
                     if (friend != null) {
                         Logger.i(TAG, "Inew: restoreTransferring " + friend.getMkey() + " " + video.getId());
-                        friend.requestDownload(video.getId());
+                        friend.requestDownload(video.getId(), null, null);
                     }
                 }
                     break;

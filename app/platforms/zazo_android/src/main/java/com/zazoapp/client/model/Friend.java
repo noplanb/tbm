@@ -562,12 +562,14 @@ public class Friend extends ActiveModel{
         getContext().startService(i);
     }
 
-    public void requestDownload(String videoId) {
+    public void requestDownload(String id, String type, String body) {
         Intent intent = new Intent(getContext(), IntentHandlerService.class);
         intent.putExtra(FileTransferService.IntentFields.TRANSFER_TYPE_KEY, FileTransferService.IntentFields.TRANSFER_TYPE_DOWNLOAD);
         intent.putExtra(FileTransferService.IntentFields.STATUS_KEY, IncomingMessage.Status.NEW);
-        intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, videoId);
+        intent.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, id);
         intent.putExtra(IntentHandlerService.IntentParamKeys.FRIEND_ID, getId());
+        intent.putExtra(NotificationHandler.DataKeys.CONTENT_TYPE, type);
+        intent.putExtra(NotificationHandler.DataKeys.BODY, body);
         getContext().startService(intent);
     }
 

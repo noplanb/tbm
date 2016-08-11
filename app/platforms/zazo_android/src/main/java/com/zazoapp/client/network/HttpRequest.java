@@ -181,6 +181,10 @@ public class HttpRequest {
 
     public static final String POST = "POST";
     public static final String GET = "GET";
+    public static final String CREATE = POST;
+    public static final String READ = GET;
+    public static final String UPDATE = "PATCH";
+    public static final String DELETE = "DELETE";
 
     public static class Builder {
         private String url;
