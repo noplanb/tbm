@@ -1,6 +1,7 @@
 package com.zazoapp.client.model;
 
-import java.io.File;
+import com.zazoapp.client.core.MessageType;
+
 import java.util.ArrayList;
 
 /**
@@ -31,17 +32,18 @@ public class OutgoingMessageFactory extends ActiveModelFactory<OutgoingMessage> 
     }
 
     public void deleteAllSent(String friendId) {
-        ArrayList<OutgoingMessage> videos = allWithFriendId(friendId);
-        for (OutgoingMessage video : videos) {
-            if (video.isSent() || video.getStatus() == OutgoingMessage.Status.FAILED_PERMANENTLY) {
+        ArrayList<OutgoingMessage> messages = allWithFriendId(friendId);
+        for (OutgoingMessage message : messages) {
+            if (message.isSent() || message.getStatus() == OutgoingMessage.Status.FAILED_PERMANENTLY) {
                 Friend friend = FriendFactory.getFactoryInstance().find(friendId);
                 if (friend != null) {
-                    File videoFile = friend.videoToFile(video.getId());
-                    if (videoFile.exists()) {
-                        videoFile.delete();
+                    if (MessageType.VIDEO.is(message.getType())) {
+                        Friend.File.OUT_VIDEO.delete(friend, message.getId());
+                    } else if (MessageType.TEXT.is(message.getType())) {
+                        Friend.File.OUT_TEXT.delete(friend, message.getId());
                     }
                 }
-                delete(video.getId());
+                delete(message.getId());
             }
         }
     }

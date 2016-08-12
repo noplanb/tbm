@@ -43,6 +43,7 @@ import com.zazoapp.client.bench.BenchController;
 import com.zazoapp.client.bench.GeneralContactsGroup;
 import com.zazoapp.client.bench.InviteManager;
 import com.zazoapp.client.core.IntentHandlerService;
+import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.core.VersionHandler;
 import com.zazoapp.client.debug.DebugUtils;
@@ -245,7 +246,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                                     File dst = friend.videoToFile(videoId);
                                     try {
                                         DebugUtils.copyFolder(src, dst);
-                                        friend.setNewOutgoingVideoId(videoId);
+                                        friend.setNewOutgoingMessage(videoId, MessageType.VIDEO);
                                         friend.requestUpload(videoId);
                                     } catch (IOException e) {
                                     }

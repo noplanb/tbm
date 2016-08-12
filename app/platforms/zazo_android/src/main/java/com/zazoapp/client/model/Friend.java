@@ -20,6 +20,7 @@ import com.zazoapp.client.network.FileDeleteService;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileUploadService;
+import com.zazoapp.client.network.MessageUploadService;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.StringUtils;
@@ -69,6 +70,10 @@ public class Friend extends ActiveModel{
 
         public boolean delete(Friend f, String id) {
             return getFile(f, id).delete();
+        }
+
+        public boolean exists(Friend f, String id) {
+            return getFile(f, id).exists();
         }
     }
 
@@ -187,12 +192,12 @@ public class Friend extends ActiveModel{
         return get(Friend.Attributes.OUTGOING_VIDEO_ID);
     }
 
-    public void setNewOutgoingVideoId(String videoId) {
+    public void setNewOutgoingMessage(String videoId, MessageType type) {
         set(Attributes.OUTGOING_VIDEO_ID, videoId);
-        OutgoingMessage video = OutgoingMessageFactory.getFactoryInstance().makeInstance(getContext());
-        video.set(OutgoingMessage.Attributes.ID, videoId);
-        video.set(OutgoingMessage.Attributes.FRIEND_ID, getId());
-        video.setType(MessageType.VIDEO);
+        OutgoingMessage message = OutgoingMessageFactory.getFactoryInstance().makeInstance(getContext());
+        message.set(OutgoingMessage.Attributes.ID, videoId);
+        message.set(OutgoingMessage.Attributes.FRIEND_ID, getId());
+        message.setType(type);
         OutgoingMessageFactory.getFactoryInstance().deleteAllSent(getId());
     }
 
@@ -515,21 +520,37 @@ public class Friend extends ActiveModel{
     // Message upload and download
     //--------------------------
 
-    public void uploadVideo(String videoId) {
-        Log.i(TAG, "uploadVideo. For friend=" + getUniqueName());
-        setAndNotifyOutgoingVideoStatus(videoId, OutgoingMessage.Status.QUEUED);
-
-        Intent i = new Intent(getContext(), FileUploadService.class);
-        i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
-        i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(videoId));
-        i.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, videoId);
-        i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this, videoId));
-        i.putExtra(FileTransferService.IntentFields.METADATA, FileTransferService.MetaData.getMetadata(videoId, UserFactory.getCurrentUserMkey(), getMkey(), videoToFile(videoId)));
-        // This is here so the old saving files on server vs s3 work
-        Bundle params = new Bundle();
-        params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this, videoId));
-        i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
-        getContext().startService(i);
+    public void uploadMessage(String messageId) {
+        Log.i(TAG, "uploadMessage. For friend=" + getUniqueName());
+        setAndNotifyOutgoingVideoStatus(messageId, OutgoingMessage.Status.QUEUED);
+        OutgoingMessage message = OutgoingMessageFactory.getFactoryInstance().find(messageId);
+        if (message != null) {
+            switch (MessageType.get(message)) {
+                case VIDEO: {
+                    Intent i = new Intent(getContext(), FileUploadService.class);
+                    i.putExtra(FileTransferService.IntentFields.ID_KEY, getId());
+                    i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, videoToPath(messageId));
+                    i.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, messageId);
+                    i.putExtra(FileTransferService.IntentFields.FILE_NAME_KEY, RemoteStorageHandler.outgoingVideoRemoteFilename(this, messageId));
+                    i.putExtra(FileTransferService.IntentFields.METADATA, FileTransferService.MetaData.getMetadata(messageId, UserFactory.getCurrentUserMkey(), getMkey(), videoToFile(messageId)));
+                    // This is here so the old saving files on server vs s3 work
+                    Bundle params = new Bundle();
+                    params.putString("filename", RemoteStorageHandler.outgoingVideoRemoteFilename(this, messageId));
+                    i.putExtra(FileTransferService.IntentFields.PARAMS_KEY, params);
+                    getContext().startService(i);
+                }
+                    break;
+                case TEXT: {
+                    Intent i = new Intent(getContext(), MessageUploadService.class);
+                    i.putExtra(FileTransferService.IntentFields.FILE_PATH_KEY, File.OUT_TEXT.getPath(this, messageId));
+                    i.putExtra(FileTransferService.IntentFields.MESSAGE_ID_KEY, messageId);
+                    i.putExtra(FileTransferService.IntentFields.MESSAGE_TYPE, MessageType.TEXT.getName());
+                    i.putExtra(FileTransferService.IntentFields.RECEIVER_MKEY, getMkey());
+                    getContext().startService(i);
+                }
+                    break;
+            }
+        }
     }
 
     public void downloadVideo(String videoId){

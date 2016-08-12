@@ -1,28 +1,27 @@
 package com.zazoapp.client.ui;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.view.ContextThemeWrapper;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ViewAnimator;
-import android.widget.ViewSwitcher;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
-import butterknife.Optional;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.Settings;
@@ -39,7 +38,7 @@ import com.zazoapp.client.ui.view.ThumbView;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.StringUtils;
 
-public class LockScreenAlertActivity extends Activity {
+public class LockScreenAlertActivity extends FragmentActivity {
 
 	private static final String TAG = LockScreenAlertActivity.class.getSimpleName();
 
@@ -52,10 +51,9 @@ public class LockScreenAlertActivity extends Activity {
     @InjectView(R.id.action_main_btn) Button mainButton;
     @InjectView(R.id.action_second_btn) Button secondButton;
     @InjectView(R.id.action_third_btn) Button thirdButton;
-    @Optional @InjectView(R.id.texter) EditText texter;
-    @Optional @InjectView(R.id.text_layout) ViewSwitcher textViewSwitcher;
 
     private ThumbsHelper tHelper;
+    private ZazoTopFragment topFragment;
 
     public static final int MAIN_VIEW = 0;
     public static final int TEXT_VIEW = 1;
@@ -151,7 +149,6 @@ public class LockScreenAlertActivity extends Activity {
                 ButterKnife.inject(this, currentView);
                 UiUtils.applyTint(secondButton, R.color.suggestions_btn_tint);
                 UiUtils.applyTint(mainButton, R.color.suggestions_btn_tint);
-                textViewSwitcher.setDisplayedChild(0);
             } else {
                 viewAnimator.showNext();
                 View currentView = viewAnimator.getCurrentView();
@@ -315,14 +312,25 @@ public class LockScreenAlertActivity extends Activity {
                     startActivity(replyIntent);
                     dismiss();
                 }
-                case R.id.action_second_btn:
-                    if (textViewSwitcher.getDisplayedChild() < 1) {
-                        textViewSwitcher.showNext();
-                        UiUtils.showSoftKeyboard(texter);
-                    } else {
-                        textViewSwitcher.showNext();
-                        UiUtils.hideSoftKeyboard(texter);
-                    }
+                case R.id.action_second_btn: {
+                    Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(getIntent());
+                    final ChatFragment fragment = ChatFragment.getInstance(friend);
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out);
+                    transaction.addToBackStack(null);
+                    transaction.add(R.id.top_frame, fragment);
+                    transaction.commitAllowingStateLoss();
+                    fragment.setOnBackListener(new ZazoTopFragment.OnBackListener() {
+                        @Override
+                        public void onBack() {
+                            if (fragment.isTaskCompleted()) {
+                                NotificationAlertManager.cancelNativeAlert(getApplicationContext(), NotificationAlertManager.NotificationType.NEW_VIDEO.id());
+                                dismiss();
+                            }
+                        }
+                    });
+                    topFragment = fragment;
+                }
                     break;
                 case R.id.action_third_btn:
                     dismiss();
@@ -341,5 +349,13 @@ public class LockScreenAlertActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         startActivity(i);
         finish();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (topFragment != null) {
+            return topFragment.onKeyDown(keyCode, event);
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

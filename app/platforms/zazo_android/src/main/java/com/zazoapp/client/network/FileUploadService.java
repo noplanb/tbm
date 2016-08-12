@@ -10,6 +10,10 @@ public class FileUploadService extends FileTransferService {
         super(TAG);
     }
 
+    protected FileUploadService(String tag) {
+        super(tag);
+    }
+
     @Override
     protected boolean doTransfer(Intent intent) throws InterruptedException {
         intent.putExtra(IntentFields.TRANSFER_TYPE_KEY, IntentFields.TRANSFER_TYPE_UPLOAD);

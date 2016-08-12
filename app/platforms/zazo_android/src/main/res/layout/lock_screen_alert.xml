@@ -26,4 +26,8 @@
         <include android:id="@+id/text_body"
                  layout="@layout/lock_screen_alert_text_body"/>
     </ViewAnimator>
+    <FrameLayout
+            android:id="@+id/top_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 </FrameLayout>

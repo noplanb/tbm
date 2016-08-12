@@ -34,6 +34,7 @@ import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileUploadService;
 import com.zazoapp.client.network.HttpRequest;
+import com.zazoapp.client.network.MessageUploadService;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.notification.NotificationHandler;
 import com.zazoapp.client.ui.helpers.RegistrationHelper;
@@ -198,7 +199,8 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     if (friend != null) {
                         String videoId = video.getId();
                         Logger.i(TAG, "Onew: restoreTransferring " + friend.getMkey() + " " + video.getId());
-                        if (friend.videoToFile(videoId).exists()) {
+                        if (MessageType.VIDEO.is(video.getType()) && friend.videoToFile(videoId).exists()
+                                || MessageType.TEXT.is(video.getType()) && Friend.File.OUT_TEXT.exists(friend, videoId)) {
                             friend.requestUpload(videoId);
                         } else {
                             friend.setAndNotifyOutgoingVideoStatus(videoId, OutgoingMessage.Status.UPLOADED);
@@ -364,7 +366,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     Logger.w(TAG, "handleUploadIntent: Ignoring upload intent for video id that is currently in process.");
                     return;
                 }
-                friend.uploadVideo(messageId);
+                friend.uploadMessage(messageId);
             }
             updateStatus();
             if (status == OutgoingMessage.Status.UPLOADED) {
@@ -595,6 +597,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                 if (!networkInfo.isRoaming() || Settings.Bool.ALLOW_DATA_IN_ROAMING.isSet()) {
                     FileTransferService.reset(context, FileUploadService.class);
                     FileTransferService.reset(context, FileDownloadService.class);
+                    FileTransferService.reset(context, MessageUploadService.class);
                 }
             } else {
                 Logger.i(TAG, "Connection lost");

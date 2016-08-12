@@ -49,28 +49,42 @@ public class TransferProgressAnimation {
         ValueAnimator startAnimation = ValueAnimator.ofFloat(0, 1f);
         startAnimation.setDuration(START_END_DURATION);
         startAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            float size = Math.min(getWidth(), getHeight()) * 0.5f;
+            float size;
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
+                calculate();
                 float value = (float) animation.getAnimatedValue();
                 setProgressAnimation(transferView, (int) (size * value));
                 animationBackground.setAlpha(value * 0.5f);
+            }
+
+            private void calculate() {
+                size = Math.min(getWidth(), getHeight()) * 0.5f;
             }
         });
         final ValueAnimator endAnimation = ValueAnimator.ofFloat(1f, 0f);
         endAnimation.setDuration(START_END_DURATION);
         endAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            float size = Math.min(getWidth(), getHeight()) * 0.5f;
+            float size;
             int padding = getSize(R.dimen.grid_item_status_icon_padding);
-            int contentRadius = anchorLayout.getWidth() / 2 - padding;
-            float endSize = contentRadius * 2;
-            float targetCenterX = anchorLayout.getX() + anchorLayout.getPivotX() - padding;
-            float targetCenterY = anchorLayout.getY() + anchorLayout.getPivotY() - padding;
+            int contentRadius;
+            float endSize;
+            float targetCenterX;
+            float targetCenterY;
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
+                calculate();
                 float value = (float) animation.getAnimatedValue();
                 setProgressFinishAnimation(transferView, (int) Math.abs((size - endSize) * value + endSize), 1 - value, targetCenterX, targetCenterY);
                 animationBackground.setAlpha(value * 0.5f);
+            }
+
+            private void calculate() {
+                size = Math.min(getWidth(), getHeight()) * 0.5f;
+                contentRadius = anchorLayout.getWidth() / 2 - padding;
+                endSize = contentRadius * 2;
+                targetCenterX = anchorLayout.getX() + anchorLayout.getPivotX() - padding;
+                targetCenterY = anchorLayout.getY() + anchorLayout.getPivotY() - padding;
             }
         });
         endAnimation.addListener(new AnimatorListenerAdapter() {

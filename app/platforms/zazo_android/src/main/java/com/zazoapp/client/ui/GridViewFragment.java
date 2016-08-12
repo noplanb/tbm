@@ -29,6 +29,8 @@ import com.zazoapp.client.multimedia.CameraManager.CameraExceptionHandler;
 import com.zazoapp.client.network.FileDownloadService;
 import com.zazoapp.client.network.FileTransferService;
 import com.zazoapp.client.network.FileUploadService;
+import com.zazoapp.client.network.MessageUploadService;
+import com.zazoapp.client.network.NetworkConfig;
 import com.zazoapp.client.notification.NotificationAlertManager;
 import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment.DoubleActionDialogListener;
 import com.zazoapp.client.ui.helpers.GridElementController;
@@ -90,6 +92,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         super.onStart();
         FileTransferService.reset(getActivity(), FileDownloadService.class);
         FileTransferService.reset(getActivity(), FileUploadService.class);
+        FileTransferService.reset(getActivity(), MessageUploadService.class);
         SyncManager.getAndPollAllFriends(getActivity(), getManagerProvider());
     }
 
@@ -371,6 +374,9 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
                     if (f != null) {
                         Log.i(TAG, "onRecordStop: STOP RECORDING. to " + f.get(Friend.Attributes.FIRST_NAME));
                         f.requestUpload(f.getOutgoingVideoId());
+                        if (!NetworkConfig.isConnected(nineViewGroup.getContext())) {
+                            DialogShower.showToast(nineViewGroup.getContext(), R.string.toast_no_connection);
+                        }
                         getManagerProvider().getTutorial().onVideoRecorded(f);
                     }
                 }

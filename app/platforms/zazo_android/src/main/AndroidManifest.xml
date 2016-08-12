@@ -134,6 +134,8 @@
             <!-- android:process=":FileTransferService" -->
         <service
             android:name=".network.FileDeleteService" />
+
+        <service android:name=".network.MessageUploadService" />
             <!-- android:process=":FileTransferService" -->
 
         <receiver android:name=".core.BootCompleteReceiver">

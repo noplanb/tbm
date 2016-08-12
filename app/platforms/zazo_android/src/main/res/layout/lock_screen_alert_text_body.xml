@@ -80,34 +80,18 @@
         </RelativeLayout>
     </RelativeLayout>
 
-    <ViewSwitcher
-            android:id="@+id/text_layout"
+    <TextView
+            android:id="@+id/subtitle_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/abc_action_bar_content_inset_material"
             android:layout_below="@id/top_layout"
-            android:inAnimation="@anim/abc_fade_in"
-            android:outAnimation="@anim/abc_fade_out">
-
-        <TextView
-                android:id="@+id/subtitle_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLines="5"
-                android:text="@string/action_text_reply"
-                android:textSize="@dimen/text_xlarge"
-                android:textIsSelectable="true"
-                android:isScrollContainer="true"
-                android:scrollbars="vertical"/>
-
-        <com.zazoapp.client.ui.view.AutoResizeEditText
-                android:id="@+id/texter"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_xlarge"
-                android:maxLines="5"
-                app:min_text_size="@dimen/text_large"/>
-    </ViewSwitcher>
+            android:maxLines="5"
+            android:text="@string/action_text_reply"
+            android:textSize="@dimen/text_xlarge"
+            android:textIsSelectable="true"
+            android:isScrollContainer="true"
+            android:scrollbars="vertical"/>
 
     <LinearLayout
             android:id="@+id/multiple_action_btn_layout"
@@ -115,7 +99,7 @@
             android:layout_height="48dp"
             android:orientation="horizontal"
             android:gravity="end|center_vertical"
-            android:layout_below="@id/text_layout"
+            android:layout_below="@id/subtitle_text"
             android:layout_marginTop="@dimen/abc_action_bar_content_inset_material"
             android:weightSum="4">
 

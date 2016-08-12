@@ -3,12 +3,9 @@ package com.zazoapp.client.network;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import com.zazoapp.client.core.IntentHandlerService;
-import com.zazoapp.client.core.Settings;
 import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.model.IncomingMessageFactory;
@@ -47,6 +44,8 @@ public abstract class FileTransferService extends IntentService {
         public static final String STATUS_KEY = "status";
         public static final String MESSAGE_ID_KEY = "messageIdKey";
         public static final String METADATA = "metadata";
+        public static final String RECEIVER_MKEY = "receiverMkey";
+        public static final String MESSAGE_TYPE = "messageType";
 
         public static final String TRANSFER_TYPE_UPLOAD = "upload";
         public static final String TRANSFER_TYPE_DOWNLOAD = "download";
@@ -202,8 +201,6 @@ public abstract class FileTransferService extends IntentService {
     }
 
     private boolean isConnected() {
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        return networkInfo != null && networkInfo.isConnected() && (!networkInfo.isRoaming() || Settings.Bool.ALLOW_DATA_IN_ROAMING.isSet());
+        return NetworkConfig.isConnected(this);
     }
 }

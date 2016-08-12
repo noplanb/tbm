@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.ui.CancelableTask;
@@ -203,7 +204,7 @@ public class VideoRecorder implements SurfaceTextureListener {
         File ed = friend.videoToFile(videoId);
         File ing = Config.recordingFile(context);
         ing.renameTo(ed);
-        friend.setNewOutgoingVideoId(videoId);
+        friend.setNewOutgoingMessage(videoId, MessageType.VIDEO);
     }
 
     // ---------------------------------

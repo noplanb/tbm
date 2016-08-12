@@ -3,7 +3,6 @@ package com.zazoapp.client.ui;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -20,7 +19,11 @@ import butterknife.OnClick;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.model.Friend;
+import com.zazoapp.client.model.FriendFactory;
+import com.zazoapp.client.multimedia.VideoIdUtils;
+import com.zazoapp.client.network.NetworkConfig;
 import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.ui.helpers.UiUtils;
 import com.zazoapp.client.ui.view.CircleThumbView;
@@ -49,6 +52,7 @@ public class ChatFragment extends ZazoTopFragment {
 
     ThumbsHelper th;
     private int previousSoftInputMode;
+    private boolean taskCompleted;
 
     public static ChatFragment getInstance(Friend friend) {
         ChatFragment f = new ChatFragment();
@@ -100,8 +104,19 @@ public class ChatFragment extends ZazoTopFragment {
 
     @OnClick(R.id.send)
     public void onSend(View v) {
-        DialogShower.showToast(v.getContext(), "onSend to" + getArguments().getString(NAME) + " " + getArguments().getString(FRIEND_ID));
+        Friend friend = FriendFactory.getFactoryInstance().find(getArguments().getString(FRIEND_ID));
+        if (friend != null) {
+            String messageId = VideoIdUtils.generateId();
+            String path = Friend.File.OUT_TEXT.getPath(friend, messageId);
+            Convenience.saveTextToFile(String.valueOf(texter.getText()), path);
+            friend.setNewOutgoingMessage(messageId, MessageType.TEXT);
+            friend.requestUpload(messageId);
+            if (!NetworkConfig.isConnected(v.getContext())) {
+                DialogShower.showToast(v.getContext(), R.string.toast_no_connection);
+            }
+        }
         texter.clearComposingText();
+        taskCompleted = true;
         dismiss();
     }
 
@@ -111,16 +126,7 @@ public class ChatFragment extends ZazoTopFragment {
     }
 
     private void dismiss() {
-        FragmentActivity activity = getActivity();
-        if (activity != null) {
-            activity.getWindow().setSoftInputMode(previousSoftInputMode);
-        }
         super.onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
-    }
-
-    @Override
-    protected void onBackPressed() {
-        super.onBackPressed();
     }
 
     @Override
@@ -152,4 +158,7 @@ public class ChatFragment extends ZazoTopFragment {
         }, 300);
     }
 
+    public boolean isTaskCompleted() {
+        return taskCompleted;
+    }
 }
