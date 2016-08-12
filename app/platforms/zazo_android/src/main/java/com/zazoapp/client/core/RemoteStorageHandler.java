@@ -13,6 +13,8 @@ import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.utilities.StringUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,17 +52,19 @@ public class RemoteStorageHandler {
     //--------
     // Setters
     //--------
-    public static void addRemoteOutgoingVideoId(Friend friend, String videoId){
-        LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-        data.put(DataKeys.VIDEO_ID_KEY, videoId);
-        setRemoteKV(outgoingVideoIdsRemoteKVKey(friend), videoId, data);
-    }
-
-    public static void setRemoteIncomingVideoStatus(Friend friend, String videoId, String status){
-        LinkedTreeMap<String, String> data = new LinkedTreeMap<String, String>();
-        data.put(DataKeys.VIDEO_ID_KEY, videoId);
-        data.put(DataKeys.STATUS_KEY, status);
-        setRemoteKV(incomingVideoStatusRemoteKVKey(friend), data);
+    public static void setRemoteIncomingVideoStatus(Friend friend, String messageId, MessageType messageType, String status) {
+        try {
+            JSONObject object = new JSONObject();
+            object.put("sender_mkey", friend.getMkey());
+            object.put("type", messageType.getName());
+            object.put("status", status);
+            new HttpRequest.Builder()
+                    .setUri("/api/v1/messages/" + messageId)
+                    .setJsonParams(object)
+                    .setMethod(HttpRequest.UPDATE)
+                    .build();
+        } catch (JSONException e) {
+        }
     }
 
     //--------
@@ -159,8 +163,12 @@ public class RemoteStorageHandler {
     //-------
     // Delete
     //-------
-    public static void deleteRemoteIncomingVideoId(Friend friend, String videoId, HttpRequest.Callbacks callbacks){
-        deleteRemoteKV(incomingVideoIdsRemoteKVKey(friend), videoId, callbacks);
+    public static void deleteRemoteIncomingMessage(String messageId, HttpRequest.Callbacks callbacks) {
+        new HttpRequest.Builder()
+                .setMethod(HttpRequest.DELETE)
+                .setUri("/api/v1/messages/" + messageId)
+                .setCallbacks(callbacks)
+                .build();
     }
 	
 	//------------------------

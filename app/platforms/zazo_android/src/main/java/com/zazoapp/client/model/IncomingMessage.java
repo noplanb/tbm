@@ -94,7 +94,7 @@ public class IncomingMessage extends Message {
         switch (get(Attributes.REMOTE_STATUS)) {
             case RemoteStatus.DELETE_KV: {
                 Friend friend = FriendFactory.getFactoryInstance().find(getFriendId());
-                RemoteStorageHandler.deleteRemoteIncomingVideoId(friend, getId(), new HttpRequest.Callbacks() {
+                RemoteStorageHandler.deleteRemoteIncomingMessage(getId(), new HttpRequest.Callbacks() {
                     @Override
                     public void success(String response) {
                         setRemoteStatus(RemoteStatus.KV_DELETED);

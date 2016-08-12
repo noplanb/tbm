@@ -18,6 +18,10 @@ import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.auth.AuthScope;
 import cz.msebera.android.httpclient.auth.UsernamePasswordCredentials;
 import cz.msebera.android.httpclient.client.entity.EntityBuilder;
+import cz.msebera.android.httpclient.client.methods.HttpDelete;
+import cz.msebera.android.httpclient.client.methods.HttpGet;
+import cz.msebera.android.httpclient.client.methods.HttpPatch;
+import cz.msebera.android.httpclient.client.methods.HttpPost;
 import cz.msebera.android.httpclient.client.methods.RequestBuilder;
 import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
 import cz.msebera.android.httpclient.conn.scheme.Scheme;
@@ -179,12 +183,12 @@ public class HttpRequest {
         AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
     }
 
-    public static final String POST = "POST";
-    public static final String GET = "GET";
+    public static final String POST = HttpPost.METHOD_NAME;
+    public static final String GET = HttpGet.METHOD_NAME;
     public static final String CREATE = POST;
     public static final String READ = GET;
-    public static final String UPDATE = "PATCH";
-    public static final String DELETE = "DELETE";
+    public static final String UPDATE = HttpPatch.METHOD_NAME;
+    public static final String DELETE = HttpDelete.METHOD_NAME;
 
     public static class Builder {
         private String url;
@@ -282,7 +286,15 @@ public class HttpRequest {
     }
 
     private boolean isPost(){
-        return method.startsWith("POST") || method.startsWith("post");
+        return POST.equalsIgnoreCase(method);
+    }
+
+    private boolean isPatch(){
+        return UPDATE.equalsIgnoreCase(method);
+    }
+
+    private boolean isDelete(){
+        return DELETE.equalsIgnoreCase(method);
     }
 
     public String httpReq() throws IOException{
@@ -321,8 +333,8 @@ public class HttpRequest {
         );
 
         RequestBuilder rb;
-        if (isPost()) {
-            rb = RequestBuilder.post();
+        if (isPost() || isDelete() || isPatch()) {
+            rb = RequestBuilder.create(method);
             if (jsonParams != null) {
                 rb.setEntity(EntityBuilder.create()
                         .setText(jsonParams.toString())

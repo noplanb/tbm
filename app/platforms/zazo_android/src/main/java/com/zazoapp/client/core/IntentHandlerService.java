@@ -457,8 +457,7 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     deleteRemoteVideoAndKV();
 
                     // Always set status for sender to downloaded and send status notification even if the video we got is not corrupted.
-                    RemoteStorageHandler.setRemoteIncomingVideoStatus(friend, messageId, RemoteStorageHandler.StatusEnum.DOWNLOADED);
-                    NotificationHandler.sendForVideoStatusUpdate(friend, messageId, NotificationHandler.StatusEnum.DOWNLOADED);
+                    RemoteStorageHandler.setRemoteIncomingVideoStatus(friend, messageId, messageType, RemoteStorageHandler.StatusEnum.DOWNLOADED);
                 }
                 if (messageType == MessageType.VIDEO) {
                     friend.createThumb(messageId);

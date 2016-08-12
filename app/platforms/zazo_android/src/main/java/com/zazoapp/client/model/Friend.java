@@ -664,7 +664,7 @@ public class Friend extends ActiveModel{
         if (v.getStatus() != status){
             v.setStatus(status);
             if (status == IncomingMessage.Status.VIEWED)
-                notifyServerVideoViewed(videoId);
+                notifyServerVideoViewed(v);
 
             // Only notify the UI of changes in status to the last incoming video.
             if (newestIncomingMessage().getId().equals(videoId)){
@@ -748,12 +748,10 @@ public class Friend extends ActiveModel{
     //-------------------------------
     // HttpRequest notification of changes
     //-------------------------------
-    private void notifyServerVideoViewed(String videoId) {
+    private void notifyServerVideoViewed(Message message) {
         Log.i(TAG, "notifyServerVideoViewed");
-        // Update kv store
-        RemoteStorageHandler.setRemoteIncomingVideoStatus(this, videoId, RemoteStorageHandler.StatusEnum.VIEWED);
-        // Send notification
-        NotificationHandler.sendForVideoStatusUpdate(this, videoId, NotificationHandler.StatusEnum.VIEWED);
+        // Updates kv store and send notification
+        RemoteStorageHandler.setRemoteIncomingVideoStatus(this, message.getId(), MessageType.get(message), RemoteStorageHandler.StatusEnum.VIEWED);
     }
 
 
