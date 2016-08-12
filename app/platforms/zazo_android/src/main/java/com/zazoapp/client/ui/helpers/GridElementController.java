@@ -499,7 +499,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     private boolean shouldShowOverflow() {
         Friend friend = gridElement.getFriend();
-        if (friend == null || !friend.hasIncomingPlayableMessages()) {
+        if (friend == null) {
             return false;
         }
         List<GridElementMenuOption> enabledItems = getGridElementMenuOptions(friend);
@@ -518,6 +518,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         }
         if (!hasVideos) {
             enabledItems.remove(GridElementMenuOption.TRANSCRIPT);
+            enabledItems.remove(GridElementMenuOption.FULLSCREEN);
         }
         return enabledItems;
     }
