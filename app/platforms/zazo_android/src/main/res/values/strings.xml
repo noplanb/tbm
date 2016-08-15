@@ -225,6 +225,7 @@
     <string name="ge_menu_details">Details</string>
 
     <string name="converting_to_text">Converting Zazo to text…</string>
+    <string name="no_text_in_video">Couldn\'t recognize text in video</string>
 
     <string name="dev_previous"><![CDATA[<]]></string>
     <string name="dev_next"><![CDATA[>]]></string>

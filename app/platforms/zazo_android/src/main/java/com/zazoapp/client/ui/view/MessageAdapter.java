@@ -165,10 +165,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                             }
                             LinkedTreeMap<String, String> data = (LinkedTreeMap<String, String>) response.get("data");
                             String text = data.get("transcription");
-                            if (text != null) {
+                            boolean transcriptionDone = data.containsKey("transcription");
+                            if (transcriptionDone) {
                                 Transcription t = new Transcription();
                                 t.state = Transcription.State.OK;
-                                t.text = text;
+                                t.text = (text == null) ? context.getString(R.string.no_text_in_video) : text;
                                 setTranscription(t);
                             } else {
                                 error(null);
