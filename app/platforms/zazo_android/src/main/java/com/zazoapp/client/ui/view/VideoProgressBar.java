@@ -35,6 +35,8 @@ import java.util.List;
 public class VideoProgressBar extends FrameLayout {
     private static final String TAG = VideoProgressBar.class.getSimpleName();
 
+    public static final int CURRENT_POSITION = -1;
+    public static final int CURRENT_ITEM = -2;
     @InjectView(R.id.slider_view) AutoResizeTextView sliderView;
     private float progress = 0.1f;
     private float secondaryProgress = 1f;
@@ -141,12 +143,16 @@ public class VideoProgressBar extends FrameLayout {
         }
         if (item < 0) {
             ItemInfo info = getCurrentItemInfo();
-            if (info != null) {
-                startRelativeProgress = info.currentProgress;
+            if (item == CURRENT_POSITION) {
+                if (info != null) {
+                    startRelativeProgress = info.currentProgress;
+                    item = info.position;
+                } else {
+                    startRelativeProgress = 0;
+                    item = 0;
+                }
+            } else if (item == CURRENT_ITEM) {
                 item = info.position;
-            } else {
-                startRelativeProgress = 0;
-                item = 0;
             }
         }
         if (scheme.getElementAt(item) == Scheme.Element.BAR) {

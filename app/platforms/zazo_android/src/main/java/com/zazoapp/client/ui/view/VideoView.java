@@ -739,6 +739,10 @@ public class VideoView extends TextureView
         }
     };
 
+    public boolean isPlaybackCompleted() {
+        return mTargetState == STATE_PLAYBACK_COMPLETED;
+    }
+
     private static class VideoSizeCalculator {
 
         private Dimens dimens;

@@ -305,17 +305,17 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     @Override
     public void onCompletion(MediaPlayer mp) {
         Log.i(TAG, "play complete.");
-        setCurrentVideoToNext();
-
-        if (videoId != null)
-            play();
-        else {
-            if (presenterHelper.getCurrentPresenter().getType() != Presenter.Type.TRANSCRIPTION) {
+        if (presenterHelper.getCurrentPresenter().getType() == Presenter.Type.TRANSCRIPTION
+                && currentVideoNumber == numberOfMessages && currentVideoNumber != 0) { // Do not clear current as we stay in play mode
+            needToNotifyCompletion = true;
+        } else {
+            setCurrentVideoToNext();
+            if (videoId != null) {
+                play();
+            } else {
                 stop();
                 zoomController.clearState();
                 notifyCompletion();
-            } else {
-                needToNotifyCompletion = true;
             }
         }
     }
@@ -615,9 +615,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         videoView.pause();
                         contextBar.progressBar.pause();
                     } else {
+                        boolean playbackCompleted = videoView.isPlaybackCompleted();
                         videoView.start();
-                        int duration = videoView.getDuration() - videoView.getCurrentPosition();
-                        contextBar.progressBar.animateProgress(-1, 0, duration);
+                        int duration = videoView.getDuration() - (playbackCompleted ? 0 : videoView.getCurrentPosition());
+                        contextBar.progressBar.animateProgress(playbackCompleted ? VideoProgressBar.CURRENT_ITEM : VideoProgressBar.CURRENT_POSITION, 0, duration);
                     }
                 } else {
                     if (isPlaying()) {
