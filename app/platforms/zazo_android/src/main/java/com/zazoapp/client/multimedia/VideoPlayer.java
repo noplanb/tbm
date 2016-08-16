@@ -1117,8 +1117,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         messages.setVisibility(View.INVISIBLE);
                     }
                 }).start();
-                videoBody.animate().alpha(1).start();
             }
+            videoBody.animate().alpha(1).start();
             super.startPlayback(path, progress, player);
         }
 
@@ -1447,7 +1447,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     class VideoContextBar implements View.OnTouchListener {
         @InjectView(R.id.progress_bar) VideoProgressBar progressBar;
-        @InjectView(R.id.menu_view) MaterialMenuView menuView;
+        @InjectView(R.id.context_menu_view) MaterialMenuView menuView;
         @InjectView(R.id.mute) View mute;
         @InjectView(R.id.title) TextView title;
 
@@ -1477,7 +1477,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             setVolume(v.isSelected() ? 1f : 0f);
         }
 
-        @OnClick(R.id.menu_view)
+        @OnClick(R.id.context_menu_view)
         public void onMenuClicked(View v) {
             stop();
             zoomController.clearState();

@@ -7,7 +7,7 @@
               android:paddingLeft="8dp"
               android:paddingRight="8dp">
     <com.balysv.materialmenu.MaterialMenuView
-            android:id="@+id/menu_view"
+            android:id="@+id/context_menu_view"
             android:layout_width="@dimen/abc_action_button_min_width_material"
             android:layout_height="@dimen/abc_action_button_min_height_material"
             android:background="?attr/selectableItemBackgroundBorderless"
