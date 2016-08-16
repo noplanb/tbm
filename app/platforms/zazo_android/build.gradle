@@ -20,8 +20,8 @@ android {
         applicationId "com.zazoapp.client"
         minSdkVersion 14
         targetSdkVersion 22
-        versionCode 168
-        versionName "3.5.0" //<!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
+        versionCode 169
+        versionName "3.5.1" //<!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
         resConfigs "en"
         multiDexEnabled true // Enabling multidex support.
     }
