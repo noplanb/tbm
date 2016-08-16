@@ -132,7 +132,6 @@ public class ChatFragment extends ZazoTopFragment {
     @Override
     public void onPause() {
         super.onPause();
-        getArguments().putString(TEXT, String.valueOf(texter.getText()));
         UiUtils.hideSoftKeyboard(texter);
         Window window = getActivity().getWindow();
         window.setSoftInputMode(previousSoftInputMode);
@@ -141,7 +140,6 @@ public class ChatFragment extends ZazoTopFragment {
     @Override
     public void onResume() {
         super.onResume();
-        texter.setText(getArguments().getString(TEXT));
         texter.requestFocusFromTouch();
         Window window = getActivity().getWindow();
         previousSoftInputMode = window.getAttributes().softInputMode;
