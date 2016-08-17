@@ -3,6 +3,7 @@ package com.zazoapp.client.ui.view;
 import android.app.Activity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import com.zazoapp.client.R;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
@@ -24,7 +25,7 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer.Stub {
     }
 
     @Override
-    public boolean click(View v) {
+    public boolean click(View v, float x, float y) {
         if (nineViewGroup.getGestureListener() == null)
             return false;
 
@@ -61,7 +62,7 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer.Stub {
     }
 
     @Override
-    public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY) {
+    public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY, MotionEvent event) {
         if (nineViewGroup.getSpinStrategy() != null && !nineViewGroup.isCenterView(target)) {
             if (checkTouch(startX, startY)) {
                 nineViewGroup.getSpinStrategy().spin(startX, startY, offsetX, offsetY);
@@ -70,7 +71,7 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer.Stub {
     }
 
     @Override
-    public void startMove(View target, double startX, double startY, double offsetX, double offsetY) {
+    public void startMove(View target, double startX, double startY, double offsetX, double offsetY, MotionEvent event) {
         if (!nineViewGroup.isCenterView(target)) {
 
             if (target != null) {
@@ -98,7 +99,7 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer.Stub {
     }
 
     @Override
-    public void endMove(double startX, double startY, double offsetX, double offsetY) {
+    public void endMove(View targetView, double startX, double startY, double offsetX, double offsetY, MotionEvent event) {
         if (nineViewGroup.getSpinStrategy() != null  && checkTouch(startX, startY)) {
             nineViewGroup.getSpinStrategy().finishSpin(startX, startY, offsetX, offsetY);
         }
@@ -163,5 +164,10 @@ class NineViewGroupGestureRecognizer extends ViewGroupGestureRecognizer.Stub {
     @Override
     protected boolean isAbortLongpressMove(MotionEvent event) {
         return managerProvider.getFeatures().isUnlocked(Features.Feature.ABORT_RECORDING) && super.isAbortLongpressMove(event);
+    }
+
+    @Override
+    public ViewGroup getParentView() {
+        return nineViewGroup;
     }
 }

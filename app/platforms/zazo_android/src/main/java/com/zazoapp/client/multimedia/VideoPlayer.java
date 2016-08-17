@@ -14,6 +14,7 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
@@ -51,6 +52,7 @@ import com.zazoapp.client.ui.ViewGroupGestureRecognizer;
 import com.zazoapp.client.ui.animations.TextAnimations;
 import com.zazoapp.client.ui.animations.VideoProgressBarAnimation;
 import com.zazoapp.client.ui.helpers.ThumbsHelper;
+import com.zazoapp.client.ui.helpers.UiUtils;
 import com.zazoapp.client.ui.helpers.VideoContextBarPreferences;
 import com.zazoapp.client.ui.view.GestureControlledLayout;
 import com.zazoapp.client.ui.view.MessageAdapter;
@@ -198,7 +200,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
     @Override
     public void stop(){
-        Log.i(TAG, "stop");
         stop(true);
     }
 
@@ -507,26 +508,28 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         }
         if ((currentVideoNumber != pos + 1)) {
             jumpToVideo(pos);
-            if (allowLoad) {
-                contextBar.progressBar.setCurrent(currentVideoNumber, false);
-                isSeekAllowed = false;
-                final String path = friend.videoFromPath(videoId);
-                videoView.setOnPreparedListener(new OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        videoView.seekTo((int) (curProgress * videoView.getDuration()));
-                        isSeekAllowed = true;
-                    }
-                });
-                videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                    @Override
-                    public boolean onError(MediaPlayer mp, int what, int extra) {
-                        mp.reset();
-                        isSeekAllowed = true;
-                        return true;
-                    }
-                });
-                videoView.setVideoPath(path);
+            if (MessageType.VIDEO.equals(getCurrentType())) {
+                if (allowLoad) {
+                    contextBar.progressBar.setCurrent(currentVideoNumber, false);
+                    isSeekAllowed = false;
+                    final String path = friend.videoFromPath(videoId);
+                    videoView.setOnPreparedListener(new OnPreparedListener() {
+                        @Override
+                        public void onPrepared(MediaPlayer mp) {
+                            videoView.seekTo((int) (curProgress * videoView.getDuration()));
+                            isSeekAllowed = true;
+                        }
+                    });
+                    videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                        @Override
+                        public boolean onError(MediaPlayer mp, int what, int extra) {
+                            mp.reset();
+                            isSeekAllowed = true;
+                            return true;
+                        }
+                    });
+                    videoView.setVideoPath(path);
+                }
             }
 
         } else if (seek) {
@@ -609,7 +612,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             }
 
             @Override
-            public boolean click(View v) {
+            public boolean click(View v, float x, float y) {
                 if (videoParentView.equals(v)) {
                     if (videoView.isPlaying()) {
                         videoView.pause();
@@ -620,7 +623,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         int duration = videoView.getDuration() - (playbackCompleted ? 0 : videoView.getCurrentPosition());
                         contextBar.progressBar.animateProgress(playbackCompleted ? VideoProgressBar.CURRENT_ITEM : VideoProgressBar.CURRENT_POSITION, 0, duration);
                     }
-                } else {
+                } else if (shouldDeliverClick(v)) {
+                    UiUtils.dispatchOnClickOnChild(videoParentView, v, x, y);
+                } else if (v == null || v.getId() != R.id.messages){
                     if (isPlaying()) {
                         animateZoom(false);
                         stop();
@@ -639,7 +644,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 if (presenter.getType() == Presenter.Type.TRANSCRIPTION) {
                     switch (view.getId()) {
                         case R.id.fab:
-                        case R.id.transcription:
                             return false;
                         default:
                             return super.shouldHandle(view);
@@ -648,7 +652,6 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     if (presenter.getType() == Presenter.Type.PLAYER) {
                         switch (view.getId()) {
                             case R.id.fab:
-                            case R.id.messages:
                                 return false;
                             default:
                                 return super.shouldHandle(view);
@@ -656,6 +659,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     }
                 }
                 return super.shouldHandle(view);
+            }
+
+            @Override
+            public boolean isLongPressAllowed(View targetView) {
+                return !(presenter.getType() == Presenter.Type.TRANSCRIPTION ||
+                        presenter.getType() == Presenter.Type.PLAYER && getCurrentType() == MessageType.TEXT);
             }
 
             @Override
@@ -720,7 +729,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             }
 
             @Override
-            public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY) {
+            public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY, MotionEvent event) {
                 if (!isInited) {
                     return;
                 }
@@ -734,8 +743,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         }
                     }
                     if (!isNextPreviousAdvancePossible) {
-                        MotionEvent event = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_MOVE, (float) (startX + offsetX), 0f, 0);
-                        contextBar.handleProgressBarTouchEvent(event);
+                        MotionEvent moveEvent = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_MOVE, (float) (startX + offsetX), 0f, 0);
+                        contextBar.handleProgressBarTouchEvent(moveEvent);
+                    }
+                } else if (gestureDirection == DIRECTION_VERTICAL) {
+                    if (target != null && (target.getId() == R.id.transcription || target.getId() == R.id.messages)) {
+                        UiUtils.dispatchTransformedTouchEvent(getParentView(), event, target);
                     }
                 }
                 previousOffsetX = offsetX;
@@ -744,7 +757,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             }
 
             @Override
-            public void startMove(View target, double startX, double startY, double offsetX, double offsetY) {
+            public void startMove(View target, double startX, double startY, double offsetX, double offsetY, MotionEvent event) {
                 if (!(zoomAnimator != null && zoomAnimator.isStarted())) {
                     startOffsetX = offsetX;
                     startOffsetY = offsetY;
@@ -753,12 +766,21 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     isInited = true;
                     isFirstMove = true;
                     if (Math.abs(offsetX) <= Math.abs(offsetY)) {
-                        if (videoParentView.equals(target) && isSlidingSupported(DIRECTION_VERTICAL)) {
-                            gestureSign = Math.signum(offsetY);
-                            if (zoomed) {
-                                animateZoom(false);
-                            } else {
-                                animateToFullscreen();
+                        gestureDirection = DIRECTION_VERTICAL;
+                        if (isSlidingSupported(DIRECTION_VERTICAL)) {
+                            if (videoParentView.equals(target) && presenter.getType() == Presenter.Type.PLAYER) {
+                                gestureSign = Math.signum(offsetY);
+                                if (zoomed) {
+                                    animateZoom(false);
+                                } else {
+                                    animateToFullscreen();
+                                }
+                            } else if (target != null && (target.getId() == R.id.transcription || target.getId() == R.id.messages)) {
+                                MotionEvent downEvent = MotionEvent.obtain(event.getDownTime(), event.getEventTime(),
+                                        MotionEvent.ACTION_DOWN, event.getX(), event.getY(), 0);
+                                UiUtils.dispatchTransformedTouchEvent(getParentView(), downEvent, target);
+                                downEvent.recycle();
+                                UiUtils.dispatchTransformedTouchEvent(getParentView(), event, target);
                             }
                         }
                     } else if (isSlidingSupported(DIRECTION_HORIZONTAL)) {
@@ -767,14 +789,15 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                         gestureSign = Math.signum(offsetX);
                         startTime = System.nanoTime();
                         lastTime = previousLastTime;
-                        MotionEvent event = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_DOWN, (float) (startX + offsetX), 0f, 0);
-                        contextBar.handleProgressBarTouchEvent(event);
+                        MotionEvent downEvent = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_DOWN, (float) (startX + offsetX), 0f, 0);
+                        contextBar.handleProgressBarTouchEvent(downEvent);
+                        downEvent.recycle();
                     }
                 }
             }
 
             @Override
-            public void endMove(double startX, double startY, double offsetX, double offsetY) {
+            public void endMove(View target, double startX, double startY, double offsetX, double offsetY, MotionEvent event) {
                 if (!isInited) {
                     return;
                 }
@@ -796,9 +819,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                             play();
                         }
                     } else {
-                        MotionEvent event = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_UP, (float) (startX + offsetX), 0f, 0);
-                        contextBar.handleProgressBarTouchEvent(event);
+                        MotionEvent upEvent = MotionEvent.obtain(startTime, lastTime, MotionEvent.ACTION_UP, (float) (startX + offsetX), 0f, 0);
+                        contextBar.handleProgressBarTouchEvent(upEvent);
+                        upEvent.recycle();
                     }
+                } else if (target != null && (target.getId() == R.id.transcription || target.getId() == R.id.messages)) {
+                    UiUtils.dispatchTransformedTouchEvent(getParentView(), event, target);
                 }
                 gestureDirection = 0;
                 isNextPreviousAdvancePossible = false;
@@ -816,7 +842,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     case DIRECTION_HORIZONTAL:
                         return managerProvider.getFeatures().isUnlocked(Features.Feature.PAUSE_PLAYBACK);
                     case DIRECTION_VERTICAL:
-                        return presenterHelper.getCurrentPresenter().getType() == Presenter.Type.PLAYER && managerProvider.getFeatures().isUnlocked(Features.Feature.PLAY_FULLSCREEN);
+                        return presenter.getType() == Presenter.Type.PLAYER
+                                && (getCurrentType() == MessageType.VIDEO && managerProvider.getFeatures().isUnlocked(Features.Feature.PLAY_FULLSCREEN)
+                                    || getCurrentType() == MessageType.TEXT)
+                                || presenter.getType() == Presenter.Type.TRANSCRIPTION;
                 }
                 return false;
             }
@@ -824,6 +853,16 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             @Override
             public boolean isAbortGestureAllowed() {
                 return nineViewGroup.getGestureRecognizer().isAbortGestureAllowed();
+            }
+
+            @Override
+            public ViewGroup getParentView() {
+                return videoParentView;
+            }
+
+            @Override
+            public boolean shouldDeliverClick(@Nullable View view) {
+                return view != null && view.getId() == R.id.transcription;
             }
         }
 

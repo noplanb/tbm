@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import com.zazoapp.client.R;
 
 import java.lang.annotation.Retention;
@@ -18,7 +19,7 @@ public abstract class ViewGroupGestureRecognizer {
     //----------
     // Interface
     //----------
-    public abstract boolean click(View v);
+    public abstract boolean click(View v, float x, float y);
 
     public abstract boolean startLongpress(View v);
 
@@ -28,11 +29,11 @@ public abstract class ViewGroupGestureRecognizer {
 
     public abstract boolean abort(View v, int reason);
 
-    public abstract void notifyMove(View target, double startX, double startY, double offsetX, double offsetY);
+    public abstract void notifyMove(View target, double startX, double startY, double offsetX, double offsetY, MotionEvent event);
 
-    public abstract void startMove(View target, double startX, double startY, double offsetX, double offsetY);
+    public abstract void startMove(View target, double startX, double startY, double offsetX, double offsetY, MotionEvent event);
 
-    public abstract void endMove(double startX, double startY, double offsetX, double offsetY);
+    public abstract void endMove(View targetView, double startX, double startY, double offsetX, double offsetY, MotionEvent event);
 
     public abstract void onTouch(double startX, double startY);
 
@@ -44,6 +45,14 @@ public abstract class ViewGroupGestureRecognizer {
 
     public abstract boolean shouldHandle(@Nullable View view);
 
+    public abstract boolean isLongPressAllowed(View targetView);
+
+    public boolean shouldDeliverClick(@Nullable View view) {
+        return false;
+    }
+
+    public abstract ViewGroup getParentView();
+
     public static final int DIRECTION_HORIZONTAL    = 0x03;
     public static final int DIRECTION_VERTICAL      = 0x30;
 
@@ -54,7 +63,7 @@ public abstract class ViewGroupGestureRecognizer {
         }
 
         @Override
-        public boolean click(View v) {
+        public boolean click(View v, float x, float y) {
             return false;
         }
 
@@ -79,17 +88,17 @@ public abstract class ViewGroupGestureRecognizer {
         }
 
         @Override
-        public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY) {
+        public void notifyMove(View target, double startX, double startY, double offsetX, double offsetY, MotionEvent event) {
 
         }
 
         @Override
-        public void startMove(View target, double startX, double startY, double offsetX, double offsetY) {
+        public void startMove(View target, double startX, double startY, double offsetX, double offsetY, MotionEvent event) {
 
         }
 
         @Override
-        public void endMove(double startX, double startY, double offsetX, double offsetY) {
+        public void endMove(View targetView, double startX, double startY, double offsetX, double offsetY, MotionEvent event) {
 
         }
 
@@ -117,22 +126,42 @@ public abstract class ViewGroupGestureRecognizer {
         public boolean shouldHandle(View view) {
             return true;
         }
+
+        @Override
+        public boolean isLongPressAllowed(View targetView) {
+            return true;
+        }
+
+        @Override
+        public ViewGroup getParentView() {
+            return null;
+        }
     }
     // ---------
     // Constants
     // ---------
     private final String TAG = ViewGroupGestureRecognizer.class.getSimpleName();
-    private static final Integer LONGPRESS_TIME = 500;
+    private static final int LONGPRESS_TIME = 500;
     protected static final int FLING_TIME = 200;
 
     // -----
     // State
     // -----
     private static final class State {
-        public static final Integer IDLE = 0;
-        public static final Integer DOWN = 1;
-        public static final Integer LONGPRESS = 2;
-        public static final Integer SLIDING = 3;
+        public static final int IDLE = 0;
+        public static final int DOWN = 1;
+        public static final int LONGPRESS = 2;
+        public static final int SLIDING = 3;
+
+        public static String name(int state) {
+            switch (state) {
+                case IDLE: return "IDLE";
+                case DOWN: return "DOWN";
+                case LONGPRESS: return "LONGPRESS";
+                case SLIDING: return "SLIDING";
+            }
+            return "";
+        }
     }
 
     public static final int HANDLE_DONE = 0;
@@ -146,10 +175,11 @@ public abstract class ViewGroupGestureRecognizer {
     // Fields
     // ------
     private Activity activity;
-    private ArrayList<View> targetViews = new ArrayList<View>();
+    private ArrayList<View> targetViews = new ArrayList<>();
     private int state = State.IDLE;
     private View targetView;
     private double[] downPosition = new double[2];
+    private long downEventTime;
     private boolean enabled = false;
     private boolean postponeDisabled = false;
     private boolean intercept = false;
@@ -198,7 +228,7 @@ public abstract class ViewGroupGestureRecognizer {
             handleResult = handleTouchEvent(ev);
             if (handleResult == HANDLE_DONE) {
                 if (state == State.IDLE) {
-                    move(null, 0, 0);
+                    move(null, 0, 0, ev);
                 }
                 if (state == State.IDLE && longPressTask != null) {
                     longPressTask.cancel();
@@ -257,6 +287,7 @@ public abstract class ViewGroupGestureRecognizer {
     private @HandleResult int handleTouchEvent(MotionEvent event) {
         if (!enabled && !(postponeDisabled || event.getAction() == MotionEvent.ACTION_UP))
             return HANDLE_OUTER;
+        //Log.i(TAG, State.name(state) + " " + event.toString());
         int result = HANDLE_DONE;
         int action = event.getAction();
         int maskedAction = event.getActionMasked();
@@ -274,7 +305,7 @@ public abstract class ViewGroupGestureRecognizer {
                         break;
                     }
                     state = State.DOWN;
-                    if (targetView != null) {
+                    if (targetView != null && isLongPressAllowed(targetView)) {
                         startLongpressTimer();
                     }
                     break;
@@ -303,8 +334,8 @@ public abstract class ViewGroupGestureRecognizer {
                 case MotionEvent.ACTION_MOVE:
                     if (isSlidingSupported(DIRECTION_VERTICAL) && isMoving(event, DIRECTION_VERTICAL) ||
                             isSlidingSupported(DIRECTION_HORIZONTAL) && isMoving(event, DIRECTION_HORIZONTAL)) {
-                        startMove(targetView, downPosition[0], downPosition[1], event.getX() - downPosition[0], event.getY() - downPosition[1]);
-                        move(targetView, event.getX() - downPosition[0], event.getY() - downPosition[1]);
+                        startMove(targetView, downPosition[0], downPosition[1], event.getX() - downPosition[0], event.getY() - downPosition[1], event);
+                        move(targetView, event.getX() - downPosition[0], event.getY() - downPosition[1], event);
                         if (longPressTask != null) {
                             longPressTask.cancel();
                         }
@@ -368,12 +399,12 @@ public abstract class ViewGroupGestureRecognizer {
                     // Happens when the backing window view gets the down event. Just ignore.
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    move(targetView, event.getX() - downPosition[0], event.getY() - downPosition[1]);
+                    move(targetView, event.getX() - downPosition[0], event.getY() - downPosition[1], event);
                     break;
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
                     state = State.IDLE;
-                    endMove(downPosition[0], downPosition[1], event.getX() - downPosition[0], event.getY() - downPosition[1]);
+                    endMove(targetView, downPosition[0], downPosition[1], event.getX() - downPosition[0], event.getY() - downPosition[1], event);
                     break;
             }
 
@@ -412,10 +443,12 @@ public abstract class ViewGroupGestureRecognizer {
     // this ViewGroupGestureRecognizer. This these events may need to change views and
     // only the original thread that created a view heirarchy can touch its views.
     private void runClick(final View v) {
+        final float downX = (float) downPosition[0];
+        final float downY = (float) downPosition[1];
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                click(v);
+                click(v, downX, downY);
             }
         });
     }
@@ -519,6 +552,7 @@ public abstract class ViewGroupGestureRecognizer {
     private void setDownPosition(MotionEvent event) {
         downPosition[0] = (double) event.getX();
         downPosition[1] = (double) event.getY();
+        downEventTime = event.getDownTime();
     }
 
     public View pointToTargetView(int x, int y) {
@@ -535,7 +569,7 @@ public abstract class ViewGroupGestureRecognizer {
         activity.runOnUiThread(runnable);
     }
 
-    private void move(View target, double x, double y) {
-        notifyMove(target, downPosition[0], downPosition[1], x, y);
+    private void move(View target, double x, double y, MotionEvent event) {
+        notifyMove(target, downPosition[0], downPosition[1], x, y, event);
     }
 }
