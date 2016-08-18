@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 import butterknife.ButterKnife;
@@ -17,9 +19,10 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.zazoapp.client.R;
 
-public class EnterCodeDialogFragment extends AbstractDialogFragment implements OnClickListener {
+public class EnterCodeDialogFragment extends AbstractDialogFragment implements OnClickListener, TextView.OnEditorActionListener {
 
     private static final String PHONE_NUMBER = "phonenumber";
+    private EditText edtVerificationCode;
 
     public interface Callbacks extends DialogListener {
         void didEnterCode(String code);
@@ -53,8 +56,8 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment implements O
                 phoneWithFormat(e164, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL)));
         View v = LayoutInflater.from(getActivity()).inflate(R.layout.enter_code_dialog,
                 null, false);
-        final EditText edtVerificationCode = (EditText) v.findViewById(R.id.edt_code);
-
+        edtVerificationCode = (EditText) v.findViewById(R.id.edt_code);
+        edtVerificationCode.setOnEditorActionListener(this);
         final TextView callButton = ButterKnife.findById(v, R.id.call_btn);
         callButton.setOnClickListener(this);
 
@@ -64,12 +67,7 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment implements O
         setPositiveButton(getString(R.string.dialog_action_enter), new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (getListener() instanceof Callbacks) {
-                    ((Callbacks) getListener()).didEnterCode(edtVerificationCode.getText().toString().replaceAll("\\s+", ""));
-                }
-                edtVerificationCode.setText("");
-                edtVerificationCode.removeTextChangedListener(enterCodeFieldWatcher);
-                dismiss();
+                doPositiveAction();
             }
         });
         setNegativeButton(getString(R.string.dialog_action_cancel), new OnClickListener() {
@@ -80,6 +78,15 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment implements O
                 dismiss();
             }
         });
+    }
+
+    private void doPositiveAction() {
+        if (getListener() instanceof Callbacks) {
+            ((Callbacks) getListener()).didEnterCode(edtVerificationCode.getText().toString().replaceAll("\\s+", ""));
+        }
+        edtVerificationCode.setText("");
+        edtVerificationCode.removeTextChangedListener(enterCodeFieldWatcher);
+        dismiss();
     }
 
     //-------------
@@ -134,4 +141,12 @@ public class EnterCodeDialogFragment extends AbstractDialogFragment implements O
             btnOk.setEnabled(textLength >= 4);
         }
     };
+
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        if (actionId == EditorInfo.IME_ACTION_DONE && btnOk.isEnabled()) {
+            doPositiveAction();
+        }
+        return false;
+    }
 }

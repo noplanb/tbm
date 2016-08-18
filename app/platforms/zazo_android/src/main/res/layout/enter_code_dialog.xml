@@ -23,6 +23,7 @@
                 android:background="@drawable/input_field_bgn"
                 app:backgroundTint="@color/primary"
                 android:inputType="number"
+                android:imeOptions="actionDone"
                 android:digits="0123456789"
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp"
