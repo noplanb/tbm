@@ -34,23 +34,24 @@
                 android:layout_alignBottom="@+id/tw_name"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"/>
-        <View
+        <!--<View
                 android:id="@+id/left_boundary"
                 android:layout_width="@dimen/tiny_icon_size"
                 android:layout_height="@dimen/tiny_icon_size"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"/>
+                android:layout_alignParentStart="true"
+                android:visibility="gone"/>-->
         <TextView
                 android:id="@+id/tw_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
+                android:gravity="start"
                 android:paddingBottom="7dp"
                 android:paddingTop="10dp"
                 android:layout_toLeftOf="@id/overflow"
                 android:layout_toStartOf="@id/overflow"
-                android:layout_toRightOf="@id/left_boundary"
-                android:layout_toEndOf="@id/left_boundary"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
                 android:text="Firstnameisverylongandshouldbetruncated Firstnameisverylongandshouldbetruncated  "
                 android:textColor="@color/color_name"
                 android:textSize="@dimen/text_normal"

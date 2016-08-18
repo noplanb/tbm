@@ -2,10 +2,13 @@ package com.zazoapp.client.ui;
 
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.Window;
@@ -219,4 +222,22 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
         Intent intent = getIntent();
         return intent != null && IntentHandlerService.IntentActions.SUGGESTIONS.equals(intent.getAction());
     }
+
+
+    @Override
+    public void onActionModeStarted(ActionMode mode) {
+        mode.setTitle("");
+        Menu menu = mode.getMenu();
+        if (menu != null) {
+            int size = menu.size();
+            for (int i = 0; i < size; i++) {
+                Drawable drawable = menu.getItem(i).getIcon();
+                if (drawable != null) {
+                    drawable.setColorFilter(getResources().getColor(R.color.gray), PorterDuff.Mode.SRC_IN);
+                }
+            }
+        }
+        super.onActionModeStarted(mode);
+    }
+
 }

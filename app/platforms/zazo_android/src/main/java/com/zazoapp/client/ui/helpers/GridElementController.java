@@ -164,7 +164,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         showChatInner();
                         break;
                     case TRANSCRIPT:
-                        managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId(), PlayOptions.TRANSCRIPT);
+                        managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId(), hasVideoMessages() ? PlayOptions.TRANSCRIPT : 0);
                         break;
                     case DETAILS:
                         break;
@@ -509,6 +509,19 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     private List<GridElementMenuOption> getGridElementMenuOptions(Friend friend) {
         List<GridElementMenuOption> enabledItems = GridElementMenuOption.getAllEnabled();
+        boolean hasVideos = friend.hasIncomingPlayableMessages();
+        if (!hasVideos) {
+            enabledItems.remove(GridElementMenuOption.TRANSCRIPT);
+            enabledItems.remove(GridElementMenuOption.FULLSCREEN);
+        }
+        return enabledItems;
+    }
+
+    private boolean hasVideoMessages() {
+        Friend friend = gridElement.getFriend();
+        if (friend == null) {
+            return false;
+        }
         boolean hasVideos = false;
         for (IncomingMessage message : friend.getIncomingPlayableMessages()) {
             if (MessageType.VIDEO.is(message.getType())) {
@@ -516,10 +529,6 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                 break;
             }
         }
-        if (!hasVideos) {
-            enabledItems.remove(GridElementMenuOption.TRANSCRIPT);
-            enabledItems.remove(GridElementMenuOption.FULLSCREEN);
-        }
-        return enabledItems;
+        return hasVideos;
     }
 }

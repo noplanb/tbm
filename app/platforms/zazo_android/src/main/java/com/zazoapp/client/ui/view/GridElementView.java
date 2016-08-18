@@ -57,7 +57,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
     @InjectView(R.id.card_layout) RelativeLayout cardLayout;
     @InjectView(R.id.resend_last) ImageView btnResend;
     @InjectView(R.id.overflow) ImageView btnOverflow;
-    @InjectView(R.id.left_boundary) View overflowLeftBoundary;
+    //@InjectView(R.id.left_boundary) View overflowLeftBoundary;
     @InjectView(R.id.name_layout) View nameLayout;
 
 	private ClickListener mClickListener;
@@ -285,7 +285,7 @@ public class GridElementView extends RelativeLayout implements View.OnClickListe
 
     public void showOverflow(boolean visible) {
         btnOverflow.setVisibility(visible ? VISIBLE : GONE);
-        overflowLeftBoundary.setVisibility(visible ? VISIBLE : GONE);
+        //overflowLeftBoundary.setVisibility(visible ? VISIBLE : GONE);
         nameLayout.setClickable(visible);
     }
 }
