@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,11 +27,16 @@ import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.network.NetworkConfig;
 import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.ui.helpers.UiUtils;
+import com.zazoapp.client.ui.view.AutoResizeEditText;
 import com.zazoapp.client.ui.view.CircleThumbView;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
 import java.io.File;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by skamenkovych@codeminders.com on 8/2/2016.
@@ -48,7 +54,7 @@ public class ChatFragment extends ZazoTopFragment {
     @InjectView(R.id.action_bar_icon) CircleThumbView thumb;
     @InjectView(R.id.action_bar_title) TextView title;
     @InjectView(R.id.send) View send;
-    @InjectView(R.id.texter) TextView texter;
+    @InjectView(R.id.texter) AutoResizeEditText texter;
 
     ThumbsHelper th;
     private int previousSoftInputMode;
@@ -104,20 +110,27 @@ public class ChatFragment extends ZazoTopFragment {
 
     @OnClick(R.id.send)
     public void onSend(View v) {
-        Friend friend = FriendFactory.getFactoryInstance().find(getArguments().getString(FRIEND_ID));
-        if (friend != null) {
-            String messageId = VideoIdUtils.generateId();
-            String path = Friend.File.OUT_TEXT.getPath(friend, messageId);
-            Convenience.saveTextToFile(String.valueOf(texter.getText()), path);
-            friend.setNewOutgoingMessage(messageId, MessageType.TEXT);
-            friend.requestUpload(messageId);
-            if (!NetworkConfig.isConnected(v.getContext())) {
-                DialogShower.showToast(v.getContext(), R.string.toast_no_connection);
+        String messageText = String.valueOf(texter.getText());
+        if (acceptableText(messageText)) {
+            Friend friend = FriendFactory.getFactoryInstance().find(getArguments().getString(FRIEND_ID));
+            if (friend != null) {
+                String messageId = VideoIdUtils.generateId();
+                String path = Friend.File.OUT_TEXT.getPath(friend, messageId);
+                Convenience.saveTextToFile(messageText, path);
+                friend.setNewOutgoingMessage(messageId, MessageType.TEXT);
+                friend.requestUpload(messageId);
+                if (!NetworkConfig.isConnected(v.getContext())) {
+                    DialogShower.showToast(v.getContext(), R.string.toast_no_connection);
+                }
             }
+            TextKeyListener.clear(texter.getEditableText());
+
+            taskCompleted = true;
+            dismiss();
+        } else {
+            TextKeyListener.clear(texter.getEditableText());
+            DialogShower.showToast(v.getContext(), R.string.toast_input_is_empty);
         }
-        texter.clearComposingText();
-        taskCompleted = true;
-        dismiss();
     }
 
     @OnClick(R.id.up)
@@ -158,5 +171,26 @@ public class ChatFragment extends ZazoTopFragment {
 
     public boolean isTaskCompleted() {
         return taskCompleted;
+    }
+
+    private static void main(String[] args) {
+        LinkedHashMap<String, Boolean> texts = new LinkedHashMap<>();
+        texts.put("", false);
+        texts.put(" ", false);
+        texts.put("\n", false);
+        texts.put(" \n\t", false);
+        texts.put("Text", true);
+        texts.put("Text with spaces", true);
+        texts.put("Text with multiple symbols   -\n    \t asdasd", true);
+        for (Map.Entry<String, Boolean> entry : texts.entrySet()) {
+            System.out.println("Test " +
+                    (entry.getValue().equals(acceptableText(entry.getKey())) ? "Passed" : "Failed"));
+        }
+    }
+
+    private static boolean acceptableText(String text) {
+        Pattern pattern = Pattern.compile("[\\S]+");
+        Matcher m = pattern.matcher(text);
+        return m.find();
     }
 }

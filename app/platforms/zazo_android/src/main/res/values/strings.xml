@@ -87,6 +87,7 @@
     <string name="toast_camera_is_switching">Please wait. Camera is not ready yet</string>
     <string name="toast_already_added">Friend is already connected with you</string>
     <string name="toast_no_connection">No connection. Message will be sent later</string>
+    <string name="toast_input_is_empty">Enter something…</string>
 
     <string name="recording">Recording</string>
     <string name="register_first_name">Your First Name</string>
