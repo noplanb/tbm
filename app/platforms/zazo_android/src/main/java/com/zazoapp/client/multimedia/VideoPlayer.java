@@ -1168,6 +1168,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
             MessageAdapter adapter = new MessageAdapter(list, context);
             adapter.setBottomPadding(R.dimen.messages_list_bottom_padding);
             adapter.setTopPadding(R.dimen.abc_dialog_list_padding_vertical_material);
+            adapter.setNameLabel(player.numberOfMessages == 1 ? null : player.friend.getFullName());
             messages.setAdapter(adapter);
             if (messages.getVisibility() != View.VISIBLE) {
                 messages.setVisibility(View.VISIBLE);
@@ -1456,6 +1457,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                             adapter = new MessageAdapter(playingMessages, view.getContext());
                             adapter.setBottomPadding(R.dimen.messages_list_bottom_padding);
                             adapter.setTopPadding(R.dimen.messages_list_top_padding);
+                            adapter.setNameLabel(null);
                             rv.setAdapter(adapter);
                         } else {
                             adapter.setList(playingMessages);

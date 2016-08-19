@@ -8,9 +8,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bubble">
-        <include
-                android:id="@+id/main_layout"
-                layout="@layout/text_message_main_item_body"/>
+        <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/content_inset">
+            <TextView
+                    android:id="@+id/name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:alpha="@integer/primary_dark_text_alpha"
+                    android:textSize="@dimen/text_normal"
+                    android:textStyle="bold"
+                    android:visibility="gone"/>
+            <include
+                    android:id="@+id/main_layout"
+                    android:layout_below="@id/name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignWithParentIfMissing="true"
+                    layout="@layout/text_message_main_item_body"/>
+        </RelativeLayout>
+
     </RelativeLayout>
 
 </RelativeLayout>

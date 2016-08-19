@@ -39,6 +39,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private int topPadding;
     private int bottomPadding;
+    private String nameLabel;
 
     public MessageAdapter(List<MessageContainer<IncomingMessage>> list, Context context) {
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -59,6 +60,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             }
         }
         setHasStableIds(true);
+    }
+
+    public void setNameLabel(String name) {
+        nameLabel = name;
     }
 
     public void setTopPadding(@DimenRes int padding) {
@@ -126,6 +131,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 if (friend != null) {
                     String path = Friend.File.IN_TEXT.getPath(friend, message.getId());
                     h.setData(Convenience.getTextFromFile(path), StringUtils.getEventTime(message.getId()));
+                    h.setName((position == 0) ? nameLabel : null);
                     h.setOnClickListener(null);
                 }
             }
