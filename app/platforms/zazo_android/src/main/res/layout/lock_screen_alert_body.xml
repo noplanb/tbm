@@ -76,15 +76,6 @@
                         android:textColor="@color/contacts_phone_text"/>
             </LinearLayout>
 
-            <com.zazoapp.client.ui.view.AutoResizeEditText
-                    android:id="@+id/texter"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/title_text"
-                    android:textSize="@dimen/text_xlarge"
-                    android:maxLines="5"
-                    app:min_text_size="@dimen/text_large"
-                    android:visibility="gone"/>
         </RelativeLayout>
     </RelativeLayout>
 

@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             app:min_text_size="@dimen/text_normal"
             android:textSize="@dimen/text_large"
-            android:textColor="@color/white"
+            style="@style/AutoResizeEditTextBase.Style"
             android:text="Test message"/>
     <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"

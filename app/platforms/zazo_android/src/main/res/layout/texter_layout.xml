@@ -27,12 +27,10 @@
             android:layout_above="@id/footer"
             android:textSize="@dimen/text_chat"
             android:text="Hello"
-            android:textCursorDrawable="@drawable/abc_text_cursor_material"
-            android:textColor="@color/white"
-            android:inputType="textCapSentences|textAutoComplete|textMultiLine"
             android:background="@null"
             android:padding="@dimen/abc_button_padding_horizontal_material"
             app:min_text_size="@dimen/text_xlarge"
             android:gravity="top"
+            style="@style/AutoResizeEditTextBase.Style"
             />
 </RelativeLayout>

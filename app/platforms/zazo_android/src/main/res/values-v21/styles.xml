@@ -27,4 +27,7 @@
         <item name="android:textColor">@color/contacts_name_text</item>
         <item name="android:background">@null</item>
     </style>
+    <style name="AutoResizeEditTextBase.Style">
+        <item name="android:textCursorDrawable">@drawable/abc_text_cursor_material</item>
+    </style>
 </resources>
