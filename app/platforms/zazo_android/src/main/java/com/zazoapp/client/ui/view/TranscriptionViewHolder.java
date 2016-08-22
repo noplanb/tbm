@@ -51,4 +51,8 @@ public class TranscriptionViewHolder extends TextMessageViewHolder {
         }
     }
 
+    @Override
+    public void setName(String text) {
+        throw new UnsupportedOperationException("name isn't supported for transcription item");
+    }
 }

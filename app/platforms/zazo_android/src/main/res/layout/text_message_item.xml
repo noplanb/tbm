@@ -10,15 +10,14 @@
             android:background="@drawable/bubble">
         <RelativeLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/content_inset">
+                android:layout_height="wrap_content">
             <TextView
                     android:id="@+id/name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/black"
                     android:alpha="@integer/primary_dark_text_alpha"
-                    android:textSize="@dimen/text_normal"
+                    android:textSize="@dimen/text_large"
                     android:textStyle="bold"
                     android:visibility="gone"/>
             <include

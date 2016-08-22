@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.Optional;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.utilities.Convenience;
@@ -15,7 +16,7 @@ import com.zazoapp.client.utilities.Convenience;
 public class TextMessageViewHolder extends MessageAdapter.MessageViewHolder {
     @InjectView(R.id.text) TextView text;
     @InjectView(R.id.date) TextView date;
-    @InjectView(R.id.name) TextView name;
+    @Optional @InjectView(R.id.name) TextView name;
     @InjectView(R.id.main_layout) ViewGroup mainLayout;
     private View itemView;
 
@@ -34,11 +35,13 @@ public class TextMessageViewHolder extends MessageAdapter.MessageViewHolder {
     }
 
     public void setName(String text) {
-        if (text != null) {
-            name.setText(text);
-            name.setVisibility(View.VISIBLE);
-        } else {
-            name.setVisibility(View.GONE);
+        if (name != null) {
+            if (text != null) {
+                name.setText(text);
+                name.setVisibility(View.VISIBLE);
+            } else {
+                name.setVisibility(View.GONE);
+            }
         }
     }
 
