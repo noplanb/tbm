@@ -445,7 +445,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
     }
 
     private MessageType getCurrentType() {
-        if (currentVideoNumber - 1 > 0 && currentVideoNumber <= playingMessages.size()) {
+        if (currentVideoNumber - 1 >= 0 && currentVideoNumber <= playingMessages.size()) {
             return playingMessages.get(currentVideoNumber - 1).getType();
         }
         return null;
