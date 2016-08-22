@@ -111,13 +111,20 @@ public class Logger {
             buf.newLine();
 
             if (exc != null) {
-                PrintWriter pw = new PrintWriter(fileWriter);
+                PrintWriter pw = new PrintWriter(buf);
                 exc.printStackTrace(pw);
             }
             buf.newLine();
             buf.close();
         } catch (IOException e) {
             e.printStackTrace();
+            if (fileWriter != null) {
+                try {
+                    fileWriter.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
         }
     }
 

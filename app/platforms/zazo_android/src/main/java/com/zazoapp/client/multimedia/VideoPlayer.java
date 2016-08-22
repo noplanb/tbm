@@ -530,6 +530,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                     });
                     videoView.setVideoPath(path);
                 }
+            } else {
+                contextBar.progressBar.setCurrent(currentVideoNumber, false);
             }
 
         } else if (seek && getCurrentType() == MessageType.VIDEO) {

@@ -558,9 +558,11 @@ public abstract class ViewGroupGestureRecognizer {
     public View pointToTargetView(int x, int y) {
         Rect rect = new Rect();
         for (View v : targetViews) {
-            v.getGlobalVisibleRect(rect);
-            if (rect.contains(x, y))
-                return v;
+            if (v.getVisibility() == View.VISIBLE) {
+                v.getGlobalVisibleRect(rect);
+                if (rect.contains(x, y))
+                    return v;
+            }
         }
         return null;
     }

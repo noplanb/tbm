@@ -157,6 +157,7 @@ public class LockScreenAlertActivity extends FragmentActivity {
         } else if (force) {
             View currentView = viewAnimator.getCurrentView();
             ButterKnife.inject(this, currentView);
+            viewAnimator.setDisplayedChild(type);
             if (textType) {
                 UiUtils.applyTint(secondButton, R.color.suggestions_btn_tint);
                 UiUtils.applyTint(mainButton, R.color.suggestions_btn_tint);
@@ -274,7 +275,17 @@ public class LockScreenAlertActivity extends FragmentActivity {
                             openSuggestions(IntentHandlerService.FriendJoinedActions.ADD);
                         }
                     } else {
-                        startHomeActivity();
+                        Intent i = getIntent();
+                        Friend friend = FriendFactory.getFactoryInstance().getFriendFromIntent(i);
+                        Intent viewIntent = new Intent(i);
+                        viewIntent.setClass(this, MainActivity.class);
+                        String action = IntentHandlerService.IntentActions.PLAY_VIDEO;
+                        viewIntent.setAction(action);
+                        Uri uri = new Uri.Builder().appendPath(action).appendQueryParameter(
+                                IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
+                        viewIntent.setData(uri);
+                        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+                        startActivity(viewIntent);
                     }
                     break;
                 case R.id.action_second_btn:
@@ -309,6 +320,7 @@ public class LockScreenAlertActivity extends FragmentActivity {
                     Uri uri = new Uri.Builder().appendPath(action).appendQueryParameter(
                             IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId()).build();
                     replyIntent.setData(uri);
+                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
                     startActivity(replyIntent);
                     dismiss();
                 }
