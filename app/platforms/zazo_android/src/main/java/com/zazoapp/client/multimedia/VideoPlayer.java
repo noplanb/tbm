@@ -1592,6 +1592,9 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
 
         public boolean handleProgressBarTouchEvent(MotionEvent event) {
             // TODO Need refactor
+            if (progressBar.getVisibility() != View.VISIBLE) {
+                return false;
+            }
             int action = event.getAction();
             float x = event.getX();
             float progress;

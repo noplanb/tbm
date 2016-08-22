@@ -14,6 +14,7 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.FloatRange;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.animation.LinearInterpolator;
@@ -179,7 +180,7 @@ public class VideoProgressBar extends FrameLayout {
         }
     }
 
-    public ItemInfo getCurrentItemInfo() {
+    public @Nullable ItemInfo getCurrentItemInfo() {
         Scheme scheme = this.scheme;
         if (scheme.getCount() < 1) {
             return null;
