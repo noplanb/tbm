@@ -532,7 +532,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
                 }
             }
 
-        } else if (seek) {
+        } else if (seek && getCurrentType() == MessageType.VIDEO) {
             videoView.seekTo((int) (curProgress * videoView.getDuration()));
         }
         return curProgress;
