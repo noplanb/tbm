@@ -25,24 +25,27 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
 
     public static DialogFragment getInstance(int id, String title, String message, String actionPositive,
                                              String actionNegative, DialogListener listener) {
-        return getInstance(id, title, message, actionPositive, actionNegative, false, listener);
+        Bundle data = prepareData(title, message, actionPositive, actionNegative);
+        return getInstance(id, false, data, listener);
     }
 
-    public static DialogFragment getInstance(int id, String title, String message, String actionPositive,
-                                             String actionNegative, boolean editable, DialogListener listener) {
+    public static DialogFragment getInstance(int id, boolean editable, Bundle data, DialogListener listener) {
         DoubleActionDialogFragment fragment = new DoubleActionDialogFragment();
-
-        putData(id, title, message, actionPositive, actionNegative, editable, listener, fragment);
+        putData(id, editable, data, listener, fragment);
         return fragment;
     }
 
-    protected static void putData(int id, String title, String message, String actionPositive, String actionNegative, boolean editable, DialogListener listener, AbstractDialogFragment fragment) {
+    public static Bundle prepareData(String title, String message, String actionPositive, String actionNegative) {
         Bundle args = new Bundle();
         args.putString(TITLE, title);
         args.putString(MSG, message);
         args.putString(ACTION_POSITIVE, actionPositive);
         args.putString(ACTION_NEGATIVE, actionNegative);
-        fragment.setArguments(args);
+        return args;
+    }
+
+    protected static void putData(int id, boolean editable, Bundle data, DialogListener listener, AbstractDialogFragment fragment) {
+        fragment.setArguments(data);
         fragment.setDialogListener(listener, id);
         fragment.setEditable(editable);
     }
@@ -83,19 +86,19 @@ public class DoubleActionDialogFragment extends AbstractDialogFragment implement
     protected void doNegativeAction() {
         if (getListener() instanceof DoubleActionDialogListener) {
             DoubleActionDialogListener listener = ((DoubleActionDialogListener) getListener());
-            listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_NEGATIVE, null);
+            listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_NEGATIVE, new Bundle(getArguments()));
         }
     }
 
     protected void doPositiveAction() {
         if (getListener() instanceof DoubleActionDialogListener) {
             DoubleActionDialogListener listener = ((DoubleActionDialogListener) getListener());
+            Bundle bundle = new Bundle(getArguments());
             if (isEditable()) {
-                Bundle bundle = new Bundle();
                 putEditedMessage(bundle, getEditedMessage());
                 listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_POSITIVE, bundle);
             } else {
-                listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_POSITIVE, null);
+                listener.onDialogActionClicked(getDialogId(), DoubleActionDialogListener.BUTTON_POSITIVE, bundle);
             }
         }
     }

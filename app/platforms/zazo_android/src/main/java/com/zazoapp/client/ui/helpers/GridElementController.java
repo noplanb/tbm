@@ -2,6 +2,7 @@ package com.zazoapp.client.ui.helpers;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import com.zazoapp.client.R;
+import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.model.ActiveModel;
@@ -27,6 +29,7 @@ import com.zazoapp.client.ui.ChatFragment;
 import com.zazoapp.client.ui.MainFragment;
 import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.animations.GridElementAnimation;
+import com.zazoapp.client.ui.dialogs.DoubleActionDialogFragment;
 import com.zazoapp.client.ui.view.GridElementMenuAdapter;
 import com.zazoapp.client.ui.view.GridElementView;
 import com.zazoapp.client.utilities.DialogShower;
@@ -161,7 +164,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                         managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId(), PlayOptions.FULLSCREEN);
                         break;
                     case CHAT:
-                        showChatInner();
+                        showChatInner(false);
                         break;
                     case TRANSCRIPT:
                         managerProvider.getPlayer().togglePlayOverView(container, gridElement.getFriendId(), hasVideoMessages() ? PlayOptions.TRANSCRIPT : 0);
@@ -175,16 +178,27 @@ public class GridElementController implements GridElementView.ClickListener, Vid
         listPopupWindow.show();
     }
 
-    public void showChat(String friendId) {
+    public void showChat(String friendId, boolean force) {
         if (isForMe(friendId)) {
-            showChatInner();
+            showChatInner(force);
         }
     }
 
-    private void showChatInner() {
+    private void showChatInner(boolean force) {
         MainFragment fragment = (MainFragment) activity.getSupportFragmentManager().findFragmentByTag("main0");
         if (fragment != null) {
-            fragment.showTopFragment(ChatFragment.getInstance(gridElement.getFriend()), R.anim.fade_in, R.anim.fade_out);
+            Friend friend = gridElement.getFriend();
+            if (force || friend.hasAbility(Friend.ABILITY_TEXT_MESSAGING)) {
+                fragment.showTopFragment(ChatFragment.getInstance(friend), R.anim.fade_in, R.anim.fade_out);
+            } else {
+                String title = activity.getString(R.string.dialog_not_supported_chat_title);
+                String message = activity.getString(R.string.dialog_not_supported_chat_message, friend.getFullName());
+                String posText = activity.getString(R.string.dialog_action_ok);
+                String negText = activity.getString(R.string.dialog_action_send_anyway);
+                Bundle data = DoubleActionDialogFragment.prepareData(title, message, posText, negText);
+                data.putString(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId());
+                fragment.onShowDoubleActionDialog(data, MainFragment.CONTINUE_CHAT_DIALOG, false);
+            }
         }
     }
 

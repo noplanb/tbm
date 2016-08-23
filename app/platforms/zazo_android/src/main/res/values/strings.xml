@@ -14,6 +14,7 @@
     <string name="dialog_action_try_again">Try Again</string>
     <string name="dialog_action_cancel">Cancel</string>
     <string name="dialog_action_ok">OK</string>
+    <string name="dialog_action_send_anyway">Send anyway</string>
     <string name="dialog_action_invite">Invite</string>
     <string name="dialog_action_enter">Enter</string>
     <string name="dialog_action_update">Update</string>
@@ -70,6 +71,8 @@
     <string name="dialog_update_obsolete_message">Your %1$s app is obsolete. It must be updated for use.</string>
     <string name="dialog_update_out_of_date_message">Your %1$s app is out of date. Please update.</string>
     <string name="dialog_enter_text_hint">Enter text</string>
+    <string name="dialog_not_supported_chat_title">Do not send message?</string>
+    <string name="dialog_not_supported_chat_message">It seems that %1$s doesn\'t have the latest Zazo version and won\'t be able to receive your message</string>
 
     <string name="toast_downloading">Downloading…</string>
     <string name="toast_not_sent">Not sent</string>

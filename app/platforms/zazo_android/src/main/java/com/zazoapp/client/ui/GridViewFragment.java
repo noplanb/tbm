@@ -285,7 +285,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
                 GridManager.getInstance().moveFriendToGrid(friend);
             }
             for (GridElementController controller : viewControllers) {
-                controller.showChat(friendId);
+                controller.showChat(friendId, false);
             }
             return;
         }
@@ -295,6 +295,14 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
         if (action.equals(IntentHandlerService.IntentActions.SMS_RESULT)) {
             currentIntent.setAction(IntentHandlerService.IntentActions.NONE);
             Log.i(TAG, currentIntent.toString());
+        }
+    }
+
+    public void forceShowChat(String friendId) {
+        if (viewControllers != null) {
+            for (GridElementController controller : viewControllers) {
+                controller.showChat(friendId, true);
+            }
         }
     }
 

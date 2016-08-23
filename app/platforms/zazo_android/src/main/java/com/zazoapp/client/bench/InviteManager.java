@@ -49,7 +49,7 @@ public class InviteManager implements InviteHelper {
     public interface InviteDialogListener {
         void onShowInfoDialog(String title, String msg);
         void onShowActionInfoDialog(String title, String msg, String actionTitle, boolean isNeedCancel, boolean editable, int actionId);
-        void onShowDoubleActionDialog(String title, String msg, String posText, String negText, int id, boolean editable);
+        void onShowDoubleActionDialog(Bundle data, int id, boolean editable);
         void onShowSendLinkDialog(int id, String phone, String msg);
         void onShowProgressDialog(String title, String msg);
         void onShowSelectPhoneNumberDialog(Contact contact);

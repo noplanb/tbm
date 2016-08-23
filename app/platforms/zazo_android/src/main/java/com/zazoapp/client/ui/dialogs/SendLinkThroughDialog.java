@@ -45,8 +45,9 @@ public class SendLinkThroughDialog extends DoubleActionDialogFragment implements
         String posText = context.getString(R.string.dialog_invite_sms_action);
         String negText = context.getString(R.string.dialog_action_cancel);
         SendLinkThroughDialog f = new SendLinkThroughDialog();
-        DoubleActionDialogFragment.putData(id, title, message, posText, negText, true, listener, f);
-        f.getArguments().putString(InviteIntent.PHONE_NUMBER_KEY, phoneNumber);
+        Bundle data = DoubleActionDialogFragment.prepareData(title, message, posText, negText);
+        data.putString(InviteIntent.PHONE_NUMBER_KEY, phoneNumber);
+        DoubleActionDialogFragment.putData(id, true, data, listener, f);
         return f;
     }
 

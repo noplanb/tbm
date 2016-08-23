@@ -93,6 +93,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public static final int SMS_DIALOG = 2;
     public static final int SENDLINK_DIALOG = 3;
     public static final int NO_SIM_DIALOG = 4;
+    public static final int CONTINUE_CHAT_DIALOG = 5;
 
     public static final int ACTION_CODE_SHOW_SUGGESTIONS = 1;
 
@@ -396,6 +397,16 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
                     managerHolder.getInviteHelper().failureNoSimDialog();
                     break;
             }
+        } else if (id == CONTINUE_CHAT_DIALOG) {
+            switch (button) {
+                case BUTTON_POSITIVE:
+                    break;
+                case BUTTON_NEGATIVE:
+                    if (gridFragment != null) {
+                        gridFragment.forceShowChat(params.getString(IntentHandlerService.IntentParamKeys.FRIEND_ID));
+                    }
+                    break;
+            }
         }
     }
 
@@ -419,9 +430,9 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     }
 
     @Override
-    public void onShowDoubleActionDialog(String title, String msg, String posText, String negText, int id, boolean editable) {
+    public void onShowDoubleActionDialog(Bundle data, int id, boolean editable) {
         if (!isStopped) {
-            DialogShower.showDoubleActionDialog(getActivity(), title, msg, posText, negText, id, editable, this);
+            DialogShower.showDoubleActionDialog(getActivity(), data, id, editable, this);
         }
     }
 

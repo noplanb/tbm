@@ -3,6 +3,7 @@ package com.zazoapp.client.utilities;
 import android.content.Context;
 import android.content.res.Resources;
 import android.media.AudioManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.DialogFragment;
@@ -69,9 +70,8 @@ public class DialogShower {
         showDialog(getFragmentManager(activity, listener), d, null);
     }
 
-    public static void showDoubleActionDialog(FragmentActivity activity, String title, String message, String actionPositive,
-                                              String actionNegative, int dialogId, boolean editable, DoubleActionDialogListener listener) {
-        DialogFragment d = DoubleActionDialogFragment.getInstance(dialogId, title, message, actionPositive, actionNegative, editable, listener);
+    public static void showDoubleActionDialog(FragmentActivity activity, Bundle data, int dialogId, boolean editable, DoubleActionDialogListener listener) {
+        DialogFragment d = DoubleActionDialogFragment.getInstance(dialogId, editable, data, listener);
         showDialog(getFragmentManager(activity, listener), d, null);
     }
 
