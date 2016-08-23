@@ -7,6 +7,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.reflect.TypeToken;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.utilities.AsyncTaskManager;
@@ -21,7 +22,7 @@ public class FriendGetter {
 	
 	private Context context;
 	private boolean destroyAll;
-	private List<LinkedTreeMap<String, String>> friendList = new ArrayList<LinkedTreeMap<String, String>>();
+	private List<FriendFactory.ServerFriend> friendList = new ArrayList<>();
 	
 	public FriendGetter(Context c, boolean destroyAll){
 		context = c;
@@ -52,13 +53,13 @@ public class FriendGetter {
 	@SuppressWarnings("unchecked")
 	private void gotFriends(final Context context, final String r) {
         Log.i(TAG, "gotFriends: " + r);
-        AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, List<LinkedTreeMap<String, String>>>() {
+        AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Void, Void, List<FriendFactory.ServerFriend>>() {
             @Override
-            protected List<LinkedTreeMap<String, String>> doInBackground(Void... params) {
-                List<LinkedTreeMap<String, String>> list = null;
+            protected List<FriendFactory.ServerFriend> doInBackground(Void... params) {
+                List<FriendFactory.ServerFriend> list = null;
                 try {
                     Gson g = new Gson();
-                    list = g.fromJson(r, friendList.getClass());
+                    list = g.fromJson(r, new TypeToken<ArrayList<FriendFactory.ServerFriend>>() {}.getType());
                 } catch (JsonSyntaxException e) {
                     failure();
                     return null;
@@ -70,7 +71,7 @@ public class FriendGetter {
             }
 
             @Override
-            protected void onPostExecute(List<LinkedTreeMap<String, String>> list) {
+            protected void onPostExecute(List<FriendFactory.ServerFriend> list) {
                 if (list != null) {
                     friendList = list;
                 }

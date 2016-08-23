@@ -198,7 +198,7 @@ public class InviteManager implements InviteHelper {
     @SuppressWarnings("unchecked")
 	private void gotHasApp(String response) {
         LinkedTreeMap<String, String> params = StringUtils.linkedTreeMapWithJson(response);
-        if (checkIsFailureAndShowDialog(params))
+        if (checkIsFailureAndShowDialog(StringUtils.fromJson(response, HttpRequest.ServerResponse.class)))
             return;
 
 		String hasAppStr = params.get(FriendFactory.ServerParamKeys.HAS_APP);
@@ -271,11 +271,12 @@ public class InviteManager implements InviteHelper {
 
     @SuppressWarnings("unchecked")
     private void gotFriend(String response) {
-        LinkedTreeMap<String, String> params = StringUtils.linkedTreeMapWithJson(response);
+        HttpRequest.ServerResponse serverResponse = StringUtils.fromJson(response, HttpRequest.ServerResponse.class);
 
-        if (checkIsFailureAndShowDialog(params))
+        if (checkIsFailureAndShowDialog(serverResponse))
             return;
-        friend = FriendFactory.getFactoryInstance().createWithServerParams(context, params, false);
+        FriendFactory.ServerFriend serverFriend = StringUtils.fromJson(response, FriendFactory.ServerFriend.class);
+        friend = FriendFactory.getFactoryInstance().createWithServerParams(context, serverFriend, false);
         if (friend != null) {
             friendWasAdded = true;
             if (friend.hasApp()) {
@@ -285,7 +286,7 @@ public class InviteManager implements InviteHelper {
                 showSmsDialog();
             }
         } else { // if friend is already exist TODO legacy code
-            friend = FriendFactory.getFactoryInstance().getExistingFriend(params);
+            friend = FriendFactory.getFactoryInstance().getExistingFriend(serverFriend);
             moveFriendToGrid();
         }
     }
@@ -477,15 +478,14 @@ public class InviteManager implements InviteHelper {
 		return PendingIntent.getActivity(context, 0, i, 0);
 	}
 
-    private boolean checkIsFailureAndShowDialog(LinkedTreeMap<String, String> params) {
-        if (params == null) {
+    private boolean checkIsFailureAndShowDialog(HttpRequest.ServerResponse response) {
+        if (response == null) {
             serverError();
             return true;
         }
-        String status = params.get(HttpRequest.ParamKeys.RESPONSE_STATUS);
-        if (HttpRequest.isFailure(status)) {
+        if (HttpRequest.isFailure(response.status)) {
             cancelInvitation();
-            listener.onShowInfoDialog(params.get(HttpRequest.ParamKeys.ERROR_TITLE), params.get(HttpRequest.ParamKeys.ERROR_MSG));
+            listener.onShowInfoDialog(response.title, response.message);
             return true;
         } else {
             return false;

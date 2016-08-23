@@ -21,6 +21,7 @@ import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.MessageType;
+import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.multimedia.VideoIdUtils;
@@ -121,6 +122,10 @@ public class ChatFragment extends ZazoTopFragment {
                 friend.requestUpload(messageId);
                 if (!NetworkConfig.isConnected(v.getContext())) {
                     DialogShower.showToast(v.getContext(), R.string.toast_no_connection);
+                }
+                ZazoManagerProvider managers = TbmApplication.getInstance().getManagerProvider();
+                if (managers != null) {
+                    managers.getTutorial().onMessageWritten(friend);
                 }
             }
             TextKeyListener.clear(texter.getEditableText());

@@ -89,6 +89,11 @@ public final class ModelUpgradeHelper {
         handler.ensure(OutgoingMessageFactory.getFactoryInstance());
     }
 
+    /**
+     * Changes in Video models
+     * 1. Renamed *VideoFactory* to *MessageFactory*
+     * 2. Added type attribute
+     */
     public static void upgradeTo7(ActiveModelsHandler handler, Context context) {
         String oldPath = Config.homeDirPath(context) + "/IncomingVideoFactory_saved_instances.json";
         String newPath = Config.homeDirPath(context) + "/"+ IncomingMessageFactory.class.getSimpleName() + "_saved_instances.json";
@@ -108,5 +113,13 @@ public final class ModelUpgradeHelper {
                 message.setType(MessageType.VIDEO);
             }
         }
+    }
+
+    /**
+     * Changed in Friend model
+     * Added Abilities attribute
+     */
+    public static void upgradeTo8(ActiveModelsHandler handler, Context context) {
+        ensureAll(handler);
     }
 }

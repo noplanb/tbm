@@ -378,6 +378,7 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
                             DialogShower.showToast(nineViewGroup.getContext(), R.string.toast_no_connection);
                         }
                         getManagerProvider().getTutorial().onVideoRecorded(f);
+                        getManagerProvider().getTutorial().onMessageWritten(f);
                     }
                 }
             }

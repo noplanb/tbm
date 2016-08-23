@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
+import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.core.TbmApplication;
@@ -73,7 +74,13 @@ public class HttpRequest {
         public static final String ERROR_TITLE = "title";
         public static final String ERROR_MSG = "msg";
     }
-    
+
+    public static class ServerResponse {
+        @SerializedName(ParamKeys.RESPONSE_STATUS) public String status;
+        @SerializedName(ParamKeys.ERROR_TITLE) public String title;
+        @SerializedName(ParamKeys.ERROR_MSG) public String message;
+    }
+
     public static class StatusValues{
         public static final String STATUS_SUCCESS = "success";
         public static final String STATUS_FAILURE = "failure";

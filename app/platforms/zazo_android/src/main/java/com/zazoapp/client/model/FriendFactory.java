@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.annotations.SerializedName;
 import com.zazoapp.client.model.Friend.VideoStatusChangedCallback;
 import com.zazoapp.client.utilities.StringUtils;
 
@@ -28,12 +28,14 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         public static final String CKEY = "ckey";
         public static final String CID = "cid";
         public static final String MOBILE_NUMBER = "mobile_number";
+        public static final String DEVICE_PLATFORM = "device_platform";
         public static final String HAS_APP = "has_app";
         public static final String CONNECTION_CREATED_ON = "connection_created_on";
         public static final String CONNECTION_CREATOR_MKEY = "connection_creator_mkey";
         public static final String EMAILS = "emails";
         public static final String EMAILS_ARRAY = EMAILS + ARRAY_SUFFIX;
         public static final String CONNECTION_STATUS = "connection_status";
+        public static final String ABILITIES = "abilities";
 
         public static final String HAS_APP_TRUE_VALUE = "true";
         public static final String HAS_APP_FALSE_VALUE = "false";
@@ -43,6 +45,23 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         public static final String CONNECTION_HIDDEN_BY_CREATOR = "hidden_by_creator";
         public static final String CONNECTION_HIDDEN_BY_TARGET = "hidden_by_target";
         public static final String CONNECTION_HIDDEN_BY_BOTH = "hidden_by_both";
+    }
+
+    public static class ServerFriend {
+        @SerializedName(ServerParamKeys.ID) public String id;
+        @SerializedName(ServerParamKeys.MKEY) public String mkey;
+        @SerializedName(ServerParamKeys.FIRST_NAME) public String firstName;
+        @SerializedName(ServerParamKeys.LAST_NAME) public String lastName;
+        @SerializedName(ServerParamKeys.MOBILE_NUMBER) public String number;
+        @SerializedName(ServerParamKeys.DEVICE_PLATFORM) public String platform;
+        @SerializedName(ServerParamKeys.EMAILS) public ArrayList<String> emails;
+        @SerializedName(ServerParamKeys.HAS_APP) public String hasApp;
+        @SerializedName(ServerParamKeys.CKEY) public String ckey;
+        @SerializedName(ServerParamKeys.CID) public String cid;
+        @SerializedName(ServerParamKeys.CONNECTION_CREATED_ON) public String connectionDate;
+        @SerializedName(ServerParamKeys.CONNECTION_CREATOR_MKEY) public String connectionCreator;
+        @SerializedName(ServerParamKeys.CONNECTION_STATUS) public String connectionStatus;
+        @SerializedName(ServerParamKeys.ABILITIES) public ArrayList<String> abilities;
     }
 
     private static FriendFactory instance = null;
@@ -57,35 +76,35 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
      *
      * @param context context
      * @param friend friend to update
-     * @param params server params
+     * @param serverFriend server params
      * @return Returns a friend only one was found and changed. Otherwise returns null.
      */
-    private Friend updateWithServerParams(Context context, Friend friend, LinkedTreeMap<String, String> params){
+    private Friend updateWithServerParams(Context context, Friend friend, ServerFriend serverFriend){
         if (friend != null) {
             Friend changedFriend = null;
-            if (setConnectionParams(friend, params)) {
+            if (setConnectionParams(friend, serverFriend)) {
                 changedFriend = friend;
             }
-            boolean remoteHasApp = servHasApp(params);
+            boolean remoteHasApp = servHasApp(serverFriend);
             if (friend.hasApp() ^ remoteHasApp) {
                 friend.setHasApp(remoteHasApp);
                 friend.setLastActionTime();
                 notifyStatusChanged(friend);
                 changedFriend = friend;
             }
-            updateParam(friend, params, ServerParamKeys.CID);
+            updateParam(friend, serverFriend, ServerParamKeys.CID);
+            updateParam(friend, serverFriend, ServerParamKeys.ABILITIES);
             return changedFriend;
         }
         return null;
     }
 
-    private boolean setConnectionParams(Friend friend, LinkedTreeMap<String, String> params) {
-        if (params.containsKey(ServerParamKeys.CONNECTION_CREATOR_MKEY)) {
-            friend.setConnectionCreator(isFriendInviter(params));
-            if (params.containsKey(ServerParamKeys.CONNECTION_STATUS)) {
-                String status = params.get(ServerParamKeys.CONNECTION_STATUS);
+    private boolean setConnectionParams(Friend friend, ServerFriend serverFriend) {
+        if (serverFriend.connectionCreator != null) {
+            friend.setConnectionCreator(isFriendInviter(serverFriend));
+            if (serverFriend.connectionStatus != null) {
                 boolean newDeleteStatus = friend.isDeleted();
-                switch (status) {
+                switch (serverFriend.connectionStatus) {
                     case ServerParamKeys.CONNECTION_VOIDED:
                     case ServerParamKeys.CONNECTION_ESTABLISHED:
                         newDeleteStatus = false;
@@ -109,50 +128,58 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         return false;
     }
 
-    private void updateParam(Friend friend, LinkedTreeMap<String, String> params, String paramName) {
-        if (params.containsKey(paramName)) {
-            String friendParam;
-            switch (paramName) {
-                case ServerParamKeys.CID:
-                    friendParam = Friend.Attributes.CID;
-                    break;
-                default:
-                    return;
-            }
-            friend.set(friendParam, params.get(paramName));
+    private void updateParam(Friend friend, ServerFriend serverFriend, String paramName) {
+        String friendParam;
+        String value;
+        switch (paramName) {
+            case ServerParamKeys.CID:
+                friendParam = Friend.Attributes.CID;
+                value = serverFriend.cid;
+                break;
+            case ServerParamKeys.ABILITIES:
+                friendParam = Friend.Attributes.ABILITIES;
+                value = serverFriend.abilities != null ? serverFriend.abilities.toString() : "[]";
+                break;
+            default:
+                return;
         }
+        if (value == null) {
+            return;
+        }
+        friend.set(friendParam, value);
     }
 
-    private boolean isFriendInviter(LinkedTreeMap<String, String> params) {
-        return params.get(ServerParamKeys.CONNECTION_CREATOR_MKEY).equals(params.get(ServerParamKeys.MKEY));
+    private boolean isFriendInviter(ServerFriend friend) {
+        return friend.connectionCreator != null && friend.connectionCreator.equals(friend.mkey);
     }
 
     /**
      * 
      * @param context
-     * @param params server params
+     * @param serverFriend server friend data
      * @param notify true to notify callbacks about changes
      * @return Returns a friend only if a new one was created. It only creates a new friend if
      * none was found with the same id as in params. Returns null if friend is already exist.
      */
-    public Friend createWithServerParams(Context context, LinkedTreeMap<String, String> params, boolean notify){
-        Log.i(TAG, "createFriendFromServerParams: " + params);
-        if (existsWithId(params.get(ServerParamKeys.ID))){
+    public Friend createWithServerParams(Context context, ServerFriend serverFriend, boolean notify){
+        Log.i(TAG, "createFriendFromServerParams: " + serverFriend);
+        if (existsWithId(serverFriend.id)){
             Log.i(TAG, "ERROR: attempting to add friend with duplicate id. Ignoring.");
             return null;
         }
         Friend f = makeInstance(context);
         f.notifyOnChanged(false);
-        f.set(Friend.Attributes.FIRST_NAME, params.get(ServerParamKeys.FIRST_NAME));
-        f.set(Friend.Attributes.LAST_NAME, params.get(ServerParamKeys.LAST_NAME));
-        f.set(Friend.Attributes.ID, params.get(ServerParamKeys.ID));
-        f.set(Friend.Attributes.MKEY, params.get(ServerParamKeys.MKEY));
-        f.set(Friend.Attributes.MOBILE_NUMBER, params.get(ServerParamKeys.MOBILE_NUMBER));
-        f.set(Friend.Attributes.CKEY, params.get(ServerParamKeys.CKEY));
-        f.set(Friend.Attributes.CID, params.get(ServerParamKeys.CID));
-        f.setHasApp(servHasApp(params));
+        f.set(Friend.Attributes.FIRST_NAME, serverFriend.firstName);
+        f.set(Friend.Attributes.LAST_NAME, serverFriend.lastName);
+        f.set(Friend.Attributes.ID, serverFriend.id);
+        f.set(Friend.Attributes.MKEY, serverFriend.mkey);
+        f.set(Friend.Attributes.MOBILE_NUMBER, serverFriend.number);
+        f.set(Friend.Attributes.CKEY, serverFriend.ckey);
+        f.set(Friend.Attributes.CID, serverFriend.cid);
+        f.setHasApp(servHasApp(serverFriend));
+        updateParam(f, serverFriend, ServerParamKeys.ABILITIES);
         f.setLastActionTime();
-        setConnectionParams(f, params);
+        setConnectionParams(f, serverFriend);
         f.notifyOnChanged(true);
         if (notify) {
             f.notifyCallbacks(true);
@@ -161,24 +188,24 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         return f;
     }
 
-    public Friend getExistingFriend(LinkedTreeMap<String, String> params) {
-        return find(params.get(ServerParamKeys.ID));
+    public Friend getExistingFriend(ServerFriend serverFriend) {
+        return find(serverFriend.id);
     }
 
-    public void reconcileFriends(Context context, final List<LinkedTreeMap<String, String>> remoteFriends) {
+    public void reconcileFriends(Context context, final List<ServerFriend> remoteFriends) {
         notifyOnChanged(false);
         boolean needToNotify = false;
         if (remoteFriends.size() > 0) {
-            LinkedTreeMap<String, String> firstFriend = remoteFriends.get(0);
+            ServerFriend firstFriend = remoteFriends.get(0);
             UserFactory.current_user().setInvitee(isFriendInviter(firstFriend));
         }
 
-        for (LinkedTreeMap<String, String> friendParams : remoteFriends) {
-            Friend f = getFriendFromMkey(friendParams.get(ServerParamKeys.MKEY));
+        for (ServerFriend serverFriend : remoteFriends) {
+            Friend f = getFriendFromMkey(serverFriend.mkey);
             if (f != null) {
-                f = updateWithServerParams(context, f, friendParams);
+                f = updateWithServerParams(context, f, serverFriend);
             } else {
-                f = createWithServerParams(context, friendParams, true);
+                f = createWithServerParams(context, serverFriend, true);
             }
             // if friend was updated or created then move him to grid
             if (f != null) {
@@ -199,8 +226,8 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         }
     }
 
-    public boolean servHasApp(LinkedTreeMap<String, String> servParams){
-        return servParams.get(ServerParamKeys.HAS_APP).equalsIgnoreCase(ServerParamKeys.HAS_APP_TRUE_VALUE);
+    public boolean servHasApp(ServerFriend friend){
+        return ServerParamKeys.HAS_APP_TRUE_VALUE.equalsIgnoreCase(friend.hasApp);
     }
 
     public static Friend getFriendFromMkey(String mkey){
@@ -316,18 +343,27 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         return number;
     }
 
-    public static class ConnectionComparator implements Comparator<LinkedTreeMap<String, String>> {
+    public static class ConnectionComparator implements Comparator<ServerFriend> {
         @Override
-        public int compare(LinkedTreeMap<String, String> lhs, LinkedTreeMap<String, String> rhs) {
-            Date ld = StringUtils.parseTime(lhs.get(ServerParamKeys.CONNECTION_CREATED_ON));
-            Date rd = StringUtils.parseTime(rhs.get(ServerParamKeys.CONNECTION_CREATED_ON));
+        public int compare(ServerFriend lhs, ServerFriend rhs) {
+            if (lhs == null && rhs == null) {
+                return 0;
+            }
+            if (lhs == null) {
+                return -1;
+            }
+            if (rhs == null) {
+                return 1;
+            }
+            Date ld = StringUtils.parseTime(lhs.connectionDate);
+            Date rd = StringUtils.parseTime(rhs.connectionDate);
             if (ld == null && rd == null) {
                 return 0;
             }
-            if (ld == null && rd != null) {
+            if (ld == null) {
                 return -1;
             }
-            if (ld != null && rd == null) {
+            if (rd == null) {
                 return 1;
             }
             return ld.compareTo(rd);

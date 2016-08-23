@@ -20,7 +20,7 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
     public static final String USER_REGISTERED = "user_registered";
     private static final String TAG = ActiveModelsHandler.class.getSimpleName();
     public static final String MODEL_VERSION_PREF = "model_version_pref";
-    public static final int MODEL_VERSION = 7;
+    public static final int MODEL_VERSION = 8;
 
     private static ActiveModelsHandler instance;
 
@@ -193,6 +193,8 @@ public class ActiveModelsHandler implements UnexpectedTerminationHelper.Terminat
                 ModelUpgradeHelper.upgradeTo6(this, context);
             case 6:
                 ModelUpgradeHelper.upgradeTo7(this, context);
+            case 7:
+                ModelUpgradeHelper.upgradeTo8(this, context);
         }
         saveAll();
         return true;

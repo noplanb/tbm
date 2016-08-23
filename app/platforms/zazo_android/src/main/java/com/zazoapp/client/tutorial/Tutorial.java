@@ -131,6 +131,9 @@ public class Tutorial implements TutorialLayout.OnTutorialEventListener, View.On
 
     public void onVideoRecorded(Friend friend) {
         HintType.RECORD.markHintAsShowed(preferences);
+    }
+
+    public void onMessageWritten(Friend friend) {
         if (!friend.hasApp() && friend.everSent()) {
             managers.getInviteHelper().nudge(friend);
         }

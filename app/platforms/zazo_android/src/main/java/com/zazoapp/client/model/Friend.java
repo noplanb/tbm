@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.os.Bundle;
+import android.support.annotation.StringDef;
 import android.util.Log;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -28,6 +29,8 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +46,11 @@ public class Friend extends ActiveModel{
 
     public static final Friend EMPTY = new Friend();
 
+    public static final String ABILITY_TEXT_MESSAGING = "text_messaging";
+
+    @StringDef(value = {Friend.ABILITY_TEXT_MESSAGING})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Ability {}
 
     public enum File {
         IN_VIDEO("vid_from", MP4),
@@ -98,6 +106,7 @@ public class Friend extends ActiveModel{
         public static final String CONNECTION_CREATOR = "isConnectionCreator";
         public static final String DELETED = "deleted";
         public static final String EVER_SENT = "everSent";
+        public static final String ABILITIES = "abilities";
     }
 
     public static class VideoStatusEventType{
@@ -124,6 +133,7 @@ public class Friend extends ActiveModel{
                 Attributes.DELETED,
                 Attributes.EVER_SENT,
                 Attributes.CID,
+                Attributes.ABILITIES,
         };
         return new ArrayList<>(Arrays.asList(a));
     }
@@ -879,5 +889,14 @@ public class Friend extends ActiveModel{
 
     public String getInitials() {
         return StringUtils.getInitials(get(Attributes.FIRST_NAME), get(Attributes.LAST_NAME));
+    }
+
+    public void setAbilities(String abilities) {
+        set(Attributes.ABILITIES, abilities);
+    }
+
+    public boolean hasAbility(@Ability String ability) {
+        String abilities = get(Attributes.ABILITIES);
+        return abilities != null && abilities.contains(ability);
     }
 }
