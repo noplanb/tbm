@@ -192,8 +192,8 @@ public class GridElementController implements GridElementView.ClickListener, Vid
                 fragment.showTopFragment(ChatFragment.getInstance(friend), R.anim.fade_in, R.anim.fade_out);
             } else {
                 String message = activity.getString(R.string.dialog_not_supported_chat_message, friend.getFullName());
-                String posText = activity.getString(R.string.dialog_action_ok);
-                String negText = activity.getString(R.string.dialog_action_send_anyway);
+                String negText = activity.getString(R.string.dialog_action_cancel);
+                String posText = activity.getString(R.string.dialog_action_send_anyway);
                 Bundle data = DoubleActionDialogFragment.prepareData(null, message, posText, negText);
                 data.putString(IntentHandlerService.IntentParamKeys.FRIEND_ID, friend.getId());
                 fragment.onShowDoubleActionDialog(data, MainFragment.CONTINUE_CHAT_DIALOG, false);

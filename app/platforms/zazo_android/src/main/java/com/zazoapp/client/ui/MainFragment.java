@@ -400,8 +400,6 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         } else if (id == CONTINUE_CHAT_DIALOG) {
             switch (button) {
                 case BUTTON_POSITIVE:
-                    break;
-                case BUTTON_NEGATIVE:
                     if (gridFragment != null) {
                         gridFragment.forceShowChat(params.getString(IntentHandlerService.IntentParamKeys.FRIEND_ID));
                     }
