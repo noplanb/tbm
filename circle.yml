@@ -13,6 +13,6 @@ dependencies:
 test:
   pre:
     - cd app/platforms && ./gradlew assembleRelease:
-        timeout: 360
+        timeout: 600
   post:
     - cp -r app/platforms/zazo_android/build/outputs $CIRCLE_ARTIFACTS
