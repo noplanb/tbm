@@ -3,6 +3,7 @@ package com.zazoapp.client.ui.helpers;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
@@ -31,7 +32,12 @@ public final class UiUtils {
     }
 
     public static void applyTint(TextView view, @ColorRes int color) {
-        Drawable[] drawables = view.getCompoundDrawables();
+        Drawable[] drawables;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            drawables = view.getCompoundDrawablesRelative();
+        } else {
+            drawables = view.getCompoundDrawables();
+        }
         Context context = view.getContext();
         for (int i = 0; i < drawables.length; i++) {
             Drawable drawable = drawables[i];
@@ -42,7 +48,11 @@ public final class UiUtils {
                 drawables[i] = drawable;
             }
         }
-        view.setCompoundDrawables(drawables[0], drawables[1], drawables[2], drawables[3]);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            view.setCompoundDrawablesRelative(drawables[0], drawables[1], drawables[2], drawables[3]);
+        } else {
+            view.setCompoundDrawables(drawables[0], drawables[1], drawables[2], drawables[3]);
+        }
     }
 
     public static void showSoftKeyboard(View view) {
