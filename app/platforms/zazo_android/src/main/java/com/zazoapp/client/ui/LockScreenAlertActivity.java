@@ -339,6 +339,9 @@ public class LockScreenAlertActivity extends FragmentActivity {
                                 NotificationAlertManager.cancelNativeAlert(getApplicationContext(), NotificationAlertManager.NotificationType.NEW_VIDEO.id());
                                 dismiss();
                             }
+                            if (fragment == topFragment) {
+                                topFragment = null;
+                            }
                         }
                     });
                     topFragment = fragment;
