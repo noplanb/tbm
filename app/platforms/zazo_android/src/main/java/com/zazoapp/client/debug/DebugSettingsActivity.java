@@ -268,7 +268,7 @@ public class DebugSettingsActivity extends FragmentActivity implements DebugConf
                     GridManager.getInstance().initGrid(context);
                     ActiveModelsHandler.getInstance(context).saveAll();
                     if (User.isRegistered(context)) {
-                        new S3CredentialsGetter(context) {
+                        new S3CredentialsGetter(context, true) {
                             @Override
                             protected void success() {
                                 DialogShower.showToast(context, "Loaded");

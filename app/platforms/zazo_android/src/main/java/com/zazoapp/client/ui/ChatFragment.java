@@ -22,6 +22,7 @@ import com.balysv.materialmenu.MaterialMenuView;
 import com.zazoapp.client.R;
 import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.core.TbmApplication;
+import com.zazoapp.client.model.Avatar;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.multimedia.VideoIdUtils;
@@ -33,7 +34,6 @@ import com.zazoapp.client.ui.view.CircleThumbView;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 
-import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -60,6 +60,7 @@ public class ChatFragment extends ZazoTopFragment {
     ThumbsHelper th;
     private int previousSoftInputMode;
     private boolean taskCompleted;
+    private Friend friend;
 
     public static ChatFragment getInstance(Friend friend) {
         ChatFragment f = new ChatFragment();
@@ -76,17 +77,20 @@ public class ChatFragment extends ZazoTopFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.chat_layout, null);
         ButterKnife.inject(this, v);
+        friend = FriendFactory.getFactoryInstance().find(getArguments().getString(FRIEND_ID));
         th = new ThumbsHelper(v.getContext());
         texter.setText(getArguments().getString(TEXT));
         String name = getArguments().getString(NAME);
         title.setText(name);
-        File file = new File(getArguments().getString(THUMB_PATH));
-        if (file.exists()) {
-            thumb.setImageBitmap(Convenience.bitmapWithFile(file));
-            thumb.setFillColor(Color.TRANSPARENT);
-        } else {
-            thumb.setImageResource(th.getIcon(name));
-            thumb.setFillColor(th.getColor(name));
+        if (friend != null) {
+            Avatar<Friend> avatar = friend.getAvatar();
+            if (avatar.existsSomewhere()) {
+                avatar.loadTo(thumb);
+                thumb.setFillColor(Color.TRANSPARENT);
+            } else {
+                thumb.setImageResource(th.getIcon(name));
+                thumb.setFillColor(th.getColor(name));
+            }
         }
         up.setState(MaterialMenuDrawable.IconState.X);
         send.setEnabled(!TextUtils.isEmpty(texter.getText()));
@@ -113,7 +117,6 @@ public class ChatFragment extends ZazoTopFragment {
     public void onSend(View v) {
         String messageText = String.valueOf(texter.getText());
         if (acceptableText(messageText)) {
-            Friend friend = FriendFactory.getFactoryInstance().find(getArguments().getString(FRIEND_ID));
             if (friend != null) {
                 String messageId = VideoIdUtils.generateId();
                 String path = Friend.File.OUT_TEXT.getPath(friend, messageId);

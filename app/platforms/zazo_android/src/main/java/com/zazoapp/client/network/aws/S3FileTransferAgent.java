@@ -79,7 +79,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	private void checkCredentialsOk(){
         if (!S3CredentialsStore.getInstance(fileTransferService).hasCredentials()){
         	Log.e(TAG, "Attempting an S3 file transfer but have no credentials. Getting them now by this transfer will fail.");
-        	new S3CredentialsGetter(fileTransferService);
+        	new S3CredentialsGetter(fileTransferService, false);
         	credentialsOk = false;
         	return;
         }
@@ -261,7 +261,7 @@ public class S3FileTransferAgent implements IFileTransferAgent {
 	
 	private void refreshCredentialsIfNecessary(AmazonServiceException e){
 		if (e.getErrorType() == ErrorType.Client || e.getErrorType() == ErrorType.Unknown)
-	        new S3CredentialsGetter(fileTransferService);
+	        new S3CredentialsGetter(fileTransferService, true);
 	}
 	
 	private String serviceExceptionMessage(AmazonServiceException e){

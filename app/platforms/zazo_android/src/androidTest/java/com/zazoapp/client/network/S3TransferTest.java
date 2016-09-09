@@ -165,7 +165,7 @@ public class S3TransferTest extends ActivityInstrumentationTestCase2<MainActivit
     private void getCredentials() throws Exception {
         if (!S3CredentialsStore.getInstance(getActivity()).hasCredentials()) {
             final CountDownLatch latch = new CountDownLatch(1);
-            new S3CredentialsGetter(getActivity()) {
+            new S3CredentialsGetter(getActivity(), false) {
                 @Override
                 protected void success() {
                     super.success();

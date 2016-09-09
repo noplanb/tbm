@@ -15,9 +15,9 @@ public class S3CredentialsGetter {
 
 	private Context context;
 	
-	public S3CredentialsGetter(Context c){
+	public S3CredentialsGetter(Context c, boolean force){
 		context = c;
-		getCredentials();
+		getCredentials(force);
 	}
 	
 	// Should be overriden by subclasses if desired.
@@ -29,18 +29,51 @@ public class S3CredentialsGetter {
 	    
 	}
 
-	private void getCredentials(){
-		LinkedTreeMap<String, String>params = new LinkedTreeMap<String, String>();
-		String uri = new Uri.Builder().appendPath("s3_credentials").appendPath("info").build().toString();
-		new GetCredentials(uri, params);
-	}
+    private void getCredentials(boolean force) {
+        LinkedTreeMap<String, String> params;
+        S3CredentialsStore videos = S3CredentialsStore.getInstance(context);
+        S3CredentialsStore avatars = S3AvatarDownloadHelper.getCredentialsStore(context);
+        String uri;
+        if (force || !videos.hasCredentials()) {
+            params = new LinkedTreeMap<>();
+            uri = new Uri.Builder().appendPath("s3_credentials").appendPath("videos").build().toString();
+            new GetCredentials(uri, params, videos);
+        }
+        if (force || !avatars.hasCredentials()) {
+            params = new LinkedTreeMap<>();
+            uri = new Uri.Builder().appendPath("s3_credentials").appendPath("avatars").build().toString();
+            new GetCredentials(uri, params, avatars);
+        }
+    }
 
-	class GetCredentials extends HttpRequest{
-		public GetCredentials(String uri, LinkedTreeMap<String, String> params){
-			super(uri, params, new Callbacks() {
+	class GetCredentials extends HttpRequest {
+
+        public GetCredentials(String uri, LinkedTreeMap<String, String> params, final S3CredentialsStore store) {
+            super(uri, params, new Callbacks() {
                 @Override
-                public void success(String response) {
-                    gotCredentials(context, response);
+                public void success(String r) {
+                    Gson g = new Gson();
+                    Response response = null;
+                    try {
+                        response = g.fromJson(r, Response.class);
+                    } catch (JsonSyntaxException e) {
+                    }
+
+                    Log.i(TAG, "gotCredentials");
+
+                    if(response == null || !response.getStatus().equalsIgnoreCase("success")){
+                        Dispatch.dispatch("CredentialsGetter: got failure from server in gotCredentials()");
+                        failure();
+                        return;
+                    }
+                    response.saveCredentials(context, store);
+
+                    if (!store.hasCredentials()){
+                        Dispatch.dispatch("CredentialsGetter: !hasCredentials() when checking credentials in store after getting: " + response.toString());
+                        failure();
+                        return;
+                    }
+                    S3CredentialsGetter.this.success();
                 }
                 @Override
                 public void error(String errorString) {
@@ -50,31 +83,10 @@ public class S3CredentialsGetter {
 		}
 	}
 
-	public void gotCredentials(Context context, String r) {
-		Gson g = new Gson();
-        Response response = null;
-        try {
-            response = g.fromJson(r, Response.class);
-        } catch (JsonSyntaxException e) {
-        }
+	public void gotCredentials(Context context, Response response) {
 
-        Log.i(TAG, "gotCredentials");
+        S3CredentialsStore spm = S3CredentialsStore.getInstance(context);
 
-        if(response == null || !response.getStatus().equalsIgnoreCase("success")){
-            Dispatch.dispatch("CredentialsGetter: got failure from server in gotCredentials()");
-            failure();
-            return;
-        }
-
-        response.saveCredentials(context);
-        
-        if (!S3CredentialsStore.getInstance(context).hasCredentials()){
-            Dispatch.dispatch("CredentialsGetter: !hasCredentials() when checking credentials in store after getting: " + response.toString());
-            failure();
-            return;
-        }
-            
-        success();
 	}
 
     private class Response{
@@ -104,8 +116,7 @@ public class S3CredentialsGetter {
             return secret_key;
         }
 
-        public void saveCredentials(Context context) {
-            S3CredentialsStore spm = S3CredentialsStore.getInstance(context);
+        public void saveCredentials(Context context, S3CredentialsStore spm) {
             spm.saveS3AccessKey(access_key);
             spm.saveS3SecretKey(secret_key);
             spm.saveS3Bucket(bucket);

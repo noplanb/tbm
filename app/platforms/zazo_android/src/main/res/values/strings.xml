@@ -73,6 +73,9 @@
     <string name="dialog_enter_text_hint">Enter text</string>
     <string name="dialog_not_supported_chat_title">Do not send message?</string>
     <string name="dialog_not_supported_chat_message">It seems that %1$s doesn\'t have the latest Zazo version and won\'t be able to receive your message</string>
+    <string name="dialog_use_last_frame">Use last frame of Zazo</string>
+    <string name="dialog_use_profile_photo">Use profile photo</string>
+    <string name="dialog_thumbnail_when_sending_zazo">Thumbnail when sending a Zazo:</string>
 
     <string name="toast_downloading">Downloading…</string>
     <string name="toast_not_sent">Not sent</string>

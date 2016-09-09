@@ -69,10 +69,6 @@ public class Convenience {
 	    float dp = px / (metrics.densityDpi / 160f);
 	    return dp;	}
 	
-	public static Bitmap bitmapWithPath(String path){
-		return bitmapWithFile(new File(path));
-	}
-	
 	public static Bitmap bitmapWithFile(File file){
         Bitmap bmp = null;
 		try {
@@ -87,8 +83,7 @@ public class Convenience {
 		}
 		return bmp;
 	}
-	
-	
+
 	// ---------------------------
 	// Task and activities helpers
 	// ---------------------------

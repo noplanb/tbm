@@ -37,7 +37,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class Friend extends ActiveModel{
+public class Friend extends ActiveModel implements AvatarProvidable {
 
     private static final String MP4 = ".mp4";
     private static final String PCM = ".pcm";
@@ -107,12 +107,16 @@ public class Friend extends ActiveModel{
         public static final String DELETED = "deleted";
         public static final String EVER_SENT = "everSent";
         public static final String ABILITIES = "abilities";
+        public static final String AVATAR_TIMESTAMP = AvatarProvidable.AVATAR_TIMESTAMP;
+        public static final String USE_AS_THUMBNAIL = AvatarProvidable.USE_AS_THUMBNAIL;
     }
 
     public static class VideoStatusEventType{
         public static final Integer OUTGOING = 0;
         public static final Integer INCOMING = 1;
     }
+
+    private Avatar<Friend> avatar = new Avatar<>(this);
 
     @Override
     public List<String> attributeList() {
@@ -134,6 +138,8 @@ public class Friend extends ActiveModel{
                 Attributes.EVER_SENT,
                 Attributes.CID,
                 Attributes.ABILITIES,
+                Attributes.AVATAR_TIMESTAMP,
+                Attributes.USE_AS_THUMBNAIL
         };
         return new ArrayList<>(Arrays.asList(a));
     }
@@ -437,7 +443,7 @@ public class Friend extends ActiveModel{
     }
 
     public synchronized Bitmap thumbBitmap(){
-        return Convenience.bitmapWithFile(thumbFile());
+        return avatar.loadBitmap();
     }
 
     public Bitmap sqThumbBitmap(){
@@ -454,7 +460,7 @@ public class Friend extends ActiveModel{
         if (!thumbFile().exists()) {
             migrateLegacyThumbs();
         }
-        return thumbFile().exists();
+        return avatar.exists();
     }
 
     private void migrateLegacyThumbs() {
@@ -517,6 +523,7 @@ public class Friend extends ActiveModel{
                         } catch (IOException e) {}
                     }
                 }
+                avatar.updateBitmap();
                 res = true;
             } catch (IOException | RuntimeException | ThumbnailRetriever.ThumbnailBrokenException e) {
                 Dispatch.dispatch(e, "createThumb: " + e.getMessage() + e.toString());
@@ -898,5 +905,28 @@ public class Friend extends ActiveModel{
     public boolean hasAbility(@Ability String ability) {
         String abilities = get(Attributes.ABILITIES);
         return abilities != null && abilities.contains(ability);
+    }
+
+    public String getAvatarTimestamp() {
+        return get(Attributes.AVATAR_TIMESTAMP);
+    }
+
+    @Override
+    public String getAvatarFileName(Avatar.ThumbnailType type) {
+        return File.IN_THUMB.getPath(this, getId())/*getMkey() + "_" + getAvatarTimestamp() + ".png"*/;
+    }
+
+    @Override
+    public String getAvatarOption() {
+        return get(Attributes.USE_AS_THUMBNAIL);
+    }
+
+    @Override
+    public String getAvatarFolder() {
+        return null;
+    }
+
+    public Avatar<Friend> getAvatar() {
+        return avatar;
     }
 }

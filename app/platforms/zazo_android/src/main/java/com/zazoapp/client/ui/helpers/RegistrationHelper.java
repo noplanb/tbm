@@ -110,7 +110,7 @@ public class RegistrationHelper {
 
     private class RegS3CredentialsGetter extends S3CredentialsGetter {
         public RegS3CredentialsGetter() {
-            super(context);
+            super(context, true);
         }
 
         @Override

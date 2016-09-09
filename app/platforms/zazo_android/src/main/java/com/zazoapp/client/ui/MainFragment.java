@@ -35,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.OnClick;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -160,7 +161,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         managerHolder.init(context, this, getActivity());
         TbmApplication.getInstance().initManagerProvider(managerHolder);
         TbmApplication.getInstance().addTerminationCallback(this);
-        new S3CredentialsGetter(context);
+        new S3CredentialsGetter(context, false);
         context.startService(new Intent(context, IntentHandlerService.class));
         setupGrid();
         //if (savedInstanceState != null) { TODO discuss
@@ -769,4 +770,8 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         }
     }
 
+    @OnClick(R.id.drawer_header)
+    public void onDrawerHeaderClicked(View v) {
+        //showTopFragment();
+    }
 }

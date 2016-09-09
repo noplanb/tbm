@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class User extends ActiveModel{
+public class User extends ActiveModel implements AvatarProvidable {
 
     public static class Attributes {
         public static final String ID = "id";
@@ -21,7 +21,11 @@ public class User extends ActiveModel{
         public static final String REGISTERED = "registered";
         public static final String MOBILE_NUMBER = "mobileNumber";
         public static final String INVITEE = "invitee";
+        public static final String AVATAR_TIMESTAMP = AvatarProvidable.AVATAR_TIMESTAMP;
+        public static final String USE_AS_THUMBNAIL = AvatarProvidable.USE_AS_THUMBNAIL;
     }
+
+    private Avatar<User> avatar = new Avatar<>(this);
 
     @Override
     public List<String> attributeList() {
@@ -131,4 +135,28 @@ public class User extends ActiveModel{
     public String getMkey() {
         return get(Attributes.MKEY);
     }
+
+    public Avatar<User> getAvatar() {
+        return avatar;
+    }
+
+    public String getAvatarTimestamp() {
+        return get(Attributes.AVATAR_TIMESTAMP);
+    }
+
+    @Override
+    public String getAvatarFileName(Avatar.ThumbnailType type) {
+        return getMkey() + "_" + getAvatarTimestamp() + ".png";
+    }
+
+    @Override
+    public String getAvatarOption() {
+        return get(Attributes.USE_AS_THUMBNAIL);
+    }
+
+    @Override
+    public String getAvatarFolder() {
+        return null;
+    }
+
 }

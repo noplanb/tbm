@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import com.google.gson.annotations.SerializedName;
 import com.zazoapp.client.model.Friend.VideoStatusChangedCallback;
+import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.utilities.StringUtils;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         public static final String EMAILS_ARRAY = EMAILS + ARRAY_SUFFIX;
         public static final String CONNECTION_STATUS = "connection_status";
         public static final String ABILITIES = "abilities";
+        public static final String AVATAR = "avatar";
 
         public static final String HAS_APP_TRUE_VALUE = "true";
         public static final String HAS_APP_FALSE_VALUE = "false";
@@ -62,6 +64,12 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         @SerializedName(ServerParamKeys.CONNECTION_CREATOR_MKEY) public String connectionCreator;
         @SerializedName(ServerParamKeys.CONNECTION_STATUS) public String connectionStatus;
         @SerializedName(ServerParamKeys.ABILITIES) public ArrayList<String> abilities;
+        @SerializedName(ServerParamKeys.AVATAR) public AvatarData avatar;
+    }
+
+    public static class AvatarData {
+        @SerializedName("timestamp") public String timestamp;
+        @SerializedName("use_as_thumbnail") public String useOption;
     }
 
     private static FriendFactory instance = null;
@@ -94,6 +102,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
             }
             updateParam(friend, serverFriend, ServerParamKeys.CID);
             updateParam(friend, serverFriend, ServerParamKeys.ABILITIES);
+            setAvatar(friend, serverFriend);
             return changedFriend;
         }
         return null;
@@ -178,6 +187,7 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
         f.set(Friend.Attributes.CID, serverFriend.cid);
         f.setHasApp(servHasApp(serverFriend));
         updateParam(f, serverFriend, ServerParamKeys.ABILITIES);
+        setAvatar(f, serverFriend);
         f.setLastActionTime();
         setConnectionParams(f, serverFriend);
         f.notifyOnChanged(true);
@@ -186,6 +196,28 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
             notifyStatusChanged(f);
         }
         return f;
+    }
+
+    private void setAvatar(Friend friend, ServerFriend serverFriend) {
+        AvatarData avatarData = serverFriend.avatar;
+        if (avatarData != null) {
+            Avatar.ThumbnailType useOption = friend.getAvatar().getType();
+            Avatar.ThumbnailType newUseOption = Avatar.ThumbnailType.getType(avatarData.useOption);
+            long newAvatarTimestamp = VideoIdUtils.timeStampFromVideoId(avatarData.timestamp);
+            if (useOption != newUseOption && newUseOption == Avatar.ThumbnailType.LAST_FRAME
+                    || newAvatarTimestamp == 0) {
+                friend.set(Friend.Attributes.USE_AS_THUMBNAIL, Avatar.ThumbnailType.LAST_FRAME.optionName());
+                friend.set(Friend.Attributes.AVATAR_TIMESTAMP, String.valueOf(0));
+                // While we don't have a thumbnail but have an avatar we are going to use last one
+            } else {
+                long currentAvatarTimestamp = VideoIdUtils.timeStampFromVideoId(friend.getAvatarTimestamp());
+                if (newUseOption == Avatar.ThumbnailType.PHOTO) {
+                    if (newAvatarTimestamp > currentAvatarTimestamp) {
+                        Avatar.download(friend.getMkey(), avatarData.timestamp, friend);
+                    }
+                }
+            }
+        }
     }
 
     public Friend getExistingFriend(ServerFriend serverFriend) {

@@ -20,6 +20,7 @@ import com.zazoapp.client.asr.VoiceTranscriptor;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.ActiveModelFactory;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.model.Avatar;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.IncomingMessage;
@@ -460,7 +461,9 @@ public class IntentHandlerService extends Service implements UnexpectedTerminati
                     RemoteStorageHandler.setRemoteIncomingVideoStatus(friend, messageId, messageType, RemoteStorageHandler.StatusEnum.DOWNLOADED);
                 }
                 if (messageType == MessageType.VIDEO) {
-                    friend.createThumb(messageId);
+                    if (friend.getAvatar().getType() == Avatar.ThumbnailType.LAST_FRAME) {
+                        friend.createThumb(messageId);
+                    }
                 }
 
                 friend.deleteAllViewedMessages();
