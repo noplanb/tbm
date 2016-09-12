@@ -32,23 +32,59 @@ public class S3CredentialsGetter {
     private void getCredentials(boolean force) {
         LinkedTreeMap<String, String> params;
         S3CredentialsStore videos = S3CredentialsStore.getInstance(context);
-        S3CredentialsStore avatars = S3AvatarDownloadHelper.getCredentialsStore(context);
+        final S3CredentialsStore avatars = S3AvatarDownloadHelper.getCredentialsStore(context);
         String uri;
+        final Runnable getAvatars;
+        if (force || !avatars.hasCredentials()) {
+            getAvatars = new Runnable() {
+                @Override
+                public void run() {
+                    LinkedTreeMap<String, String> params = new LinkedTreeMap<>();
+                    String uri = new Uri.Builder().appendPath("s3_credentials").appendPath("avatars").build().toString();
+                    new GetCredentials(uri, params, avatars, new RequestCallbacks() {
+                        @Override
+                        public void onSuccess() {
+                            success();
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            failure();
+                        }
+                    });
+                }
+            };
+        } else {
+            getAvatars = null;
+        }
         if (force || !videos.hasCredentials()) {
             params = new LinkedTreeMap<>();
             uri = new Uri.Builder().appendPath("s3_credentials").appendPath("videos").build().toString();
-            new GetCredentials(uri, params, videos);
-        }
-        if (force || !avatars.hasCredentials()) {
-            params = new LinkedTreeMap<>();
-            uri = new Uri.Builder().appendPath("s3_credentials").appendPath("avatars").build().toString();
-            new GetCredentials(uri, params, avatars);
+            new GetCredentials(uri, params, videos, new RequestCallbacks() {
+                @Override
+                public void onSuccess() {
+                    if (getAvatars == null) {
+                        success();
+                    } else {
+                        getAvatars.run();
+                    }
+                }
+
+                @Override
+                public void onFailure() {
+                    failure();
+                }
+            });
+        } else {
+            if (getAvatars != null) {
+                getAvatars.run();
+            }
         }
     }
 
-	class GetCredentials extends HttpRequest {
+    class GetCredentials extends HttpRequest {
 
-        public GetCredentials(String uri, LinkedTreeMap<String, String> params, final S3CredentialsStore store) {
+        public GetCredentials(String uri, LinkedTreeMap<String, String> params, final S3CredentialsStore store, final RequestCallbacks callbacks) {
             super(uri, params, new Callbacks() {
                 @Override
                 public void success(String r) {
@@ -61,32 +97,26 @@ public class S3CredentialsGetter {
 
                     Log.i(TAG, "gotCredentials");
 
-                    if(response == null || !response.getStatus().equalsIgnoreCase("success")){
+                    if (response == null || !response.getStatus().equalsIgnoreCase("success")){
                         Dispatch.dispatch("CredentialsGetter: got failure from server in gotCredentials()");
-                        failure();
+                        callbacks.onFailure();
                         return;
                     }
                     response.saveCredentials(context, store);
 
                     if (!store.hasCredentials()){
                         Dispatch.dispatch("CredentialsGetter: !hasCredentials() when checking credentials in store after getting: " + response.toString());
-                        failure();
+                        callbacks.onFailure();
                         return;
                     }
-                    S3CredentialsGetter.this.success();
+                    callbacks.onSuccess();
                 }
                 @Override
                 public void error(String errorString) {
-                    failure();
+                    callbacks.onFailure();
                 }
             });
 		}
-	}
-
-	public void gotCredentials(Context context, Response response) {
-
-        S3CredentialsStore spm = S3CredentialsStore.getInstance(context);
-
 	}
 
     private class Response{
@@ -129,4 +159,8 @@ public class S3CredentialsGetter {
         }
     }
 
+    interface RequestCallbacks {
+        void onSuccess();
+        void onFailure();
+    }
 }
