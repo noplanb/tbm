@@ -137,7 +137,9 @@
 
         <service android:name=".network.MessageUploadService" />
             <!-- android:process=":FileTransferService" -->
-
+        <service
+                android:name="com.amazonaws.mobileconnectors.s3.transferutility.TransferService"
+                android:enabled="true" />
         <receiver android:name=".core.BootCompleteReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

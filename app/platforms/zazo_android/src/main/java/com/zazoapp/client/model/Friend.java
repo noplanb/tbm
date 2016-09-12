@@ -926,6 +926,7 @@ public class Friend extends ActiveModel implements AvatarProvidable {
         return null;
     }
 
+    @Override
     public Avatar<Friend> getAvatar() {
         return avatar;
     }

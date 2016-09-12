@@ -15,8 +15,10 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.zazoapp.client.Config;
 import com.zazoapp.client.network.aws.S3AvatarDownloadHelper;
 import com.zazoapp.client.network.aws.S3CredentialsStore;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -98,12 +100,11 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
         return bitmap;
     }
 
-
     public ThumbnailType getType() {
         return ThumbnailType.getType(model.getAvatarOption());
     }
 
-    private String getAvatarPath() {
+    public String getAvatarPath() {
         return Config.homeDirPath(model.getContext()) + File.separator + model.getAvatarFileName(getType());
     }
 
@@ -152,8 +153,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
         String filepath = Config.homeDirPath(context) + File.separator + name;
         final File file = new File(filepath);
         if (file.exists()) {
-            model.set(AvatarProvidable.AVATAR_TIMESTAMP, timestamp);
-            model.set(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.PHOTO.optionName());
+            setAvatarFromFile(file, model, timestamp);
             return;
         }
         S3CredentialsStore store = S3AvatarDownloadHelper.getCredentialsStore(context);
@@ -170,8 +170,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
             if (absolutePath.equals(o.getAbsoluteFilePath())) {
                 if (o.getState() == TransferState.COMPLETED && cacheFile.exists()) {
                     if (cacheFile.renameTo(file)) {
-                        model.set(AvatarProvidable.AVATAR_TIMESTAMP, timestamp);
-                        model.set(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.PHOTO.optionName());
+                        setAvatarFromFile(file, model, timestamp);
                     }
                 } else {
                     observer = o;
@@ -192,8 +191,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
                     finalObserver.cleanTransferListener();
                     if (cacheFile.exists()) {
                         if (cacheFile.renameTo(file)) {
-                            model.set(AvatarProvidable.AVATAR_TIMESTAMP, timestamp);
-                            model.set(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.PHOTO.optionName());
+                            setAvatarFromFile(file, model, timestamp);
                         }
                     }
                 }
@@ -207,5 +205,15 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
             public void onError(int id, Exception ex) {
             }
         });
+    }
+
+    private static <T extends ActiveModel & AvatarProvidable> void setAvatarFromFile(File file, T model, String timestamp) {
+        try {
+            FileUtils.copyFile(file, new File(model.getAvatar().getAvatarPath()));
+            model.getAvatar().updateBitmap();
+            model.set(AvatarProvidable.AVATAR_TIMESTAMP, timestamp);
+            model.set(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.PHOTO.optionName());
+        } catch (IOException e) {
+        }
     }
 }

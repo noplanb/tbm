@@ -136,6 +136,7 @@ public class User extends ActiveModel implements AvatarProvidable {
         return get(Attributes.MKEY);
     }
 
+    @Override
     public Avatar<User> getAvatar() {
         return avatar;
     }
