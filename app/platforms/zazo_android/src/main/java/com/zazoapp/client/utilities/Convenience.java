@@ -53,6 +53,10 @@ public class Convenience {
     public static final String TAG = Convenience.class.getSimpleName();
     public static final String ON_NOT_ENOUGH_SPACE_ACTION = "on_not_enough_space_action";
 
+    public static final String MEDIUM = "Roboto-Medium";
+    public static final String NORMAL = "Roboto-Regular";
+    public static final String ITALIC = "Roboto-Italic";
+
     public static float dpToPx(Context context, float dp){
 		Resources r = context.getResources();
 		return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
@@ -361,7 +365,7 @@ public class Convenience {
     }
 
     public static Typeface getTypeface(Context context) {
-        return getTypeface(context, "Roboto-Medium");
+        return getTypeface(context, MEDIUM);
     }
 
     public static float availableRoomSpace(File file) {

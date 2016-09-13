@@ -226,6 +226,14 @@
     <string name="settings_allow_data_in_roaming_hint">Send and receive Zazos when roaming</string>
     <string name="settings_light_screen_for_notifications">Light screen for notifications</string>
 
+    <string name="account_title">Profile</string>
+    <string name="account_setup_photo">Set profile\nphoto</string>
+
+    <string-array name="account_photo_options">
+        <item>Take a photo</item>
+        <item>Choose from gallery</item>
+        <item>Remove avatar</item>
+    </string-array>
     <string name="ge_menu_fullscreen">Fullscreen</string>
     <string name="ge_menu_transcript">Convert to text</string>
     <string name="ge_menu_chat">Send text</string>

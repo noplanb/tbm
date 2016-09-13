@@ -25,8 +25,8 @@ public class TextMessageViewHolder extends MessageAdapter.MessageViewHolder {
         ButterKnife.inject(this, transcriptionItemView);
         type = MessageType.TEXT;
         itemView = transcriptionItemView;
-        date.setTypeface(Convenience.getTypeface(itemView.getContext(), "Roboto-Italic"));
-        text.setTypeface(Convenience.getTypeface(itemView.getContext(), "Roboto-Regular"));
+        date.setTypeface(Convenience.getTypeface(itemView.getContext(), Convenience.ITALIC));
+        text.setTypeface(Convenience.getTypeface(itemView.getContext(), Convenience.NORMAL));
     }
 
     public void setData(String mainText, String secondaryText) {

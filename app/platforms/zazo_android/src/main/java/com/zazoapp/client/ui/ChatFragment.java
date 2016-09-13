@@ -85,7 +85,7 @@ public class ChatFragment extends ZazoTopFragment {
         if (friend != null) {
             Avatar<Friend> avatar = friend.getAvatar();
             if (avatar.existsSomewhere()) {
-                avatar.loadTo(thumb);
+                thumb.setImageBitmap(friend.thumbBitmap());
                 thumb.setFillColor(Color.TRANSPARENT);
             } else {
                 thumb.setImageResource(th.getIcon(name));

@@ -32,7 +32,7 @@ public class ChipsViewWrapper {
         }
         ButterKnife.inject(this, layout);
         tHelper = new ThumbsHelper(context);
-        Typeface tf = Convenience.getTypeface(context, "Roboto-Regular");
+        Typeface tf = Convenience.getTypeface(context, Convenience.NORMAL);
         title.setTypeface(tf);
         thumbTitle.setTypeface(tf);
     }

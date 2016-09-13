@@ -69,7 +69,7 @@ abstract public class AbstractDialogFragment extends DialogFragment implements T
         Typeface tf = Convenience.getTypeface(v.getContext());
         btnOk.setTypeface(tf);
         btnCancel.setTypeface(tf);
-        tf = Convenience.getTypeface(v.getContext(), "Roboto-Regular");
+        tf = Convenience.getTypeface(v.getContext(), Convenience.NORMAL);
         editMsg.setTypeface(tf);
         twTitle.setTypeface(tf, Typeface.BOLD);
         twMsg.setTypeface(tf);

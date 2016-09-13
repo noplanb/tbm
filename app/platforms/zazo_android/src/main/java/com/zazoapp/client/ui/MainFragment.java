@@ -35,7 +35,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import butterknife.OnClick;
 import com.balysv.materialmenu.MaterialMenuDrawable;
 import com.balysv.materialmenu.MaterialMenuView;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -85,7 +84,7 @@ import java.util.List;
  */
 public class MainFragment extends ZazoFragment implements UnexpectedTerminationHelper.TerminationCallback, VersionHandler.Callback,
         ActionInfoDialogFragment.ActionInfoDialogListener, InviteManager.InviteDialogListener, SelectPhoneNumberDialog.Callbacks,
-        DoubleActionDialogFragment.DoubleActionDialogListener, DrawerLayout.DrawerListener, NavigationView.OnNavigationItemSelectedListener, BenchController.BenchListener, Player.StatusCallbacks {
+        DoubleActionDialogFragment.DoubleActionDialogListener, DrawerLayout.DrawerListener, NavigationView.OnNavigationItemSelectedListener, BenchController.BenchListener, Player.StatusCallbacks, View.OnClickListener {
 
     private static final String TAG = MainFragment.class.getSimpleName();
 
@@ -140,6 +139,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         View v = inflater.inflate(R.layout.main_fragment_layout, null);
         ButterKnife.inject(this, v);
         setupActionBar();
+        navigationView.getHeaderView(0).findViewById(R.id.drawer_header).setOnClickListener(this);
         return v;
     }
 
@@ -608,6 +608,13 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public void onVideoPlaybackError(String friendId, String videoId) {
     }
 
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.drawer_header) {
+            showTopFragment(AccountFragment.getInstance(), R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
+        }
+    }
+
     private class MainActivityReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -770,8 +777,4 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         }
     }
 
-    @OnClick(R.id.drawer_header)
-    public void onDrawerHeaderClicked(View v) {
-        //showTopFragment();
-    }
 }
