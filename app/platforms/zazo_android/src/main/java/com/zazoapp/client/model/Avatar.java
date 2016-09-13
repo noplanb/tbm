@@ -13,9 +13,12 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferType;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.network.aws.S3AvatarDownloadHelper;
 import com.zazoapp.client.network.aws.S3CredentialsStore;
 import org.apache.commons.io.FileUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +31,8 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
 
     private static final String TAG = Avatar.class.getSimpleName();
     public static final String FILENAME_TEMPLATE = "%s_%s.png";
+
+    private static final String AVATARS_API = "/api/v1/avatars";
 
     public enum ThumbnailType {
         LAST_FRAME("last_frame"),
@@ -108,6 +113,10 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
         return Config.homeDirPath(model.getContext()) + File.separator + model.getAvatarFileName(getType());
     }
 
+    private String getKey() {
+        return String.format(FILENAME_TEMPLATE, model.getMkey(), model.getAvatarTimestamp());
+    }
+
     private static final LruCache<String, Bitmap> mMemoryCache;
     static {
         // Get max available VM memory, exceeding this amount will throw an
@@ -142,8 +151,38 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
         mMemoryCache.remove(key);
     }
 
-    public static void delete(String key) {
-        removeFromCache(key);
+    public static void delete() {
+        new HttpRequest.Builder()
+                .setMethod(HttpRequest.DELETE)
+                .setUri(AVATARS_API)
+                .build();
+    }
+
+    public static void upload(String path) {
+        JSONObject object = new JSONObject();
+        try {
+            object.put(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.PHOTO.optionName());
+            new HttpRequest.Builder()
+                    .setMethod(HttpRequest.POST)
+                    .setUri(AVATARS_API)
+                    .setJsonParams(object)
+                    .setFilepath(path)
+                    .build();
+        } catch (JSONException e) {
+        }
+    }
+
+    public static void update(ThumbnailType type) {
+        JSONObject object = new JSONObject();
+        try {
+            object.put(AvatarProvidable.USE_AS_THUMBNAIL, type.optionName());
+            new HttpRequest.Builder()
+                    .setMethod(HttpRequest.UPDATE)
+                    .setUri(AVATARS_API)
+                    .setJsonParams(object)
+                    .build();
+        } catch (JSONException e) {
+        }
     }
 
     public static <T extends ActiveModel & AvatarProvidable> void download(String mkey, final String timestamp, final T model) {
@@ -161,7 +200,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
 
         }
         final File cacheFile = new File(model.getContext().getCacheDir(), name);
-        TransferUtility tf = S3AvatarDownloadHelper.getTransferUtility(model.getContext());
+        final TransferUtility tf = S3AvatarDownloadHelper.getTransferUtility(model.getContext());
         List<TransferObserver> observers = tf.getTransfersWithType(TransferType.DOWNLOAD);
         S3CredentialsStore credentials = S3AvatarDownloadHelper.getCredentialsStore(context);
         String absolutePath = cacheFile.getAbsolutePath();
@@ -171,6 +210,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
                 if (o.getState() == TransferState.COMPLETED && cacheFile.exists()) {
                     if (cacheFile.renameTo(file)) {
                         setAvatarFromFile(file, model, timestamp);
+                        tf.deleteTransferRecord(o.getId());
                     }
                 } else {
                     observer = o;
@@ -192,6 +232,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
                     if (cacheFile.exists()) {
                         if (cacheFile.renameTo(file)) {
                             setAvatarFromFile(file, model, timestamp);
+                            tf.deleteTransferRecord(finalObserver.getId());
                         }
                     }
                 }

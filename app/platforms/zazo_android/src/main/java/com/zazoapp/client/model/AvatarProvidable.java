@@ -7,6 +7,7 @@ public interface AvatarProvidable<T extends ActiveModel & AvatarProvidable> {
     String getAvatarTimestamp();
     String getAvatarFileName(Avatar.ThumbnailType type);
     String getAvatarOption();
+    String getMkey();
     String getAvatarFolder();
     Avatar<T> getAvatar();
 

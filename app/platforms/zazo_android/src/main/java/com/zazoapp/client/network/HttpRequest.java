@@ -29,6 +29,7 @@ import cz.msebera.android.httpclient.conn.scheme.Scheme;
 import cz.msebera.android.httpclient.conn.scheme.SchemeRegistry;
 import cz.msebera.android.httpclient.conn.ssl.SSLSocketFactory;
 import cz.msebera.android.httpclient.entity.ContentType;
+import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder;
 import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
 import cz.msebera.android.httpclient.impl.conn.SingleClientConnManager;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
@@ -38,6 +39,7 @@ import cz.msebera.android.httpclient.protocol.HTTP;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -65,6 +67,8 @@ public class HttpRequest {
     private JSONObject jsonParams;
     private Callbacks callbacks;
     private int timeout;
+    private boolean multipart;
+    private String filePath;
     
     //------------------------------------------------------------------
     // Application level success and failure handling (not http failure)
@@ -187,6 +191,8 @@ public class HttpRequest {
         jsonParams = builder.jsonParams;
         callbacks = builder.callbacks;
         timeout = builder.timeout;
+        filePath = builder.filePath;
+        multipart = builder.multipart;
         AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
     }
 
@@ -208,6 +214,8 @@ public class HttpRequest {
         private JSONObject jsonParams;
         private String host;
         private int timeout = -1;
+        private boolean multipart;
+        private String filePath;
 
         public Builder setUrl(String url) {
             this.url = url;
@@ -254,6 +262,11 @@ public class HttpRequest {
             return this;
         }
 
+        public Builder setFilepath(String filepath) {
+            this.filePath = filepath;
+            return this;
+        }
+
         /**
          *
          * @param timeout in seconds
@@ -274,6 +287,7 @@ public class HttpRequest {
             if (!TextUtils.isEmpty(url) && TextUtils.isEmpty(this.host)) {
                 throw new IllegalStateException("Host must be set if url is set");
             }
+            multipart = jsonParams != null && filePath != null;
             return new HttpRequest(this);
         }
     }
@@ -342,7 +356,11 @@ public class HttpRequest {
         RequestBuilder rb;
         if (isPost() || isDelete() || isPatch()) {
             rb = RequestBuilder.create(method);
-            if (jsonParams != null) {
+            if (multipart) {
+                MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
+                entityBuilder.addTextBody("json", jsonParams.toString(), ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), "UTF-8"));
+                entityBuilder.addBinaryBody("file", new File(filePath));
+            } else if (jsonParams != null) {
                 rb.setEntity(EntityBuilder.create()
                         .setText(jsonParams.toString())
                         .setContentType(ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), "UTF-8")).build());

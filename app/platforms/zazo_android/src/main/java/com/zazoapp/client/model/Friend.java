@@ -217,6 +217,7 @@ public class Friend extends ActiveModel implements AvatarProvidable {
         OutgoingMessageFactory.getFactoryInstance().deleteAllSent(getId());
     }
 
+    @Override
     public String getMkey() {
         return get(Attributes.MKEY);
     }

@@ -132,6 +132,7 @@ public class User extends ActiveModel implements AvatarProvidable {
     	}
     }
 
+    @Override
     public String getMkey() {
         return get(Attributes.MKEY);
     }
