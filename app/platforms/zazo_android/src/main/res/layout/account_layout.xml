@@ -105,7 +105,7 @@
                         android:layout_alignTop="@id/thumb"
                         android:layout_alignRight="@id/thumb"
                         android:layout_alignBottom="@id/thumb"
-                        android:paddingBottom="30dp"
+                        android:paddingBottom="25dp"
                         android:alpha="@integer/primary_dark_text_alpha"
                         android:paddingLeft="20dp"
                         android:paddingRight="20dp"

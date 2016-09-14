@@ -1,12 +1,17 @@
 package com.zazoapp.client.ui;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.AppCompatRadioButton;
 import android.support.v7.widget.ListPopupWindow;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -131,6 +136,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
                 switch (position) {
                     case 0:
                         // Take screenshot
+                        dispatchTakePictureIntent();
                         break;
                     case 1:
                         // choose file
@@ -219,5 +225,23 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
             View child = thumbnailChooserGroup.getChildAt(i);
             child.setEnabled(enable);
         }
+    }
+
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.i(TAG, "result " + (resultCode == Activity.RESULT_OK));
+        Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+        // TODO temporary
+        thumb.setImageBitmap(bitmap);
     }
 }
