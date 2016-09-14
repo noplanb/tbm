@@ -113,46 +113,52 @@
                         android:textAllCaps="true"
                         android:textSize="@dimen/text_normal"
                         android:text="@string/account_setup_photo"/>
-                <TextView
-                        android:id="@+id/thumbnail_group_label"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/dialog_thumbnail_when_sending_zazo"
-                        android:textColor="@color/dialog_textcolor"
-                        android:textSize="@dimen/text_normal"
-                        android:layout_below="@id/thumb"/>
-                <RadioGroup
-                        android:id="@+id/thumbnail_group"
+                <LinearLayout
+                        android:id="@+id/thumbnail_layout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:paddingTop="10dp"
-                        android:paddingLeft="@dimen/content_inset"
-                        android:paddingRight="@dimen/content_inset"
-                        android:layout_below="@id/thumbnail_group_label"
-                        >
-                    <android.support.v7.widget.AppCompatRadioButton
-                            android:id="@+id/use_last_frame"
+                        android:layout_below="@id/thumb">
+                    <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/dialog_use_last_frame"
+                            android:text="@string/dialog_thumbnail_when_sending_zazo"
                             android:textColor="@color/dialog_textcolor"
-                            android:textSize="@dimen/text_normal"
-                            android:button="@drawable/rbtn_selector"
-                            app:buttonTint="@color/primary"
-                            />
+                            android:textSize="@dimen/text_normal"/>
+                    <RadioGroup
+                            android:id="@+id/thumbnail_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingTop="10dp"
+                            android:paddingLeft="@dimen/content_inset"
+                            android:paddingRight="@dimen/content_inset"
+                            >
+                        <android.support.v7.widget.AppCompatRadioButton
+                                android:id="@+id/use_last_frame"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/dialog_use_last_frame"
+                                android:textColor="@color/dialog_textcolor"
+                                android:textSize="@dimen/text_normal"
+                                android:button="@drawable/rbtn_selector"
+                                app:buttonTint="@color/primary"
+                                />
 
-                    <android.support.v7.widget.AppCompatRadioButton
-                            android:id="@+id/use_profile_photo"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/dialog_use_profile_photo"
-                            android:textColor="@color/dialog_textcolor"
-                            android:textSize="@dimen/text_normal"
-                            android:button="@drawable/rbtn_selector"
-                            app:buttonTint="@color/primary"
-                            />
-                </RadioGroup>
+                        <android.support.v7.widget.AppCompatRadioButton
+                                android:id="@+id/use_profile_photo"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/dialog_use_profile_photo"
+                                android:textColor="@color/dialog_textcolor"
+                                android:textSize="@dimen/text_normal"
+                                android:button="@drawable/rbtn_selector"
+                                app:buttonTint="@color/primary"
+                                />
+                    </RadioGroup>
+                </LinearLayout>
+
+
             </RelativeLayout>
     </ScrollView>
 

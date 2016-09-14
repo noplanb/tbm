@@ -22,6 +22,7 @@
     <string name="dialog_checking_title">Checking…</string>
     <string name="dialog_verifying_title">Verifying…</string>
     <string name="dialog_syncing_title">Syncing…</string>
+    <string name="dialog_deleting_title">Deleting…</string>
     <string name="dialog_bad_connection_title">Bad Connection</string>
     <string name="dialog_bad_connection_message">Trouble downloading. Check your connection</string>
     <string name="dialog_camera_exception_no_camera_title">No Camera</string>

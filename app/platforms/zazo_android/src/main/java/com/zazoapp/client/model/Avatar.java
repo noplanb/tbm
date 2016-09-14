@@ -113,6 +113,17 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
         return Config.homeDirPath(model.getContext()) + File.separator + model.getAvatarFileName(getType());
     }
 
+    public void delete(boolean onServer, HttpRequest.Callbacks callbacks) {
+        if (onServer) {
+            delete(callbacks);
+        } else {
+            if (exists()) {
+                model.set(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.LAST_FRAME.optionName());
+                model.set(AvatarProvidable.AVATAR_TIMESTAMP, String.valueOf(0));
+            }
+        }
+    }
+
     private String getKey() {
         return String.format(FILENAME_TEMPLATE, model.getMkey(), model.getAvatarTimestamp());
     }
@@ -151,10 +162,11 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
         mMemoryCache.remove(key);
     }
 
-    public static void delete() {
+    public static void delete(HttpRequest.Callbacks callbacks) {
         new HttpRequest.Builder()
                 .setMethod(HttpRequest.DELETE)
                 .setUri(AVATARS_API)
+                .setCallbacks(callbacks)
                 .build();
     }
 
@@ -172,13 +184,14 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
         }
     }
 
-    public static void update(ThumbnailType type) {
+    public static void update(ThumbnailType type, HttpRequest.Callbacks callbacks) {
         JSONObject object = new JSONObject();
         try {
             object.put(AvatarProvidable.USE_AS_THUMBNAIL, type.optionName());
             new HttpRequest.Builder()
                     .setMethod(HttpRequest.UPDATE)
                     .setUri(AVATARS_API)
+                    .setCallbacks(callbacks)
                     .setJsonParams(object)
                     .build();
         } catch (JSONException e) {
