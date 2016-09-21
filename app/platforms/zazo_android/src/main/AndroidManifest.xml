@@ -161,6 +161,15 @@
                 <action android:name="android.intent.action.DATE_CHANGED"/>
             </intent-filter>
         </receiver>
+        <provider
+                android:name="android.support.v4.content.FileProvider"
+                android:authorities="com.zazoapp.client.fileprovider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/file_path"/>
+        </provider>
         <meta-data android:name="af_DebugMode" android:value="false"/>
         <meta-data android:name="af_cid" android:value="1458844986"/>
         <meta-data android:name="af_SessionTimeOut" android:value="3600"/>

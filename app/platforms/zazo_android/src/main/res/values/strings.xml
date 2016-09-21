@@ -229,6 +229,9 @@
 
     <string name="account_title">Profile</string>
     <string name="account_setup_photo">Set profile\nphoto</string>
+    <string name="account_setup_avatar">Set profile photo</string>
+    <string name="account_avatar_cant_load">Couldn\'t load photo. Try again</string>
+    <string name="account_avatar_searching_for_faces">Searching fo faces</string>
 
     <string-array name="account_photo_options">
         <item>Take a photo</item>

@@ -1,17 +1,28 @@
 package com.zazoapp.client.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.graphics.PointF;
+import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.FaceDetector;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.AppCompatRadioButton;
 import android.support.v7.widget.ListPopupWindow;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -34,10 +45,14 @@ import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.helpers.ThumbsHelper;
+import com.zazoapp.client.ui.view.CropImageView;
+import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +65,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     private static final String USER_ID = "user_id";
 
     private static final String TAG = AccountFragment.class.getSimpleName();
+    private static final int REQUEST_TAKE_PHOTO = 1;
 
     @InjectView(R.id.up) MaterialMenuView up;
     @InjectView(R.id.name) TextView name;
@@ -59,10 +75,15 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     @InjectView(R.id.thumbnail_layout) View thumbnailLayout;
     @InjectView(R.id.use_last_frame) AppCompatRadioButton useLastFrameButton;
     @InjectView(R.id.use_profile_photo) AppCompatRadioButton useProfilePhotoButton;
+    @InjectView(R.id.crop_view) CropImageView cropView;
 
     ThumbsHelper th;
 
     private DialogFragment pd;
+    private String currentPhotoPath;
+    private Bitmap lastBitmap;
+    private BitmapDrawable lastAvatarPhoto;
+    private CropScreen cropScreen;
 
     public static AccountFragment getInstance() {
         AccountFragment f = new AccountFragment();
@@ -98,6 +119,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         thumbnailChooserGroup.check(type == Avatar.ThumbnailType.LAST_FRAME ? R.id.use_last_frame : R.id.use_profile_photo);
         thumbnailChooserGroup.setOnCheckedChangeListener(this);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
+        cropScreen = new CropScreen(ButterKnife.findById(v, R.id.zazo_action_context_bar));
         return v;
     }
 
@@ -232,16 +254,163 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+                return;
+            }
+
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(getActivity(),
+                        "com.zazoapp.client.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+            }
         }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String imageFileName = "zazo_avatar_photo";
+        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".tmp",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.i(TAG, "result " + (resultCode == Activity.RESULT_OK));
-        Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
+            loadPictureToCropScreen();
+        }
         // TODO temporary
-        thumb.setImageBitmap(bitmap);
+        //thumb.setImageBitmap(lastBitmap);
+    }
+
+    private void loadPictureToCropScreen() {
+        if (lastAvatarPhoto != null) {
+            cropView.setImageDrawable(null);
+            lastAvatarPhoto.getBitmap().recycle();
+        }
+        lastAvatarPhoto = new BitmapDrawable(getResources(), currentPhotoPath);
+        if (lastAvatarPhoto.getBitmap() == null) {
+            DialogShower.showToast(getActivity(), R.string.account_avatar_cant_load);
+            return;
+        }
+        final float w = lastAvatarPhoto.getBitmap().getWidth();
+        final float h = lastAvatarPhoto.getBitmap().getHeight();
+
+        boolean alreadySet = false;
+        cropScreen.show();
+        showProgressDialog(R.string.account_avatar_searching_for_faces);
+        AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Drawable, Void, RectF>() {
+            @Override
+            protected RectF doInBackground(Drawable... params) {
+                FaceDetector detector = new FaceDetector((int) w, (int) h, 1);
+                FaceDetector.Face[] faces = new FaceDetector.Face[1];
+                lastBitmap = lastAvatarPhoto.getBitmap().copy(Bitmap.Config.RGB_565, false);
+                int faceNumber = detector.findFaces(lastBitmap, faces);
+                if (faceNumber == 1 && faces[0].confidence() >= 0.3f) {
+                    float distance = faces[0].eyesDistance();
+                    PointF midPoint = new PointF();
+                    faces[0].getMidPoint(midPoint);
+                    float scale = 1.7f;
+                    RectF imageRect = new RectF(midPoint.x - distance * 3 / scale,
+                            midPoint.y - distance * 3 / scale,
+                            midPoint.x + distance * 3 / scale,
+                            midPoint.y + distance * 5 / scale);
+                    if (imageRect.right < w && imageRect.left >= 0 && imageRect.bottom < h && imageRect.top >= 0) {
+                        Matrix matrix = new Matrix();
+                        matrix.setScale(lastAvatarPhoto.getIntrinsicWidth() / w, lastAvatarPhoto.getIntrinsicHeight() / h);
+                        matrix.mapRect(imageRect);
+                        return imageRect;
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(RectF imageRect) {
+                super.onPostExecute(imageRect);
+                float horizontalPadding = 0.1f;
+                float verticalPadding = (1f - (1f - 2 * horizontalPadding) * 4 / 3) / 2;
+                RectF rectCrop = new RectF(horizontalPadding, verticalPadding, 1f - horizontalPadding, 1f - verticalPadding
+                                /*0.2f, 0.1f, 0.8f, 0.9f*/);
+                cropView.setImageDrawable(lastAvatarPhoto, rectCrop, imageRect);
+                dismissProgressDialog();
+            }
+        });
+    }
+
+    class CropScreen {
+        @InjectView(R.id.title) TextView title;
+        @InjectView(R.id.context_menu_view) MaterialMenuView menuView;
+        private View rootView;
+
+        CropScreen(View contextBar) {
+            rootView = contextBar;
+            View.inflate(contextBar.getContext(), R.layout.crop_screen_action_bar, (ViewGroup) contextBar);
+            ButterKnife.inject(this, contextBar);
+            menuView.setState(MaterialMenuDrawable.IconState.X);
+        }
+
+        @OnClick(R.id.context_menu_view)
+        public void onMenuClicked(View v) {
+            onContextMenuClosed();
+        }
+
+        @OnClick(R.id.done_btn)
+        public void onDoneClicked(View v) {
+            onAvatarSet();
+        }
+
+        public void show() {
+            doAppearing();
+        }
+
+        private void doAppearing() {
+            rootView.animate().alpha(1f).setListener(null).start();
+            rootView.setVisibility(View.VISIBLE);
+            cropView.animate().alpha(1f).setListener(null).start();
+            cropView.setVisibility(View.VISIBLE);
+        }
+
+        public void hide() {
+            rootView.animate().alpha(0f).setDuration(400).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    rootView.setVisibility(View.INVISIBLE);
+                }
+            }).start();
+            cropView.animate().alpha(0f).setDuration(400).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    cropView.setVisibility(View.INVISIBLE);
+                }
+            }).start();
+        }
+    }
+
+    private void onAvatarSet() {
+        // TODO extract and save bitmap from selected rect
+        cropScreen.hide();
+    }
+
+    private void onContextMenuClosed() {
+        // TODO dismiss crop screen
+        cropScreen.hide();
     }
 }

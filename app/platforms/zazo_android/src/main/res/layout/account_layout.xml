@@ -161,10 +161,32 @@
 
             </RelativeLayout>
     </ScrollView>
-
+    <com.zazoapp.client.ui.view.CropImageView
+            android:id="@+id/crop_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0"
+            android:layout_below="@id/zazo_action_bar"
+            android:visibility="invisible"
+            android:background="@color/black"
+            android:scaleType="matrix"/>
     <View
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/zazo_action_bar"
             android:background="@drawable/toolbar_shadow"/>
+
+    <LinearLayout
+            android:id="@+id/zazo_action_context_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:layout_alignLeft="@id/zazo_action_bar"
+            android:layout_alignRight="@id/zazo_action_bar"
+            android:layout_alignTop="@id/zazo_action_bar"
+            android:layout_alignBottom="@id/zazo_action_bar"
+            android:background="@color/primary"
+            android:alpha="0"
+            android:orientation="horizontal"
+            android:visibility="invisible"
+            />
 </RelativeLayout>
