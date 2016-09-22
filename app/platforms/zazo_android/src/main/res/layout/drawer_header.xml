@@ -29,6 +29,7 @@
                 android:orientation="vertical">
 
             <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/account_avatar"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:src="@drawable/ic_account_circle_white"

@@ -30,7 +30,8 @@ import java.util.List;
 public class Avatar<T extends ActiveModel & AvatarProvidable> {
 
     private static final String TAG = Avatar.class.getSimpleName();
-    public static final String FILENAME_TEMPLATE = "%s_%s.png";
+    public static final String FILE_EXTENSION = ".png";
+    public static final String KEY_TEMPLATE = "%s_%s";
 
     private static final String AVATARS_API = "/api/v1/avatars";
 
@@ -110,7 +111,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
     }
 
     public String getAvatarPath() {
-        return Config.homeDirPath(model.getContext()) + File.separator + model.getAvatarFileName(getType());
+        return model.getAvatarFileName(getType());
     }
 
     public void delete(boolean onServer, HttpRequest.Callbacks callbacks) {
@@ -125,7 +126,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
     }
 
     private String getKey() {
-        return String.format(FILENAME_TEMPLATE, model.getMkey(), model.getAvatarTimestamp());
+        return String.format(KEY_TEMPLATE, model.getMkey(), model.getAvatarTimestamp());
     }
 
     private static final LruCache<String, Bitmap> mMemoryCache;
@@ -199,7 +200,8 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
     }
 
     public static <T extends ActiveModel & AvatarProvidable> void download(String mkey, final String timestamp, final T model) {
-        String name = String.format(FILENAME_TEMPLATE, mkey, timestamp);
+        String fileKey = String.format(KEY_TEMPLATE, mkey, timestamp);
+        final String name = fileKey + FILE_EXTENSION;
         // Check if current download wasn't started yet, skip if so
         Context context = model.getContext();
         String filepath = Config.homeDirPath(context) + File.separator + name;
@@ -208,15 +210,33 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
             setAvatarFromFile(file, model, timestamp);
             return;
         }
-        S3CredentialsStore store = S3AvatarDownloadHelper.getCredentialsStore(context);
-        if (store.hasCredentials()) {
-
-        }
+        final S3CredentialsStore credentials = S3AvatarDownloadHelper.getCredentialsStore(context);
         final File cacheFile = new File(model.getContext().getCacheDir(), name);
         final TransferUtility tf = S3AvatarDownloadHelper.getTransferUtility(model.getContext());
         List<TransferObserver> observers = tf.getTransfersWithType(TransferType.DOWNLOAD);
-        S3CredentialsStore credentials = S3AvatarDownloadHelper.getCredentialsStore(context);
-        String absolutePath = cacheFile.getAbsolutePath();
+        final String absolutePath = cacheFile.getAbsolutePath();
+        //new AsyncTask<Void, Void, Void>() {
+        //    @Override
+        //    protected Void doInBackground(Void... params) {
+        //        TransferManager tm = new TransferManager(new BasicAWSCredentials(s3CredStore.getS3AccessKey(), s3CredStore.getS3SecretKey()));
+        //        String s3Bucket = s3CredStore.getS3Bucket();
+        //        AmazonS3 client = tm.getAmazonS3Client();
+        //        try {
+        //            client.setRegion(Region.getRegion(Regions.valueOf(s3CredStore.getS3Region().toUpperCase().replace('-', '_'))));
+        //        } catch (IllegalArgumentException e) {
+        //            Dispatch.dispatch("S3FileTransferAgent: cant set region: " + e.toString());
+        //        }
+        //        GetObjectRequest _getObjectRequest = new GetObjectRequest(s3Bucket, name);
+        //        Logger.i(TAG, "download() Before download " + name);
+        //        Download download = tm.download(_getObjectRequest,	cacheFile);
+        //        try {
+        //            download.waitForCompletion();
+        //        } catch (InterruptedException e) {
+        //        }
+        //        Logger.i(TAG, "download() After download " + name);
+        //        return null;
+        //    }
+        //}.execute();
         TransferObserver observer = null;
         for (TransferObserver o : observers) {
             if (absolutePath.equals(o.getAbsoluteFilePath())) {
@@ -225,6 +245,8 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
                         setAvatarFromFile(file, model, timestamp);
                         tf.deleteTransferRecord(o.getId());
                     }
+                } else if (o.getState() == TransferState.FAILED) {
+                    tf.deleteTransferRecord(o.getId());
                 } else {
                     observer = o;
                 }
@@ -232,7 +254,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
             }
         }
         if (observer == null) {
-           observer = tf.download(credentials.getS3Bucket(), name, cacheFile);
+           observer = tf.download(credentials.getS3Bucket(), fileKey, cacheFile);
         } else {
             observer.cleanTransferListener();
         }
@@ -249,6 +271,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
                         }
                     }
                 }
+                Log.d(TAG, "transfer listener " + id + " " + state);
             }
 
             @Override
@@ -257,6 +280,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
 
             @Override
             public void onError(int id, Exception ex) {
+                Log.d(TAG, "transfer listener " + id, ex);
             }
         });
     }
@@ -267,6 +291,9 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
             model.getAvatar().updateBitmap();
             model.set(AvatarProvidable.AVATAR_TIMESTAMP, timestamp);
             model.set(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.PHOTO.optionName());
+            if (model instanceof Friend) {
+                FriendFactory.getFactoryInstance().notifyStatusChanged((Friend) model);
+            }
         } catch (IOException e) {
         }
     }

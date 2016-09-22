@@ -5,7 +5,9 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.zazoapp.client.Config;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +39,9 @@ public class User extends ActiveModel implements AvatarProvidable {
                 Attributes.LAST_NAME,
                 Attributes.REGISTERED,
                 Attributes.MOBILE_NUMBER,
-                Attributes.INVITEE
+                Attributes.INVITEE,
+                Attributes.AVATAR_TIMESTAMP,
+                Attributes.USE_AS_THUMBNAIL,
         };
         return new ArrayList<>(Arrays.asList(a));
     }
@@ -148,7 +152,7 @@ public class User extends ActiveModel implements AvatarProvidable {
 
     @Override
     public String getAvatarFileName(Avatar.ThumbnailType type) {
-        return getMkey() + "_" + getAvatarTimestamp() + ".png";
+        return Config.homeDirPath(getContext()) + File.separator + getMkey() + "_" + getAvatarTimestamp() + ".png";
     }
 
     @Override

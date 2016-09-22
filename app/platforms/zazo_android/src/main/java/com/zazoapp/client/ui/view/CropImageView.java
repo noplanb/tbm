@@ -1,7 +1,6 @@
 package com.zazoapp.client.ui.view;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -11,10 +10,10 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import com.zazoapp.client.BuildConfig;
+import com.zazoapp.client.utilities.Convenience;
 
 /**
  * Created by skamenkovych@codeminders.com on 9/15/2016.
@@ -52,7 +51,7 @@ public class CropImageView extends AppCompatImageView {
         super(context, attrs, defStyle);
         // Create our ScaleGestureDetector
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
-        minDistance = dpToPx(getContext(), 40);
+        minDistance = Convenience.dpToPx(getContext(), 40f);
     }
 
     @Override
@@ -186,6 +185,23 @@ public class CropImageView extends AppCompatImageView {
         matrix.mapRect(imageRect);
     }
 
+    public RectF getImageRect() {
+        refreshImageRect();
+        return new RectF(imageRect);
+    }
+
+    public RectF getCropRect() {
+        return new RectF(cropRect);
+    }
+
+    public RectF getCroppedImageRect() {
+        refreshImageRect();
+        return new RectF((cropRect.left - imageRect.left) / mScaleFactor,
+                (cropRect.top - imageRect.top) / mScaleFactor,
+                (cropRect.left - imageRect.left + cropRect.width()) / mScaleFactor,
+                (cropRect.top - imageRect.top + cropRect.height()) / mScaleFactor);
+    }
+
     private class ScaleListener extends
             ScaleGestureDetector.SimpleOnScaleGestureListener {
 
@@ -243,11 +259,6 @@ public class CropImageView extends AppCompatImageView {
             height = getDrawable().getIntrinsicHeight();
             return super.onScaleBegin(detector);
         }
-    }
-
-    public static int dpToPx(Context context, int dp){
-        Resources r = context.getResources();
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
     }
 
 }

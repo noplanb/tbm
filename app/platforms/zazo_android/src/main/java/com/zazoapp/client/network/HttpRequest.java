@@ -359,7 +359,7 @@ public class HttpRequest {
             if (multipart) {
                 MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
                 entityBuilder.addTextBody("json", jsonParams.toString(), ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), "UTF-8"));
-                entityBuilder.addBinaryBody("file", new File(filePath));
+                entityBuilder.addBinaryBody("avatar", new File(filePath));
             } else if (jsonParams != null) {
                 rb.setEntity(EntityBuilder.create()
                         .setText(jsonParams.toString())

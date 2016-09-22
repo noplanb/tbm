@@ -126,6 +126,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     @InjectView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @InjectView(R.id.content_frame) ViewPager contentFrame;
     @InjectView(R.id.tutorial_parent_layout) View tutorialParent;
+    private ImageView accountAvatar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -307,11 +308,17 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         navigationView.setNavigationItemSelectedListener(this);
 
         TextView accountName = ButterKnife.findById(navigationView.getHeaderView(0), R.id.account_name);
+        accountAvatar = ButterKnife.findById(navigationView.getHeaderView(0), R.id.account_avatar);
         TextView accountId = ButterKnife.findById(navigationView.getHeaderView(0), R.id.account_id);
         User user = UserFactory.current_user();
         if (user != null) {
             accountName.setText(user.getFullName());
             accountId.setText(user.getPhoneNumber(PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL));
+            if (user.getAvatar().exists()) {
+                accountAvatar.setImageBitmap(user.getAvatar().loadBitmap());
+            } else {
+                accountAvatar.setImageResource(R.drawable.ic_account_circle_white);
+            }
         } else {
             accountName.setText("");
             accountId.setText("");
@@ -696,6 +703,14 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         if (!isNavigationOpened && (newState == DrawerLayout.STATE_DRAGGING || newState == DrawerLayout.STATE_SETTLING)) {
             navigationView.getMenu().findItem(R.id.navigation_item_edit_friends)
                     .setVisible(managerHolder.getFeatures().isUnlocked(Features.Feature.DELETE_FRIEND));
+            User user = UserFactory.current_user();
+            if (user != null) {
+                if (user.getAvatar().exists()) {
+                    accountAvatar.setImageBitmap(user.getAvatar().loadBitmap());
+                } else {
+                    accountAvatar.setImageResource(R.drawable.ic_account_circle_white);
+                }
+            }
         }
     }
 

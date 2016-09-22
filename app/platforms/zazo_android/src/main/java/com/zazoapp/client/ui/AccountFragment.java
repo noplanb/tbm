@@ -50,8 +50,10 @@ import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
 import com.zazoapp.client.utilities.DialogShower;
 import de.hdodenhof.circleimageview.CircleImageView;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -249,8 +251,6 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         }
     }
 
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
@@ -311,8 +311,6 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         final float w = lastAvatarPhoto.getBitmap().getWidth();
         final float h = lastAvatarPhoto.getBitmap().getHeight();
 
-        boolean alreadySet = false;
-        cropScreen.show();
         showProgressDialog(R.string.account_avatar_searching_for_faces);
         AsyncTaskManager.executeAsyncTask(false, new AsyncTask<Drawable, Void, RectF>() {
             @Override
@@ -347,6 +345,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
                 float verticalPadding = (1f - (1f - 2 * horizontalPadding) * 4 / 3) / 2;
                 RectF rectCrop = new RectF(horizontalPadding, verticalPadding, 1f - horizontalPadding, 1f - verticalPadding
                                 /*0.2f, 0.1f, 0.8f, 0.9f*/);
+                cropScreen.show();
                 cropView.setImageDrawable(lastAvatarPhoto, rectCrop, imageRect);
                 dismissProgressDialog();
             }
@@ -406,6 +405,39 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
 
     private void onAvatarSet() {
         // TODO extract and save bitmap from selected rect
+        RectF cropRect = cropView.getCroppedImageRect();
+        Drawable drawable = cropView.getDrawable();
+
+        if (drawable instanceof BitmapDrawable) {
+            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+            Matrix matrix = new Matrix();
+            matrix.setScale(bitmap.getWidth() / (float) drawable.getIntrinsicWidth(), bitmap.getHeight() / (float) drawable.getIntrinsicHeight());
+            matrix.mapRect(cropRect);
+            Bitmap avatarBitmap = Bitmap.createBitmap(bitmap, (int) cropRect.left, (int) cropRect.top, (int) cropRect.width(), (int) cropRect.height());
+            thumb.setImageBitmap(avatarBitmap);
+            User user = UserFactory.getFactoryInstance().find(getArguments().getString(USER_ID));
+            if (user != null) {
+                FileOutputStream fos = null;
+                try {
+                    fos = FileUtils.openOutputStream(new File(user.getAvatar().getAvatarPath()));
+                    avatarBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                } catch (IOException e) {
+                } finally {
+                    if (fos != null) {
+                        try {
+                            fos.close();
+                        } catch (IOException e) {}
+                    }
+                }
+                user.getAvatar().updateBitmap();
+                if (user.getAvatar().exists()) {
+                    Avatar.upload(user.getAvatar().getAvatarPath());
+                    enableRadioGroup(true);
+                } else {
+                    enableRadioGroup(false);
+                }
+            }
+        }
         cropScreen.hide();
     }
 
