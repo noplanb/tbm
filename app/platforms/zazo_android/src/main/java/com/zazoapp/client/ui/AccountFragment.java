@@ -17,6 +17,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
@@ -72,6 +73,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     @InjectView(R.id.up) MaterialMenuView up;
     @InjectView(R.id.name) TextView name;
     @InjectView(R.id.thumb) CircleImageView thumb;
+    @InjectView(R.id.thumb_cover) CircleImageView cover;
     @InjectView(R.id.edit_photo) TextView editPhoto;
     @InjectView(R.id.thumbnail_group) RadioGroup thumbnailChooserGroup;
     @InjectView(R.id.thumbnail_layout) View thumbnailLayout;
@@ -113,8 +115,10 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         editPhoto.setTypeface(Convenience.getTypeface(v.getContext(), Convenience.NORMAL));
         if (user.getAvatar().exists()) {
             thumb.setImageBitmap(user.getAvatar().loadBitmap());
+            cover.setVisibility(View.VISIBLE);
             enableRadioGroup(true);
         } else {
+            cover.setVisibility(View.INVISIBLE);
             enableRadioGroup(false);
         }
         Avatar.ThumbnailType type = user.getAvatar().getType();
@@ -173,8 +177,11 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
                                 dismissProgressDialog();
                                 if (thumb != null) {
                                     thumb.setImageResource(R.drawable.ic_account_circle_white);
+                                    cover.setVisibility(View.INVISIBLE);
+                                    new File(avatar.getAvatarPath()).delete();
                                 }
                                 avatar.delete(false, null);
+                                user.set(AvatarProvidable.USE_AS_THUMBNAIL, Avatar.ThumbnailType.LAST_FRAME.optionName());
                                 thumbnailChooserGroup.check(R.id.use_last_frame);
                                 enableRadioGroup(false);
                             }
@@ -341,15 +348,19 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
             @Override
             protected void onPostExecute(RectF imageRect) {
                 super.onPostExecute(imageRect);
-                float horizontalPadding = 0.1f;
-                float verticalPadding = (1f - (1f - 2 * horizontalPadding) * 4 / 3) / 2;
-                RectF rectCrop = new RectF(horizontalPadding, verticalPadding, 1f - horizontalPadding, 1f - verticalPadding
-                                /*0.2f, 0.1f, 0.8f, 0.9f*/);
+                RectF rectCrop = getCropRectRelative();
                 cropScreen.show();
                 cropView.setImageDrawable(lastAvatarPhoto, rectCrop, imageRect);
                 dismissProgressDialog();
             }
         });
+    }
+
+    @NonNull
+    private RectF getCropRectRelative() {
+        float horizontalPadding = 0.1f;
+        float verticalPadding = (1f - (1f - 2 * horizontalPadding) * 4 / 3) / 2;
+        return new RectF(horizontalPadding, verticalPadding, 1f - horizontalPadding, 1f - verticalPadding);
     }
 
     class CropScreen {
@@ -415,6 +426,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
             matrix.mapRect(cropRect);
             Bitmap avatarBitmap = Bitmap.createBitmap(bitmap, (int) cropRect.left, (int) cropRect.top, (int) cropRect.width(), (int) cropRect.height());
             thumb.setImageBitmap(avatarBitmap);
+            cover.setVisibility(View.VISIBLE);
             User user = UserFactory.getFactoryInstance().find(getArguments().getString(USER_ID));
             if (user != null) {
                 FileOutputStream fos = null;
@@ -431,7 +443,8 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
                 }
                 user.getAvatar().updateBitmap();
                 if (user.getAvatar().exists()) {
-                    Avatar.upload(user.getAvatar().getAvatarPath());
+                    Avatar.upload(user.getAvatar().getAvatarPath(),
+                            thumbnailChooserGroup.getCheckedRadioButtonId() == R.id.use_profile_photo ? Avatar.ThumbnailType.PHOTO : Avatar.ThumbnailType.LAST_FRAME);
                     enableRadioGroup(true);
                 } else {
                     enableRadioGroup(false);

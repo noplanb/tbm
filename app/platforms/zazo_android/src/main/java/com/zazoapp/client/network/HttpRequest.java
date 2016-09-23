@@ -68,8 +68,7 @@ public class HttpRequest {
     private Callbacks callbacks;
     private int timeout;
     private boolean multipart;
-    private String filePath;
-    
+    private HttpEntity entity;
     //------------------------------------------------------------------
     // Application level success and failure handling (not http failure)
     //------------------------------------------------------------------
@@ -191,8 +190,10 @@ public class HttpRequest {
         jsonParams = builder.jsonParams;
         callbacks = builder.callbacks;
         timeout = builder.timeout;
-        filePath = builder.filePath;
         multipart = builder.multipart;
+        if (multipart) {
+            entity = builder.multipartEntityBuilder.build();
+        }
         AsyncTaskManager.executeAsyncTask(true, new BgHttpReq());
     }
 
@@ -215,7 +216,8 @@ public class HttpRequest {
         private String host;
         private int timeout = -1;
         private boolean multipart;
-        private String filePath;
+        private MultipartEntityBuilder multipartEntityBuilder;
+
 
         public Builder setUrl(String url) {
             this.url = url;
@@ -262,11 +264,6 @@ public class HttpRequest {
             return this;
         }
 
-        public Builder setFilepath(String filepath) {
-            this.filePath = filepath;
-            return this;
-        }
-
         /**
          *
          * @param timeout in seconds
@@ -281,14 +278,36 @@ public class HttpRequest {
             if (TextUtils.isEmpty(url) && TextUtils.isEmpty(uri)) {
                 throw new IllegalStateException("At least one from url or uri must be set");
             }
-            if (this.jsonParams != null && this.params != null) {
-                throw new IllegalStateException("Both json and non-json params can't be used at once");
+            multipart = multipartEntityBuilder != null;
+            int checkEntityEntries = 0;
+            if (this.jsonParams != null) checkEntityEntries++;
+            if (this.params != null) checkEntityEntries++;
+            if (multipart) checkEntityEntries++;
+            if (checkEntityEntries > 1) {
+                throw new IllegalStateException("Different types of params can't be used at once");
             }
             if (!TextUtils.isEmpty(url) && TextUtils.isEmpty(this.host)) {
                 throw new IllegalStateException("Host must be set if url is set");
             }
-            multipart = jsonParams != null && filePath != null;
             return new HttpRequest(this);
+        }
+
+        public Builder addParam(String key, String value) {
+            ensureMultiPartEntity();
+            multipartEntityBuilder.addTextBody(key, value);
+            return this;
+        }
+
+        public Builder addParam(String key, File value) {
+            ensureMultiPartEntity();
+            multipartEntityBuilder.addBinaryBody(key, value);
+            return this;
+        }
+
+        private void ensureMultiPartEntity() {
+            if (multipartEntityBuilder == null) {
+                multipartEntityBuilder = MultipartEntityBuilder.create();
+            }
         }
     }
 
@@ -357,9 +376,7 @@ public class HttpRequest {
         if (isPost() || isDelete() || isPatch()) {
             rb = RequestBuilder.create(method);
             if (multipart) {
-                MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
-                entityBuilder.addTextBody("json", jsonParams.toString(), ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), "UTF-8"));
-                entityBuilder.addBinaryBody("avatar", new File(filePath));
+                rb.setEntity(entity);
             } else if (jsonParams != null) {
                 rb.setEntity(EntityBuilder.create()
                         .setText(jsonParams.toString())

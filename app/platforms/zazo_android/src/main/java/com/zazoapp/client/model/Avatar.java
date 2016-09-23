@@ -163,7 +163,7 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
         mMemoryCache.remove(key);
     }
 
-    public static void delete(HttpRequest.Callbacks callbacks) {
+    private static void delete(HttpRequest.Callbacks callbacks) {
         new HttpRequest.Builder()
                 .setMethod(HttpRequest.DELETE)
                 .setUri(AVATARS_API)
@@ -171,18 +171,13 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
                 .build();
     }
 
-    public static void upload(String path) {
-        JSONObject object = new JSONObject();
-        try {
-            object.put(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.PHOTO.optionName());
-            new HttpRequest.Builder()
-                    .setMethod(HttpRequest.POST)
-                    .setUri(AVATARS_API)
-                    .setJsonParams(object)
-                    .setFilepath(path)
-                    .build();
-        } catch (JSONException e) {
-        }
+    public static void upload(String path, ThumbnailType option) {
+        new HttpRequest.Builder()
+                .setMethod(HttpRequest.POST)
+                .setUri(AVATARS_API)
+                .addParam(AvatarProvidable.USE_AS_THUMBNAIL, option.optionName())
+                .addParam("avatar", new File(path))
+                .build();
     }
 
     public static void update(ThumbnailType type, HttpRequest.Callbacks callbacks) {
@@ -215,28 +210,6 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
         final TransferUtility tf = S3AvatarDownloadHelper.getTransferUtility(model.getContext());
         List<TransferObserver> observers = tf.getTransfersWithType(TransferType.DOWNLOAD);
         final String absolutePath = cacheFile.getAbsolutePath();
-        //new AsyncTask<Void, Void, Void>() {
-        //    @Override
-        //    protected Void doInBackground(Void... params) {
-        //        TransferManager tm = new TransferManager(new BasicAWSCredentials(s3CredStore.getS3AccessKey(), s3CredStore.getS3SecretKey()));
-        //        String s3Bucket = s3CredStore.getS3Bucket();
-        //        AmazonS3 client = tm.getAmazonS3Client();
-        //        try {
-        //            client.setRegion(Region.getRegion(Regions.valueOf(s3CredStore.getS3Region().toUpperCase().replace('-', '_'))));
-        //        } catch (IllegalArgumentException e) {
-        //            Dispatch.dispatch("S3FileTransferAgent: cant set region: " + e.toString());
-        //        }
-        //        GetObjectRequest _getObjectRequest = new GetObjectRequest(s3Bucket, name);
-        //        Logger.i(TAG, "download() Before download " + name);
-        //        Download download = tm.download(_getObjectRequest,	cacheFile);
-        //        try {
-        //            download.waitForCompletion();
-        //        } catch (InterruptedException e) {
-        //        }
-        //        Logger.i(TAG, "download() After download " + name);
-        //        return null;
-        //    }
-        //}.execute();
         TransferObserver observer = null;
         for (TransferObserver o : observers) {
             if (absolutePath.equals(o.getAbsoluteFilePath())) {
@@ -288,13 +261,22 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
     private static <T extends ActiveModel & AvatarProvidable> void setAvatarFromFile(File file, T model, String timestamp) {
         try {
             FileUtils.copyFile(file, new File(model.getAvatar().getAvatarPath()));
-            model.getAvatar().updateBitmap();
+            model.getAvatar().deleteCurrentAvatar();
             model.set(AvatarProvidable.AVATAR_TIMESTAMP, timestamp);
             model.set(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.PHOTO.optionName());
+            model.getAvatar().updateBitmap();
             if (model instanceof Friend) {
                 FriendFactory.getFactoryInstance().notifyStatusChanged((Friend) model);
             }
         } catch (IOException e) {
+        }
+    }
+
+    public void deleteCurrentAvatar() {
+        String oldPath = String.format(KEY_TEMPLATE + FILE_EXTENSION, model.getMkey(), model.getAvatarTimestamp());
+        File oldAvatar = new File(oldPath);
+        if (oldAvatar.exists()) {
+            oldAvatar.delete();
         }
     }
 }

@@ -206,6 +206,9 @@ public class FriendFactory extends ActiveModelFactory<Friend> {
             long newAvatarTimestamp = VideoIdUtils.timeStampFromVideoId(avatarData.timestamp);
             if (useOption != newUseOption && newUseOption == Avatar.ThumbnailType.LAST_FRAME
                     || newAvatarTimestamp == 0) {
+                if (useOption == Avatar.ThumbnailType.PHOTO && friend.getAvatar().exists()) {
+                    friend.getAvatar().deleteCurrentAvatar();
+                }
                 friend.set(Friend.Attributes.USE_AS_THUMBNAIL, Avatar.ThumbnailType.LAST_FRAME.optionName());
                 friend.set(Friend.Attributes.AVATAR_TIMESTAMP, String.valueOf(0));
                 // While we don't have a thumbnail but have an avatar we are going to use last one
