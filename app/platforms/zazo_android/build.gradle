@@ -20,8 +20,8 @@ android {
         applicationId "com.zazoapp.client"
         minSdkVersion 14
         targetSdkVersion 22
-        versionCode 176
-        versionName "3.5.8" //<!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
+        versionCode 177
+        versionName "3.6.0" //<!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
         resConfigs "en"
         multiDexEnabled true // Enabling multidex support.
     }
@@ -96,7 +96,7 @@ def appendVersionNameVersionCode(variant, defaultConfig) {
                 output.outputFile = new File(alignedOutputFile.parent, "zazo-" + defaultConfig.versionName + "-" + defaultConfig.versionCode + "-" + variant.name + ".apk")
             }
             // 'unaligned' APK
-            output.packageApplication.outputFile = new File(unalignedOutputFile.parent, "zazo" + defaultConfig.versionName + "-" + variant.name + "-u" + ".apk")
+            output.packageApplication.outputFile = new File(unalignedOutputFile.parent, "zazo" + defaultConfig.versionName + "-" + defaultConfig.versionCode + "-" + variant.name + ".apk")
         }
     }
 }

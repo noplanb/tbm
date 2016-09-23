@@ -122,4 +122,24 @@ public final class ModelUpgradeHelper {
     public static void upgradeTo8(ActiveModelsHandler handler, Context context) {
         ensureAll(handler);
     }
+
+    /**
+     * Changed in Friend and User model
+     * Added Avatar infos
+     */
+    public static void upgradeTo9(ActiveModelsHandler handler, Context context) {
+        ensureAll(handler);
+        for (Friend friend : FriendFactory.getFactoryInstance().all()) {
+            if (TextUtils.isEmpty(friend.getAvatarOption())) {
+                friend.set(AvatarProvidable.USE_AS_THUMBNAIL, Avatar.ThumbnailType.LAST_FRAME.optionName());
+                friend.set(AvatarProvidable.AVATAR_TIMESTAMP, String.valueOf(0));
+            }
+        }
+        for (User user : UserFactory.getFactoryInstance().all()) {
+            if (TextUtils.isEmpty(user.getAvatarOption())) {
+                user.set(AvatarProvidable.USE_AS_THUMBNAIL, Avatar.ThumbnailType.LAST_FRAME.optionName());
+                user.set(AvatarProvidable.AVATAR_TIMESTAMP, String.valueOf(0));
+            }
+        }
+    }
 }

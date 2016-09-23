@@ -34,6 +34,8 @@ import com.zazoapp.client.core.TbmApplication;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.debug.DebugSettingsActivity;
 import com.zazoapp.client.dispatch.ZazoAnalytics;
+import com.zazoapp.client.model.Avatar;
+import com.zazoapp.client.model.AvatarProvidable;
 import com.zazoapp.client.model.Contact;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
@@ -554,6 +556,8 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         user.set(User.Attributes.ID, params.get(UserFactory.ServerParamKeys.ID));
         user.set(User.Attributes.MKEY, params.get(UserFactory.ServerParamKeys.MKEY));
         user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
+        user.set(AvatarProvidable.AVATAR_TIMESTAMP, String.valueOf(0));
+        user.set(AvatarProvidable.USE_AS_THUMBNAIL, Avatar.ThumbnailType.LAST_FRAME.optionName());
         new RegistrationHelper(context).sync(this, true);
     }
 
