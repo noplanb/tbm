@@ -69,6 +69,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
 
     private static final String TAG = AccountFragment.class.getSimpleName();
     private static final int REQUEST_TAKE_PHOTO = 1;
+    private static final int PICK_IMAGE_REQUEST = 2;
 
     @InjectView(R.id.up) MaterialMenuView up;
     @InjectView(R.id.name) TextView name;
@@ -167,7 +168,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
                         dispatchTakePictureIntent();
                         break;
                     case 1:
-                        // choose file
+                        dispatchPickPhotoIntent();
                         break;
                     case 2:
                         final Avatar<User> avatar = user.getAvatar();
@@ -280,6 +281,13 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         }
     }
 
+    private void dispatchPickPhotoIntent() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, getString(R.string.account_avatar_pick_photos)), PICK_IMAGE_REQUEST);
+    }
+
     private File createImageFile() throws IOException {
         // Create an image file name
         String imageFileName = "zazo_avatar_photo";
@@ -299,18 +307,28 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
+            if (lastAvatarPhoto != null) {
+                cropView.setImageDrawable(null);
+                lastAvatarPhoto.getBitmap().recycle();
+            }
+            lastAvatarPhoto = new BitmapDrawable(getResources(), currentPhotoPath);
             loadPictureToCropScreen();
+        } else if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+            Uri uri = data.getData();
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+                if (lastAvatarPhoto != null) {
+                    cropView.setImageDrawable(null);
+                    lastAvatarPhoto.getBitmap().recycle();
+                }
+                lastAvatarPhoto = new BitmapDrawable(getResources(), bitmap);
+                loadPictureToCropScreen();
+            } catch (IOException e) {
+            }
         }
-        // TODO temporary
-        //thumb.setImageBitmap(lastBitmap);
     }
 
     private void loadPictureToCropScreen() {
-        if (lastAvatarPhoto != null) {
-            cropView.setImageDrawable(null);
-            lastAvatarPhoto.getBitmap().recycle();
-        }
-        lastAvatarPhoto = new BitmapDrawable(getResources(), currentPhotoPath);
         if (lastAvatarPhoto.getBitmap() == null) {
             DialogShower.showToast(getActivity(), R.string.account_avatar_cant_load);
             return;
@@ -415,7 +433,6 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     }
 
     private void onAvatarSet() {
-        // TODO extract and save bitmap from selected rect
         RectF cropRect = cropView.getCroppedImageRect();
         Drawable drawable = cropView.getDrawable();
 
