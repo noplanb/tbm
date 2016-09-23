@@ -30,10 +30,13 @@ public class CropImageView extends AppCompatImageView {
 
     private RectF cropRectRel;
     private RectF cropRect = new RectF();
+    private RectF cropRectCircle = new RectF();
     private RectF cropImageRect;
 
     // Remember some things for zooming
-    PointF start = new PointF();
+    private PointF start = new PointF();
+    private Paint cropPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private float cropRectRadius;
 
     public CropImageView(Context context) {
         this(context, null, 0);
@@ -52,6 +55,10 @@ public class CropImageView extends AppCompatImageView {
         // Create our ScaleGestureDetector
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         minDistance = Convenience.dpToPx(getContext(), 40f);
+        cropPaint.setStyle(Paint.Style.STROKE);
+        cropPaint.setColor(Color.WHITE);
+        cropPaint.setStrokeWidth(Convenience.dpToPx(getContext(), 3f));
+        cropRectRadius = Convenience.dpToPx(getContext(), 8f);
     }
 
     @Override
@@ -151,6 +158,8 @@ public class CropImageView extends AppCompatImageView {
             matrix.postScale(mScaleFactor, mScaleFactor, centerViewX, centerViewY);
             setImageMatrix(matrix);
         }
+        float radius = cropRect.width() / 2.5f;
+        cropRectCircle.set(cropRect.centerX() - radius, cropRect.centerY() - radius, cropRect.centerX() + radius, cropRect.centerY() + radius);
         mMinScale = Math.max(cropRect.width() / (float) width, cropRect.height() / (float) height);
     }
 
@@ -176,6 +185,8 @@ public class CropImageView extends AppCompatImageView {
             testPaint.setColor(Color.RED);
             canvas.drawRect(0, 0, getWidth(), getHeight(), testPaint);
         }
+        canvas.drawRoundRect(cropRect, cropRectRadius, cropRectRadius, cropPaint);
+        canvas.drawCircle(cropRectCircle.centerX(), cropRectCircle.centerY(), cropRectCircle.width() / 2, cropPaint);
     }
 
     private void refreshImageRect() {
