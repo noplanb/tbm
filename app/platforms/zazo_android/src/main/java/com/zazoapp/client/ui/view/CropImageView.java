@@ -57,8 +57,8 @@ public class CropImageView extends AppCompatImageView {
         minDistance = Convenience.dpToPx(getContext(), 40f);
         cropPaint.setStyle(Paint.Style.STROKE);
         cropPaint.setColor(Color.WHITE);
-        cropPaint.setStrokeWidth(Convenience.dpToPx(getContext(), 3f));
-        cropRectRadius = Convenience.dpToPx(getContext(), 8f);
+        cropPaint.setStrokeWidth(Convenience.dpToPx(getContext(), 2f));
+        cropRectRadius = Convenience.dpToPx(getContext(), 5f);
     }
 
     @Override

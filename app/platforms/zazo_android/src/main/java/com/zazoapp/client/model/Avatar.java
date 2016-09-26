@@ -12,7 +12,10 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferType;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.zazoapp.client.Config;
+import com.zazoapp.client.multimedia.VideoIdUtils;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.network.aws.S3AvatarDownloadHelper;
 import com.zazoapp.client.network.aws.S3CredentialsStore;
@@ -244,7 +247,6 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
                         }
                     }
                 }
-                Log.d(TAG, "transfer listener " + id + " " + state);
             }
 
             @Override
@@ -259,13 +261,16 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
     }
 
     private static <T extends ActiveModel & AvatarProvidable> void setAvatarFromFile(File file, T model, String timestamp) {
+        boolean isFriendModel = model instanceof Friend;
         try {
             FileUtils.copyFile(file, new File(model.getAvatar().getAvatarPath()));
             model.getAvatar().deleteCurrentAvatar();
             model.set(AvatarProvidable.AVATAR_TIMESTAMP, timestamp);
-            model.set(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.PHOTO.optionName());
+            if (isFriendModel) {
+                model.set(AvatarProvidable.USE_AS_THUMBNAIL, ThumbnailType.PHOTO.optionName());
+            }
             model.getAvatar().updateBitmap();
-            if (model instanceof Friend) {
+            if (isFriendModel) {
                 FriendFactory.getFactoryInstance().notifyStatusChanged((Friend) model);
             }
         } catch (IOException e) {
@@ -281,4 +286,48 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
     }
 
     // TODO download user avatar settings on registration step
+    public static void getCurrentAvatarInfo(final User user, final HttpRequest.Callbacks callbacks) {
+        new HttpRequest.Builder()
+                .setMethod(HttpRequest.GET)
+                .setUri(AVATARS_API)
+                .setCallbacks(new HttpRequest.Callbacks() {
+                    @Override
+                    public void success(String response) {
+                        Gson gson = new Gson();
+                        try {
+                            GetAvatarResponse avatarResponse = gson.fromJson(response, GetAvatarResponse.class);
+                            if (avatarResponse != null && avatarResponse.data != null) {
+                                FriendFactory.AvatarData avatarData = avatarResponse.data;
+                                ThumbnailType newUseOption = Avatar.ThumbnailType.getType(avatarData.useOption);
+                                long newTimestamp = VideoIdUtils.timeStampFromVideoId(avatarData.timestamp);
+                                ThumbnailType currentUseOption = user.getAvatar().getType();
+                                long currentTimestamp = VideoIdUtils.timeStampFromVideoId(user.getAvatarTimestamp());
+                                if (newTimestamp > currentTimestamp) {
+                                    download(user.getMkey(), String.valueOf(newTimestamp), user);
+                                }
+                                if (currentUseOption != newUseOption) {
+                                    user.set(AvatarProvidable.USE_AS_THUMBNAIL, newUseOption.optionName());
+                                }
+                            }
+                            if (callbacks != null) {
+                                callbacks.success(response);
+                            }
+                        } catch (JsonSyntaxException e) {
+                            error(e.getMessage());
+                        }
+                    }
+
+                    @Override
+                    public void error(String errorString) {
+                        if (callbacks != null) {
+                            callbacks.error(errorString);
+                        }
+                    }
+                })
+                .build();
+    }
+
+    private static class GetAvatarResponse {
+        FriendFactory.AvatarData data;
+    }
 }

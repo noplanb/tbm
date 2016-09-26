@@ -6,10 +6,12 @@ import com.zazoapp.client.core.FriendGetter;
 import com.zazoapp.client.core.RemoteStorageHandler;
 import com.zazoapp.client.features.Features;
 import com.zazoapp.client.model.ActiveModelsHandler;
+import com.zazoapp.client.model.Avatar;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.User;
 import com.zazoapp.client.model.UserFactory;
+import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.network.aws.S3CredentialsGetter;
 
 import java.util.List;
@@ -26,9 +28,14 @@ public class RegistrationHelper {
 
     private SyncCallbacks syncCallbacks;
 
-    public void sync(SyncCallbacks callbacks, boolean destroyFriends) {
+    public void sync(SyncCallbacks callbacks, final boolean destroyFriends) {
         syncCallbacks = callbacks;
-        new RegFriendGetter(context, destroyFriends).getFriends();
+        new RegS3CredentialsGetter(new NextTask() {
+            @Override
+            public void run() {
+                new RegFriendGetter(context, destroyFriends).getFriends();
+            }
+        });
     }
 
     public interface SyncCallbacks {
@@ -99,7 +106,25 @@ public class RegistrationHelper {
             Features features = new Features(context);
             features.checkAndUnlock();
             RemoteStorageHandler.setUserSettings();
-            new RegS3CredentialsGetter();
+            // final task
+            final User user = UserFactory.current_user();
+            if (user != null) {
+                Avatar.getCurrentAvatarInfo(user, new HttpRequest.Callbacks() {
+                    @Override
+                    public void success(String response) {
+                        user.set(User.Attributes.REGISTERED, "true");
+                        ActiveModelsHandler.getInstance(context).saveAll();
+                        if (syncCallbacks != null) {
+                            syncCallbacks.onSyncComplete();
+                        }
+                    }
+
+                    @Override
+                    public void error(String errorString) {
+                        reportFailure();
+                    }
+                });
+            }
         }
 
         @Override
@@ -109,20 +134,15 @@ public class RegistrationHelper {
     }
 
     private class RegS3CredentialsGetter extends S3CredentialsGetter {
-        public RegS3CredentialsGetter() {
+        private NextTask nextTask;
+        public RegS3CredentialsGetter(NextTask task) {
             super(context, true);
+            nextTask = task;
         }
 
         @Override
         public void success() {
-            User user = UserFactory.current_user();
-            if (user != null) {
-                user.set(User.Attributes.REGISTERED, "true");
-            }
-            ActiveModelsHandler.getInstance(context).saveAll();
-            if (syncCallbacks != null) {
-                syncCallbacks.onSyncComplete();
-            }
+            nextTask.run();
         }
 
         @Override
@@ -130,6 +150,8 @@ public class RegistrationHelper {
             reportFailure();
         }
     }
+
+    private interface NextTask extends Runnable {}
 
     private void reportFailure() {
         if (syncCallbacks != null) {
