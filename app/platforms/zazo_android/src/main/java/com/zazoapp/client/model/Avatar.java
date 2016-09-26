@@ -279,4 +279,6 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
             oldAvatar.delete();
         }
     }
+
+    // TODO download user avatar settings on registration step
 }
