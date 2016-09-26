@@ -70,6 +70,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     private static final String TAG = AccountFragment.class.getSimpleName();
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int PICK_IMAGE_REQUEST = 2;
+    private static final int MAX_BITMAP_WIDTH = 480;
 
     @InjectView(R.id.up) MaterialMenuView up;
     @InjectView(R.id.name) TextView name;
@@ -441,7 +442,16 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
             Matrix matrix = new Matrix();
             matrix.setScale(bitmap.getWidth() / (float) drawable.getIntrinsicWidth(), bitmap.getHeight() / (float) drawable.getIntrinsicHeight());
             matrix.mapRect(cropRect);
-            Bitmap avatarBitmap = Bitmap.createBitmap(bitmap, (int) cropRect.left, (int) cropRect.top, (int) cropRect.width(), (int) cropRect.height());
+            boolean shouldTransform = cropRect.width() > MAX_BITMAP_WIDTH;
+            Bitmap avatarBitmap;
+            if (shouldTransform) {
+                matrix.setScale(MAX_BITMAP_WIDTH / cropRect.width(), MAX_BITMAP_WIDTH / cropRect.width());
+                avatarBitmap = Bitmap.createBitmap(bitmap, (int) cropRect.left, (int) cropRect.top, (int) cropRect.width(), (int) cropRect.height(), matrix, false);
+            } else {
+                avatarBitmap = Bitmap.createBitmap(bitmap, (int) cropRect.left, (int) cropRect.top, (int) cropRect.width(), (int) cropRect.height());
+            }
+            cropView.setImageDrawable(null);
+            bitmap.recycle();
             thumb.setImageBitmap(avatarBitmap);
             cover.setVisibility(View.VISIBLE);
             User user = UserFactory.getFactoryInstance().find(getArguments().getString(USER_ID));
