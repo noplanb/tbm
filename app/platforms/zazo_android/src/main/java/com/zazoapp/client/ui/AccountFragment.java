@@ -128,7 +128,6 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         }
         Avatar.ThumbnailType type = user.getAvatar().getType();
         thumbnailChooserGroup.check(type == Avatar.ThumbnailType.LAST_FRAME ? R.id.use_last_frame : R.id.use_profile_photo);
-        thumbnailChooserGroup.setOnCheckedChangeListener(this);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
         cropScreen = new CropScreen(ButterKnife.findById(v, R.id.zazo_action_context_bar));
         return v;
@@ -161,7 +160,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         listPopupWindow.setAdapter(adapter);
         listPopupWindow.setDropDownGravity(Gravity.START);
         listPopupWindow.setListSelector(getResources().getDrawable(R.drawable.options_popup_item_bg));
-        listPopupWindow.setAnchorView(editPhoto);
+        listPopupWindow.setAnchorView(v);
         listPopupWindow.setModal(true);
         listPopupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -257,10 +256,18 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     }
     
     private void enableRadioGroup(boolean enable) {
-        thumbnailLayout.setAlpha(enable ? 1f : 0.72f);
+        thumbnailChooserGroup.setOnCheckedChangeListener(enable ? this : null);
+        View.OnClickListener listener = enable ? null : new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onEditPhoto(v);
+                thumbnailChooserGroup.check(R.id.use_last_frame);
+            }
+        };
+        thumbnailLayout.setOnClickListener(listener);
         for (int i = 0; i < thumbnailChooserGroup.getChildCount(); i++) {
             View child = thumbnailChooserGroup.getChildAt(i);
-            child.setEnabled(enable);
+            child.setOnClickListener(listener);
         }
     }
 
