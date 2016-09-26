@@ -76,8 +76,8 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     @InjectView(R.id.up) MaterialMenuView up;
     @InjectView(R.id.name) TextView name;
     @InjectView(R.id.thumb) CircleImageView thumb;
-    @InjectView(R.id.thumb_cover) CircleImageView cover;
     @InjectView(R.id.edit_photo) TextView editPhoto;
+    @InjectView(R.id.update_photo) TextView updatePhoto;
     @InjectView(R.id.thumbnail_group) RadioGroup thumbnailChooserGroup;
     @InjectView(R.id.thumbnail_layout) View thumbnailLayout;
     @InjectView(R.id.use_last_frame) AppCompatRadioButton useLastFrameButton;
@@ -118,10 +118,12 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         editPhoto.setTypeface(Convenience.getTypeface(v.getContext(), Convenience.NORMAL));
         if (user.getAvatar().exists()) {
             thumb.setImageBitmap(user.getAvatar().loadBitmap());
-            cover.setVisibility(View.VISIBLE);
+            editPhoto.setVisibility(View.INVISIBLE);
+            updatePhoto.setVisibility(View.VISIBLE);
             enableRadioGroup(true);
         } else {
-            cover.setVisibility(View.INVISIBLE);
+            editPhoto.setVisibility(View.VISIBLE);
+            updatePhoto.setVisibility(View.INVISIBLE);
             enableRadioGroup(false);
         }
         Avatar.ThumbnailType type = user.getAvatar().getType();
@@ -137,7 +139,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         dismiss();
     }
 
-    @OnClick(R.id.edit_photo)
+    @OnClick(R.id.thumb_layout)
     public void onEditPhoto(View v) {
         final User user = UserFactory.getFactoryInstance().find(getArguments().getString(USER_ID));
         if (user == null) {
@@ -180,7 +182,8 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
                                 dismissProgressDialog();
                                 if (thumb != null) {
                                     thumb.setImageResource(R.drawable.ic_account_circle_white);
-                                    cover.setVisibility(View.INVISIBLE);
+                                    editPhoto.setVisibility(View.VISIBLE);
+                                    updatePhoto.setVisibility(View.INVISIBLE);
                                     new File(avatar.getAvatarPath()).delete();
                                 }
                                 avatar.delete(false, null);
@@ -454,7 +457,8 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
             cropView.setImageDrawable(null);
             bitmap.recycle();
             thumb.setImageBitmap(avatarBitmap);
-            cover.setVisibility(View.VISIBLE);
+            editPhoto.setVisibility(View.INVISIBLE);
+            updatePhoto.setVisibility(View.VISIBLE);
             User user = UserFactory.getFactoryInstance().find(getArguments().getString(USER_ID));
             if (user != null) {
                 FileOutputStream fos = null;

@@ -80,43 +80,53 @@
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="40dp"
                         />
-                <de.hdodenhof.circleimageview.CircleImageView
-                        android:id="@+id/thumb"
-                        android:layout_width="192dp"
-                        android:layout_height="192dp"
-                        android:src="@drawable/ic_account_circle_white"
-                        android:layout_marginBottom="20dp"
-                        android:layout_centerHorizontal="true"
-                        android:layout_below="@id/name"/>
-                <de.hdodenhof.circleimageview.CircleImageView
-                        android:id="@+id/thumb_cover"
-                        android:layout_width="192dp"
-                        android:layout_height="192dp"
-                        android:src="@color/white"
-                        android:alpha="@integer/inactive_icon_alpha"
-                        android:layout_marginBottom="20dp"
-                        android:layout_centerHorizontal="true"
-                        android:layout_below="@id/name"/>
-                <TextView
-                        android:id="@+id/edit_photo"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:gravity="center"
-                        android:layout_alignLeft="@id/thumb"
-                        android:layout_alignTop="@id/thumb"
-                        android:layout_alignRight="@id/thumb"
-                        android:layout_alignBottom="@id/thumb"
-                        android:alpha="@integer/primary_dark_text_alpha"
-                        android:textColor="@color/primary"
-                        android:textAllCaps="true"
-                        android:textSize="@dimen/text_normal"
-                        android:text="@string/account_setup_photo"/>
+                <RelativeLayout
+                        android:id="@+id/thumb_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:layout_below="@id/name"
+                        android:layout_centerHorizontal="true">
+                    <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/thumb"
+                            android:layout_width="192dp"
+                            android:layout_height="192dp"
+                            android:src="@drawable/ic_account_circle_white"
+                            android:layout_centerHorizontal="true"/>
+                    <TextView
+                            android:id="@+id/edit_photo"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:gravity="center"
+                            android:layout_alignLeft="@id/thumb"
+                            android:layout_alignTop="@id/thumb"
+                            android:layout_alignRight="@id/thumb"
+                            android:layout_alignBottom="@id/thumb"
+                            android:alpha="@integer/primary_dark_text_alpha"
+                            android:textColor="@color/primary"
+                            android:textAllCaps="true"
+                            android:textSize="@dimen/text_normal"
+                            android:text="@string/account_setup_photo"/>
+                    <TextView
+                            android:id="@+id/update_photo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:layout_below="@id/edit_photo"
+                            android:alpha="@integer/primary_dark_text_alpha"
+                            android:textColor="@color/primary"
+                            android:textAllCaps="true"
+                            android:textSize="@dimen/text_normal"
+                            android:layout_marginTop="5dp"
+                            android:visibility="invisible"
+                            android:text="@string/account_update_avatar"/>
+                </RelativeLayout>
                 <LinearLayout
                         android:id="@+id/thumbnail_layout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_below="@id/thumb">
+                        android:layout_below="@id/thumb_layout">
                     <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"

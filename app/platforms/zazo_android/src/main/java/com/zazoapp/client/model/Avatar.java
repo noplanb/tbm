@@ -104,7 +104,9 @@ public class Avatar<T extends ActiveModel & AvatarProvidable> {
         Log.d(TAG, "loadTo " + mMemoryCache.size());
         if (bitmap == null) {
             bitmap = BitmapFactory.decodeFile(getAvatarPath());
-            addBitmapToMemoryCache(key, bitmap);
+            if (bitmap != null) {
+                addBitmapToMemoryCache(key, bitmap);
+            }
         }
         return bitmap;
     }

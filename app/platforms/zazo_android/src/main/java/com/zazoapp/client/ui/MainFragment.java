@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -314,15 +315,22 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         if (user != null) {
             accountName.setText(user.getFullName());
             accountId.setText(user.getPhoneNumber(PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL));
-            if (user.getAvatar().exists()) {
-                accountAvatar.setImageBitmap(user.getAvatar().loadBitmap());
-            } else {
-                accountAvatar.setImageResource(R.drawable.ic_account_circle_white);
-            }
+            setAccountAvatar(user);
         } else {
             accountName.setText("");
             accountId.setText("");
         }
+    }
+
+    private void setAccountAvatar(User user) {
+        if (user.getAvatar().exists()) {
+            Bitmap bitmap = user.getAvatar().loadBitmap();
+            if (bitmap != null) {
+                accountAvatar.setImageBitmap(bitmap);
+                return;
+            }
+        }
+        accountAvatar.setImageResource(R.drawable.ic_account_circle_white);
     }
 
     private void releaseManagers() {
