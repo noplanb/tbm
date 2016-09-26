@@ -30,6 +30,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -233,7 +234,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
                 type = Avatar.ThumbnailType.PHOTO;
                 break;
         }
-        if (type != null && type != user.getAvatar().getType()) {
+        if (type != null && type != user.getAvatar().getType() && ((RadioButton)group.findViewById(checkedId)).isChecked()) {
             final Avatar.ThumbnailType finalType = type;
             Avatar.update(type, new HttpRequest.Callbacks() {
                 @Override
