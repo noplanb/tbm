@@ -332,9 +332,10 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         determineIfDownloading();
         ArrayList<IncomingMessage> messages = (videosAreDownloading) ? friend.getSortedIncomingNotViewedMessages() : friend.getSortedIncomingPlayableMessages();
         playingMessages = MessageContainer.splitToMessageContainer(messages);
-        setCurrentVideoId(MessageContainer.getFirstMessageIdInList(playingMessages));
+        String videoId = MessageContainer.getFirstMessageIdInList(playingMessages);
         currentVideoNumber = (videoId != null) ? 1 : 0;
         numberOfMessages = playingMessages.size();
+        setCurrentVideoId(videoId);
     }
 
     private int calculateNumberOfVideos() {
@@ -1071,6 +1072,7 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @InjectView(R.id.tw_date) TextView date;
         @InjectView(R.id.fab) FloatingActionButton fab;
         @InjectView(R.id.messages) RecyclerView messages;
+        private Animator dateChangeAnimator;
 
         PlayerPresenter(ViewStub viewStub) {
             rootLayout = viewStub.inflate();
@@ -1127,7 +1129,8 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @Override
         public void update(VideoPlayer player) {
             boolean isVideo = player.getCurrentType() == MessageType.VIDEO;
-            TextAnimations.animateAlpha(date, isVideo ? StringUtils.getEventTime(player.videoId) : "");
+            cancelAnimator();
+            dateChangeAnimator = TextAnimations.animateAlpha(date, isVideo ? StringUtils.getEventTime(player.videoId) : "");
             if (player.friend.thumbExists()) {
                 thumb.setImageBitmap(player.friend.thumbBitmap());
                 thumb.setMapArea(ThumbView.MapArea.FULL);
@@ -1201,6 +1204,12 @@ public class VideoPlayer implements OnCompletionListener, OnPreparedListener, Pl
         @Override
         protected void switchBodyTo(int id) {
             videoBody.setDisplayedChild(id);
+        }
+
+        private void cancelAnimator() {
+            if (dateChangeAnimator != null) {
+                dateChangeAnimator.cancel();
+            }
         }
     }
 
