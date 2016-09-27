@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.RadialGradient;
 import android.graphics.Shader;
 import android.os.Build;
+import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
 import com.zazoapp.client.R;
@@ -20,6 +21,8 @@ import com.zazoapp.client.utilities.Convenience;
 public class ShadowedStatusLayout extends RelativeLayout {
     private Paint solidBackground;
     private Paint gradient;
+    @ColorInt private int gradientCenterColor = Color.parseColor("#55000000");
+    @ColorInt private int gradientEdgeColor = Color.TRANSPARENT;
     public ShadowedStatusLayout(Context context) {
         this(context, null);
     }
@@ -49,6 +52,12 @@ public class ShadowedStatusLayout extends RelativeLayout {
             if (a.hasValue(R.styleable.ShadowedStatusLayout_solid_background_color)) {
                 backgroundColor = a.getColor(R.styleable.ShadowedStatusLayout_solid_background_color, Color.WHITE);
             }
+            if (a.hasValue(R.styleable.ShadowedStatusLayout_gradient_center_color)) {
+                gradientCenterColor = a.getColor(R.styleable.ShadowedStatusLayout_gradient_center_color, gradientCenterColor);
+            }
+            if (a.hasValue(R.styleable.ShadowedStatusLayout_gradient_edge_color)) {
+                gradientEdgeColor = a.getColor(R.styleable.ShadowedStatusLayout_gradient_edge_color, gradientEdgeColor);
+            }
         } finally {
             a.recycle();
         }
@@ -68,6 +77,6 @@ public class ShadowedStatusLayout extends RelativeLayout {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        gradient.setShader(new RadialGradient(w*0.5f, h*0.51f, h*0.49f, Color.parseColor("#55000000"), Color.TRANSPARENT, Shader.TileMode.CLAMP));
+        gradient.setShader(new RadialGradient(w*0.5f, h*0.51f, h*0.49f, gradientCenterColor, gradientEdgeColor, Shader.TileMode.CLAMP));
     }
 }

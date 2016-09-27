@@ -73,6 +73,8 @@
 
     <declare-styleable name="ShadowedStatusLayout">
         <attr name="solid_background_color" format="color"/>
+        <attr name="gradient_center_color" format="color"/>
+        <attr name="gradient_edge_color" format="color"/>
     </declare-styleable>
 
     <declare-styleable name="StatusIndicator">
