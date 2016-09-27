@@ -226,6 +226,8 @@
     <string name="settings_allow_data_in_roaming">Zazo when roaming</string>
     <string name="settings_allow_data_in_roaming_hint">Send and receive Zazos when roaming</string>
     <string name="settings_light_screen_for_notifications">Light screen for notifications</string>
+    <string name="settings_update_profile_photo">Update profile photo</string>
+    <string name="settings_update_profile_photo_hint">Set the thumbnail photo for your Zazos</string>
 
     <string name="account_title">Profile</string>
     <string name="account_setup_photo">Set profile\nphoto</string>

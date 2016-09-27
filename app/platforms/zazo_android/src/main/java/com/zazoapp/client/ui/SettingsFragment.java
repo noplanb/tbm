@@ -2,9 +2,13 @@ package com.zazoapp.client.ui;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.AnimRes;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.SwitchCompat;
 import android.view.ContextThemeWrapper;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,10 +29,28 @@ import com.zazoapp.client.ui.animations.SlideHorizontalFadeAnimation;
 /**
  * Created by skamenkovych@codeminders.com on 1/22/2016.
  */
-public class SettingsFragment extends ZazoTopFragment {
+public class SettingsFragment extends ZazoTopFragment implements Settings.LinkClickedCallback {
 
+    private static final String SETTINGS_TOP_TAG = "SettingsTop";
     @InjectView(R.id.settings_list) ScrollView settingsList;
     @InjectView(R.id.up) MaterialMenuView up;
+
+    private ZazoTopFragment topFragment;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(SETTINGS_TOP_TAG);
+        if (fragment instanceof ZazoTopFragment) {
+            topFragment = (ZazoTopFragment) fragment;
+            topFragment.setOnBackListener(new OnBackListener() {
+                @Override
+                public void onBack() {
+                    topFragment = null;
+                }
+            });
+        }
+    }
 
     @Nullable
     @Override
@@ -38,6 +60,7 @@ public class SettingsFragment extends ZazoTopFragment {
         up.setState(MaterialMenuDrawable.IconState.ARROW);
         LinearLayout layout = new LinearLayout(v.getContext());
         layout.setOrientation(LinearLayout.VERTICAL);
+        layout.addView(getViewForPref(inflater, Settings.Link.UPDATE_PROFILE_PHOTO, this));
         layout.addView(getViewForPref(inflater, Settings.Bool.ALLOW_DATA_IN_ROAMING));
         layout.addView(getViewForPref(inflater, Settings.Bool.LIGHT_SCREEN_FOR_NOTIFICATIONS));
         settingsList.addView(layout);
@@ -52,10 +75,10 @@ public class SettingsFragment extends ZazoTopFragment {
         return SlideHorizontalFadeAnimation.get(getActivity(), nextAnim);
     }
 
-    @OnClick(R.id.home)
+    @OnClick(R.id.up)
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.home:
+            case R.id.up:
                 if (getOnBackListener() != null) {
                     getOnBackListener().onBack();
                 }
@@ -86,6 +109,58 @@ public class SettingsFragment extends ZazoTopFragment {
         return v;
     }
 
+    private View getViewForPref(LayoutInflater inflater, final Settings.Link pref, final Settings.LinkClickedCallback callback) {
+        View v = inflater.inflate(R.layout.setting_link_layout, null);
+        LinkSettingViewHolder h = new LinkSettingViewHolder(v);
+        h.title.setText(pref.getLabel());
+        if (pref.getHint() != 0) {
+            h.subtitle.setText(pref.getHint());
+            h.subtitle.setVisibility(View.VISIBLE);
+        } else {
+            h.subtitle.setVisibility(View.GONE);
+        }
+        h.parent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callback.onLinkClicked(pref);
+            }
+        });
+        return v;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (topFragment != null) {
+            return topFragment.onKeyDown(keyCode, event);
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onLinkClicked(Settings.Link link) {
+        switch (link) {
+            case UPDATE_PROFILE_PHOTO: {
+                showTopFragment(AccountFragment.getInstance(), R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
+            }
+                break;
+        }
+    }
+
+    private void showTopFragment(ZazoTopFragment f, @AnimRes int in, @AnimRes int out) {
+        FragmentTransaction tr = getChildFragmentManager().beginTransaction();
+        tr.setCustomAnimations(in, out, in, out);
+        tr.add(R.id.top_frame, f, SETTINGS_TOP_TAG);
+        tr.addToBackStack(null);
+        tr.commit();
+        f.setOnBackListener(new ZazoTopFragment.OnBackListener() {
+            @Override
+            public void onBack() {
+                topFragment = null;
+            }
+        });
+        topFragment = f;
+    }
+
     static class SwitchSettingViewHolder {
         @InjectView(R.id.title) TextView title;
         @InjectView(R.id.subtitle) TextView subtitle;
@@ -93,6 +168,17 @@ public class SettingsFragment extends ZazoTopFragment {
 
         SwitchSettingViewHolder(View v) {
             ButterKnife.inject(this, v);
+        }
+    }
+
+    static class LinkSettingViewHolder {
+        @InjectView(R.id.title) TextView title;
+        @InjectView(R.id.subtitle) TextView subtitle;
+        View parent;
+
+        LinkSettingViewHolder(View v) {
+            ButterKnife.inject(this, v);
+            parent = v;
         }
     }
 }

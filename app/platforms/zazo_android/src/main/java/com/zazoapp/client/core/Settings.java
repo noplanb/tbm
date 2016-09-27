@@ -41,8 +41,31 @@ public class Settings {
         }
     }
 
+    public enum Link {
+        UPDATE_PROFILE_PHOTO(R.string.settings_update_profile_photo, R.string.settings_update_profile_photo_hint);
+
+        private int labelId;
+        private int hintId;
+        Link(@StringRes int labelId, @StringRes int hintId) {
+            this.labelId = labelId;
+            this.hintId = hintId;
+        }
+
+        public @StringRes int getLabel() {
+            return labelId;
+        }
+
+        public @StringRes int getHint() {
+            return hintId;
+        }
+    }
+
     public interface SettingChangesCallback {
         void onChange();
+    }
+
+    public interface LinkClickedCallback {
+        void onLinkClicked(Settings.Link link);
     }
 
     private static final Settings INSTANCE = new Settings();
