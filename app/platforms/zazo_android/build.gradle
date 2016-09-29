@@ -45,6 +45,13 @@ android {
             debuggable true
             buildConfigField "String", "DISPATCH_ENVIRONMENT", "\"development\""
         }
+
+        release_debuggable {
+            debuggable true
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "DISPATCH_ENVIRONMENT", "\"production\""
+        }
     }
     applicationVariants.all {
         variant ->

@@ -484,6 +484,8 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
                 if (user.getAvatar().exists()) {
                     Avatar.upload(user.getAvatar().getAvatarPath(),
                             thumbnailChooserGroup.getCheckedRadioButtonId() == R.id.use_profile_photo ? Avatar.ThumbnailType.PHOTO : Avatar.ThumbnailType.LAST_FRAME);
+                    // TODO restore option if unable to set
+                    // TODO: request current option on screen start
                     enableRadioGroup(true);
                 } else {
                     enableRadioGroup(false);
