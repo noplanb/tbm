@@ -38,7 +38,9 @@ public abstract class ActiveModel {
     //--------------------
     public ActiveModel set(String a, String v) {
         if (attributes.containsKey(a)) {
-            Log.i(TAG, "setting " + a + " : " + v);
+            if (!User.Attributes.AUTH.equals(a)) {
+                Log.i(TAG, "setting " + a + " : " + v);
+            }
             String oldValue = attributes.put(a, v);
             if (!v.equals(oldValue)) {
                 notifyCallbacks(true);

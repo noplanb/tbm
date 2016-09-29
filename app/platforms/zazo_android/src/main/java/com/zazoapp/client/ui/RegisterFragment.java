@@ -415,7 +415,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
     }
 
     public void didReceiveCodeResponse(String r) {
-        Log.i(TAG, "didReceiveCodeResponse: " + r);
+        Log.i(TAG, "didReceiveCodeResponse");
         Gson g = new Gson();
         LinkedTreeMap<String,String> params;
         try {
@@ -558,6 +558,7 @@ public class RegisterFragment extends ZazoFragment implements EnterCodeDialogFra
         user.set(User.Attributes.AUTH, params.get(UserFactory.ServerParamKeys.AUTH));
         user.set(AvatarProvidable.AVATAR_TIMESTAMP, String.valueOf(0));
         user.set(AvatarProvidable.USE_AS_THUMBNAIL, Avatar.ThumbnailType.LAST_FRAME.optionName());
+        Log.d(TAG, "gotUser: " + user.getId() + " " + user.getMkey());
         new RegistrationHelper(context).sync(this, true);
     }
 

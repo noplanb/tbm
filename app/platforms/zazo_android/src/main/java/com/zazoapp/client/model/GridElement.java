@@ -1,5 +1,7 @@
 package com.zazoapp.client.model;
 
+import android.text.TextUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,14 +27,15 @@ public class GridElement extends ActiveModel {
 
     public Friend getFriend() {
         String fid = attributes.get(Attributes.FRIEND_ID);
-        if (fid.equals(""))
+        if (TextUtils.isEmpty(fid))
             return null;
 
         return FriendFactory.getFactoryInstance().find(fid);
     }
 
     public boolean hasFriend() {
-        return !attributes.get(GridElement.Attributes.FRIEND_ID).equals("");
+        String fid = attributes.get(Attributes.FRIEND_ID);
+        return !TextUtils.isEmpty(fid);
     }
 
     public void setFriend(Friend f) {
