@@ -278,12 +278,12 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
 
     @Override
     public void onPause() {
-        super.onPause();
         if (managerHolder.getBenchViewManager().isBenchShown()) {
             managerHolder.getBenchViewManager().hideBench();
         }
         closeDrawerIfOpened();
         releaseManagers();
+        super.onPause();
     }
 
     @Override
@@ -626,7 +626,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.drawer_header) {
-            showTopFragment(AccountFragment.getInstance(), R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
+            startActivity(new Intent(getActivity(), ProfileActivity.class));
         }
     }
 

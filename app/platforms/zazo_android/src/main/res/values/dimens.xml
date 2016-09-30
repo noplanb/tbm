@@ -35,7 +35,7 @@
     <dimen name="contacts_group_icon_size">@dimen/small_icon_size</dimen>
     <dimen name="search_panel_margin">15dp</dimen>
     <dimen name="search_panel_height">52dp</dimen>
-    
+
     <dimen name="grid_item_status_icon_size">23dp</dimen>
     <dimen name="grid_item_status_icon_text_padding">3dp</dimen>
     <dimen name="grid_item_status_icon_padding">2.5dp</dimen>

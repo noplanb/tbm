@@ -5,6 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.PointF;
@@ -18,15 +20,13 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatRadioButton;
 import android.support.v7.widget.ListPopupWindow;
 import android.view.Gravity;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -59,16 +59,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-/**
- * Created by skamenkovych@codeminders.com on 8/2/2016.
- */
-public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnCheckedChangeListener {
+public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
 
     private static final String USER_ID = "user_id";
 
-    private static final String TAG = AccountFragment.class.getSimpleName();
+    private static final String TAG = ProfileActivity.class.getSimpleName();
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int PICK_IMAGE_REQUEST = 2;
     private static final int MAX_BITMAP_WIDTH = 480;
@@ -91,31 +89,19 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     private Bitmap lastBitmap;
     private BitmapDrawable lastAvatarPhoto;
     private CropScreen cropScreen;
+    private User user;
 
-    public static AccountFragment getInstance() {
-        AccountFragment f = new AccountFragment();
-        User user = UserFactory.current_user();
-        Bundle args = new Bundle();
-        if (user != null) {
-            args.putString(USER_ID, user.getId());
-        }
-        f.setArguments(args);
-        return f;
-    }
-
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.account_layout, null);
-        ButterKnife.inject(this, v);
-        User user = UserFactory.getFactoryInstance().find(getArguments().getString(USER_ID));
-        if (user == null) {
-            return v;
-        }
-        th = new ThumbsHelper(v.getContext());
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_profile);
+        ButterKnife.inject(this);
+        user = UserFactory.current_user();
+
+        th = new ThumbsHelper(this);
         name.setText(user.getFullName());
-        name.setTypeface(Convenience.getTypeface(v.getContext()));
-        editPhoto.setTypeface(Convenience.getTypeface(v.getContext(), Convenience.NORMAL));
+        name.setTypeface(Convenience.getTypeface(this));
+        editPhoto.setTypeface(Convenience.getTypeface(this, Convenience.NORMAL));
         if (user.getAvatar().exists()) {
             thumb.setImageBitmap(user.getAvatar().loadBitmap());
             editPhoto.setVisibility(View.INVISIBLE);
@@ -129,8 +115,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         Avatar.ThumbnailType type = user.getAvatar().getType();
         thumbnailChooserGroup.check(type == Avatar.ThumbnailType.LAST_FRAME ? R.id.use_last_frame : R.id.use_profile_photo);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
-        cropScreen = new CropScreen(ButterKnife.findById(v, R.id.zazo_action_context_bar));
-        return v;
+        cropScreen = new CropScreen(ButterKnife.findById(this, R.id.zazo_action_context_bar));
     }
 
     @OnClick(R.id.up)
@@ -140,10 +125,6 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
 
     @OnClick(R.id.thumb_layout)
     public void onEditPhoto(View v) {
-        final User user = UserFactory.getFactoryInstance().find(getArguments().getString(USER_ID));
-        if (user == null) {
-            return;
-        }
         final Context c = v.getContext();
         final String[] options = c.getResources().getStringArray(R.array.account_photo_options);
         String[] from = new String[] {"text"};
@@ -207,13 +188,13 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     }
 
     private void dismiss() {
-        super.onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+        onBackPressed();
     }
 
     private void showProgressDialog(@StringRes int title) {
         dismissProgressDialog();
         pd = ProgressDialogFragment.getInstance(null, getString(title));
-        DialogShower.showDialog(getChildFragmentManager(), pd, null);
+        DialogShower.showDialog(getSupportFragmentManager(), pd, null);
     }
 
     private void dismissProgressDialog() {
@@ -223,10 +204,6 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
-        final User user = UserFactory.getFactoryInstance().find(getArguments().getString(USER_ID));
-        if (user == null) {
-            return;
-        }
         Avatar.ThumbnailType type = null;
         switch (checkedId) {
             case R.id.use_last_frame:
@@ -254,7 +231,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
             showProgressDialog(R.string.dialog_syncing_title);
         }
     }
-    
+
     private void enableRadioGroup(boolean enable) {
         thumbnailChooserGroup.setOnCheckedChangeListener(enable ? this : null);
         View.OnClickListener listener = enable ? null : new View.OnClickListener() {
@@ -273,7 +250,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
 
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             File photoFile = null;
             try {
                 photoFile = createImageFile();
@@ -284,9 +261,17 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
 
             // Continue only if the File was successfully created
             if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(getActivity(),
+                Uri photoURI = FileProvider.getUriForFile(this,
                         "com.zazoapp.client.fileprovider",
                         photoFile);
+                //String imageFilePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/picture.jpg";
+                //File imageFile = new File(imageFilePath);
+                //Uri imageFileUri = Uri.fromFile(imageFile);
+                List<ResolveInfo> resInfoList = getPackageManager().queryIntentActivities(takePictureIntent, PackageManager.MATCH_DEFAULT_ONLY);
+                for (ResolveInfo resolveInfo : resInfoList) {
+                    String packageName = resolveInfo.activityInfo.packageName;
+                    grantUriPermission(packageName, photoURI, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
@@ -303,10 +288,16 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
     private File createImageFile() throws IOException {
         // Create an image file name
         String imageFileName = "zazo_avatar_photo";
-        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File[] tempFiles = storageDir.listFiles();
+        if (tempFiles != null) {
+            for (File tempFile : tempFiles) {
+                tempFile.delete();
+            }
+        }
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
-                ".tmp",         /* suffix */
+                ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
 
@@ -328,7 +319,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
         } else if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
             try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                 if (lastAvatarPhoto != null) {
                     cropView.setImageDrawable(null);
                     lastAvatarPhoto.getBitmap().recycle();
@@ -342,7 +333,7 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
 
     private void loadPictureToCropScreen() {
         if (lastAvatarPhoto.getBitmap() == null) {
-            DialogShower.showToast(getActivity(), R.string.account_avatar_cant_load);
+            DialogShower.showToast(this, R.string.account_avatar_cant_load);
             return;
         }
         final float w = lastAvatarPhoto.getBitmap().getWidth();
@@ -466,7 +457,6 @@ public class AccountFragment extends ZazoTopFragment implements RadioGroup.OnChe
             thumb.setImageBitmap(avatarBitmap);
             editPhoto.setVisibility(View.INVISIBLE);
             updatePhoto.setVisibility(View.VISIBLE);
-            User user = UserFactory.getFactoryInstance().find(getArguments().getString(USER_ID));
             if (user != null) {
                 FileOutputStream fos = null;
                 try {

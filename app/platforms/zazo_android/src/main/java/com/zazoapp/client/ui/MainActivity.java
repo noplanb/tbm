@@ -223,7 +223,6 @@ public class MainActivity extends FragmentActivity implements TaskFragmentListen
         return intent != null && IntentHandlerService.IntentActions.SUGGESTIONS.equals(intent.getAction());
     }
 
-
     @Override
     public void onActionModeStarted(ActionMode mode) {
         mode.setTitle("");

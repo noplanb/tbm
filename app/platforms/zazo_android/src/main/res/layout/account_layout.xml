@@ -95,13 +95,10 @@
                             android:layout_centerHorizontal="true"/>
                     <TextView
                             android:id="@+id/edit_photo"
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
+                            android:layout_width="192dp"
+                            android:layout_height="192dp"
                             android:gravity="center"
-                            android:layout_alignLeft="@id/thumb"
-                            android:layout_alignTop="@id/thumb"
-                            android:layout_alignRight="@id/thumb"
-                            android:layout_alignBottom="@id/thumb"
+                            android:layout_centerHorizontal="true"
                             android:alpha="@integer/primary_dark_text_alpha"
                             android:textColor="@color/primary"
                             android:textAllCaps="true"

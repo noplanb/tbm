@@ -1,6 +1,7 @@
 package com.zazoapp.client.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.AnimRes;
 import android.support.annotation.Nullable;
@@ -140,7 +141,7 @@ public class SettingsFragment extends ZazoTopFragment implements Settings.LinkCl
     public void onLinkClicked(Settings.Link link) {
         switch (link) {
             case UPDATE_PROFILE_PHOTO: {
-                showTopFragment(AccountFragment.getInstance(), R.anim.slide_left_fade_in, R.anim.slide_right_fade_out);
+                startActivity(new Intent(getActivity(), ProfileActivity.class));
             }
                 break;
         }

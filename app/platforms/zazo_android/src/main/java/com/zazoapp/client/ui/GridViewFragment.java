@@ -316,10 +316,10 @@ public class GridViewFragment extends Fragment implements CameraExceptionHandler
 
     @Override
     public void onPause() {
-        super.onPause();
         if (nineViewGroup.getSpinStrategy() != null) {
             nineViewGroup.getSpinStrategy().reset();
         }
+        super.onPause();
     }
 
     @Override
