@@ -37,6 +37,7 @@ public class CropImageView extends AppCompatImageView {
     private PointF start = new PointF();
     private Paint cropPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private float cropRectRadius;
+    private int imageRotation;
 
     public CropImageView(Context context) {
         this(context, null, 0);
@@ -111,6 +112,7 @@ public class CropImageView extends AppCompatImageView {
     public void setImageDrawable(Drawable drawable, RectF cropRect, RectF cropImageRect) {
         this.cropRectRel = cropRect;
         this.cropImageRect = cropImageRect;
+        imageRotation = 0;
         setUpMatrix(drawable, getWidth(), getHeight());
         super.setImageDrawable(drawable);
     }
@@ -127,18 +129,20 @@ public class CropImageView extends AppCompatImageView {
         }
         int width = drawable.getIntrinsicWidth();
         int height = drawable.getIntrinsicHeight();
-
+        if (imageRotation % 180 != 0) {
+            width += height;
+            height = width - height;
+            width = width - height;
+        }
+        float centerViewX, centerViewY;
+        float centerImageX, centerImageY;
         if (cropRectRel == null) {
             mScaleFactor = Math.max(w / (float) width, h / (float) height);
-            float centerViewX = w / 2;
-            float centerViewY = h / 2;
-            float centerImageX = width / 2;
-            float centerImageY = height / 2;
-            matrix.reset();
-            matrix.postTranslate(centerViewX - centerImageX, centerViewY - centerImageY);
-            matrix.postScale(mScaleFactor, mScaleFactor, centerViewX, centerViewY);
+            centerViewX = w / 2;
+            centerViewY = h / 2;
+            centerImageX = width / 2;
+            centerImageY = height / 2;
             cropRect.set(0, 0, w, h);
-            setImageMatrix(matrix);
         } else {
             if (cropImageRect == null) {
                 cropImageRect = new RectF(0, 0, width, height);
@@ -149,18 +153,22 @@ public class CropImageView extends AppCompatImageView {
                     (w + cropRectRel.width() * baseViewSize) / 2,
                     (h + cropRectRel.height() * baseViewSize) / 2);
             mScaleFactor = Math.max(cropRect.width() / cropImageRect.width(), cropRect.height() / cropImageRect.height());
-            float centerViewX = cropRect.centerX();
-            float centerViewY = cropRect.centerY();
-            float centerImageX = cropImageRect.centerX();
-            float centerImageY = cropImageRect.centerY();
-            matrix.reset();
-            matrix.postTranslate(centerViewX - centerImageX, centerViewY - centerImageY);
-            matrix.postScale(mScaleFactor, mScaleFactor, centerViewX, centerViewY);
-            setImageMatrix(matrix);
+            centerViewX = cropRect.centerX();
+            centerViewY = cropRect.centerY();
+            centerImageX = cropImageRect.centerX();
+            centerImageY = cropImageRect.centerY();
         }
         float radius = cropRect.width() / 2.5f;
         cropRectCircle.set(cropRect.centerX() - radius, cropRect.centerY() - radius, cropRect.centerX() + radius, cropRect.centerY() + radius);
         mMinScale = Math.max(cropRect.width() / (float) width, cropRect.height() / (float) height);
+        if (mScaleFactor < mMinScale) {
+            mScaleFactor = mMinScale;
+        }
+        matrix.reset();
+        matrix.postTranslate(centerViewX - centerImageX, centerViewY - centerImageY);
+        matrix.postScale(mScaleFactor, mScaleFactor, centerViewX, centerViewY);
+        matrix.postRotate(imageRotation, centerViewX, centerViewY);
+        setImageMatrix(matrix);
     }
 
     private static final Paint testPaint = new Paint();
@@ -207,10 +215,26 @@ public class CropImageView extends AppCompatImageView {
 
     public RectF getCroppedImageRect() {
         refreshImageRect();
-        return new RectF((cropRect.left - imageRect.left) / mScaleFactor,
+        RectF rotatedRect = new RectF((cropRect.left - imageRect.left) / mScaleFactor,
                 (cropRect.top - imageRect.top) / mScaleFactor,
                 (cropRect.left - imageRect.left + cropRect.width()) / mScaleFactor,
                 (cropRect.top - imageRect.top + cropRect.height()) / mScaleFactor);
+        float[] origin = new float[] {0, 0};
+        matrix.mapPoints(origin);
+        Matrix reverseRotation = new Matrix();
+        reverseRotation.postRotate(-imageRotation, origin[0], origin[1]);
+        reverseRotation.postTranslate(-origin[0], -origin[1]);
+        reverseRotation.mapRect(rotatedRect);
+        return rotatedRect;
+    }
+
+    public void rotateImage() {
+        imageRotation = (imageRotation + 90) % 360;
+        setUpMatrix(getDrawable(), getWidth(), getHeight());
+    }
+
+    public int getImageRotation() {
+        return imageRotation;
     }
 
     private class ScaleListener extends

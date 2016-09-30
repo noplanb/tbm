@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.PointF;
@@ -16,19 +17,25 @@ import android.graphics.drawable.Drawable;
 import android.media.FaceDetector;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.FileProvider;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatRadioButton;
 import android.support.v7.widget.ListPopupWindow;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -115,7 +122,18 @@ public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnC
         Avatar.ThumbnailType type = user.getAvatar().getType();
         thumbnailChooserGroup.check(type == Avatar.ThumbnailType.LAST_FRAME ? R.id.use_last_frame : R.id.use_profile_photo);
         up.setState(MaterialMenuDrawable.IconState.ARROW);
-        cropScreen = new CropScreen(ButterKnife.findById(this, R.id.zazo_action_context_bar));
+        cropScreen = new CropScreen(ButterKnife.findById(this, R.id.crop_screen));
+        setupWindowParams();
+    }
+
+    private void setupWindowParams() {
+        Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            Resources res = getResources();
+            window.setStatusBarColor(res.getColor(R.color.primary_dark));
+        }
     }
 
     @OnClick(R.id.up)
@@ -322,7 +340,10 @@ public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnC
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                 if (lastAvatarPhoto != null) {
                     cropView.setImageDrawable(null);
-                    lastAvatarPhoto.getBitmap().recycle();
+                    Bitmap currentBitmap = lastAvatarPhoto.getBitmap();
+                    if (currentBitmap != null) {
+                        currentBitmap.recycle();
+                    }
                 }
                 lastAvatarPhoto = new BitmapDrawable(getResources(), bitmap);
                 loadPictureToCropScreen();
@@ -387,12 +408,13 @@ public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnC
     class CropScreen {
         @InjectView(R.id.title) TextView title;
         @InjectView(R.id.context_menu_view) MaterialMenuView menuView;
+        @InjectView(R.id.fab) FloatingActionButton fab;
         private View rootView;
 
-        CropScreen(View contextBar) {
-            rootView = contextBar;
-            View.inflate(contextBar.getContext(), R.layout.crop_screen_action_bar, (ViewGroup) contextBar);
-            ButterKnife.inject(this, contextBar);
+        CropScreen(View view) {
+            rootView = view;
+            View.inflate(view.getContext(), R.layout.crop_screen_action_bar, (ViewGroup) (view.findViewById(R.id.zazo_action_context_bar)));
+            ButterKnife.inject(this, view);
             menuView.setState(MaterialMenuDrawable.IconState.X);
         }
 
@@ -401,9 +423,14 @@ public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnC
             onContextMenuClosed();
         }
 
-        @OnClick(R.id.done_btn)
+        @OnClick(R.id.fab)
         public void onDoneClicked(View v) {
             onAvatarSet();
+        }
+
+        @OnClick(R.id.rotate_btn)
+        public void onRotateClicked(View v) {
+            cropView.rotateImage();
         }
 
         public void show() {
@@ -413,8 +440,10 @@ public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnC
         private void doAppearing() {
             rootView.animate().alpha(1f).setListener(null).start();
             rootView.setVisibility(View.VISIBLE);
-            cropView.animate().alpha(1f).setListener(null).start();
-            cropView.setVisibility(View.VISIBLE);
+            fab.setVisibility(View.VISIBLE);
+            fab.setScaleX(0);
+            fab.setScaleY(0);
+            fab.animate().setInterpolator(new FastOutSlowInInterpolator()).scaleX(1).scaleY(1).start();
         }
 
         public void hide() {
@@ -425,20 +454,13 @@ public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnC
                     rootView.setVisibility(View.INVISIBLE);
                 }
             }).start();
-            cropView.animate().alpha(0f).setDuration(400).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    cropView.setVisibility(View.INVISIBLE);
-                }
-            }).start();
         }
     }
 
     private void onAvatarSet() {
         RectF cropRect = cropView.getCroppedImageRect();
         Drawable drawable = cropView.getDrawable();
-
+        Log.d(TAG, "rotatedRect: " + cropRect.toShortString());
         if (drawable instanceof BitmapDrawable) {
             Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
             Matrix matrix = new Matrix();

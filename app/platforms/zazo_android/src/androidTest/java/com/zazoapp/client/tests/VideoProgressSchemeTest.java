@@ -23,7 +23,7 @@ public class VideoProgressSchemeTest extends TestCase {
 
     public void testSinglePoint() {
         VideoProgressBar.Scheme.SchemeBuilder b = new VideoProgressBar.Scheme.SchemeBuilder();
-        b.addPoint();
+        b.addPoint(0);
         check(b, 1, 0, ".");
     }
 
@@ -43,7 +43,7 @@ public class VideoProgressSchemeTest extends TestCase {
         int count = 5;
         StringBuilder scheme = new StringBuilder();
         for (int i = 0; i < count; i++) {
-            b.addPoint();
+            b.addPoint(0);
             scheme.append('.');
         }
         check(b, count, 0, scheme.toString());
@@ -60,7 +60,7 @@ public class VideoProgressSchemeTest extends TestCase {
                     bars++;
                     break;
                 case '.':
-                    b.addPoint();
+                    b.addPoint(0);
                     break;
             }
         }
@@ -82,7 +82,7 @@ public class VideoProgressSchemeTest extends TestCase {
                     randomScheme.append('-');
                     break;
                 case 1:
-                    b.addPoint();
+                    b.addPoint(0);
                     randomScheme.append('.');
                     break;
             }

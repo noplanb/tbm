@@ -27,32 +27,14 @@
             android:textSize="@dimen/text_very_large"
             android:textColor="@color/actionbar_textcolor"
             />
-<!--    <ImageView
+    <ImageView
             android:id="@+id/rotate_btn"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:padding="12dp"
             android:gravity="center_vertical"
-            android:text=""
-            android:textSize="@dimen/text_very_large"
-            android:textColor="@color/actionbar_textcolor"
-            android:drawableLeft="@drawable/ic_action_accept_white"
-            android:drawableStart="@drawable/ic_action_accept_white"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            />-->
-    <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/done_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:padding="12dp"
-            android:gravity="center_vertical"
-            android:text=""
-            android:textSize="@dimen/text_very_large"
-            android:textColor="@color/actionbar_textcolor"
-            android:drawableLeft="@drawable/ic_action_accept_white"
-            android:drawableStart="@drawable/ic_action_accept_white"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_rotate_white"
             android:clickable="true"
             />
 </LinearLayout>

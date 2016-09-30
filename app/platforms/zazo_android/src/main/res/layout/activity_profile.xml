@@ -167,32 +167,52 @@
 
         </RelativeLayout>
     </ScrollView>
-    <com.zazoapp.client.ui.view.CropImageView
-            android:id="@+id/crop_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:alpha="0"
-            android:layout_below="@id/zazo_action_bar"
-            android:visibility="invisible"
-            android:background="@color/black"
-            android:scaleType="matrix"/>
     <View
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/zazo_action_bar"
             android:background="@drawable/toolbar_shadow"/>
-
-    <LinearLayout
-            android:id="@+id/zazo_action_context_bar"
+    <RelativeLayout
+            android:id="@+id/crop_screen"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
-            android:layout_alignLeft="@id/zazo_action_bar"
-            android:layout_alignRight="@id/zazo_action_bar"
-            android:layout_alignTop="@id/zazo_action_bar"
-            android:layout_alignBottom="@id/zazo_action_bar"
-            android:background="@color/primary"
+            android:layout_height="match_parent"
             android:alpha="0"
-            android:orientation="horizontal"
             android:visibility="invisible"
-            />
+            >
+        <LinearLayout
+                android:id="@+id/zazo_action_context_bar"
+                style="@style/ZazoActionBar"
+                android:orientation="horizontal"
+                />
+        <com.zazoapp.client.ui.view.CropImageView
+                android:id="@+id/crop_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/zazo_action_context_bar"
+                android:background="@color/black"
+                android:scaleType="matrix"/>
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/zazo_action_context_bar"
+                android:background="@drawable/toolbar_shadow"/>
+        <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_action_accept_white"
+                app:backgroundTint="@color/accent_2"
+                app:useCompatPadding="true"
+                app:borderWidth="2dp"
+                app:elevation="4dp"
+                android:layout_margin="@dimen/abc_control_inset_material"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:scaleX="0"
+                android:scaleY="0"
+                app:rippleColor="@color/ripple_material_dark"
+                android:visibility="invisible"/>
+    </RelativeLayout>
+
 </RelativeLayout>
