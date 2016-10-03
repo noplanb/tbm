@@ -30,7 +30,6 @@ import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatRadioButton;
 import android.support.v7.widget.ListPopupWindow;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -242,6 +241,7 @@ public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnC
 
                 @Override
                 public void error(String errorString) {
+                    DialogShower.showToast(thumbnailChooserGroup.getContext(), R.string.toast_could_not_sync);
                     dismissProgressDialog();
                     thumbnailChooserGroup.check(user.getAvatar().getType() == Avatar.ThumbnailType.LAST_FRAME ? R.id.use_last_frame : R.id.use_profile_photo);
                 }
