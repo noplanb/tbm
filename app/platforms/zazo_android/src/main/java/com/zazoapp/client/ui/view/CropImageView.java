@@ -215,16 +215,23 @@ public class CropImageView extends AppCompatImageView {
 
     public RectF getCroppedImageRect() {
         refreshImageRect();
-        RectF rotatedRect = new RectF((cropRect.left - imageRect.left) / mScaleFactor,
-                (cropRect.top - imageRect.top) / mScaleFactor,
-                (cropRect.left - imageRect.left + cropRect.width()) / mScaleFactor,
-                (cropRect.top - imageRect.top + cropRect.height()) / mScaleFactor);
         float[] origin = new float[] {0, 0};
         matrix.mapPoints(origin);
-        Matrix reverseRotation = new Matrix();
-        reverseRotation.postRotate(-imageRotation, origin[0], origin[1]);
-        reverseRotation.postTranslate(-origin[0], -origin[1]);
-        reverseRotation.mapRect(rotatedRect);
+        Matrix m = new Matrix();
+        m.postRotate(-imageRotation, origin[0], origin[1]);
+        m.postTranslate(-origin[0], -origin[1]);
+        m.postScale(1 / mScaleFactor, 1 / mScaleFactor);
+
+        RectF rotatedRect = new RectF();
+        m.mapRect(rotatedRect, cropRect);
+        float xOffset = 0, yOffset = 0;
+        if (rotatedRect.left < 0) {
+            xOffset = Math.abs(rotatedRect.left);
+        }
+        if (rotatedRect.top < 0) {
+            yOffset = Math.abs(rotatedRect.top);
+        }
+        rotatedRect.offset(xOffset, yOffset);
         return rotatedRect;
     }
 

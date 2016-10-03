@@ -460,16 +460,18 @@ public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnC
     private void onAvatarSet() {
         RectF cropRect = cropView.getCroppedImageRect();
         Drawable drawable = cropView.getDrawable();
-        Log.d(TAG, "rotatedRect: " + cropRect.toShortString());
         if (drawable instanceof BitmapDrawable) {
             Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
             Matrix matrix = new Matrix();
             matrix.setScale(bitmap.getWidth() / (float) drawable.getIntrinsicWidth(), bitmap.getHeight() / (float) drawable.getIntrinsicHeight());
             matrix.mapRect(cropRect);
-            boolean shouldTransform = cropRect.width() > MAX_BITMAP_WIDTH;
+            boolean rotated90 = (cropView.getImageRotation() % 180) != 0;
+            boolean shouldTransform = (rotated90) ? cropRect.height() > MAX_BITMAP_WIDTH : cropRect.width() > MAX_BITMAP_WIDTH;
             Bitmap avatarBitmap;
-            if (shouldTransform) {
-                matrix.setScale(MAX_BITMAP_WIDTH / cropRect.width(), MAX_BITMAP_WIDTH / cropRect.width());
+            if (shouldTransform || cropView.getImageRotation() != 0) {
+                matrix.reset();
+                matrix.postScale(MAX_BITMAP_WIDTH / cropRect.width(), MAX_BITMAP_WIDTH / cropRect.width());
+                matrix.postRotate(cropView.getImageRotation());
                 avatarBitmap = Bitmap.createBitmap(bitmap, (int) cropRect.left, (int) cropRect.top, (int) cropRect.width(), (int) cropRect.height(), matrix, false);
             } else {
                 avatarBitmap = Bitmap.createBitmap(bitmap, (int) cropRect.left, (int) cropRect.top, (int) cropRect.width(), (int) cropRect.height());
