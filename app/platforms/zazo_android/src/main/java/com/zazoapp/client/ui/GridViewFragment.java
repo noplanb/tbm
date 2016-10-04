@@ -44,7 +44,7 @@ import java.util.ArrayList;
 public class GridViewFragment extends Fragment implements CameraExceptionHandler, DoubleActionDialogListener, NineViewGroup.SpinChangedListener, Features.FeatureChangedCallback {
 
     private static final String TAG = GridViewFragment.class.getSimpleName();
-    private static final String PREF_SPIN_OFFSET = "spin_offset";
+    public static final String PREF_SPIN_OFFSET = "spin_offset";
 
     private ArrayList<GridElementController> viewControllers;
 

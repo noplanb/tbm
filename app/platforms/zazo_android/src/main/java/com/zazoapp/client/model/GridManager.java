@@ -1,7 +1,10 @@
 package com.zazoapp.client.model;
 
 import android.content.Context;
+import com.zazoapp.client.core.PreferencesHelper;
 import com.zazoapp.client.core.TbmApplication;
+import com.zazoapp.client.ui.GridViewFragment;
+import com.zazoapp.client.ui.view.NineViewGroup;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,6 +113,55 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
             GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(f.getId());
             if (ge != null) {
                 ge.notifyUpdate();
+            }
+        }
+        updateAllEmpty();
+    }
+
+    /**
+     * Lowest ranked friend will be replaced with new friend and moved to specified box
+     * The friend from the specified box will be moved to the box where lowest ranked friend was
+     *
+     * Works only if there are no more free grid elements. Otherwise just calls {@link #moveFriendToGrid(Friend)}
+     *
+     * @param f friend
+     * @param box specified box
+     */
+    public void moveFriendToSpecificBox(Friend f, NineViewGroup.Box box) {
+        if (GridElementFactory.getFactoryInstance().firstEmptyGridElement() != null) {
+            moveFriendToGrid(f);
+            return;
+        }
+        if (f == null)
+            return;
+        f.setLastActionTime();
+        ArrayList<GridElement> allElements = GridElementFactory.getFactoryInstance().all();
+        int spinOffset = new PreferencesHelper(f.getContext()).getInt(GridViewFragment.PREF_SPIN_OFFSET, 0);
+        int elementFromBoxIndex = box.getWithOffset(-spinOffset).getPos();
+        if (!GridElementFactory.getFactoryInstance().friendIsOnGrid(f)) {
+            Friend lowestRankedFriendOnGrid = lowestRankedFriendOnGrid();
+            GridElement availableElement = GridElementFactory.getFactoryInstance().findWithFriendId(lowestRankedFriendOnGrid.getId());
+            if (availableElement != null) {
+                int availableIndex = allElements.indexOf(availableElement);
+                if (availableIndex == elementFromBoxIndex) {
+                    availableElement.setFriend(f);
+                } else {
+                    GridElement elementFromBox = allElements.get(elementFromBoxIndex);
+                    availableElement.setFriend(elementFromBox.getFriend());
+                    elementFromBox.setFriend(f);
+                }
+            }
+        } else {
+            GridElement ge = GridElementFactory.getFactoryInstance().findWithFriendId(f.getId());
+            int availableIndex = allElements.indexOf(ge);
+            if (ge != null) {
+                if (availableIndex == elementFromBoxIndex) {
+                    ge.notifyUpdate();
+                } else {
+                    GridElement elementFromBox = allElements.get(elementFromBoxIndex);
+                    ge.setFriend(elementFromBox.getFriend());
+                    elementFromBox.setFriend(f);
+                }
             }
         }
         updateAllEmpty();

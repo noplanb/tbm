@@ -30,6 +30,7 @@ import com.zazoapp.client.ui.ZazoManagerProvider;
 import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.ui.helpers.ThumbsHelper;
 import com.zazoapp.client.ui.view.FilterWatcher;
+import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.ui.view.SearchPanel;
 import com.zazoapp.client.ui.view.TextImageView;
 import com.zazoapp.client.utilities.AsyncTaskManager;
@@ -98,7 +99,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
         Friend friend = friendFactory.find(bo.friendId);
         if (friend != null) {
             // TODO swap friends
-            GridManager.getInstance().moveFriendToGrid(friend);
+            GridManager.getInstance().moveFriendToSpecificBox(friend, NineViewGroup.Box.BOTTOM_CENTER);
             hideBench();
             return;
         }

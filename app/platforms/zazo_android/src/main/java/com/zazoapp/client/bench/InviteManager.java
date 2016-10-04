@@ -29,6 +29,7 @@ import com.zazoapp.client.ui.MainActivity;
 import com.zazoapp.client.ui.MainFragment;
 import com.zazoapp.client.ui.dialogs.InviteIntent;
 import com.zazoapp.client.ui.helpers.ContactsManager;
+import com.zazoapp.client.ui.view.NineViewGroup;
 import com.zazoapp.client.utilities.Logger;
 import com.zazoapp.client.utilities.StringUtils;
 import org.json.JSONArray;
@@ -465,7 +466,7 @@ public class InviteManager implements InviteHelper {
         if (listener != null) {
             listener.onFinishInvitation();
         }
-        GridManager.getInstance().moveFriendToGrid(friend);
+        GridManager.getInstance().moveFriendToSpecificBox(friend, NineViewGroup.Box.BOTTOM_CENTER);
         friendWasAdded = false;
     }
 

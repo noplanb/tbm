@@ -97,7 +97,7 @@ public class NineViewGroup extends ViewGroup {
             initialAngle = angle;
         }
 
-        int getPos() {
+        public int getPos() {
             return pos;
         }
 
