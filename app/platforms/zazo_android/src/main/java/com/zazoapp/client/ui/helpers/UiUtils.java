@@ -1,8 +1,12 @@
 package com.zazoapp.client.ui.helpers;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.ColorRes;
@@ -13,6 +17,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by skamenkovych@codeminders.com on 6/29/2016.
@@ -113,5 +121,62 @@ public final class UiUtils {
         }
         downEvent.recycle();
         return handled;
+    }
+
+    public static Bitmap getBitmap(ContentResolver cr, Uri url, int reqWidth, int reqHeight) {
+        Bitmap bitmap = null;
+        try {
+            InputStream input = cr.openInputStream(url);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(input, null, options);
+            if (input != null) {
+                input.close();
+            }
+            input = cr.openInputStream(url);
+            options.inJustDecodeBounds = false;
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+            bitmap = BitmapFactory.decodeStream(input, null, options);
+            if (input != null) {
+                input.close();
+            }
+        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
+        }
+
+        return bitmap;
+    }
+
+    public static final Bitmap getBitmap(String path, int reqWidth, int reqHeight) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, options);
+        options.inJustDecodeBounds = false;
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        Bitmap bitmap = BitmapFactory.decodeFile(path, options);
+        return bitmap;
+    }
+
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
     }
 }

@@ -53,6 +53,7 @@ import com.zazoapp.client.model.UserFactory;
 import com.zazoapp.client.network.HttpRequest;
 import com.zazoapp.client.ui.dialogs.ProgressDialogFragment;
 import com.zazoapp.client.ui.helpers.ThumbsHelper;
+import com.zazoapp.client.ui.helpers.UiUtils;
 import com.zazoapp.client.ui.view.CropImageView;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Convenience;
@@ -327,28 +328,29 @@ public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnC
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Bitmap bitmap = null;
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
             if (lastAvatarPhoto != null) {
                 cropView.setImageDrawable(null);
                 lastAvatarPhoto.getBitmap().recycle();
             }
-            lastAvatarPhoto = new BitmapDrawable(getResources(), currentPhotoPath);
-            loadPictureToCropScreen();
+            bitmap = UiUtils.getBitmap(currentPhotoPath, cropView.getWidth(), cropView.getHeight());
         } else if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                if (lastAvatarPhoto != null) {
-                    cropView.setImageDrawable(null);
-                    Bitmap currentBitmap = lastAvatarPhoto.getBitmap();
-                    if (currentBitmap != null) {
-                        currentBitmap.recycle();
-                    }
+            if (lastAvatarPhoto != null) {
+                cropView.setImageDrawable(null);
+                Bitmap currentBitmap = lastAvatarPhoto.getBitmap();
+                if (currentBitmap != null) {
+                    currentBitmap.recycle();
                 }
-                lastAvatarPhoto = new BitmapDrawable(getResources(), bitmap);
-                loadPictureToCropScreen();
-            } catch (IOException e) {
             }
+            bitmap = UiUtils.getBitmap(getContentResolver(), uri, cropView.getWidth(), cropView.getHeight());
+        }
+        if (bitmap != null) {
+            lastAvatarPhoto = new BitmapDrawable(getResources(), bitmap);
+            loadPictureToCropScreen();
+        } else if (resultCode == RESULT_OK) {
+            DialogShower.showToast(this, R.string.toast_could_not_load_photo);
         }
     }
 

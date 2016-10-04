@@ -21,7 +21,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 22
         versionCode 180
-        versionName "3.6.3" //<!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
+        versionName "3.6.3a" //<!-- {MAIN_VERSION}.{FEATURE_SET}.{REVISION}-->
         resConfigs "en"
         multiDexEnabled true // Enabling multidex support.
     }
@@ -92,18 +92,16 @@ dependencies {
 
 def appendVersionNameVersionCode(variant, defaultConfig) {
     //check if staging variant
-    if (variant.name == android.buildTypes.release.name || variant.name == android.buildTypes.beta.name) {
-        variant.outputs.each { output ->
-            def alignedOutputFile = output.outputFile
-            def unalignedOutputFile = output.packageApplication.outputFile
+    variant.outputs.each { output ->
+        def alignedOutputFile = output.outputFile
+        def unalignedOutputFile = output.packageApplication.outputFile
 
-            // Customise APK filenames (to include build version)
-            if (variant.buildType.zipAlignEnabled) {
-                // normal APK
-                output.outputFile = new File(alignedOutputFile.parent, "zazo-" + defaultConfig.versionName + "-" + defaultConfig.versionCode + "-" + variant.name + ".apk")
-            }
-            // 'unaligned' APK
-            output.packageApplication.outputFile = new File(unalignedOutputFile.parent, "zazo" + defaultConfig.versionName + "-" + defaultConfig.versionCode + "-" + variant.name + ".apk")
+        // Customise APK filenames (to include build version)
+        if (variant.buildType.zipAlignEnabled) {
+            // normal APK
+            output.outputFile = new File(alignedOutputFile.parent, "zazo-" + defaultConfig.versionName + "-" + defaultConfig.versionCode + "-" + variant.name + ".apk")
         }
+        // 'unaligned' APK
+        output.packageApplication.outputFile = new File(unalignedOutputFile.parent, "zazo" + defaultConfig.versionName + "-" + defaultConfig.versionCode + "-" + variant.name + ".apk")
     }
 }
