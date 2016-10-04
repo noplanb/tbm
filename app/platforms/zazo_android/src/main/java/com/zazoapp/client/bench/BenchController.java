@@ -85,7 +85,6 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
 
 	public void loadContacts() {
         friendFactory = FriendFactory.getFactoryInstance();
-        GridManager.getInstance().moveFriendsWithUnviewedOnGrid();
 		benchDataHandler.getRankedPhoneData();
 	}
 

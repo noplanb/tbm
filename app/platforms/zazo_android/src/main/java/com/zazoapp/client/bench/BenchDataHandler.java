@@ -12,6 +12,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.debug.DebugConfig;
 import com.zazoapp.client.dispatch.Dispatch;
 import com.zazoapp.client.model.Contact;
+import com.zazoapp.client.model.GridManager;
 import com.zazoapp.client.ui.helpers.ContactsManager;
 import com.zazoapp.client.utilities.AsyncTaskManager;
 import com.zazoapp.client.utilities.Logger;
@@ -85,7 +86,7 @@ public class BenchDataHandler {
         @Override
         protected Void doInBackground(Void... params) {
             Log.i(TAG, "GetRankedPhoneDataAsync");
-
+            GridManager.getInstance().moveFriendsWithUnviewedOnGrid();
             addPhoneData(getMessagesPhoneData(), rankedPhoneData);
             addPhoneData(getContactsPhoneData(), rankedPhoneData);
             if (DebugConfig.DEBUG_LOG) {
