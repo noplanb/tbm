@@ -155,7 +155,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         gcmHandler = new GcmHandler(getActivity());
-        versionHandler = new VersionHandler(context, this);
+        versionHandler = new VersionHandler(context);
         managerHolder = (ManagerHolder) TbmApplication.getInstance().getManagerProvider();
         if (managerHolder == null) {
             managerHolder = new ManagerHolder();
@@ -175,7 +175,6 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     public void onStart() {
         super.onStart();
         isStopped = false;
-        versionHandler.checkVersionCompatibility();
         checkPlayServices();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Convenience.ON_NOT_ENOUGH_SPACE_ACTION);
@@ -195,6 +194,8 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     @Override
     public void onResume() {
         super.onResume();
+        versionHandler.setCallback(this);
+        versionHandler.checkVersionCompatibility();
         managerHolder.registerManagers();
         managerHolder.getPlayer().registerStatusCallbacks(this);
         handleIntent(getActivity().getIntent());
@@ -283,6 +284,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         }
         closeDrawerIfOpened();
         releaseManagers();
+        versionHandler.setCallback(null);
         super.onPause();
     }
 

@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.google.gson.internal.LinkedTreeMap;
 import com.zazoapp.client.Config;
@@ -66,9 +67,8 @@ public class VersionHandler {
         context.startActivity(uninstallIntent);
     }
 
-    public VersionHandler(@NonNull Context context, @NonNull Callback callback) {
+    public VersionHandler(@NonNull Context context) {
         this.context = context;
-        this.callback = callback;
     }
 
     public Integer versionCode() {
@@ -138,7 +138,12 @@ public class VersionHandler {
     }
 
     private void showVersionHandlerDialog(String message, Boolean isNegativeButton) {
-        callback.showVersionHandlerDialog(message, isNegativeButton);
+        if (callback != null) {
+            callback.showVersionHandlerDialog(message, isNegativeButton);
+        }
     }
 
+    public void setCallback(@Nullable Callback callback) {
+        this.callback = callback;
+    }
 }
