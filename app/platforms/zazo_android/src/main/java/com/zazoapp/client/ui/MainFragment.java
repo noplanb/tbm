@@ -178,6 +178,7 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
         checkPlayServices();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Convenience.ON_NOT_ENOUGH_SPACE_ACTION);
+        filter.addAction(DialogShower.ACTION_DIALOG_SHOWN);
         LocalBroadcastManager.getInstance(context).registerReceiver(serviceReceiver, filter);
         Convenience.checkAndNotifyNoSpace(context);
         NotificationAlertManager.init(context);
@@ -635,8 +636,19 @@ public class MainFragment extends ZazoFragment implements UnexpectedTerminationH
     private class MainActivityReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (Convenience.ON_NOT_ENOUGH_SPACE_ACTION.equals(intent.getAction())) {
-                showNotEnoughSpaceDialog();
+            String action = intent.getAction();
+            if (action == null) {
+                return;
+            }
+            switch (action) {
+                case Convenience.ON_NOT_ENOUGH_SPACE_ACTION:
+                    showNotEnoughSpaceDialog();
+                    break;
+                case DialogShower.ACTION_DIALOG_SHOWN:
+                    if (topFragment != null) {
+                        topFragment.onKeyDown(KeyEvent.KEYCODE_BACK, null);
+                    }
+                    break;
             }
         }
     }

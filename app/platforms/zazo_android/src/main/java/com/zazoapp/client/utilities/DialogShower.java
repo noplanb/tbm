@@ -1,6 +1,7 @@
 package com.zazoapp.client.utilities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -11,6 +12,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
 import com.zazoapp.client.R;
@@ -36,7 +39,9 @@ import com.zazoapp.client.ui.dialogs.VersionDialogFragment;
  */
 public class DialogShower {
 
-    private static final String FEATURE_FRAME = "featureFrame";
+    public static final String FEATURE_FRAME = "featureFrame";
+    public static final String ACTION_DIALOG_SHOWN = "dialog_shown";
+    public static final String EXTRA_DIALOG_TAG = "extra_tag";
 
     private DialogShower() {}
 
@@ -160,6 +165,9 @@ public class DialogShower {
         tr.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
         tr.replace(R.id.feature_frame, d, FEATURE_FRAME);
         tr.commitAllowingStateLoss();
+        Intent i = new Intent(ACTION_DIALOG_SHOWN);
+        i.putExtra(EXTRA_DIALOG_TAG, FEATURE_FRAME);
+        LocalBroadcastManager.getInstance(activity).sendBroadcast(i);
     }
 
     public static boolean isFeatureAwardDialogShown(FragmentActivity activity) {

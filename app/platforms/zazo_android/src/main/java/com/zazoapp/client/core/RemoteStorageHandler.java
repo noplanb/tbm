@@ -112,7 +112,9 @@ public class RemoteStorageHandler {
     public static void deleteWelcomedFriends() {
         deleteRemoteKV(buildWelcomedFriendsKvKey(), null);
         for (Friend friend : FriendFactory.getFactoryInstance().all()) {
-            deleteRemoteKV(outgoingVideoStatusRemoteKVKey(friend), null);
+            if (friend.everSent()) {
+                deleteRemoteKV(outgoingVideoStatusRemoteKVKey(friend), null);
+            }
         }
     }
 
