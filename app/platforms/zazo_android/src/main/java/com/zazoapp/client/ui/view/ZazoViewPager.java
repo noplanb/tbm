@@ -42,6 +42,10 @@ public class ZazoViewPager extends ViewPager {
         if (managers.getPlayer().isPlaying() || managers.getRecorder().isRecording()) {
             return false;
         }
-        return super.onInterceptTouchEvent(ev);
+        try {
+            return super.onInterceptTouchEvent(ev);
+        } catch (IllegalArgumentException ex) {
+        }
+        return false;
     }
 }
