@@ -479,7 +479,9 @@ public class ProfileActivity extends AppCompatActivity implements RadioGroup.OnC
                 avatarBitmap = Bitmap.createBitmap(bitmap, (int) cropRect.left, (int) cropRect.top, (int) cropRect.width(), (int) cropRect.height());
             }
             cropView.setImageDrawable(null);
-            bitmap.recycle();
+            if (avatarBitmap != bitmap) { // as createBitmap may return the same object
+                bitmap.recycle();
+            }
             thumb.setImageBitmap(avatarBitmap);
             editPhoto.setVisibility(View.INVISIBLE);
             updatePhoto.setVisibility(View.VISIBLE);
