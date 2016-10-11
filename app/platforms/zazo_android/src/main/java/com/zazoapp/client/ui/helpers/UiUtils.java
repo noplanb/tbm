@@ -164,7 +164,7 @@ public final class UiUtils {
         final int width = options.outWidth;
         int inSampleSize = 1;
 
-        if (height > reqHeight || width > reqWidth) {
+        if (reqHeight > 0 && reqWidth > 0 && height > 0 && width > 0 && (height > reqHeight || width > reqWidth)) {
 
             final int halfHeight = height / 2;
             final int halfWidth = width / 2;
@@ -174,6 +174,9 @@ public final class UiUtils {
             while ((halfHeight / inSampleSize) >= reqHeight
                     && (halfWidth / inSampleSize) >= reqWidth) {
                 inSampleSize *= 2;
+                if (inSampleSize > 256) {
+                    break;
+                }
             }
         }
 
