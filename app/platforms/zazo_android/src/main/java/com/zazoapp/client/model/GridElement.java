@@ -12,6 +12,10 @@ public class GridElement extends ActiveModel {
         public static final String FRIEND_ID = "friendId";
     }
 
+    public interface GridElementChangedCallback extends ModelChangeCallback {
+        void onModelUpdated(boolean changed, boolean onlyMoved);
+    }
+
     @Override
     public List<String> attributeList() {
         final String[] a = {
@@ -70,5 +74,22 @@ public class GridElement extends ActiveModel {
 
     public boolean isNextEmpty() {
         return this.equals(GridElementFactory.getFactoryInstance().firstEmptyGridElement());
+    }
+
+    @Override
+    public void addCallback(ModelChangeCallback callback) {
+        if (callback instanceof GridElementChangedCallback) {
+            super.addCallback(callback);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    protected void notifyCallbacks(boolean changed, boolean onlyMoved) {
+        if (isNotifyOnChanged()) {
+            for (ModelChangeCallback callback : callbacks) {
+                ((GridElementChangedCallback) callback).onModelUpdated(changed, onlyMoved);
+            }
+        }
     }
 }

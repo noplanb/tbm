@@ -147,7 +147,9 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
                     availableElement.setFriend(f);
                 } else {
                     GridElement elementFromBox = allElements.get(elementFromBoxIndex);
-                    availableElement.setFriend(elementFromBox.getFriend());
+                    // probably need to check whether it was really changed or not before notify
+                    availableElement.setFriend(elementFromBox.getFriend(), false);
+                    availableElement.notifyCallbacks(true, true);
                     elementFromBox.setFriend(f);
                 }
             }
@@ -160,6 +162,7 @@ public class GridManager implements Friend.VideoStatusChangedCallback{
                 } else {
                     GridElement elementFromBox = allElements.get(elementFromBoxIndex);
                     ge.setFriend(elementFromBox.getFriend());
+                    ge.notifyCallbacks(true, true);
                     elementFromBox.setFriend(f);
                 }
             }

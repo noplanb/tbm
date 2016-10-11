@@ -19,7 +19,7 @@ public abstract class ActiveModel {
 
     private Context context;
 
-    private Set<ModelChangeCallback> callbacks = new HashSet<>();
+    protected Set<ModelChangeCallback> callbacks = new HashSet<>();
 
     private volatile boolean notifyOnChanged = true;
 
@@ -60,7 +60,7 @@ public abstract class ActiveModel {
 		return attributes.get("id");
 	}
 
-    public final void addCallback(ModelChangeCallback callback) {
+    public void addCallback(ModelChangeCallback callback) {
         callbacks.add(callback);
     }
 
@@ -97,6 +97,10 @@ public abstract class ActiveModel {
      */
     protected void notifyOnChanged(boolean notify) {
         notifyOnChanged = notify;
+    }
+
+    protected boolean isNotifyOnChanged() {
+        return notifyOnChanged;
     }
 
     public abstract boolean validate();

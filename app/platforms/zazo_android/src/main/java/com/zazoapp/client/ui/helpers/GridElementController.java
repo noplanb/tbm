@@ -16,7 +16,6 @@ import com.zazoapp.client.R;
 import com.zazoapp.client.core.IntentHandlerService;
 import com.zazoapp.client.core.MessageType;
 import com.zazoapp.client.debug.DebugConfig;
-import com.zazoapp.client.model.ActiveModel;
 import com.zazoapp.client.model.Friend;
 import com.zazoapp.client.model.FriendFactory;
 import com.zazoapp.client.model.GridElement;
@@ -41,7 +40,7 @@ import java.util.List;
  * Created by skamenkovych@codeminders.com on 1/30/2015.
  */
 public class GridElementController implements GridElementView.ClickListener, VideoPlayer.StatusCallbacks,
-        GridElementView.FriendViewListener, ActiveModel.ModelChangeCallback, Friend.VideoStatusChangedCallback {
+        GridElementView.FriendViewListener, GridElement.GridElementChangedCallback, Friend.VideoStatusChangedCallback {
 
     private static final String TAG = GridElementController.class.getSimpleName();
 
@@ -458,30 +457,7 @@ public class GridElementController implements GridElementView.ClickListener, Vid
 
     @Override
     public void onModelUpdated(boolean changed) {
-        boolean afterInvite = managerProvider.getInviteHelper().getLastInvitedFriend() != null;
-        pendingAnim = !afterInvite;
-        if (changed) {
-            updateContentFromUi();
-            managerProvider.getBenchViewManager().updateBench();
-            uiHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    managerProvider.getTutorial().update();
-                }
-            });
-        }
-
-        uiHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                managerProvider.getTutorial().onFriendModelChanged(
-                        gridElementView,
-                        gridElement.getFriend());
-            }
-        });
-        if (pendingAnim) {
-            highLightElementForFriend();
-        }
+        onModelUpdated(changed, false);
     }
 
     //----------------------
@@ -543,5 +519,33 @@ public class GridElementController implements GridElementView.ClickListener, Vid
             }
         }
         return hasVideos;
+    }
+
+    @Override
+    public void onModelUpdated(boolean changed, boolean onlyMoved) {
+        boolean afterInvite = managerProvider.getInviteHelper().getLastInvitedFriend() != null;
+        pendingAnim = !afterInvite && !onlyMoved;
+        if (changed) {
+            updateContentFromUi();
+            managerProvider.getBenchViewManager().updateBench();
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    managerProvider.getTutorial().update();
+                }
+            });
+        }
+
+        uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                managerProvider.getTutorial().onFriendModelChanged(
+                        gridElementView,
+                        gridElement.getFriend());
+            }
+        });
+        if (pendingAnim) {
+            highLightElementForFriend();
+        }
     }
 }

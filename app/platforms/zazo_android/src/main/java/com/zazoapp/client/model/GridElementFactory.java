@@ -2,7 +2,7 @@ package com.zazoapp.client.model;
 
 import java.util.ArrayList;
 
-public class GridElementFactory extends ActiveModelFactory<GridElement> {
+public class GridElementFactory extends ActiveModelFactory<GridElement> implements GridElement.GridElementChangedCallback {
 
 	private static GridElementFactory instance = null;
 
@@ -60,5 +60,10 @@ public class GridElementFactory extends ActiveModelFactory<GridElement> {
             }
         }
         return result;
+    }
+
+    @Override
+    public void onModelUpdated(boolean changed, boolean onlyMoved) {
+        onModelUpdated(changed);
     }
 }
