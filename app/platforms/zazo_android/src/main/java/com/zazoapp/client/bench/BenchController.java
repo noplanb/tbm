@@ -622,7 +622,7 @@ public class BenchController implements BenchDataHandler.BenchDataHandlerCallbac
     }
 
     protected void applyFilter(CharSequence text) {
-        if (listView.getAdapter() != null) {
+        if (listView != null && adapter != null && listView.getAdapter() != null) {
             adapter.getFilter().filter(text);
         }
     }
