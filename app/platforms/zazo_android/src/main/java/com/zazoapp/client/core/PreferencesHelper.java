@@ -110,7 +110,7 @@ public final class PreferencesHelper {
                 Map.Entry<String, Pair<String, String>> entry = it.next();
                 String key = entry.getKey();
                 b.append(key).append('=');
-                if (S3CredentialsStore.SECRET_KEY.equals(key) || S3CredentialsStore.ACCESS_KEY_ID.equals(key)) {
+                if (key != null && (key.contains(S3CredentialsStore.SECRET_KEY) || key.contains(S3CredentialsStore.ACCESS_KEY_ID))) {
                     continue;
                 }
                 Pair<String, String> value = entry.getValue();
