@@ -63,8 +63,8 @@ public class WelcomeScreenActivity extends FragmentActivity {
 
     @Override
     protected void onPause() {
-        super.onPause();
         managers.unregisterManagers();
+        super.onPause();
     }
 
     public BaseManagerProvider getManagerProvider() {
